@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop: Build Your Own Passive Voice App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .step-card { transition: all 0.3s ease; border-left: 5px solid #e2e8f0; }
+        .step-card:hover { transform: translateX(5px); border-left-color: #4f46e5; background: #f8fafc; }
+        .copy-box { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 8px; }
+        .checkpoint-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; }
+        .alert-manual { border: 2px solid #ef4444; background: #fff1f2; border-radius: 15px; }
+        .success-step { border: 2px solid #10b981; background: #f0fdf4; border-radius: 15px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <!-- Header Section -->
+    <header class="bg-indigo-700 text-white py-12 px-6 shadow-xl">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl font-black mb-2 uppercase tracking-tight italic">Passive Voice App Creation</h1>
+            <p class="text-lg opacity-90 font-medium">Follow this professional workflow to build your educational tool.</p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto py-10 px-6 pb-24">
+
+        <!-- Phase 1 -->
+        <section class="mb-12">
+            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 1: Research & Sources</h3>
+            <div class="space-y-4">
+                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
+                    <h4 class="font-bold text-lg mb-1">1. Sign In</h4>
+                    <p class="text-slate-600 text-sm">Sign in on Google with your Gmail account and open <a href="https://notebooklm.google.com/" target="_blank" class="text-indigo-600 font-bold underline">NotebookLM</a>.</p>
+                </div>
+                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
+                    <h4 class="font-bold text-lg mb-1">2. Search for Information</h4>
+                    <p class="text-slate-600 text-sm mb-3">Search the web for sites that explain these 5 topics:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-bold">
+                        <span class="bg-slate-100 p-2 rounded">A) THE PASSIVE VOICE IN ENGLISH</span>
+                        <span class="bg-slate-100 p-2 rounded">B) TWO OBJECTS AS SUBJECT</span>
+                        <span class="bg-slate-100 p-2 rounded">C) WHEN TO OMIT THE AGENT</span>
+                        <span class="bg-slate-100 p-2 rounded">D) PASSIVE WITH REPORTING VERBS</span>
+                        <span class="bg-slate-100 p-2 rounded">E) THE CAUSATIVE (HAVE/GET DONE)</span>
+                    </div>
+                </div>
+                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
+                    <h4 class="font-bold text-lg mb-1">3. Add Sources</h4>
+                    <p class="text-slate-600 text-sm">In NotebookLM, add these sites as <strong>SOURCES (FUENTES)</strong>. Make sure you select all of them.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 2 -->
+        <section class="mb-12">
+            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 2: Training NotebookLM</h3>
+            <div class="success-step p-6 shadow-md">
+                <h4 class="font-bold text-green-800 text-xl mb-4 flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> 4. Important Step: Send the Chat Instruction
+                </h4>
+                <p class="text-slate-700 text-sm mb-4">In the CHAT on NotebookLM, paste the text below. <strong>YOU MUST SEND THE MESSAGE AND WAIT FOR THE RESPONSE</strong> before moving to Gemini.</p>
+                
+                <div class="copy-box p-4 relative mb-4">
+                    <pre id="masterPrompt" class="text-[11px] text-slate-800 whitespace-pre-wrap leading-tight">Create a comprehensive educative interactive lesson for the passive voice. Explain every aspect:
+A) THE PASSIVE VOICE IN ENGLISH
+B) THE USE OF TWO OBJECTS AS SUBJECT OF THE PASSIVE
+C) WHEN TO OMIT THE AGENT
+D) THE PASSIVE VOICE WITH REPORTING VERBS (eg. He is said to ...)
+E) THE USE OF THE CAUSATIVE (HAVE/GET SOMETHING DONE)
+
+With every explanation there must be sentences in English as example and their translation into Spanish.
+
+All the sentences in English must have their native audio.
+There must be an EXERCISES SECTION with as many modules as the topics seen in the explanation. Each module of exercises must have 10 different sentences/exercises to do. Exercises must be fill-in the gaps. Only one answer is possible. If there are more than one possible answer, admit both. Exercises don’t have into account capital letters nor punctuation marks. Exercises are self-assessed with explanations when the student fails.
+
+This app must start with a field the student has to fill in with their name and surname.
+At the end of each module of exercises, there must be a partial score. When the student finishes all the modules, there must be a final score with the student’s name.
+The user interface must be professional, clean, and clear.</pre>
+                    <button onclick="copyText('masterPrompt')" class="absolute top-2 right-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-indigo-800 font-bold transition-all shadow-lg">COPY ALL TEXT</button>
+                </div>
+                <p class="text-xs font-black text-green-700 uppercase italic">Be sure you have selected all the sources before sending this chat!</p>
+            </div>
+        </section>
+
+        <!-- Phase 3 -->
+        <section class="mb-12">
+            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 3: Creating the App in Gemini</h3>
+            <div class="step-card bg-white p-6 rounded-r-xl shadow-sm mb-6">
+                <h4 class="font-bold text-lg mb-2">5. Create a NEW GEM</h4>
+                <p class="text-slate-600 text-sm mb-4">Open <a href="https://gemini.google.com/" target="_blank" class="text-indigo-600 underline font-bold">Gemini</a>. Click the 3 lines (Top Left) &gt; <strong>ADD A NEW GEM</strong>.</p>
+                <ol class="list-decimal ml-6 text-sm text-slate-700 space-y-2">
+                    <li>Name it (e.g., <strong>PASSIVE VOICE</strong>).</li>
+                    <li>Instructions: PASTE the same text you wrote in your NotebookLM chat.</li>
+                    <li>Start the CHAT.</li>
+                </ol>
+            </div>
+
+            <div class="alert-manual p-6 mb-6">
+                <h4 class="text-red-700 font-black mb-3 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i> IF YOU CAN'T CONNECT NOTEBOOKLM (Troubleshooting)
+                </h4>
+                <p class="text-sm text-slate-800 mb-4 font-medium">If Gemini doesn't show your sources automatically, use this manual method:</p>
+                <div class="bg-white/50 p-4 rounded-lg text-sm space-y-3 border border-red-200">
+                    <p><strong>1. Copy the Content:</strong> Copy the answer that NotebookLM gave you and the text from your research websites.</p>
+                    <p><strong>2. Create a Document:</strong> Paste everything into a Word or Google Doc and save it.</p>
+                    <p><strong>3. Upload to Gemini:</strong> In the Gemini chat, click <strong>"+" (Plus)</strong> &gt; <strong>"Upload from this device"</strong> and select your saved document.</p>
+                </div>
+            </div>
+
+            <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
+                <h4 class="font-bold text-lg mb-2">6. Generate and Preview</h4>
+                <p class="text-slate-600 text-sm">In Gemini: Select <strong>CANVAS</strong>. Paste the Master Prompt again and send. Wait for the code, then click <strong>"VISTA PREVIA"</strong>.</p>
+            </div>
+        </section>
+
+        <!-- Phase 4 -->
+        <section class="mb-12 bg-slate-200/50 p-8 rounded-3xl">
+            <h3 class="text-indigo-900 font-black uppercase text-sm tracking-widest text-center mb-8">Phase 4: Mandatory Testing & Verification</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                
+                <div class="checkpoint-card">
+                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Identity & Scores</h5>
+                    <div class="space-y-2 text-xs">
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Student can write name/surname at start?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Name appears with the final score?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Partial score per module?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Final total score?</span></label>
+                    </div>
+                </div>
+
+                <div class="checkpoint-card">
+                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Content & Audio</h5>
+                    <div class="space-y-2 text-xs">
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Explanations are clear?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Enough examples per topic?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Native audio for all English sentences?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Spanish translations included?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>All 5 modules (A to E) covered?</span></label>
+                    </div>
+                </div>
+
+                <div class="checkpoint-card">
+                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Exercise Logic</h5>
+                    <div class="space-y-2 text-xs">
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>No ambiguous questions?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Admits multiple correct answers?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Ignores Caps/Punctuation?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Feedback provided on failure?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Exactly 10 exercises per module?</span></label>
+                    </div>
+                </div>
+
+                <div class="checkpoint-card">
+                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Interface</h5>
+                    <div class="space-y-2 text-xs">
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Professional and clean design?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Clear and easy to navigate?</span></label>
+                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Do you like it?</span></label>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer Submission -->
+        <div class="bg-indigo-900 text-white p-10 rounded-3xl text-center shadow-2xl">
+            <h2 class="text-3xl font-black mb-4">READY TO SUBMIT?</h2>
+            <p class="mb-8 opacity-80 font-medium">When all aspects are OK, then your app is ready. CONGRATULATIONS!</p>
+            <div class="bg-white/10 p-6 rounded-xl text-left text-sm max-w-md mx-auto border border-white/20">
+                <p class="font-bold mb-2"><i class="fas fa-link mr-2"></i> How to share:</p>
+                <p>Click on <strong>COMPARTIR</strong> (next to Vista Previa) and send the link through <strong>CLASSROOM</strong>.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            alert("SUCCESS! Prompt copied. Remember: SEND the chat in NotebookLM before closing it!");
+        }
+    </script>
+</body>
+</html>
