@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Grammar Academy | Irregular Verbs · Fill in the Gaps</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #090d16 0%, #111827 50%, #14532d 100%); }
+    .neon-border { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+    .neon-border:hover { box-shadow: 0 0 25px rgba(52, 211, 153, 0.45); }
+
+    .gap-input {
+      background: #020617;
+      border: none;
+      border-bottom: 3px solid #475569;
+      color: #fff;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 10px;
+      margin: 0 4px 6px;
+      border-radius: 6px 6px 0 0;
+      outline: none;
+      transition: all .15s ease;
+      display: inline-block;
+      min-width: 7ch;
+      max-width: 100%;
+    }
+    .gap-input:focus { border-bottom-color: #34d399; background: #0b1220; }
+    .gap-ok { border-bottom-color: #10b981 !important; color: #6ee7b7 !important; background: rgba(6,78,59,.45) !important; }
+    .gap-ko { border-bottom-color: #f43f5e !important; color: #fda4af !important; background: rgba(76,5,25,.45) !important; }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-card { border: 2px solid #000 !important; background: #fff !important; color: #000 !important; }
+    }
+  </style>
+
+<!-- 1. Firebase libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  // 2. Firebase configuration (same project as the reference app)
+  window.firebaseConfig = {
+    apiKey: "AIzaSyD1kMkporqrJFZNfEakmzQjFngkmF4detQ",
+    authDomain: "goya-english.firebaseapp.com",
+    databaseURL: "https://goya-english-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "goya-english",
+    storageBucket: "goya-english.firebasestorage.app",
+    messagingSenderId: "707378371042",
+    appId: "1:707378371042:web:a85b3c8d179156cc7a41bb",
+    measurementId: "G-9L8SR3268E"
+  };
+
+  // 3. Safe initialisation
+  if (!firebase.apps.length) {
+    firebase.initializeApp(window.firebaseConfig);
+  }
+  const db = firebase.database();
+
+  // ==========================================================
+  //  CONFIGURACION DE ACCESO  ·  lo unico que hay que tocar
+  // ==========================================================
+  // Nodo propio de esta app (no se mezcla con las demas apps).
+  const RESULTS_NODE = "irregular_verbs";
+
+  // Cada profesor/a tiene su CODIGO DE CLASE y su PIN.
+  //  - El alumno escribe el codigo al entrar: su trabajo se guarda SOLO
+  //    dentro de la carpeta de ese codigo, nunca se mezcla con otro grupo.
+  //  - El profesor abre su panel con su PIN y solo ve SU codigo.
+  // Si un companero quiere usar la app con sus alumnos, se le anade aqui
+  // una linea con su codigo y su PIN: sus resultados no te llegaran a ti.
+  window.CLASSES = [
+    { code: "NCALVO26", teacher: "Nuria Calvo", pin: "nuria123" }
+    // , { code: "OTRO26", teacher: "Nombre del companero", pin: "supin2026" }
+  ];
+
+  // true  = quien no tenga codigo puede practicar en MODO INVITADO:
+  //         ve sus notas y puede imprimirlas, pero NO se guarda nada en la nube.
+  // false = sin codigo no se puede entrar.
+  window.ALLOW_GUEST_MODE = true;
+</script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen gradient-bg flex flex-col selection:bg-emerald-500 selection:text-white">
+
+<!-- FLOATING TEACHER BUTTON -->
+<button onclick="showTeacherLogin()" style="position: fixed; top: 15px; right: 15px; z-index: 99999; padding: 10px 16px; background-color: #059669; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);" class="no-print">
+  ⚙️ Teacher
+</button>
+
+  <!-- NAVBAR -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-filter blur-md sticky top-0 z-50 py-4 no-print">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
+      <div class="flex items-center space-x-4 cursor-pointer" onclick="goHome()">
+        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-600 flex items-center justify-center font-black text-2xl md:text-3xl text-white shadow-lg shadow-emerald-500/40">
+          E
+        </div>
+        <div>
+          <h1 class="font-black text-2xl md:text-3xl text-white tracking-wider">ENGLISH<span class="text-emerald-400">PRO</span></h1>
+          <p class="text-sm font-semibold text-slate-400">Irregular Verbs · Fill in the Gaps</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="userInfoHeader" class="hidden text-right text-sm md:text-base text-slate-300 bg-slate-800/90 px-4 py-2 rounded-xl border border-slate-700"></div>
+
+        <button onclick="toggleFullScreen()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 px-5 py-3 rounded-2xl font-black text-sm md:text-base transition flex items-center gap-2 shadow-lg shadow-emerald-600/30">
+          <i class="fa-solid fa-expand text-lg"></i> <span class="hidden md:inline">Full Screen</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center">
+
+    <!-- STUDENT REGISTRATION -->
+    <section id="viewRegistration" class="space-y-6 max-w-xl mx-auto w-full py-6">
+      <div class="text-center space-y-3">
+        <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full text-xs md:text-sm font-extrabold uppercase tracking-widest border border-emerald-500/30">Student Portal</span>
+        <h2 class="text-3xl md:text-5xl font-black text-white">Irregular Verbs! ✍️</h2>
+        <p class="text-slate-300 text-base md:text-xl">Fill in the gaps with the <strong>past simple</strong> or the <strong>past participle</strong> of the verb in brackets. No options. Just like in the exam.</p>
+      </div>
+
+      <form id="regForm" onsubmit="handleRegistration(event)" class="bg-slate-900/95 border-2 border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">First name</label>
+          <input type="text" id="regFirstName" required placeholder="e.g. Alex" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Surname(s)</label>
+          <input type="text" id="regLastName" required placeholder="e.g. García López" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Email</label>
+          <input type="email" id="regEmail" required placeholder="student@school.com" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Group / Grupo</label>
+          <select id="regGrade" required class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+            <option value="" disabled selected>Select your group...</option>
+            <option value="1ESO">1ESO</option>
+            <option value="2ESO">2ESO</option>
+            <option value="3ESO">3ESO</option>
+            <option value="4ESO">4ESO</option>
+            <option value="1BTO">1BTO</option>
+            <option value="2BTO">2BTO</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Class code</label>
+          <input type="text" id="regClassCode" required placeholder="e.g. ABC123" autocomplete="off" autocapitalize="characters"
+            class="w-full bg-slate-950 border-2 border-amber-500/40 rounded-2xl px-5 py-4 text-lg md:text-xl text-white font-black tracking-widest uppercase focus:outline-none focus:border-amber-400 transition">
+          <p class="text-xs md:text-sm text-slate-400 mt-2 leading-snug">
+            Your own teacher gives you this code. Your work is sent <strong>only</strong> to that teacher.
+          </p>
+          <p id="regCodeError" class="hidden text-sm font-bold text-rose-400 mt-2"></p>
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3 mt-4">
+          Enter the Academy <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <div id="guestBox" class="hidden pt-2 text-center border-t border-slate-800 mt-2">
+          <p class="text-sm text-slate-400 mt-4 mb-3">Don’t have a code? You can still practise: your marks appear on screen and you can print them, but <strong>nothing is sent to any teacher</strong>.</p>
+          <button type="button" onclick="enterGuestMode()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-base md:text-lg py-4 rounded-2xl transition flex items-center justify-center gap-3">
+            <i class="fa-solid fa-user-clock"></i> Practise without a code
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- MAIN DASHBOARD -->
+    <section id="viewDashboard" class="hidden space-y-8 py-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-900/90 border-2 border-slate-800 p-6 md:p-8 rounded-3xl">
+        <div>
+          <h2 class="text-3xl md:text-5xl font-black text-white" id="welcomeUserText">Hi!</h2>
+          <p class="text-slate-300 text-lg md:text-xl mt-1">There are <strong>5 modules</strong> of 50 sentences. Pass each one with at least <strong class="text-amber-400">90%</strong> and send a <strong>screenshot</strong> of your result to your teacher.</p>
+        </div>
+        <button onclick="showGlobalReportModal()" class="w-full md:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg md:text-xl px-8 py-5 rounded-2xl transition flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30">
+          <i class="fa-solid fa-graduation-cap text-2xl"></i> FINAL REPORT
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid"></div>
+    </section>
+
+    <!-- THEORY GUIDE -->
+    <section id="viewLesson" class="hidden space-y-6 py-4">
+      <div class="flex justify-between items-center no-print">
+        <button onclick="goHome()" class="text-base md:text-lg font-bold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-chevron-left"></i> Back to dashboard
+        </button>
+        <span class="text-base font-black text-emerald-400 uppercase tracking-widest" id="lessonTopicCategory">Grammar Guide</span>
+      </div>
+
+      <div class="bg-slate-900/95 border-2 border-slate-800 rounded-3xl p-6 md:p-10 space-y-8 text-slate-100 text-xl md:text-2xl leading-relaxed shadow-2xl" id="lessonContent"></div>
+
+      <!-- HOW TO ANSWER -->
+      <div class="bg-emerald-950/40 border-2 border-emerald-500/40 rounded-3xl p-6 md:p-8 space-y-3">
+        <h3 class="text-emerald-300 font-black text-xl md:text-2xl flex items-center gap-3"><i class="fa-solid fa-pen-to-square"></i> How to answer</h3>
+        <ul class="text-base md:text-xl text-slate-200 space-y-2 list-disc list-inside">
+          <li>Write <strong>only the missing verb</strong> in the gap. The base form is <strong>in brackets</strong> at the end: <span class="font-mono text-amber-400">(go)</span>.</li>
+          <li>Finished time (<em>yesterday, last week, ago, in 2010</em>) → <strong>past simple</strong>: <em>I <u>went</u> ...</em></li>
+          <li>After <strong>have / has</strong> → <strong>past participle</strong>: <em>I have <u>gone</u> ...</em></li>
+          <li><strong>Capital letters don't matter.</strong> When the list gives two forms (<em>learnt / learned</em>), both are correct.</li>
+          <li>You need <strong class="text-amber-300">at least 90% (45 out of 50)</strong> to pass. Your progress is saved if you close the page.</li>
+        </ul>
+      </div>
+
+      <div class="flex justify-end no-print">
+        <button onclick="startCurrentQuiz()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3">
+          Start the 50 Sentences <i class="fa-solid fa-play"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- LIVE EXERCISES -->
+    <section id="viewQuiz" class="hidden space-y-6 py-2">
+      <div class="flex justify-between items-center bg-slate-900 border-2 border-slate-800 p-5 md:p-6 rounded-2xl">
+        <div>
+          <span class="text-sm md:text-base text-emerald-400 font-extrabold uppercase tracking-wider" id="quizCategoryTitle">Exercises</span>
+          <h3 class="text-2xl md:text-4xl font-black text-white" id="quizQuestionCount">Sentence 1 of 50</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-sm md:text-base text-slate-400 font-bold">Time</span>
+          <div id="quizTimer" class="font-mono font-black text-3xl md:text-5xl text-emerald-400">00:00</div>
+        </div>
+      </div>
+
+      <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+        <div id="quizProgressBar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width: 10%;"></div>
+      </div>
+
+      <div class="bg-slate-900/90 border-2 border-slate-800 p-6 md:p-10 rounded-3xl space-y-6 shadow-2xl">
+        <div id="quizTypeBadge"></div>
+        <p class="text-2xl md:text-4xl font-extrabold text-white leading-relaxed" id="quizSentence">Loading...</p>
+        <div id="verbFormsHint" class="hidden"></div>
+        <div id="quizFeedback" class="hidden p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2"></div>
+        <div class="flex justify-end no-print">
+          <button id="checkAnswerBtn" onclick="checkExercise()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+            <i class="fa-solid fa-check mr-2"></i> Check
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 no-print">
+        <button onclick="quitQuiz()" class="text-base md:text-lg font-bold text-slate-400 hover:text-slate-200">Quit the test</button>
+        <button id="nextQuestionBtn" onclick="nextQuestion()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+          Next Sentence <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- PARTIAL RESULT -->
+    <section id="viewResults" class="hidden space-y-6 py-6 max-w-3xl mx-auto w-full">
+      <div id="resultsCard" class="bg-slate-900 border-2 border-slate-800 p-8 md:p-10 rounded-3xl text-center space-y-6 shadow-2xl"></div>
+      <div id="reviewCard" class="bg-slate-900 border-2 border-slate-800 p-6 md:p-8 rounded-3xl space-y-3 shadow-2xl"></div>
+    </section>
+
+    <!-- FINAL GLOBAL REPORT -->
+    <section id="viewGlobalReport" class="hidden py-4 max-w-3xl mx-auto w-full">
+      <div id="screenCaptureArea" class="bg-slate-900 border-4 border-emerald-500/50 p-6 md:p-8 rounded-3xl space-y-5 shadow-2xl relative overflow-hidden print-card">
+        <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-9xl font-black text-white select-none">
+          ENGLISHPRO
+        </div>
+
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Irregular Verbs · Fill in the Gaps</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white mt-1">Final Assessment Report</h2>
+          </div>
+          <button onclick="goHome()" class="no-print text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-xmark"></i> Close
+          </button>
+        </div>
+
+        <div id="globalReportDetails" class="space-y-5"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER PANEL -->
+    <section id="viewTeacher" class="hidden space-y-6 py-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-black text-white" id="teacherTitle">Teacher Dashboard</h2>
+          <p class="text-base text-slate-400">One row per student · click a student to see every attempt and every answer they wrote.</p>
+        </div>
+        <button onclick="goHome()" class="text-sm md:text-base bg-slate-800 text-slate-300 font-bold px-5 py-3 rounded-xl">Exit</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="teacherStatsGrid"></div>
+
+      <div class="flex flex-col md:flex-row gap-3 md:items-center">
+        <input id="teacherSearchInput" type="text" placeholder="🔍 Search student by name, surname, group or email..." oninput="filterTeacherTable(this.value)"
+          class="flex-1 bg-slate-900 border-2 border-slate-800 rounded-2xl px-5 py-3 text-base text-white focus:outline-none focus:border-emerald-500 transition">
+        <button id="teacherRefreshBtn" onclick="refreshTeacherDashboardNow()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-3 rounded-2xl transition flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+        <button onclick="exportTeacherCsv()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-2xl transition flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+      </div>
+      <p id="teacherLastRefreshed" class="text-xs text-slate-500 -mt-2">Loading...</p>
+
+      <div class="bg-slate-900 border-2 border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm md:text-base text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-xs" id="teacherTableHead"></thead>
+            <tbody id="teacherTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 py-4 text-center text-sm text-slate-500 font-semibold no-print">
+    EnglishPRO Academy • Irregular Verbs · Fill in the Gaps • Designed for ESO &amp; Bachillerato
+  </footer>
+  <script>
+    /* ============================================================
+       IRREGULAR VERB LIST (from the textbook, page 150)
+       key: [base form, past simple forms, past participle forms, Spanish]
+       ============================================================ */
+    const VERBS = {
+      "be": ["be", ["was", "were"], ["been"], "ser / estar"],
+      "beat": ["beat", ["beat"], ["beaten"], "vencer, golpear"],
+      "become": ["become", ["became"], ["become"], "llegar a ser, convertirse"],
+      "begin": ["begin", ["began"], ["begun"], "empezar"],
+      "bend": ["bend", ["bent"], ["bent"], "doblar, agacharse"],
+      "bet": ["bet", ["bet"], ["bet"], "apostar"],
+      "bite": ["bite", ["bit"], ["bitten"], "morder"],
+      "bleed": ["bleed", ["bled"], ["bled"], "sangrar"],
+      "blow": ["blow", ["blew"], ["blown"], "soplar"],
+      "break": ["break", ["broke"], ["broken"], "romper"],
+      "bring": ["bring", ["brought"], ["brought"], "traer"],
+      "build": ["build", ["built"], ["built"], "construir"],
+      "burn": ["burn", ["burnt", "burned"], ["burnt", "burned"], "quemar(se)"],
+      "buy": ["buy", ["bought"], ["bought"], "comprar"],
+      "catch": ["catch", ["caught"], ["caught"], "coger, atrapar"],
+      "choose": ["choose", ["chose"], ["chosen"], "elegir"],
+      "come": ["come", ["came"], ["come"], "venir"],
+      "cost": ["cost", ["cost"], ["cost"], "costar"],
+      "cut": ["cut", ["cut"], ["cut"], "cortar"],
+      "dig": ["dig", ["dug"], ["dug"], "cavar"],
+      "do": ["do", ["did"], ["done"], "hacer"],
+      "draw": ["draw", ["drew"], ["drawn"], "dibujar"],
+      "dream": ["dream", ["dreamt", "dreamed"], ["dreamt", "dreamed"], "soñar"],
+      "drink": ["drink", ["drank"], ["drunk"], "beber"],
+      "drive": ["drive", ["drove"], ["driven"], "conducir"],
+      "eat": ["eat", ["ate"], ["eaten"], "comer"],
+      "fall": ["fall", ["fell"], ["fallen"], "caer(se)"],
+      "feed": ["feed", ["fed"], ["fed"], "dar de comer, alimentar"],
+      "feel": ["feel", ["felt"], ["felt"], "sentir(se)"],
+      "fight": ["fight", ["fought"], ["fought"], "luchar, pelear"],
+      "find": ["find", ["found"], ["found"], "encontrar"],
+      "fly": ["fly", ["flew"], ["flown"], "volar"],
+      "forget": ["forget", ["forgot"], ["forgotten"], "olvidar"],
+      "forgive": ["forgive", ["forgave"], ["forgiven"], "perdonar"],
+      "freeze": ["freeze", ["froze"], ["frozen"], "congelar(se)"],
+      "get": ["get", ["got"], ["got"], "conseguir, recibir, llegar"],
+      "give": ["give", ["gave"], ["given"], "dar"],
+      "go": ["go", ["went"], ["gone"], "ir"],
+      "grow": ["grow", ["grew"], ["grown"], "crecer, cultivar"],
+      "hang": ["hang", ["hanged", "hung"], ["hanged", "hung"], "colgar"],
+      "have": ["have", ["had"], ["had"], "tener, haber"],
+      "hear": ["hear", ["heard"], ["heard"], "oír"],
+      "hide": ["hide", ["hid"], ["hidden"], "esconder(se)"],
+      "hit": ["hit", ["hit"], ["hit"], "golpear"],
+      "hold": ["hold", ["held"], ["held"], "sujetar, celebrar"],
+      "hurt": ["hurt", ["hurt"], ["hurt"], "hacer(se) daño, doler"],
+      "keep": ["keep", ["kept"], ["kept"], "guardar, mantener"],
+      "know": ["know", ["knew"], ["known"], "saber, conocer"],
+      "lay": ["lay", ["laid"], ["laid"], "poner (la mesa), poner huevos"],
+      "lead": ["lead", ["led"], ["led"], "dirigir, guiar"],
+      "learn": ["learn", ["learnt", "learned"], ["learnt", "learned"], "aprender"],
+      "leave": ["leave", ["left"], ["left"], "dejar, marcharse"],
+      "lend": ["lend", ["lent"], ["lent"], "prestar"],
+      "let": ["let", ["let"], ["let"], "dejar, permitir"],
+      "lie_rest": ["lie", ["lay"], ["lain"], "tumbarse, estar tumbado"],
+      "lie_untrue": ["lie", ["lied"], ["lied"], "mentir (regular verb)"],
+      "light": ["light", ["lit"], ["lit"], "encender"],
+      "lose": ["lose", ["lost"], ["lost"], "perder"],
+      "make": ["make", ["made"], ["made"], "hacer, fabricar"],
+      "mean": ["mean", ["meant"], ["meant"], "significar, querer decir"],
+      "meet": ["meet", ["met"], ["met"], "conocer, quedar con"],
+      "overcome": ["overcome", ["overcame"], ["overcome"], "superar"],
+      "pay": ["pay", ["paid"], ["paid"], "pagar"],
+      "put": ["put", ["put"], ["put"], "poner"],
+      "quit": ["quit", ["quit", "quitted"], ["quit", "quitted"], "dejar (de hacer algo)"],
+      "read": ["read", ["read"], ["read"], "leer"],
+      "ride": ["ride", ["rode"], ["ridden"], "montar (bici, caballo)"],
+      "ring": ["ring", ["rang"], ["rung"], "sonar, llamar"],
+      "rise": ["rise", ["rose"], ["risen"], "subir, salir (el sol)"],
+      "run": ["run", ["ran"], ["run"], "correr"],
+      "say": ["say", ["said"], ["said"], "decir"],
+      "see": ["see", ["saw"], ["seen"], "ver"],
+      "sell": ["sell", ["sold"], ["sold"], "vender"],
+      "send": ["send", ["sent"], ["sent"], "enviar"],
+      "set": ["set", ["set"], ["set"], "poner, fijar, ponerse (el sol)"],
+      "shake": ["shake", ["shook"], ["shaken"], "agitar, temblar"],
+      "shine": ["shine", ["shone"], ["shone"], "brillar"],
+      "shoot": ["shoot", ["shot"], ["shot"], "disparar, chutar, rodar (película)"],
+      "show": ["show", ["showed"], ["shown"], "mostrar, enseñar"],
+      "shut": ["shut", ["shut"], ["shut"], "cerrar"],
+      "sing": ["sing", ["sang"], ["sung"], "cantar"],
+      "sink": ["sink", ["sank"], ["sunk"], "hundir(se)"],
+      "sit": ["sit", ["sat"], ["sat"], "sentarse"],
+      "sleep": ["sleep", ["slept"], ["slept"], "dormir"],
+      "smell": ["smell", ["smelt", "smelled"], ["smelt", "smelled"], "oler"],
+      "speak": ["speak", ["spoke"], ["spoken"], "hablar"],
+      "spell": ["spell", ["spelt", "spelled"], ["spelt", "spelled"], "deletrear, escribir (una palabra)"],
+      "spend": ["spend", ["spent"], ["spent"], "gastar, pasar (tiempo)"],
+      "stand": ["stand", ["stood"], ["stood"], "estar de pie"],
+      "steal": ["steal", ["stole"], ["stolen"], "robar"],
+      "stick": ["stick", ["stuck"], ["stuck"], "pegar"],
+      "sting": ["sting", ["stung"], ["stung"], "picar (insecto)"],
+      "sweep": ["sweep", ["swept"], ["swept"], "barrer"],
+      "swim": ["swim", ["swam"], ["swum"], "nadar"],
+      "take": ["take", ["took"], ["taken"], "coger, tomar, llevar"],
+      "teach": ["teach", ["taught"], ["taught"], "enseñar"],
+      "tear": ["tear", ["tore"], ["torn"], "romper, rasgar"],
+      "tell": ["tell", ["told"], ["told"], "decir, contar"],
+      "think": ["think", ["thought"], ["thought"], "pensar, creer"],
+      "throw": ["throw", ["threw"], ["thrown"], "lanzar, tirar"],
+      "understand": ["understand", ["understood"], ["understood"], "entender"],
+      "wake_up": ["wake up", ["woke up"], ["woken up"], "despertarse"],
+      "wear": ["wear", ["wore"], ["worn"], "llevar puesto"],
+      "win": ["win", ["won"], ["won"], "ganar"],
+      "write": ["write", ["wrote"], ["written"], "escribir"]
+    };
+
+    // Hints shown in brackets when the base form alone is ambiguous.
+    const HINTS = {
+      "lie_rest": "lie – rest",
+      "lie_untrue": "lie – not tell the truth"
+    };
+
+    /* ============================================================
+       SENTENCES — [verb key, "ps" (past simple) | "pp" (present perfect), sentence, (optional) accepted answers]
+       ___ = gap. The base form in brackets is added automatically at the end.
+       ============================================================ */
+    const MODULE_DEFS = [
+      {
+        id: "iv_m1", title: "Module 1 · be → do", short: "M1 be–do", icon: "fa-1",
+        verbs: ["be", "beat", "become", "begin", "bend", "bet", "bite", "bleed", "blow", "break", "bring", "build", "burn", "buy", "catch", "choose", "come", "cost", "cut", "dig", "do"],
+        s: [
+          ["be", "ps", "I ___ very tired after the match yesterday.", ["was"]],
+          ["be", "ps", "We ___ at the beach all day last Saturday.", ["were"]],
+          ["be", "pp", "My grandparents have ___ to Italy three times."],
+          ["beat", "ps", "Our team ___ the champions 3–1 last Sunday."],
+          ["beat", "pp", "Nobody has ever ___ my brother at chess."],
+          ["become", "ps", "She ___ a famous singer when she was only eighteen."],
+          ["become", "pp", "This song has ___ very popular this summer."],
+          ["begin", "ps", "The film ___ at eight o'clock last night."],
+          ["begin", "pp", "It has just ___ to rain, so take your umbrella."],
+          ["bend", "ps", "He ___ down to pick up the coin from the floor."],
+          ["bend", "pp", "Oh no! I have ___ my new glasses."],
+          ["bet", "ps", "My uncle ___ ten euros on the horse race last week."],
+          ["bet", "pp", "I have ___ my friend a pizza that our team will win."],
+          ["bite", "ps", "A dog ___ my brother on the leg last summer."],
+          ["bite", "pp", "The mosquitoes have ___ me all over my arms!"],
+          ["bleed", "ps", "My knee ___ a lot when I fell off my bike."],
+          ["bleed", "pp", "The cut on his finger has ___ a lot, so he needs a plaster."],
+          ["blow", "ps", "The wind ___ very hard during the storm last night."],
+          ["blow", "pp", "Look! The birthday girl has ___ out all the candles."],
+          ["break", "ps", "Tom ___ his arm when he was skiing in January."],
+          ["break", "pp", "Someone has ___ the classroom window."],
+          ["bring", "ps", "Sara ___ a chocolate cake to the party yesterday."],
+          ["bring", "pp", "I have ___ you a present from London."],
+          ["build", "ps", "They ___ this bridge in 1995."],
+          ["build", "pp", "The town has ___ a new sports centre near my house."],
+          ["burn", "ps", "I ___ my hand on the hot oven yesterday."],
+          ["burn", "pp", "Oh no! I have ___ the toast again."],
+          ["buy", "ps", "My dad ___ a new car last month."],
+          ["buy", "pp", "I have already ___ the tickets for the concert."],
+          ["catch", "ps", "The police ___ the thief two hours later."],
+          ["catch", "pp", "I have ___ a cold, so I'm staying at home today."],
+          ["choose", "ps", "We ___ red T-shirts for the school team last year."],
+          ["choose", "pp", "She has ___ the blue dress for the party."],
+          ["come", "ps", "My cousins ___ to visit us last Christmas."],
+          ["come", "pp", "Summer has ___ at last! Let's go to the pool."],
+          ["cost", "ps", "My new trainers ___ sixty euros in the sales last week."],
+          ["cost", "pp", "This holiday has ___ us a lot of money."],
+          ["cut", "ps", "Mum ___ the birthday cake into twelve pieces yesterday."],
+          ["cut", "pp", "I have just ___ my finger with a knife."],
+          ["dig", "ps", "The dog ___ a big hole in the garden yesterday."],
+          ["dig", "pp", "The workers have ___ a deep hole in the street."],
+          ["do", "ps", "I ___ my homework before dinner last night."],
+          ["do", "pp", "Great! You have ___ a fantastic job."],
+          // extra practice
+          ["burn", "ps", "The old factory ___ down in 2010."],
+          ["begin", "ps", "The concert ___ late because the singer was ill."],
+          ["come", "ps", "She ___ home very late on Friday night."],
+          ["break", "pp", "My little brother has ___ my favourite mug."],
+          ["become", "pp", "My older sister has ___ a doctor."],
+          ["choose", "pp", "The teacher has ___ me to be the class delegate."],
+          ["do", "pp", "I have ___ all the exercises in the book."]
+        ]
+      },
+      {
+        id: "iv_m2", title: "Module 2 · draw → hear", short: "M2 draw–hear", icon: "fa-2",
+        verbs: ["draw", "dream", "drink", "drive", "eat", "fall", "feed", "feel", "fight", "find", "fly", "forget", "forgive", "freeze", "get", "give", "go", "grow", "hang", "have", "hear"],
+        s: [
+          ["draw", "ps", "Leo ___ a beautiful picture of his cat yesterday."],
+          ["draw", "pp", "The children have ___ a map of the town."],
+          ["dream", "ps", "Last night I ___ that I could fly."],
+          ["dream", "pp", "I have always ___ of visiting New York."],
+          ["drink", "ps", "We ___ lots of water after the race."],
+          ["drink", "pp", "The baby has ___ all her milk."],
+          ["drive", "ps", "My mum ___ us to school this morning."],
+          ["drive", "pp", "My dad has ___ the same car for ten years."],
+          ["eat", "ps", "We ___ pizza at an Italian restaurant last night."],
+          ["eat", "pp", "I have never ___ sushi."],
+          ["fall", "ps", "Kate ___ off her bike and hurt her knee."],
+          ["fall", "pp", "Look! All the leaves have ___ from the trees."],
+          ["feed", "ps", "I ___ the cat before I went to school."],
+          ["feed", "pp", "Don't worry, I have already ___ the dog."],
+          ["feel", "ps", "I ___ very nervous before my exam yesterday."],
+          ["feel", "pp", "I have never ___ so happy in my life!"],
+          ["fight", "ps", "The two brothers ___ about the TV remote last night."],
+          ["fight", "pp", "Those two cats have ___ three times this week."],
+          ["find", "ps", "I ___ ten euros in the street yesterday."],
+          ["find", "pp", "Good news! I have ___ my keys."],
+          ["fly", "ps", "We ___ to London last summer."],
+          ["fly", "pp", "My grandma has never ___ in a plane."],
+          ["forget", "ps", "Paul ___ his homework at home yesterday."],
+          ["forget", "pp", "Oh no! I have ___ my best friend's birthday."],
+          ["forgive", "ps", "Emma ___ her sister for breaking her phone."],
+          ["forgive", "pp", "I have ___ you, but please don't do it again."],
+          ["freeze", "ps", "It was so cold that the lake ___ last winter."],
+          ["freeze", "pp", "Mum has ___ the rest of the soup for next week."],
+          ["get", "ps", "I ___ a new phone for my birthday last month."],
+          ["get", "pp", "My brother has ___ a job in a restaurant."],
+          ["give", "ps", "My grandma ___ me a book for Christmas."],
+          ["give", "pp", "The teacher has ___ us a lot of homework today."],
+          ["go", "ps", "We ___ to the cinema last Friday."],
+          ["go", "pp", "Dad isn't here. He has ___ to the supermarket."],
+          ["grow", "ps", "My grandfather ___ tomatoes in his garden when he was young."],
+          ["grow", "pp", "Wow, you have ___ a lot since last year!"],
+          ["hang", "ps", "I ___ my coat behind the door when I got home."],
+          ["hang", "pp", "We have ___ some photos on the bedroom wall."],
+          ["have", "ps", "We ___ a great time at the party on Saturday."],
+          ["have", "pp", "I have ___ this bike since I was ten."],
+          ["hear", "ps", "I ___ a strange noise in the kitchen last night."],
+          ["hear", "pp", "I have ___ this song many times on the radio."],
+          // extra practice
+          ["eat", "ps", "The kids ___ lots of biscuits at the party."],
+          ["fly", "ps", "Our plane ___ over the Pyrenees."],
+          ["find", "ps", "After an hour, I ___ my keys in my bag."],
+          ["get", "ps", "We ___ up very early to catch the train."],
+          ["give", "pp", "She has ___ me her new address."],
+          ["go", "pp", "My parents have already ___ to bed."],
+          ["fall", "pp", "The temperature has ___ a lot this week."],
+          ["drink", "pp", "I have ___ three glasses of water today."]
+        ]
+      },
+      {
+        id: "iv_m3", title: "Module 3 · hide → pay", short: "M3 hide–pay", icon: "fa-3",
+        verbs: ["hide", "hit", "hold", "hurt", "keep", "know", "lay", "lead", "learn", "leave", "lend", "let", "lie_rest", "lie_untrue", "light", "lose", "make", "mean", "meet", "overcome", "pay"],
+        s: [
+          ["hide", "ps", "The children ___ behind the sofa during the game yesterday."],
+          ["hide", "pp", "I have ___ the presents in my wardrobe."],
+          ["hit", "ps", "He ___ the ball very hard and it went over the wall."],
+          ["hit", "pp", "A car has ___ the lamp post in front of my house."],
+          ["hold", "ps", "The school ___ a big party at the end of last year."],
+          ["hold", "pp", "She has ___ the baby in her arms all afternoon."],
+          ["hurt", "ps", "I ___ my back when I was playing tennis."],
+          ["hurt", "pp", "Be careful! You have ___ your knee."],
+          ["keep", "ps", "My grandma ___ all my drawings in a box when I was little."],
+          ["keep", "pp", "I have ___ all my old toys in the attic."],
+          ["know", "ps", "I ___ the answer, but I didn't say it."],
+          ["know", "pp", "We have ___ each other since primary school."],
+          ["lay", "ps", "My sister ___ the table before dinner last night."],
+          ["lay", "pp", "The hens have ___ six eggs today."],
+          ["lead", "ps", "The guide ___ us through the old town."],
+          ["lead", "pp", "Our captain has ___ the team to victory three times this year."],
+          ["learn", "ps", "I ___ to swim when I was five."],
+          ["learn", "pp", "We have ___ a lot of new words this week."],
+          ["leave", "ps", "The bus ___ ten minutes ago."],
+          ["leave", "pp", "Oh no! I have ___ my phone on the bus."],
+          ["lend", "ps", "My friend ___ me his bike last weekend."],
+          ["lend", "pp", "I have ___ my dictionary to Sara."],
+          ["let", "ps", "My parents ___ me go to the concert last night."],
+          ["let", "pp", "The teacher has ___ us leave early today."],
+          ["lie_rest", "ps", "I was so tired that I ___ on the sofa and fell asleep."],
+          ["lie_rest", "pp", "That old book has ___ on the shelf for years."],
+          ["lie_untrue", "ps", "He ___ to his mum about his exam results."],
+          ["lie_untrue", "pp", "I'm sorry, I have ___ to you."],
+          ["light", "ps", "Dad ___ the fire because it was very cold."],
+          ["light", "pp", "We have ___ the candles on the cake."],
+          ["lose", "ps", "Our team ___ the match on Sunday."],
+          ["lose", "pp", "I can't find my wallet. I think I have ___ it."],
+          ["make", "ps", "My mum ___ a delicious paella yesterday."],
+          ["make", "pp", "I have ___ a lot of new friends at my new school."],
+          ["mean", "ps", "Sorry, I ___ to call you, but I forgot."],
+          ["mean", "pp", "This school has always ___ a lot to me."],
+          ["meet", "ps", "I ___ my best friend at a summer camp in 2020."],
+          ["meet", "pp", "I have never ___ a famous person."],
+          ["overcome", "ps", "She ___ her fear of water and learnt to swim."],
+          ["overcome", "pp", "He has ___ many problems to become a doctor."],
+          ["pay", "ps", "We ___ twenty euros for the tickets."],
+          ["pay", "pp", "Don't worry, I have already ___ for lunch."],
+          // extra practice
+          ["lie_rest", "ps", "The cat ___ in the sun all afternoon."],
+          ["learn", "ps", "My mother ___ French at school."],
+          ["lose", "ps", "I ___ my keys yesterday and I couldn't get into the house."],
+          ["make", "ps", "We ___ a snowman in the park last winter."],
+          ["lie_untrue", "pp", "She has ___ about her age again!"],
+          ["know", "pp", "I have ___ Emma for six years."],
+          ["leave", "pp", "Hurry up! The train has just ___."],
+          ["hide", "pp", "The cat has ___ under the bed."]
+        ]
+      },
+      {
+        id: "iv_m4", title: "Module 4 · put → sleep", short: "M4 put–sleep", icon: "fa-4",
+        verbs: ["put", "quit", "read", "ride", "ring", "rise", "run", "say", "see", "sell", "send", "set", "shake", "shine", "shoot", "show", "shut", "sing", "sink", "sit", "sleep"],
+        s: [
+          ["put", "ps", "I ___ my books in my bag and left."],
+          ["put", "pp", "Someone has ___ my phone on top of the fridge."],
+          ["quit", "ps", "My uncle ___ smoking two years ago."],
+          ["quit", "pp", "She has ___ her job and moved to Madrid."],
+          ["read", "ps", "I ___ a great book on holiday last summer."],
+          ["read", "pp", "I have ___ all the books in this series."],
+          ["ride", "ps", "We ___ our bikes to the lake yesterday."],
+          ["ride", "pp", "I have never ___ a horse."],
+          ["ring", "ps", "The phone ___ in the middle of the night last Tuesday."],
+          ["ring", "pp", "The bell has just ___. Let's go to class!"],
+          ["rise", "ps", "The sun ___ at seven o'clock this morning."],
+          ["rise", "pp", "The price of petrol has ___ again."],
+          ["run", "ps", "Leo ___ five kilometres last Sunday."],
+          ["run", "pp", "My aunt has ___ three marathons."],
+          ["say", "ps", "She ___ goodbye and left the room five minutes ago."],
+          ["say", "pp", "You have ___ that three times!"],
+          ["see", "ps", "We ___ a great film at the cinema last night."],
+          ["see", "pp", "I have never ___ snow."],
+          ["sell", "ps", "My neighbour ___ his old car last month."],
+          ["sell", "pp", "The shop has ___ all the tickets for the concert."],
+          ["send", "ps", "I ___ you an email yesterday."],
+          ["send", "pp", "I have just ___ you a message."],
+          ["set", "ps", "The sun ___ at nine o'clock last night."],
+          ["set", "pp", "I have ___ my alarm for seven o'clock."],
+          ["shake", "ps", "The ground ___ during the earthquake last year."],
+          ["shake", "pp", "I have ___ hands with the mayor!"],
+          ["shine", "ps", "The sun ___ all day yesterday."],
+          ["shine", "pp", "The sun has ___ every day this week."],
+          ["shoot", "ps", "The player ___ and scored a fantastic goal."],
+          ["shoot", "pp", "They have ___ a new film in our town."],
+          ["show", "ps", "My friend ___ me her holiday photos yesterday."],
+          ["show", "pp", "The teacher has ___ us how to do the exercise."],
+          ["shut", "ps", "He ___ the door and went to bed at eleven o'clock."],
+          ["shut", "pp", "It's late. The shops have already ___."],
+          ["sing", "ps", "We ___ 'Happy Birthday' to my grandma at her party."],
+          ["sing", "pp", "She has ___ in the school choir since she was eight."],
+          ["sink", "ps", "The Titanic ___ in 1912."],
+          ["sink", "pp", "The old boat has ___ to the bottom of the lake."],
+          ["sit", "ps", "I ___ next to my best friend in class yesterday."],
+          ["sit", "pp", "We have ___ in this waiting room for two hours!"],
+          ["sleep", "ps", "I ___ very badly last night."],
+          ["sleep", "pp", "The baby has ___ all afternoon."],
+          // extra practice
+          ["read", "ps", "Dad ___ the newspaper at breakfast this morning."],
+          ["see", "ps", "I ___ your brother at the park on Monday."],
+          ["say", "ps", "He ___ he was sorry."],
+          ["run", "ps", "The dog ___ after the ball."],
+          ["put", "pp", "I have ___ the milk in the fridge."],
+          ["ride", "pp", "She has ___ her bike to school every day this week."],
+          ["ring", "pp", "Your phone has ___ three times!"],
+          ["sing", "pp", "We have ___ this song many times."]
+        ]
+      },
+      {
+        id: "iv_m5", title: "Module 5 · smell → write", short: "M5 smell–write", icon: "fa-5",
+        verbs: ["smell", "speak", "spell", "spend", "stand", "steal", "stick", "sting", "sweep", "swim", "take", "teach", "tear", "tell", "think", "throw", "understand", "wake_up", "wear", "win", "write"],
+        s: [
+          ["smell", "ps", "The kitchen ___ of fresh bread this morning."],
+          ["smell", "pp", "I have never ___ such beautiful flowers."],
+          ["speak", "ps", "I ___ to the head teacher yesterday."],
+          ["speak", "pp", "She has ___ English since she was a child."],
+          ["spell", "ps", "He ___ my name wrong on the birthday card."],
+          ["spell", "pp", "Well done! You have ___ all the words correctly."],
+          ["spend", "ps", "We ___ two weeks in Portugal last summer."],
+          ["spend", "pp", "I have ___ all my money on video games."],
+          ["stand", "ps", "We ___ in the rain for an hour waiting for the bus."],
+          ["stand", "pp", "The old castle has ___ on that hill for 800 years."],
+          ["steal", "ps", "Someone ___ my bike last week."],
+          ["steal", "pp", "Thieves have ___ a famous painting from the museum."],
+          ["stick", "ps", "Yesterday she ___ a photo of her dog on the fridge."],
+          ["stick", "pp", "I have ___ stickers all over my notebook."],
+          ["sting", "ps", "A bee ___ me on the arm at the picnic."],
+          ["sting", "pp", "A wasp has ___ my little brother."],
+          ["sweep", "ps", "I ___ the kitchen floor after dinner last night."],
+          ["sweep", "pp", "Dad has already ___ the leaves in the garden."],
+          ["swim", "ps", "We ___ in the sea every day on holiday."],
+          ["swim", "pp", "I have never ___ in such cold water."],
+          ["take", "ps", "I ___ a lot of photos on my trip to Paris."],
+          ["take", "pp", "Someone has ___ my pen!"],
+          ["teach", "ps", "My grandfather ___ me how to play chess when I was six."],
+          ["teach", "pp", "Mrs Brown has ___ at this school for twenty years."],
+          ["tear", "ps", "I ___ my jeans when I climbed the fence."],
+          ["tear", "pp", "Oh no! The dog has ___ my homework."],
+          ["tell", "ps", "She ___ me a funny story yesterday."],
+          ["tell", "pp", "I have ___ you a hundred times to tidy your room!"],
+          ["think", "ps", "I ___ the exam was easy, but it wasn't."],
+          ["think", "pp", "I have ___ about your idea and I like it."],
+          ["throw", "ps", "He ___ the ball to his dog and the dog caught it."],
+          ["throw", "pp", "Someone has ___ rubbish on the floor."],
+          ["understand", "ps", "I ___ everything the teacher said in class today."],
+          ["understand", "pp", "Now I have ___ the rule. It's easy!"],
+          ["wake_up", "ps", "I ___ at six o'clock this morning."],
+          ["wake_up", "pp", "Shh! The baby has just ___."],
+          ["wear", "ps", "She ___ a beautiful dress to the wedding last Saturday."],
+          ["wear", "pp", "I have ___ these shoes only twice."],
+          ["win", "ps", "Our class ___ the football tournament last year."],
+          ["win", "pp", "She has ___ three gold medals this year."],
+          ["write", "ps", "Shakespeare ___ 'Romeo and Juliet'."],
+          ["write", "pp", "I have ___ a letter to my pen friend."],
+          // extra practice
+          ["smell", "ps", "The dog ___ the food and ran into the kitchen."],
+          ["spell", "ps", "She ___ her surname for the receptionist."],
+          ["speak", "ps", "We ___ on the phone for an hour last night."],
+          ["take", "ps", "It ___ us three hours to get there."],
+          ["spell", "pp", "My friend has ___ my name wrong again!"],
+          ["tell", "pp", "Finally, he has ___ me the truth."],
+          ["wear", "pp", "She has ___ that jacket every day this week."],
+          ["write", "pp", "My brother has ___ three songs for his band."]
+        ]
+      }
+    ];
+
+    /* ============================================================
+       SETTINGS
+       ============================================================ */
+    const PASS_THRESHOLD = 90;   // % needed to pass each module
+
+    const TENSES = {
+      ps: { label: "Past Simple", short: "Past (V2)", cls: "text-sky-300", badge: "bg-sky-500/15 text-sky-300 border-sky-500/40", icon: "fa-clock-rotate-left" },
+      pp: { label: "Present Perfect", short: "Participle (V3)", cls: "text-amber-300", badge: "bg-amber-500/15 text-amber-300 border-amber-500/40", icon: "fa-check-double" }
+    };
+
+    // Build the modules from the definitions above.
+    const MODULES = MODULE_DEFS.map(def => ({
+      id: def.id,
+      title: def.title,
+      short: def.short,
+      icon: def.icon,
+      verbs: def.verbs,
+      desc: `${def.verbs.length} irregular verbs · ${def.s.length} sentences in past simple and present perfect.`,
+      questions: def.s.map((row, i) => {
+        const [key, tense, text, custom] = row;
+        const v = VERBS[key];
+        return {
+          qid: `${def.id}_${i}`,
+          key: key,
+          tense: tense,
+          text: text,
+          hint: HINTS[key] || v[0],
+          answers: custom || (tense === "ps" ? v[1] : v[2])
+        };
+      })
+    }));
+
+    /* ============================================================
+       CHECKING
+       ============================================================ */
+    function normalize(str) {
+      return (str || "").toString()
+        .replace(/[‘’ʼ`´]/g, "'")
+        .trim()
+        .toLowerCase()
+        .replace(/[.,;!?]+$/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function gradeGap(userValue, q) {
+      let user = normalize(userValue);
+      if (!user) return false;
+      // If the student also wrote the auxiliary that is already in the sentence ("has gone"), ignore it.
+      if (q.tense === "pp") user = user.replace(/^(have|has|'ve|'s)\s+/, "");
+      return q.answers.some(a => normalize(a) === user);
+    }
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    let currentUser = null;
+    let currentTeacherLoggedIn = null;
+    let currentModuleId = null;
+    let currentQuestions = [];
+    let currentQuestionIdx = 0;
+    let currentScore = 0;
+    let quizTimerInterval = null;
+    let quizSeconds = 0;
+    let answered = false;
+    let attemptLog = [];
+
+    function escapeHtml(str) {
+      return (str || "").toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function currentModule() { return MODULES.find(m => m.id === currentModuleId); }
+    function fullName() { return currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : ""; }
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function storageDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+    function progressKey(modId) { return `englishpro_iv_progress_${userScopeKey()}_${modId}`; }
+
+    /* ---------- class codes ---------- */
+    function normalizeCode(c) { return (c || "").toString().trim().toUpperCase().replace(/\s+/g, ""); }
+    function findClassByCode(c) {
+      const n = normalizeCode(c);
+      return (window.CLASSES || []).find(x => normalizeCode(x.code) === n) || null;
+    }
+    function findClassesByPin(p) {
+      const pin = (p || "").toString().trim();
+      return (window.CLASSES || []).filter(x => String(x.pin) === pin);
+    }
+    function userScopeKey() {
+      if (!currentUser) return "";
+      const who = (currentUser.email || fullName() || "anon").toLowerCase();
+      return `${currentUser.guest ? "GUEST" : normalizeCode(currentUser.classCode)}_${who}`;
+    }
+    function myResultsRef() { return db.ref(RESULTS_NODE + "/" + normalizeCode(currentUser.classCode)); }
+
+    /* ---------- local copy of the results (guest mode / no connection) ---------- */
+    function localResultsKey() { return `englishpro_iv_results_${userScopeKey()}`; }
+    function localResults() {
+      try { return JSON.parse(storageGet(localResultsKey()) || "[]"); } catch (e) { return []; }
+    }
+    function saveResultLocally(record) {
+      const light = Object.assign({}, record);
+      delete light.answers;                       // keep localStorage small
+      const all = localResults().concat([light]).slice(-60);
+      storageSet(localResultsKey(), JSON.stringify(all));
+    }
+    function fetchMyRecords(cb) {
+      if (!currentUser) { cb([]); return; }
+      if (currentUser.guest) { cb(localResults()); return; }
+      myResultsRef().orderByChild("email").equalTo(currentUser.email).once("value", (snapshot) => {
+        const out = [];
+        snapshot.forEach(childSnap => { if (childSnap.val()) out.push(childSnap.val()); });
+        cb(out);
+      }, (err) => { console.error("Could not load previous results:", err); cb(localResults()); });
+    }
+
+    function sentenceHtml(q, withInput) {
+      const parts = q.text.split("___");
+      const model = q.answers[0];
+      const width = Math.max(8, Math.max.apply(null, q.answers.map(a => a.length)) + 3);
+      const gap = withInput
+        ? `<input type="text" id="gap_0" class="gap-input text-xl md:text-3xl" style="width:${width}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
+        : `<span class="text-slate-500">______</span>`;
+      return `${escapeHtml(parts[0])}${gap}${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono ${withInput ? "text-xl md:text-2xl" : ""}">(${escapeHtml(q.hint)})</span>`;
+    }
+
+    function studentStrip() {
+      if (!currentUser) return "";
+      return `
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:justify-between md:items-center gap-3 text-left">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Name</p>
+              <p class="text-lg md:text-xl font-black text-white leading-tight">${escapeHtml(currentUser.firstName)}</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Surname(s)</p>
+              <p class="text-lg md:text-xl font-black text-emerald-300 leading-tight">${escapeHtml(currentUser.lastName)}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 text-sm font-bold">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"><i class="fa-solid fa-users"></i> Group: ${escapeHtml(currentUser.grade)}</span>
+            ${currentUser.guest
+              ? `<span class="px-3 py-1 rounded-lg bg-slate-700/40 text-slate-300 border border-slate-600"><i class="fa-solid fa-user-clock"></i> Guest · not saved</span>`
+              : `<span class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30"><i class="fa-solid fa-key"></i> Code: ${escapeHtml(currentUser.classCode)}</span>`}
+          </div>
+        </div>`;
+    }
+
+    /* ============================================================
+       THEORY PAGE
+       ============================================================ */
+    function buildLesson(mod) {
+      const rows = mod.verbs.map(k => {
+        const v = VERBS[k];
+        const label = HINTS[k] ? `${v[0]} <span class="text-slate-500 text-sm">(${HINTS[k].split("–")[1].trim()})</span>` : v[0];
+        return `
+          <tr class="border-b border-slate-800/80">
+            <td class="p-2 md:p-3 font-black text-white">${label}</td>
+            <td class="p-2 md:p-3 font-bold text-sky-300">${v[1].join(" / ")}</td>
+            <td class="p-2 md:p-3 font-bold text-amber-300">${v[2].join(" / ")}</td>
+            <td class="p-2 md:p-3 text-slate-400 text-sm md:text-base" lang="es">${v[3]}</td>
+          </tr>`;
+      }).join("");
+
+      return `
+        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-3">${mod.title}</h2>
+        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">
+          Study the <strong>three forms</strong> of these ${mod.verbs.length} verbs. Then complete <strong>${mod.questions.length} sentences</strong>:
+          every verb appears in the <strong class="text-sky-300">past simple</strong> and in the <strong class="text-amber-300">present perfect</strong>.
+        </p>
+        <div class="space-y-6">
+          <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto">
+            <table class="w-full text-left text-base md:text-xl">
+              <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400">
+                <tr><th class="p-2 md:p-3">Base form (V1)</th><th class="p-2 md:p-3">Past simple (V2)</th><th class="p-2 md:p-3">Past participle (V3)</th><th class="p-2 md:p-3">Meaning</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-sky-500/30">
+              <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">Past simple → V2</h3>
+              <p class="text-base md:text-xl text-slate-300">A finished action at a finished time: <em>yesterday, last week, two days ago, in 2010, when I was five</em>.</p>
+              <p class="mt-3 text-base md:text-xl text-slate-200">We <strong class="text-sky-300">went</strong> to the beach <u>last summer</u>.</p>
+            </div>
+            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-amber-500/30">
+              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">Present perfect → have / has + V3</h3>
+              <p class="text-base md:text-xl text-slate-300">Experiences and actions connected to now: <em>ever, never, just, already, for, since, this week</em>.</p>
+              <p class="mt-3 text-base md:text-xl text-slate-200">I <u>have</u> never <strong class="text-amber-300">gone</strong> to Paris.</p>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* ============================================================
+       APP
+       ============================================================ */
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    function initApp() {
+      const guestBox = document.getElementById("guestBox");
+      if (guestBox && window.ALLOW_GUEST_MODE) guestBox.classList.remove("hidden");
+
+      const savedUser = storageGet("englishpro_iv_user");
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+        } catch (e) { currentUser = null; }
+        // If the saved code no longer exists (or the app was shared with a
+        // different teacher), the student has to register again.
+        if (currentUser && !currentUser.guest && !findClassByCode(currentUser.classCode)) {
+          storageDel("englishpro_iv_user");
+          currentUser = null;
+        }
+      }
+      if (currentUser) {
+        updateUserHeader();
+        showView("viewDashboard");
+        renderModules();
+      } else {
+        showView("viewRegistration");
+      }
+    }
+
+    function readRegistrationForm() {
+      return {
+        firstName: document.getElementById("regFirstName").value.trim(),
+        lastName: document.getElementById("regLastName").value.trim(),
+        email: document.getElementById("regEmail").value.trim().toLowerCase(),
+        grade: document.getElementById("regGrade").value
+      };
+    }
+
+    function showCodeError(msg) {
+      const el = document.getElementById("regCodeError");
+      if (!el) return;
+      if (!msg) { el.classList.add("hidden"); el.innerText = ""; return; }
+      el.classList.remove("hidden");
+      el.innerText = msg;
+    }
+
+    function startSession(user) {
+      currentUser = user;
+      storageSet("englishpro_iv_user", JSON.stringify(currentUser));
+      showCodeError("");
+      updateUserHeader();
+      showView("viewDashboard");
+      renderModules();
+      window.scrollTo(0, 0);
+    }
+
+    function handleRegistration(e) {
+      e.preventDefault();
+      const typed = document.getElementById("regClassCode").value;
+      const cls = findClassByCode(typed);
+      if (!cls) {
+        showCodeError("⚠️ Wrong class code. Ask your own teacher for it" +
+          (window.ALLOW_GUEST_MODE ? ", or use the button below to practise without saving." : "."));
+        document.getElementById("regClassCode").focus();
+        return;
+      }
+      const user = readRegistrationForm();
+      user.guest = false;
+      user.classCode = normalizeCode(cls.code);
+      startSession(user);
+    }
+
+    function enterGuestMode() {
+      if (!window.ALLOW_GUEST_MODE) return;
+      const user = readRegistrationForm();
+      if (!user.firstName || !user.lastName || !user.grade) {
+        showCodeError("⚠️ Please write your name, your surname(s) and choose your group first.");
+        return;
+      }
+      if (!confirm("Guest mode: you can do all the exercises and see your marks, but NOTHING is sent to a teacher.\n\nContinue?")) return;
+      user.guest = true;
+      user.classCode = "";
+      startSession(user);
+    }
+
+    function logout() {
+      if (!confirm("Log out?")) return;
+      storageDel("englishpro_iv_user");
+      currentUser = null;
+      document.getElementById("userInfoHeader").classList.add("hidden");
+      document.getElementById("regForm").reset();
+      showCodeError("");
+      showView("viewRegistration");
+    }
+
+    function updateUserHeader() {
+      if (!currentUser) return;
+      const el = document.getElementById("userInfoHeader");
+      el.classList.remove("hidden");
+      el.innerHTML = `
+        <span class="font-extrabold text-white">${escapeHtml(fullName())}</span><br>
+        <span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-users"></i> Group: ${escapeHtml(currentUser.grade)}</span>
+        ${currentUser.guest
+          ? `<span class="text-slate-400 font-bold text-xs"> · <i class="fa-solid fa-user-clock"></i> Guest</span>`
+          : `<span class="text-amber-400 font-bold text-xs"> · <i class="fa-solid fa-key"></i> ${escapeHtml(currentUser.classCode)}</span>`}
+        · <button onclick="logout()" class="text-xs text-slate-400 hover:text-white underline">Log out</button>`;
+      document.getElementById("welcomeUserText").innerText = `Hi, ${currentUser.firstName}! 👋`;
+    }
+
+    function showView(viewId) {
+      ["viewRegistration", "viewDashboard", "viewLesson", "viewQuiz", "viewResults", "viewGlobalReport", "viewTeacher"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById(viewId).classList.remove("hidden");
+    }
+
+    function goHome() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      if (currentUser) {
+        showView("viewDashboard");
+        renderModules();
+      } else {
+        showView("viewRegistration");
+      }
+    }
+
+    function buildModuleCard(mod, bestScore) {
+      let badge = `<span class="text-sm bg-slate-800 text-slate-400 px-4 py-2 rounded-xl font-bold">Pending</span>`;
+      const saved = storageGet(progressKey(mod.id));
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          badge = `<span class="text-sm bg-sky-500/20 text-sky-300 border border-sky-500/40 px-4 py-2 rounded-xl font-black">⏸ ${p.idx}/${mod.questions.length} in progress</span>`;
+        } catch (e) {}
+      }
+      if (bestScore !== null && bestScore !== undefined) {
+        badge = (bestScore >= PASS_THRESHOLD)
+          ? `<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-2 rounded-xl font-black">✅ ${bestScore}% Passed</span>`
+          : `<span class="text-sm bg-rose-500/20 text-rose-400 border border-rose-500/40 px-4 py-2 rounded-xl font-black">${bestScore}% · Try again</span>`;
+      }
+      const card = document.createElement("div");
+      card.className = "bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/60 p-8 rounded-3xl transition cursor-pointer flex flex-col justify-between neon-border";
+      card.onclick = () => openLesson(mod.id);
+      const preview = mod.verbs.map(k => VERBS[k][0]).filter((v, i, arr) => arr.indexOf(v) === i).join(", ");
+      card.innerHTML = `
+        <div>
+          <div class="flex justify-between items-start mb-6 gap-3">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/30 shrink-0">
+              <i class="fa-solid ${mod.icon}"></i>
+            </div>
+            ${badge}
+          </div>
+          <h3 class="text-2xl md:text-3xl font-black text-white mb-3">${mod.title}</h3>
+          <p class="text-base md:text-lg text-slate-300 leading-relaxed mb-3">${mod.desc}</p>
+          <p class="text-sm text-slate-500 mb-4 italic">${preview}</p>
+          <div class="flex flex-wrap gap-2 mb-6 text-xs font-black">
+            <span class="px-3 py-1 rounded-lg border ${TENSES.ps.badge}">${mod.questions.filter(q => q.tense === "ps").length} past simple</span>
+            <span class="px-3 py-1 rounded-lg border ${TENSES.pp.badge}">${mod.questions.filter(q => q.tense === "pp").length} present perfect</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Pass mark: ${PASS_THRESHOLD}%</span>
+          </div>
+        </div>
+        <div class="text-base md:text-lg font-black text-emerald-400 flex items-center gap-2">
+          Verb List &amp; Exercises <i class="fa-solid fa-arrow-right"></i>
+        </div>`;
+      return card;
+    }
+
+    function paintModulesGrid(scoresByModule) {
+      const grid = document.getElementById("modulesGrid");
+      grid.innerHTML = "";
+      MODULES.forEach(mod => {
+        const best = scoresByModule ? scoresByModule[mod.id] : null;
+        grid.appendChild(buildModuleCard(mod, best === undefined ? null : best));
+      });
+    }
+
+    function renderModules() {
+      paintModulesGrid(null);
+      fetchMyRecords((scores) => {
+        const best = {};
+        MODULES.forEach(mod => {
+          const userScores = scores.filter(s => s && s.moduleId === mod.id);
+          best[mod.id] = userScores.length > 0 ? Math.max(...userScores.map(s => Number(s.score) || 0)) : null;
+        });
+        paintModulesGrid(best);
+      });
+    }
+
+    function openLesson(modId) {
+      currentModuleId = modId;
+      const mod = currentModule();
+      document.getElementById("lessonTopicCategory").innerText = mod.title;
+      document.getElementById("lessonContent").innerHTML = buildLesson(mod);
+      showView("viewLesson");
+      window.scrollTo(0, 0);
+    }
+
+    /* ---------- progress saved in the browser (so a closed tab is not lost) ---------- */
+    function saveProgress() {
+      const mod = currentModule();
+      storageSet(progressKey(mod.id), JSON.stringify({
+        order: currentQuestions.map(q => q.qid),
+        idx: currentQuestionIdx + (answered ? 1 : 0),
+        score: currentScore,
+        seconds: quizSeconds,
+        log: attemptLog
+      }));
+    }
+
+    function startCurrentQuiz(forceNew) {
+      const mod = currentModule();
+      const saved = forceNew ? null : storageGet(progressKey(mod.id));
+      let resumed = false;
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          if (p.idx > 0 && p.idx < mod.questions.length &&
+              confirm(`You have an unfinished attempt (${p.idx} of ${mod.questions.length} sentences done).\n\nOK = continue where you stopped\nCancel = start again from the beginning`)) {
+            currentQuestions = p.order.map(id => mod.questions.find(q => q.qid === id)).filter(Boolean);
+            currentQuestionIdx = p.idx;
+            currentScore = p.score;
+            quizSeconds = p.seconds || 0;
+            attemptLog = p.log || [];
+            resumed = currentQuestions.length === mod.questions.length;
+          }
+        } catch (e) {}
+      }
+      if (!resumed) {
+        storageDel(progressKey(mod.id));
+        currentQuestions = shuffle(mod.questions);
+        currentQuestionIdx = 0;
+        currentScore = 0;
+        quizSeconds = 0;
+        attemptLog = [];
+      }
+      document.getElementById("quizCategoryTitle").innerText = mod.title;
+      showView("viewQuiz");
+      window.scrollTo(0, 0);
+      startTimer();
+      renderQuestion();
+    }
+
+    function startTimer() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      const paint = () => {
+        const mins = String(Math.floor(quizSeconds / 60)).padStart(2, "0");
+        const secs = String(quizSeconds % 60).padStart(2, "0");
+        document.getElementById("quizTimer").innerText = `${mins}:${secs}`;
+      };
+      paint();
+      quizTimerInterval = setInterval(() => { quizSeconds++; paint(); }, 1000);
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const q = currentQuestions[currentQuestionIdx];
+      const total = currentQuestions.length;
+
+      document.getElementById("quizQuestionCount").innerText = `Sentence ${currentQuestionIdx + 1} of ${total}`;
+      document.getElementById("quizProgressBar").style.width = `${((currentQuestionIdx + 1) / total) * 100}%`;
+
+      const t = TENSES[q.tense];
+      document.getElementById("quizTypeBadge").innerHTML = `
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border ${t.badge} text-sm md:text-base font-black uppercase tracking-wider">
+            <i class="fa-solid ${t.icon}"></i> ${t.label}
+          </span>
+          <span class="text-sm md:text-base font-black text-emerald-400">✔ ${currentScore} / ${currentQuestionIdx} correct</span>
+        </div>`;
+
+      document.getElementById("quizSentence").innerHTML = sentenceHtml(q, true);
+
+      document.getElementById("quizFeedback").classList.add("hidden");
+      document.getElementById("nextQuestionBtn").classList.add("hidden");
+      const checkBtn = document.getElementById("checkAnswerBtn");
+      checkBtn.classList.remove("hidden");
+      checkBtn.disabled = false;
+
+      const input = document.getElementById("gap_0");
+      input.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") {
+          ev.preventDefault();
+          if (!answered) checkExercise(); else nextQuestion();
+        }
+      });
+      input.focus();
+    }
+
+    function checkExercise() {
+      if (answered) return;
+      const q = currentQuestions[currentQuestionIdx];
+      const input = document.getElementById("gap_0");
+      const value = input.value.trim();
+      if (!value) { input.focus(); input.placeholder = "?"; return; }
+
+      const ok = gradeGap(value, q);
+      input.readOnly = true;
+      input.classList.add(ok ? "gap-ok" : "gap-ko");
+      answered = true;
+      if (ok) currentScore++;
+
+      attemptLog.push({ text: q.text, hint: q.hint, tense: q.tense, user: value, correct: q.answers.join(" / "), ok: ok });
+      saveProgress();
+
+      const v = VERBS[q.key];
+      const forms = `<div class="mt-3 text-sm md:text-lg font-black text-slate-300">
+          <span class="text-white">${escapeHtml(v[0])}</span> → <span class="text-sky-300">${escapeHtml(v[1].join(" / "))}</span> → <span class="text-amber-300">${escapeHtml(v[2].join(" / "))}</span>
+          <span class="text-slate-500 font-semibold" lang="es">· ${escapeHtml(v[3])}</span></div>`;
+      const why = q.tense === "ps"
+        ? "Finished past time → <b>past simple (V2)</b>."
+        : "After <b>have / has</b> → <b>past participle (V3)</b>.";
+      const feedbackBox = document.getElementById("quizFeedback");
+      if (ok) {
+        feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-emerald-950/40 border-emerald-500/60 text-emerald-200";
+        feedbackBox.innerHTML = `<strong>CORRECT! 🎉</strong> <span class="font-semibold">${why}</span>${forms}`;
+      } else {
+        feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-rose-950/40 border-rose-500/60 text-rose-200";
+        feedbackBox.innerHTML = `
+          <div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${escapeHtml(q.answers.join(" / "))}</span></div>
+          <div class="text-slate-200 font-semibold text-base md:text-xl">${why}</div>${forms}`;
+      }
+      feedbackBox.classList.remove("hidden");
+      document.getElementById("checkAnswerBtn").classList.add("hidden");
+      const nextBtn = document.getElementById("nextQuestionBtn");
+      nextBtn.classList.remove("hidden");
+      nextBtn.innerHTML = (currentQuestionIdx < currentQuestions.length - 1)
+        ? `Next Sentence <i class="fa-solid fa-arrow-right ml-2"></i>`
+        : `See Result <i class="fa-solid fa-flag-checkered ml-2"></i>`;
+      nextBtn.focus();
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIdx < currentQuestions.length - 1) {
+        currentQuestionIdx++;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function quitQuiz() {
+      if (confirm("Leave this module now? Your progress is saved on this device and you can continue later.")) {
+        clearInterval(quizTimerInterval);
+        goHome();
+      }
+    }
+
+    function finishQuiz() {
+      clearInterval(quizTimerInterval);
+      const mod = currentModule();
+      storageDel(progressKey(mod.id));
+      const total = currentQuestions.length;
+      const percentage = Math.round((currentScore / total) * 100);
+      const timeStr = `${Math.floor(quizSeconds / 60)}m ${quizSeconds % 60}s`;
+      const nowStr = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+      const passed = percentage >= PASS_THRESHOLD;
+
+      const record = {
+        studentName: fullName(),
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        grade: currentUser.grade,
+        group: currentUser.grade,
+        classCode: currentUser.guest ? "" : currentUser.classCode,
+        guest: !!currentUser.guest,
+        topic: mod.title,
+        moduleId: mod.id,
+        exerciseType: "irregular_verbs_gaps",
+        score: percentage,
+        rawScore: `${currentScore}/${total}`,
+        passed: passed,
+        secondsSpent: quizSeconds,
+        timeSpent: timeStr,
+        dateTime: nowStr,
+        timestamp: Date.now(),
+        answers: attemptLog.map(a => ({ text: a.text, hint: a.hint, tense: a.tense, user: a.user, correct: a.correct, ok: a.ok }))
+      };
+
+      const message = passed
+        ? `
+          <div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
+            <h3 class="text-2xl md:text-3xl font-black text-emerald-300">🎉 CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
+            <p class="text-slate-100 text-base md:text-xl">You have passed <strong>${mod.title}</strong>. Well done!</p>
+            <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold">
+              <i class="fa-solid fa-camera"></i> Now take a <strong>SCREENSHOT</strong> of this result and send it to your teacher through <strong>Google Classroom</strong>.
+            </div>
+          </div>`
+        : `
+          <div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
+            <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> You have to try again!</p>
+            <p class="text-slate-200 text-base md:text-lg">You got <strong>${currentScore} out of ${total}</strong>. You need <strong class="text-amber-300">at least ${PASS_THRESHOLD}% (${Math.ceil(total * PASS_THRESHOLD / 100)} out of ${total})</strong> to pass.
+            Remember: <strong>for your work to count, you must pass ALL the modules</strong>.</p>
+            <p class="text-slate-300 text-base md:text-lg">Study the verb list again, look at your mistakes below and have another go. You can do it! 💪
+            When you pass, take a screenshot of your result and send it to your teacher through Google Classroom.</p>
+          </div>`;
+
+      document.getElementById("resultsCard").innerHTML = `
+        ${studentStrip()}
+        <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-4xl font-black ${passed ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50" : "bg-rose-500/20 text-rose-400 border-2 border-rose-500/50"}">
+          ${percentage}%
+        </div>
+        ${message}
+        <div class="bg-slate-950 p-6 rounded-2xl border-2 border-slate-800 text-left text-base md:text-xl text-slate-200 space-y-3 max-w-lg mx-auto">
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Name:</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.firstName)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Surname(s):</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.lastName)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Group:</span> <span class="font-bold text-emerald-300">${escapeHtml(currentUser.grade)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Module:</span> <span class="font-bold text-emerald-400 text-right">${mod.title}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Score:</span> <span class="font-bold text-white">${record.rawScore} (${percentage}%)</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Result:</span> <span class="font-bold ${passed ? "text-emerald-400" : "text-rose-400"} text-right">${passed ? "✅ Passed" : "⚠️ Not passed (minimum " + PASS_THRESHOLD + "%)"}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Time:</span> <span class="font-bold text-emerald-400">${timeStr}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Class code:</span> <span class="font-bold text-amber-400">${currentUser.guest ? "— (guest · not saved)" : escapeHtml(currentUser.classCode)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Date:</span> <span class="font-bold text-white">${nowStr}</span></div>
+        </div>
+        <div id="saveStatusLine" class="text-xs font-bold text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Saving to the cloud...
+        </div>
+        <div class="pt-4 flex flex-col md:flex-row gap-3 justify-center no-print">
+          ${!passed ? `<button onclick="startCurrentQuiz(true)" class="bg-rose-600 hover:bg-rose-500 text-white font-black text-lg px-8 py-4 rounded-2xl transition order-first">🔁 Try this module again</button>` : ""}
+          <button onclick="goHome()" class="${passed ? "bg-emerald-600 hover:bg-emerald-500" : "bg-slate-800 hover:bg-slate-700"} text-white font-black text-lg px-8 py-4 rounded-2xl transition">Back to Dashboard</button>
+        </div>`;
+
+      renderReview();
+      showView("viewResults");
+      window.scrollTo(0, 0);
+      saveResultToFirebase(record);
+    }
+
+    function renderReview() {
+      const wrong = attemptLog.filter(a => !a.ok).length;
+      const rows = attemptLog.map((a, idx) => {
+        const t = TENSES[a.tense];
+        const parts = a.text.split("___");
+        return `
+          <div class="bg-slate-950 border ${a.ok ? "border-emerald-500/30" : "border-rose-500/50"} rounded-2xl p-3 md:p-4 text-left">
+            <div class="flex justify-between items-start gap-3 mb-1">
+              <span class="text-sm font-black ${a.ok ? "text-emerald-400" : "text-rose-400"}"><i class="fa-solid ${a.ok ? "fa-circle-check" : "fa-circle-xmark"}"></i> ${idx + 1}</span>
+              <span class="text-[11px] font-black uppercase px-2 py-1 rounded-lg border ${t.badge}">${t.label}</span>
+            </div>
+            <p class="text-base md:text-lg text-slate-200 font-semibold">${escapeHtml(parts[0])}<span class="${a.ok ? "text-emerald-300" : "text-rose-300 line-through"} font-mono">${escapeHtml(a.user) || "—"}</span>${a.ok ? "" : ` <span class="text-emerald-300 font-mono">${escapeHtml(a.correct)}</span>`}${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono text-sm">(${escapeHtml(a.hint)})</span></p>
+          </div>`;
+      }).join("");
+      document.getElementById("reviewCard").innerHTML = `
+        <p class="text-sm md:text-base font-bold text-slate-300 border-b border-slate-800 pb-3 mb-3">
+          <i class="fa-solid fa-user text-emerald-400 mr-1"></i> ${escapeHtml(currentUser.firstName)} <span class="text-emerald-300">${escapeHtml(currentUser.lastName)}</span>
+          <span class="text-slate-500">·</span> <span class="text-amber-300">Group: ${escapeHtml(currentUser.grade)}</span>
+        </p>
+        <div class="flex justify-between items-center mb-2 gap-3">
+          <h3 class="text-xl md:text-2xl font-black text-white"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i>Correction (${wrong} mistake${wrong === 1 ? "" : "s"})</h3>
+          <button onclick="window.print()" class="no-print text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl"><i class="fa-solid fa-print"></i> Print</button>
+        </div>
+        <div class="grid grid-cols-1 gap-2">${rows}</div>`;
+    }
+
+    function saveResultToFirebase(record, isRetry) {
+      if (!isRetry) saveResultLocally(record);
+
+      if (currentUser.guest) {
+        const line = document.getElementById("saveStatusLine");
+        if (line) line.innerHTML = `<i class="fa-solid fa-user-clock text-slate-400"></i> <span class="text-slate-400">Guest mode: this result is only on this device, it is not sent to any teacher.</span>`;
+        return;
+      }
+
+      myResultsRef().push(record).then(() => {
+        const line = document.getElementById("saveStatusLine");
+        if (line) line.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span class="text-emerald-400">Saved to the cloud</span>`;
+      }).catch(err => {
+        console.error("Error saving to Firebase:", err);
+        if (!isRetry) {
+          setTimeout(() => saveResultToFirebase(record, true), 2500);
+        } else {
+          const line = document.getElementById("saveStatusLine");
+          if (line) line.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> <span class="text-amber-400">Could not save. Please tell your teacher.</span>`;
+        }
+      });
+    }
+
+    /* ============================================================
+       FINAL REPORT
+       ============================================================ */
+    function showGlobalReportModal() {
+      showView("viewGlobalReport");
+      window.scrollTo(0, 0);
+      const container = document.getElementById("globalReportDetails");
+      container.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-2xl mb-3"></i><br>Loading your report...</div>`;
+
+      fetchMyRecords((records) => {
+        let completedCount = 0, passedCount = 0, sum = 0, secondsSum = 0;
+        let breakdownHtml = "";
+        MODULES.forEach(mod => {
+          const list = records.filter(r => r && r.moduleId === mod.id);
+          if (list.length) {
+            const best = list.reduce((max, r) => (Number(r.score) > Number(max.score) ? r : max), list[0]);
+            const ok = Number(best.score) >= PASS_THRESHOLD;
+            completedCount++; if (ok) passedCount++;
+            sum += Number(best.score) || 0; secondsSum += best.secondsSpent || 0;
+            breakdownHtml += `
+              <div class="flex justify-between items-center bg-slate-950/80 p-4 rounded-xl border ${ok ? "border-emerald-500/40" : "border-rose-500/50"} text-sm md:text-base">
+                <span class="font-extrabold text-white">${mod.title}</span>
+                <div class="text-right">
+                  <span class="font-black ${ok ? "text-emerald-400" : "text-rose-400"}">${ok ? "✅" : "❌"} ${best.score}%</span>
+                  <span class="text-slate-500 text-xs ml-2">(${best.rawScore || ""} · ${list.length} attempt${list.length > 1 ? "s" : ""})</span>
+                </div>
+              </div>`;
+          } else {
+            breakdownHtml += `
+              <div class="flex justify-between items-center bg-slate-950/30 p-4 rounded-xl border border-slate-800/40 text-sm opacity-60">
+                <span class="font-bold text-slate-400">${mod.title}</span>
+                <span class="text-rose-400 font-bold italic">Pending</span>
+              </div>`;
+          }
+        });
+
+        if (completedCount < MODULES.length) {
+          container.innerHTML = `
+            ${studentStrip()}
+            <div class="text-center py-4 space-y-4">
+              <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl border-2 border-amber-500/40"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <h3 class="text-2xl font-black text-white">Incomplete</h3>
+              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> modules. Pass all of them with at least <strong class="text-amber-300">${PASS_THRESHOLD}%</strong> to complete the irregular verbs.</p>
+              <div class="space-y-2 text-left my-4">${breakdownHtml}</div>
+              <button onclick="goHome()" class="no-print bg-emerald-600 text-white font-extrabold px-8 py-4 rounded-2xl text-base">Go back and continue</button>
+            </div>`;
+          return;
+        }
+
+        const allPassed = passedCount === MODULES.length;
+        const avg = Math.round(sum / MODULES.length);
+        const nowStr = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+        const msg = allPassed
+          ? `<div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
+               <div class="text-5xl">🏆🎉</div>
+               <h3 class="text-2xl md:text-3xl font-black text-emerald-300">CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
+               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} modules</strong>: you know the irregular verbs!</p>
+               <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold"><i class="fa-solid fa-camera"></i> Take a <strong>SCREENSHOT</strong> of this final result and send it to your teacher through <strong>Google Classroom</strong>.</div>
+             </div>`
+          : `<div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
+               <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> Keep going — you're not there yet!</p>
+               <p class="text-slate-200 text-base md:text-lg">You have passed <strong>${passedCount} of ${MODULES.length}</strong> modules. Your work only counts when you pass <strong>ALL the modules</strong> with at least ${PASS_THRESHOLD}%. Repeat the modules marked in red — you can do it! 💪</p>
+             </div>`;
+
+        container.innerHTML = `
+          <div class="grid grid-cols-3 gap-4 items-center bg-slate-950/80 p-5 rounded-2xl border border-slate-800">
+            <div class="col-span-2 space-y-1">
+              <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Student</p>
+              <h3 class="text-xl md:text-2xl font-black text-white leading-tight">${escapeHtml(currentUser.firstName)} <span class="text-emerald-300">${escapeHtml(currentUser.lastName)}</span></h3>
+              <p class="text-sm md:text-base text-emerald-300 font-black">Group: ${escapeHtml(currentUser.grade)}</p>
+              <p class="text-xs text-slate-400 font-semibold">${escapeHtml(currentUser.email)}</p>
+              <p class="text-xs text-amber-400 font-extrabold mt-1">${currentUser.guest ? "Guest · not sent to any teacher" : "Class code: " + escapeHtml(currentUser.classCode)} · ${nowStr}</p>
+            </div>
+            <div class="text-center ${allPassed ? "bg-emerald-500/10 border-2 border-emerald-500/40" : "bg-rose-500/10 border-2 border-rose-500/40"} p-4 rounded-2xl">
+              <span class="text-xs font-bold ${allPassed ? "text-emerald-400" : "text-rose-400"} block uppercase">Average</span>
+              <span class="text-4xl md:text-5xl font-black ${allPassed ? "text-emerald-400" : "text-rose-400"} leading-none">${avg}%</span>
+              <span class="block text-[11px] md:text-xs font-black mt-1 ${allPassed ? "text-emerald-300" : "text-rose-300"}">${allPassed ? "✅ PASSED" : "⚠️ NOT PASSED"}</span>
+            </div>
+          </div>
+          ${msg}
+          <div>
+            <p class="text-xs font-black uppercase text-slate-400 mb-3 tracking-wider">Best score in each module</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${breakdownHtml}</div>
+          </div>
+          <div class="pt-4 border-t border-slate-800 flex justify-center no-print">
+            <button onclick="window.print()" class="px-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition text-base md:text-lg flex items-center justify-center gap-3"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+          </div>`;
+      });
+    }
+    /* ============================================================
+       TEACHER PANEL
+       ------------------------------------------------------------
+       Cada profesor/a entra con SU PIN (ver window.CLASSES arriba) y
+       solo ve los resultados guardados bajo SU codigo de clase.
+       ============================================================ */
+
+    // true = ademas de tu codigo, muestra los intentos antiguos que se
+    // guardaron antes de existir los codigos (solo los que no tienen codigo).
+    const INCLUDE_LEGACY_RECORDS = true;
+
+    let teacherAllRecords = [];
+    let teacherSearchTerm = "";
+    let teacherRefs = [];
+    let teacherRecordsByCode = {};
+    let teacherLegacyRecords = [];
+    let teacherOpenRows = new Set();
+    let currentTeacherScope = [];
+    const TEACHER_COLSPAN = 7 + MODULES.length;
+
+    function showTeacherLogin() {
+      const pin = prompt("Teacher PIN / PIN del profesor:");
+      if (pin === null) return;
+      const mine = findClassesByPin(pin);
+      if (!mine.length) { alert("Wrong PIN / PIN incorrecto"); return; }
+      currentTeacherScope = mine;
+      currentTeacherLoggedIn = mine[0].teacher || "Teacher";
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      renderTeacherDashboard();
+      showView("viewTeacher");
+    }
+
+    function teacherCodes() { return currentTeacherScope.map(c => normalizeCode(c.code)); }
+
+    function isRecord(v) {
+      return v && typeof v === "object" && (v.moduleId || v.studentName || v.score !== undefined);
+    }
+
+    function detachTeacherRefs() {
+      teacherRefs.forEach(r => { try { r.off("value"); } catch (e) {} });
+      teacherRefs = [];
+    }
+
+    function mergeTeacherRecords() {
+      let all = [];
+      Object.keys(teacherRecordsByCode).forEach(k => { all = all.concat(teacherRecordsByCode[k]); });
+      teacherAllRecords = all.concat(teacherLegacyRecords);
+    }
+
+    function readBranch(snapshot, code) {
+      const out = [];
+      snapshot.forEach(childSnap => {
+        const v = childSnap.val();
+        if (isRecord(v)) out.push(Object.assign({}, v, { classCode: v.classCode || code }));
+      });
+      return out;
+    }
+
+    function loadLegacyRecords() {
+      if (!INCLUDE_LEGACY_RECORDS) return Promise.resolve([]);
+      return db.ref(RESULTS_NODE).once("value").then(snapshot => {
+        const out = [];
+        snapshot.forEach(childSnap => {
+          const v = childSnap.val();                  // los hijos que son carpetas de codigo no son registros
+          if (isRecord(v) && !normalizeCode(v.classCode)) out.push(Object.assign({}, v, { classCode: "\u2014" }));
+        });
+        return out;
+      }).catch(() => []);
+    }
+
+    function renderTeacherDashboard() {
+      const codes = teacherCodes();
+      document.getElementById("teacherTitle").innerText = `${currentTeacherLoggedIn} \u00b7 ${codes.join(" + ")}`;
+      renderTeacherTableHead();
+      teacherSearchTerm = "";
+      teacherRecordsByCode = {};
+      teacherLegacyRecords = [];
+      const searchInput = document.getElementById("teacherSearchInput");
+      if (searchInput) searchInput.value = "";
+      const tbody = document.getElementById("teacherTableBody");
+      tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-slate-400 font-bold">Loading data from the cloud...</td></tr>`;
+
+      detachTeacherRefs();
+      loadLegacyRecords().then(list => {
+        teacherLegacyRecords = list;
+        mergeTeacherRecords();
+        paintTeacherTable();
+      });
+
+      codes.forEach(code => {
+        const ref = db.ref(RESULTS_NODE + "/" + code);
+        teacherRefs.push(ref);
+        ref.on("value", (snapshot) => {
+          teacherRecordsByCode[code] = readBranch(snapshot, code);
+          mergeTeacherRecords();
+          paintTeacherTable();
+          updateTeacherLastRefreshed();
+        }, (err) => {
+          console.error("Error reading Firebase results:", err);
+          tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-rose-400 font-bold">\u26a0\ufe0f Could not load the data (${escapeHtml(err.message)}). Check your connection.</td></tr>`;
+        });
+      });
+    }
+
+    function refreshTeacherDashboardNow() {
+      const btn = document.getElementById("teacherRefreshBtn");
+      if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...`; }
+      const jobs = teacherCodes().map(code =>
+        db.ref(RESULTS_NODE + "/" + code).once("value").then(snapshot => {
+          teacherRecordsByCode[code] = readBranch(snapshot, code);
+        }));
+      jobs.push(loadLegacyRecords().then(list => { teacherLegacyRecords = list; }));
+      Promise.all(jobs).then(() => {
+        mergeTeacherRecords();
+        paintTeacherTable();
+        updateTeacherLastRefreshed();
+      }).catch((err) => {
+        alert("Could not refresh: " + err.message);
+      }).then(() => {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Refresh`; }
+      });
+    }
+
+    function updateTeacherLastRefreshed() {
+      const el = document.getElementById("teacherLastRefreshed");
+      if (el) el.innerText = `Last updated: ${new Date().toLocaleTimeString("en-GB")}`;
+    }
+
+    function renderTeacherTableHead() {
+      document.getElementById("teacherTableHead").innerHTML = `
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Surname(s)</th>
+          <th class="p-3">Group</th>
+          <th class="p-3">Code</th>
+          ${MODULES.map(m => `<th class="p-3 text-center">${m.short}</th>`).join("")}
+          <th class="p-3 text-center">Average</th>
+          <th class="p-3 text-center">Result</th>
+          <th class="p-3">Last activity</th>
+        </tr>`;
+    }
+
+    function splitName(r) {
+      const first = (r.firstName || "").toString().trim();
+      const last = (r.lastName || "").toString().trim();
+      if (first || last) return { first: first, last: last };
+      const parts = (r.studentName || "").toString().trim().split(/\s+/);
+      return { first: parts.shift() || "\u2014", last: parts.join(" ") };
+    }
+
+    function buildStudentSummaries(records) {
+      const byStudent = {};
+      records.forEach(r => {
+        const n = splitName(r);
+        const key = ((r.email || (n.first + " " + n.last) || "no_name") + "|" + (r.classCode || "")).toString().trim().toLowerCase();
+        if (!byStudent[key]) {
+          byStudent[key] = { key, firstName: n.first, lastName: n.last, studentName: r.studentName || (n.first + " " + n.last),
+            grade: r.grade || r.group || "\u2014", classCode: r.classCode || "\u2014", email: r.email || "",
+            attempts: [], lastTimestamp: 0, lastDateTime: "" };
+        }
+        const st = byStudent[key];
+        st.attempts.push(r);
+        const ts = Number(r.timestamp) || 0;
+        if (ts >= st.lastTimestamp || !st.lastDateTime) {
+          st.lastTimestamp = ts;
+          st.lastDateTime = r.dateTime || "";
+          if (n.first) st.firstName = n.first;
+          if (n.last) st.lastName = n.last;
+          st.studentName = (st.firstName + " " + st.lastName).trim();
+          if (r.grade || r.group) st.grade = r.grade || r.group;
+        }
+      });
+
+      return Object.values(byStudent).map(st => {
+        const moduleScores = MODULES.map(mod => {
+          const list = st.attempts.filter(a => a.moduleId === mod.id);
+          return list.length ? Math.max(...list.map(a => Number(a.score) || 0)) : null;
+        });
+        const moduleAttempts = MODULES.map(mod => st.attempts.filter(a => a.moduleId === mod.id).length);
+        const completedCount = moduleScores.filter(sc => sc !== null).length;
+        const allDone = completedCount === MODULES.length;
+        const allPassed = allDone && moduleScores.every(sc => sc >= PASS_THRESHOLD);
+        const finalAverage = allDone ? Math.round(moduleScores.reduce((a, sc) => a + sc, 0) / MODULES.length) : null;
+        return Object.assign({}, st, { moduleScores, moduleAttempts, completedCount, allDone, allPassed, finalAverage });
+      });
+    }
+
+    function renderTeacherStats(students) {
+      const total = students.length;
+      const done = students.filter(s => s.allDone);
+      const passed = students.filter(s => s.allPassed).length;
+      const avg = done.length ? Math.round(done.reduce((a, s) => a + s.finalAverage, 0) / done.length) : 0;
+      document.getElementById("teacherStatsGrid").innerHTML = `
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-white">${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Students</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${done.length}/${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Did all modules</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${passed}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Passed (all \u2265 ${PASS_THRESHOLD}%)</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-amber-400">${avg}%</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Group average</div></div>`;
+    }
+
+    function filterTeacherTable(term) {
+      teacherSearchTerm = term || "";
+      paintTeacherTable();
+    }
+
+    function visibleStudents() {
+      let students = buildStudentSummaries(teacherAllRecords);
+      const term = teacherSearchTerm.trim().toLowerCase();
+      if (term) {
+        students = students.filter(s =>
+          (s.firstName || "").toLowerCase().includes(term) ||
+          (s.lastName || "").toLowerCase().includes(term) ||
+          (s.email || "").toLowerCase().includes(term) ||
+          (s.grade || "").toLowerCase().includes(term) ||
+          (s.classCode || "").toLowerCase().includes(term));
+      }
+      students.sort((a, b) =>
+        (a.lastName || "").localeCompare(b.lastName || "", "es") ||
+        (a.firstName || "").localeCompare(b.firstName || "", "es"));
+      return students;
+    }
+
+    function toggleStudentDetail(key) {
+      if (teacherOpenRows.has(key)) teacherOpenRows.delete(key); else teacherOpenRows.add(key);
+      paintTeacherTable();
+    }
+
+    function studentDetailHtml(s) {
+      const attempts = s.attempts.slice().sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+      const header = `
+        <p class="text-sm md:text-base font-bold text-slate-200 mb-2">
+          <i class="fa-solid fa-user text-emerald-400 mr-1"></i> ${escapeHtml(s.firstName)} <span class="text-emerald-300">${escapeHtml(s.lastName)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-amber-300">Group: ${escapeHtml(s.grade)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-slate-400">${escapeHtml(s.email)}</span>
+        </p>`;
+      const body = attempts.map(a => {
+        const ok = Number(a.score) >= PASS_THRESHOLD;
+        const answers = Array.isArray(a.answers) ? a.answers : Object.values(a.answers || {});
+        const lines = answers.map((x, i) => `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-3 py-1 border-b border-slate-800/60 text-xs md:text-sm">
+            <span class="text-slate-200">${i + 1}. ${escapeHtml((x.text || "").replace("___", "____"))} <span class="text-amber-400">(${escapeHtml(x.hint || "")})</span></span>
+            <span class="${x.ok ? "text-emerald-300" : "text-rose-300"} font-mono">${x.ok ? "\u2714" : "\u2718"} ${escapeHtml(x.user) || "\u2014"}</span>
+            <span class="text-slate-400 font-mono">${x.ok ? "" : "\u2192 " + escapeHtml(x.correct)}</span>
+          </div>`).join("");
+        return `
+          <details class="bg-slate-950 border ${ok ? "border-emerald-500/30" : "border-rose-500/30"} rounded-xl p-3 mb-2">
+            <summary class="cursor-pointer font-bold text-sm md:text-base flex flex-wrap gap-3 items-center">
+              <span class="text-white">${escapeHtml(a.topic || a.moduleId)}</span>
+              <span class="${ok ? "text-emerald-400" : "text-rose-400"} font-black">${a.score}% (${a.rawScore || ""})</span>
+              <span class="text-slate-500 text-xs">${escapeHtml(a.dateTime || "")} \u00b7 ${escapeHtml(a.timeSpent || "")}</span>
+            </summary>
+            <div class="mt-2">${lines || '<p class="text-slate-500 text-sm">No answer details saved.</p>'}</div>
+          </details>`;
+      }).join("");
+      return header + body;
+    }
+
+    function paintTeacherTable() {
+      const tbody = document.getElementById("teacherTableBody");
+      renderTeacherStats(buildStudentSummaries(teacherAllRecords));
+      const students = visibleStudents();
+
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-slate-500 font-bold">
+          ${teacherAllRecords.length === 0 ? "No attempts recorded for your class code yet." : "No student matches your search."}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      students.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/50 transition cursor-pointer";
+        tr.onclick = () => toggleStudentDetail(s.key);
+
+        const moduleCells = s.moduleScores.map((score, i) => {
+          if (score === null) return `<td class="p-3 text-center text-slate-600">\u2014</td>`;
+          const cls = score >= PASS_THRESHOLD ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400";
+          return `<td class="p-3 text-center"><span class="inline-block px-2 py-1 rounded-lg font-black text-xs ${cls}">${score}%</span><span class="block text-[10px] text-slate-500 mt-1">${s.moduleAttempts[i]} att.</span></td>`;
+        }).join("");
+
+        const avgCell = s.allDone
+          ? `<span class="font-black text-white">${s.finalAverage}%</span>`
+          : `<span class="font-bold text-slate-400">${s.completedCount}/${MODULES.length}</span>`;
+        const resultCell = !s.allDone
+          ? `<span class="text-xs font-bold text-slate-500">In progress</span>`
+          : (s.allPassed ? `<span class="text-xs font-black text-emerald-400">\u2705 Passed</span>` : `<span class="text-xs font-black text-rose-400">\u26a0\ufe0f Not passed</span>`);
+        const open = teacherOpenRows.has(s.key);
+
+        tr.innerHTML = `
+          <td class="p-3 font-extrabold text-white"><i class="fa-solid ${open ? "fa-chevron-down" : "fa-chevron-right"} text-slate-500 text-xs mr-1"></i>${escapeHtml(s.firstName)}</td>
+          <td class="p-3 font-extrabold text-emerald-300">${escapeHtml(s.lastName)}<span class="block text-[11px] text-slate-500 font-medium">${escapeHtml(s.email)}</span></td>
+          <td class="p-3 text-slate-300 font-bold">${escapeHtml(s.grade || "\u2014")}</td>
+          <td class="p-3 text-amber-300/80 font-mono text-xs">${escapeHtml(s.classCode || "\u2014")}</td>
+          ${moduleCells}
+          <td class="p-3 text-center">${avgCell}</td>
+          <td class="p-3 text-center">${resultCell}</td>
+          <td class="p-3 text-slate-400 text-xs">${escapeHtml(s.lastDateTime || "\u2014")}</td>`;
+        tbody.appendChild(tr);
+
+        if (open) {
+          const dr = document.createElement("tr");
+          dr.innerHTML = `<td colspan="${TEACHER_COLSPAN}" class="p-3 md:p-4 bg-slate-900/60">${studentDetailHtml(s)}</td>`;
+          tbody.appendChild(dr);
+        }
+      });
+    }
+
+    function exportTeacherCsv() {
+      const students = visibleStudents();
+      const esc = v => `"${(v === null || v === undefined ? "" : String(v)).replace(/"/g, '""')}"`;
+      const header = ["Name", "Surname(s)", "Group", "Class code", "Email",
+        ...MODULES.map(m => m.short + " (best %)"), ...MODULES.map(m => m.short + " (attempts)"),
+        "Average %", "Result", "Last activity"];
+      const rows = students.map(s => [
+        s.firstName, s.lastName, s.grade, s.classCode, s.email,
+        ...s.moduleScores.map(v => v === null ? "" : v),
+        ...s.moduleAttempts,
+        s.allDone ? s.finalAverage : "",
+        !s.allDone ? "In progress" : (s.allPassed ? "Passed" : "Not passed"),
+        s.lastDateTime
+      ]);
+      const csv = "\ufeff" + [header, ...rows].map(r => r.map(esc).join(";")).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `irregular_verbs_${teacherCodes().join("_")}_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>
