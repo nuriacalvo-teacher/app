@@ -63,27 +63,49 @@
   }
   const db = firebase.database();
 
-  // ==========================================================
-  //  CONFIGURACION DE ACCESO  ·  lo unico que hay que tocar
-  // ==========================================================
+  // =====================================================================
+  //   C O N F I G U R A C I O N   ->   esto es lo unico que hay que tocar
+  // =====================================================================
+
+  // (1) TU NOMBRE y TU CONTRASENA del boton gris "Teacher" de arriba a la
+  //     derecha. Con ella entras al panel de resultados. Cambiala cuando
+  //     quieras: no hay que avisar a nadie, los alumnos no la usan.
+  window.TEACHER_NAME = "Nuria Calvo";
+  window.TEACHER_PIN  = "U7ACW49U";
+
+  // (2) LOS CODIGOS QUE REPARTES A TUS ALUMNOS: uno por grupo.
+  //     Borra las lineas de los grupos que no des este curso.
+  //     Si cambias un codigo, ese grupo empieza de cero (los resultados
+  //     viejos siguen guardados bajo el codigo antiguo).
+  window.CLASS_CODES = [
+    "1ESO-PWDJ",
+    "2ESO-XH9J",
+    "3ESO-9Q3H",
+    "4ESO-XAXD",
+    "1BTO-976F",
+    "2BTO-KMJR"
+  ];
+
+  // (3) MODO INVITADO: quien no tenga codigo (otros profesores y sus
+  //     alumnos) puede hacer los ejercicios, ver su nota e imprimirla,
+  //     pero NO se guarda nada en la nube: cero gasto de tu Firebase.
+  //     Ponlo en false si quieres que sin codigo no se pueda entrar.
+  window.ALLOW_GUEST_MODE = true;
+
+  // (4) AVANZADO (normalmente se deja vacio): si un companero quiere que
+  //     SUS resultados se guarden en TU base de datos, anade aqui su
+  //     codigo y su contrasena. Solo vera lo suyo y tu solo veras lo tuyo.
+  window.EXTRA_TEACHERS = [
+    // { code: "MARTA26", teacher: "Marta", pin: "supin2026" }
+  ];
+
+  // ---- a partir de aqui no hace falta tocar nada ----
   // Nodo propio de esta app (no se mezcla con las demas apps).
   const RESULTS_NODE = "irregular_verbs";
 
-  // Cada profesor/a tiene su CODIGO DE CLASE y su PIN.
-  //  - El alumno escribe el codigo al entrar: su trabajo se guarda SOLO
-  //    dentro de la carpeta de ese codigo, nunca se mezcla con otro grupo.
-  //  - El profesor abre su panel con su PIN y solo ve SU codigo.
-  // Si un companero quiere usar la app con sus alumnos, se le anade aqui
-  // una linea con su codigo y su PIN: sus resultados no te llegaran a ti.
-  window.CLASSES = [
-    { code: "NCALVO26", teacher: "Nuria Calvo", pin: "nuria123" }
-    // , { code: "OTRO26", teacher: "Nombre del companero", pin: "supin2026" }
-  ];
-
-  // true  = quien no tenga codigo puede practicar en MODO INVITADO:
-  //         ve sus notas y puede imprimirlas, pero NO se guarda nada en la nube.
-  // false = sin codigo no se puede entrar.
-  window.ALLOW_GUEST_MODE = true;
+  window.CLASSES = window.CLASS_CODES
+    .map(c => ({ code: c, teacher: window.TEACHER_NAME, pin: window.TEACHER_PIN }))
+    .concat(window.EXTRA_TEACHERS || []);
 </script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen gradient-bg flex flex-col selection:bg-emerald-500 selection:text-white">
@@ -167,6 +189,7 @@
 
         <div id="guestBox" class="hidden pt-2 text-center border-t border-slate-800 mt-2">
           <p class="text-sm text-slate-400 mt-4 mb-3">Don’t have a code? You can still practise: your marks appear on screen and you can print them, but <strong>nothing is sent to any teacher</strong>.</p>
+          <p class="text-xs text-slate-500 mb-3 leading-snug"><i class="fa-solid fa-circle-info"></i> <strong>Other teachers:</strong> your students are welcome to use this app in guest mode. They get every exercise and their own report on screen — it just isn’t stored, so nothing reaches another teacher’s marks list.</p>
           <button type="button" onclick="enterGuestMode()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-base md:text-lg py-4 rounded-2xl transition flex items-center justify-center gap-3">
             <i class="fa-solid fa-user-clock"></i> Practise without a code
           </button>
@@ -291,7 +314,7 @@
       <div class="flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
           <h2 class="text-3xl md:text-4xl font-black text-white" id="teacherTitle">Teacher Dashboard</h2>
-          <p class="text-base text-slate-400">One row per student · click a student to see every attempt and every answer they wrote.</p>
+          <p id="teacherSubtitle" class="text-base text-slate-400">One row per student · click a student to see every attempt and every answer they wrote.</p>
         </div>
         <button onclick="goHome()" class="text-sm md:text-base bg-slate-800 text-slate-300 font-bold px-5 py-3 rounded-xl">Exit</button>
       </div>
@@ -1583,7 +1606,9 @@
 
     function renderTeacherDashboard() {
       const codes = teacherCodes();
-      document.getElementById("teacherTitle").innerText = `${currentTeacherLoggedIn} \u00b7 ${codes.join(" + ")}`;
+      document.getElementById("teacherTitle").innerText = currentTeacherLoggedIn;
+      const sub = document.getElementById("teacherSubtitle");
+      if (sub) sub.innerHTML = `Class code${codes.length > 1 ? "s" : ""}: <span class="text-amber-300 font-bold">${escapeHtml(codes.join(" \u00b7 "))}</span><br>One row per student \u00b7 click a student to see every attempt and every answer they wrote.`;
       renderTeacherTableHead();
       teacherSearchTerm = "";
       teacherRecordsByCode = {};

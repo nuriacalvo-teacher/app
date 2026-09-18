@@ -1,63 +1,78 @@
-# Irregular Verbs · Fill in the Gaps
+# Irregular Verbs · Fill in the Gaps — guía rápida
 
-App de verbos irregulares (5 módulos de 50 frases, aprobado con el 90 %).
+## 1. Qué subo a GitHub
 
-## Qué pide al alumno
+Un solo archivo: **`index.html`** (esta carpeta). No hace falta nada más.
 
-Nombre, apellido(s), email, **grupo** (1ESO, 2ESO, 3ESO, 4ESO, 1BTO, 2BTO) y
-**código de clase**. Ya no se pide el nombre de la profesora.
+Ruta en el repositorio: `verbos-irregulares/index.html`
+URL que queda: `https://nuriacalvo-teacher.github.io/app/verbos-irregulares/`
 
-## Cómo funciona el código de clase
+Pasos desde la web de GitHub (sin usar git):
 
-Todo se configura en un único bloque, arriba del archivo `index.html`
-(busca `CONFIGURACION DE ACCESO`):
+1. Entra en `github.com/nuriacalvo-teacher/app`.
+2. **Add file → Upload files**.
+3. Arrastra el `index.html`. En la casilla del nombre escribe delante
+   `verbos-irregulares/` para que quede dentro de esa carpeta.
+4. **Commit changes**.
+5. Solo la primera vez: **Settings → Pages → Source: Deploy from a branch →
+   `main` / `root` → Save**. Tarda un par de minutos en publicarse.
 
-```js
-window.CLASSES = [
-  { code: "NCALVO26", teacher: "Nuria Calvo", pin: "nuria123" }
-];
-window.ALLOW_GUEST_MODE = true;
-```
+Para actualizarla más adelante: repite el paso 2 con el archivo nuevo y
+GitHub te preguntará si quieres reemplazar el anterior.
 
-- **`code`**: lo que escribe el alumno al entrar. Sus resultados se guardan
-  solo dentro de esa carpeta (`irregular_verbs/NCALVO26/...`), así que nunca
-  se mezclan con los de otro grupo.
-- **`pin`**: la contraseña del botón ⚙️ *Teacher*. Cada profesor/a solo ve
-  los resultados de **su** código.
-- Si un compañero quiere usar la app con sus alumnos, se le añade aquí una
-  línea con su código y su PIN: su trabajo no te llegará a ti.
-- **`ALLOW_GUEST_MODE = true`**: quien no tenga código puede practicar igual.
-  Ve sus notas en pantalla y puede imprimirlas, pero **no se guarda nada en
-  la nube** ni le llega a nadie. Pon `false` si prefieres que sin código no
-  se pueda entrar.
+## 2. Los códigos de tus alumnos
 
-Cambia el PIN antes de publicar la app: está escrito dentro del HTML y
-cualquiera que mire el código fuente puede verlo. Sirve para separar el
-trabajo de cada clase, no para guardar datos sensibles.
+Están en el archivo, arriba del todo (busca `C O N F I G U R A C I O N`).
+Uno por grupo:
 
-## Resultados
+| Grupo | Código |
+|-------|--------|
+| 1º ESO | `1ESO-PWDJ` |
+| 2º ESO | `2ESO-XH9J` |
+| 3º ESO | `3ESO-9Q3H` |
+| 4º ESO | `4ESO-XAXD` |
+| 1º BTO | `1BTO-976F` |
+| 2º BTO | `2BTO-KMJR` |
 
-Nombre, apellidos y grupo aparecen en el panel de resultado de cada módulo,
-en la corrección, en el informe final y en el panel del profesor (que además
-exporta CSV con esas columnas).
+- Se dictan en clase o se pegan en Google Classroom. No llevan letras que se
+  confundan (ni O ni 0, ni I ni 1, ni S ni 5).
+- Borra del archivo las líneas de los grupos que no des.
+- Si un código se filtra, cámbialo por otro: los resultados antiguos siguen
+  guardados bajo el código viejo y los nuevos van al nuevo.
+- **PIN del panel del profesor: `U7ACW49U`** (botón ⚙️ Teacher). Solo lo usas
+  tú; cámbialo cuando quieras en la línea `TEACHER_PIN`.
 
-## Reglas recomendadas en Firebase
+## 3. Otros profesores
 
-Para que un grupo no pueda leer los datos de otro:
+No tienen que tocar nada: entran en la misma web y pulsan **“Practise without
+a code”**. Sus alumnos hacen los 5 módulos, ven su nota y su informe, y pueden
+imprimirlo o hacer captura, pero **no se guarda nada en tu Firebase**: ni un
+solo dato, ni una conexión. A ti no te llega nada de nadie que no tenga tu
+código.
 
-```json
-{
-  "rules": {
-    "irregular_verbs": {
-      "$code": {
-        ".write": true,
-        ".read": true,
-        ".indexOn": "email"
-      }
-    }
-  }
-}
-```
+Si alguna compañera sí quiere recoger el trabajo de sus alumnos, tiene dos
+caminos:
 
-(Con `.read` abierto los datos siguen siendo legibles por quien conozca la
-ruta; para cerrarlo del todo haría falta autenticación de Firebase.)
+- **Compartir tu base de datos**: le añades una línea en `EXTRA_TEACHERS` con
+  su código y su contraseña. Ella solo verá lo suyo y tú solo lo tuyo.
+- **Tener la suya propia** (recomendado si son muchos grupos): se copia el
+  `index.html`, crea su proyecto en Firebase y cambia el bloque
+  `firebaseConfig`. Sus datos no pasan por tu cuenta.
+
+## 4. Reglas de Firebase (recomendado)
+
+Copia `reglas-firebase.json` en *Firebase → Realtime Database → Reglas →
+Publicar*. Con eso:
+
+- solo se puede escribir dentro de tus seis códigos;
+- un intento guardado **no se puede borrar ni modificar** desde la web;
+- nadie puede leer la raíz de la base de datos para husmear.
+
+Cuando cambies un código, acuérdate de cambiarlo también en las dos líneas
+donde aparece dentro de ese archivo.
+
+## 5. Mantenimiento de fin de curso
+
+Exporta el CSV desde el panel (botón *Export CSV*) y borra la carpeta del
+curso en la consola de Firebase. Cada intento ocupa ~7 KB: con el plan
+gratuito (1 GB) caben unos 150.000, así que no vas a quedarte sin espacio.
