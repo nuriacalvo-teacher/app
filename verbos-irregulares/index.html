@@ -71,20 +71,26 @@
   //     derecha. Con ella entras al panel de resultados. Cambiala cuando
   //     quieras: no hay que avisar a nadie, los alumnos no la usan.
   window.TEACHER_NAME = "Nuria Calvo";
-  window.TEACHER_PIN  = "U7ACW49U";
+  window.TEACHER_PIN  = "nuria123";
 
   // (2) LOS CODIGOS QUE REPARTES A TUS ALUMNOS: uno por grupo.
   //     Borra las lineas de los grupos que no des este curso.
   //     Si cambias un codigo, ese grupo empieza de cero (los resultados
   //     viejos siguen guardados bajo el codigo antiguo).
+  //     Un grupo puede tener varios codigos (3 ESO A/B y 3 ESO B/C).
   window.CLASS_CODES = [
     "1ESO-PWDJ",
     "2ESO-XH9J",
-    "3ESO-9Q3H",
+    "E3AB",        // 3 ESO A/B
+    "E3BC",        // 3 ESO B/C
     "4ESO-XAXD",
     "1BTO-976F",
     "2BTO-KMJR"
   ];
+
+  //     Aviso que ven los alumnos debajo de la casilla del codigo.
+  //     Dejalo en "" si no quieres que aparezca nada.
+  window.CODE_HINT = "3rd ESO: write E3AB or E3BC, depending on your class.";
 
   // (3) MODO INVITADO: quien no tenga codigo (otros profesores y sus
   //     alumnos) puede hacer los ejercicios, ver su nota e imprimirla,
@@ -181,6 +187,7 @@
           <p class="text-xs md:text-sm text-slate-400 mt-2 leading-snug">
             Your own teacher gives you this code. Your work is sent <strong>only</strong> to that teacher.
           </p>
+          <p id="regCodeHint" class="hidden text-sm font-bold text-amber-300 mt-2"></p>
           <p id="regCodeError" class="hidden text-sm font-bold text-rose-400 mt-2"></p>
         </div>
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3 mt-4">
@@ -975,6 +982,12 @@
     function initApp() {
       const guestBox = document.getElementById("guestBox");
       if (guestBox && window.ALLOW_GUEST_MODE) guestBox.classList.remove("hidden");
+
+      const hint = document.getElementById("regCodeHint");
+      if (hint && window.CODE_HINT) {
+        hint.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${escapeHtml(window.CODE_HINT)}`;
+        hint.classList.remove("hidden");
+      }
 
       const savedUser = storageGet("englishpro_iv_user");
       if (savedUser) {

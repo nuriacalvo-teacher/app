@@ -29,17 +29,25 @@ Uno por grupo:
 |-------|--------|
 | 1º ESO | `1ESO-PWDJ` |
 | 2º ESO | `2ESO-XH9J` |
-| 3º ESO | `3ESO-9Q3H` |
+| **3º ESO A/B** | **`E3AB`** |
+| **3º ESO B/C** | **`E3BC`** |
 | 4º ESO | `4ESO-XAXD` |
 | 1º BTO | `1BTO-976F` |
 | 2º BTO | `2BTO-KMJR` |
 
-- Se dictan en clase o se pegan en Google Classroom. No llevan letras que se
-  confundan (ni O ni 0, ni I ni 1, ni S ni 5).
+Un mismo grupo puede tener varios códigos: los de 3º ESO eligen `3ESO` en la
+casilla del grupo y luego escriben `E3AB` o `E3BC` según su clase. En el panel
+del profesor los distingues por la columna **Code**. Debajo de la casilla del
+código los alumnos ven el aviso que hay en `CODE_HINT`, que puedes cambiar.
+
+- Se dictan en clase o se pegan en Google Classroom.
+- El **curso** (1ESO … 2BTO) lo elige siempre el alumno en el desplegable,
+  tenga código o no: los alumnos de otros profesores también dejan constancia
+  de su curso en su informe.
 - Borra del archivo las líneas de los grupos que no des.
 - Si un código se filtra, cámbialo por otro: los resultados antiguos siguen
   guardados bajo el código viejo y los nuevos van al nuevo.
-- **PIN del panel del profesor: `U7ACW49U`** (botón ⚙️ Teacher). Solo lo usas
+- **PIN del panel del profesor: `nuria123`** (botón ⚙️ Teacher). Solo lo usas
   tú; cámbialo cuando quieras en la línea `TEACHER_PIN`.
 
 ## 3. Otros profesores
@@ -64,7 +72,7 @@ caminos:
 Copia `reglas-firebase.json` en *Firebase → Realtime Database → Reglas →
 Publicar*. Con eso:
 
-- solo se puede escribir dentro de tus seis códigos;
+- solo se puede escribir dentro de tus siete códigos;
 - un intento guardado **no se puede borrar ni modificar** desde la web;
 - nadie puede leer la raíz de la base de datos para husmear.
 

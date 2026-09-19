@@ -2,13 +2,12 @@
   "rules": {
     ".read": false,
     ".write": false,
-
     "irregular_verbs": {
       "$codigo": {
-        ".read": "$codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-9Q3H|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+        ".read": "$codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|E3AB|E3BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
         ".indexOn": "email",
         "$intento": {
-          ".write": "!data.exists() && newData.exists() && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-9Q3H|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+          ".write": "!data.exists() && newData.exists() && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|E3AB|E3BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
           ".validate": "newData.hasChildren(['firstName','lastName','grade','moduleId','score'])"
         }
       }
