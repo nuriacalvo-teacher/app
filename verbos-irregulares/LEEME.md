@@ -22,43 +22,51 @@ superan las 15 unidades.
 ## Nivel 3: frases cortas y corrección tolerante
 
 Son **42 frases por módulo**: cada verbo aparece una vez en pasado y otra en
-participio, en frases de 4 o 5 palabras y con vocabulario básico (nada de
-subordinadas ni de palabras raras).
+participio, en frases de 4 o 5 palabras y con vocabulario básico.
 
-    Hice los deberes. (do)
-    Use do in the past simple.
-    → I did my homework.
+    Rompí un vaso hace dos días.  (break)
+    PAST SIMPLE
+    → I broke a glass two days ago.
 
-**El verbo que hay que usar se ve siempre entre paréntesis**, junto con el
-tiempo que toca, para que nadie falle por elegir otro verbo distinto.
+**El verbo se ve entre paréntesis** y debajo solo pone *Past simple* o
+*Present perfect*: el alumno tiene que pensar la forma, que de eso va el
+ejercicio. El botón **💡 Vocabulary** da únicamente las palabras de la frase
+(*nariz = nose*), **nunca la forma del verbo**.
 
-La corrección acepta:
+### Practican también ago / for / since
+
+48 de las 210 frases llevan marca temporal a propósito:
+
+- **ago** (27 frases, siempre con past simple): *Rompí un vaso **hace dos
+  días** → two days ago*.
+- **for** (11 frases, con present perfect): *He tenido esta bici **desde
+  hace** tres años → for three years*; *durante dos horas → for two hours*.
+- **since** (10 frases, con present perfect): *La conozco **desde** 2020 →
+  since 2020*; *desde el lunes → since Monday*.
+
+Confundir *for* con *since* **sí cuenta como error**, para que sirva de
+práctica. El glosario traduce las tres marcas para ayudar.
+
+### Qué acepta como correcto
 
 - **Sinónimos**: *phone / mobile / cell phone*, *film / movie*, *bike /
   bicycle*, *mum / mom / mother*, *photos / pictures*, *present / gift*,
-  *came / arrived*, *got / received*, *thief / robber*, *a lot of / lots of /
-  many*… Están en la lista `SWAPS` del archivo y se pueden ampliar.
-- **Inglés británico y americano**, en palabras y en verbos: *centre /
-  center*, *burnt / burned*, *learnt / learned*, *got / gotten*…
-- **Contracciones**: *I have = I've*, *she has = she's*.
-- **Números en cifra**: *five = 5*.
+  *came / arrived*, *got / received*, *thief / robber*, *a lot of / lots
+  of / many*… Están en la lista `SWAPS` y se pueden ampliar.
+- **Inglés británico y americano**, también en los verbos: *burnt / burned*,
+  *learnt / learned*, *got / gotten*, *centre / center*.
+- **Contracciones** (*I have = I've*) y **números en cifra** (*five = 5*).
 - **El orden**: la expresión de tiempo puede ir delante o detrás, y valen
   igual *“I lent Sara my bike”* y *“I lent my bike to Sara”*. Los artículos y
   las preposiciones sueltas no hacen fallar la frase.
-- **Traducciones alternativas escritas a mano** en las frases que las admiten:
-  *“My parents allowed me to go out”* vale por *“let me go out”*, *“stopped
-  smoking”* por *“quit smoking”*, *“I set the table”* por *“I laid the
-  table”*…
+- **Traducciones alternativas escritas a mano** donde tienen sentido:
+  *allowed me to go out* por *let me go out*, *stopped / gave up smoking* por
+  *quit smoking*, *I set the table* por *I laid the table*…
 - Mayúsculas, comas, apóstrofes y el punto final **no cuentan**.
 
-Lo que **sí** sigue siendo error es el verbo o el tiempo: *“I break a glass
-yesterday”*, *“He broke the window”* cuando tocaba el participio o *“I never
-ate sushi”* se corrigen como incorrectos. Está comprobado además que ninguna
-frase se puede confundir con otra.
-
-**Pista (💡 Hint)**: da la forma exacta del verbo y el vocabulario de esa
-frase (*deberes = homework*). El diccionario está en `GLOSS`, con 340
-entradas, y también se puede ampliar.
+Lo que **sí** sigue siendo error es el verbo y el tiempo: *“I break a glass
+two days ago”*, *“He broke the window”* cuando tocaba participio o *“I never
+ate sushi”*. Comprobado también que ninguna frase se puede confundir con otra.
 
 ## Acceso
 
