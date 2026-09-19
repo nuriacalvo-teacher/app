@@ -1,84 +1,67 @@
-# Irregular Verbs · Fill in the Gaps — guía rápida
+# Irregular Verbs · 5 módulos × 3 niveles
 
-## 1. Qué subo a GitHub
+App principal de verbos irregulares. Los **105 verbos** están repartidos en
+**5 módulos de 21 verbos** (alfabéticos: *be → do*, *draw → hear*, *hide → pay*,
+*put → sleep*, *smell → write*), y cada módulo se trabaja en **tres niveles de
+dificultad crecientes sobre los mismos verbos**:
 
-Un solo archivo: **`index.html`** (esta carpeta). No hace falta nada más.
+| Nivel | Qué hace el alumno | Preguntas | Aprueba con |
+|-------|--------------------|-----------|-------------|
+| **1 · The three forms** | Ve el verbo en español y escribe infinitivo, pasado y participio | 21 | 90 % |
+| **2 · Fill in the gaps** | Completa frases con el verbo en pasado o participio | 50 | 90 % |
+| **3 · Spanish into English** | Traduce al inglés esas mismas frases enteras | 50 | 70 % |
 
-Ruta en el repositorio: `verbos-irregulares/index.html`
-URL que queda: `https://nuriacalvo-teacher.github.io/app/verbos-irregulares/`
+Son **15 unidades** independientes (605 preguntas en total). Cada una tiene su
+nota, su cronómetro, su corrección y se guarda por separado, así que se pueden
+mandar por separado: “esta semana, nivel 1 de los módulos 1 y 2”.
 
-Pasos desde la web de GitHub (sin usar git):
+El panel del alumno muestra los tres niveles en tres bloques, con un contador
+*x / 5 aprobados* en cada uno. El informe final solo sale “aprobado” cuando se
+superan las 15 unidades.
 
-1. Entra en `github.com/nuriacalvo-teacher/app`.
-2. **Add file → Upload files**.
-3. Arrastra el `index.html`. En la casilla del nombre escribe delante
-   `verbos-irregulares/` para que quede dentro de esa carpeta.
-4. **Commit changes**.
-5. Solo la primera vez: **Settings → Pages → Source: Deploy from a branch →
-   `main` / `root` → Save**. Tarda un par de minutos en publicarse.
+## Nivel 3: qué acepta como correcto
 
-Para actualizarla más adelante: repite el paso 2 con el archivo nuevo y
-GitHub te preguntará si quieres reemplazar el anterior.
+Las 250 frases del nivel 2 están traducidas al español; el alumno escribe la
+frase inglesa completa. La corrección es generosa a propósito:
 
-## 2. Los códigos de tus alumnos
+- **Sinónimos**: *phone / mobile / cell phone*, *film / movie*, *bike /
+  bicycle*, *mum / mom / mother*, *a lot of / lots of / many*, *photos /
+  pictures*, *children / kids*, *great / fantastic / brilliant*, *match /
+  game*… La lista está en `SWAPS`, dentro del archivo, y se pueden añadir más
+  líneas sin tocar nada más.
+- **Inglés británico y americano**: *centre / center*, *favourite / favorite*,
+  *burnt / burned*, *learnt / learned*, *got / gotten*…
+- **Contracciones**: *I have = I've*, *she has = she's*…
+- **Números**: *eighteen = 18*.
+- **La expresión de tiempo puede ir delante o detrás**: “Yesterday I was
+  tired…” = “I was tired… yesterday”.
+- Mayúsculas, comas, apóstrofes y el punto final **no cuentan**.
 
-Están en el archivo, arriba del todo (busca `C O N F I G U R A C I O N`).
-Uno por grupo:
+Lo que **no** se perdona es el verbo: *“Tom break his arm”* o *“I have never
+ate”* siguen siendo incorrectos, que es de lo que va la app. Está comprobado
+además que ninguna frase se puede confundir con otra al corregir.
 
-Los códigos de verdad están escritos en el propio `index.html`, arriba del
-todo, en `CLASS_CODES`. Ahí es donde los cambias.
+**Pista (💡 Hint)**: da el verbo que hace falta con su forma y el vocabulario
+de esa frase concreta (*rodilla = knee*, *nevera = fridge*…). El diccionario
+está en `GLOSS` y también se puede ampliar.
 
-- Un mismo grupo puede tener **varios códigos**. Por ejemplo, las dos clases
-  de 3º ESO: las dos eligen `3ESO` en el desplegable del curso y cada alumno
-  escribe el código de su clase. **La web no dice en ningún sitio cuál es
-  cuál**: el código se lo das tú en clase o por Google Classroom.
-- En el panel del profesor los distingues por la columna **Code**, o
-  escribiendo el código en el buscador para ver solo esa clase.
-- El **curso** (1ESO … 2BTO) lo elige siempre el alumno en el desplegable,
-  tenga código o no: los alumnos de otros profesores también dejan constancia
-  de su curso en su informe.
-- Si un código se filtra, cámbialo por otro: los resultados antiguos siguen
-  guardados bajo el código viejo y los nuevos van al nuevo.
-- El **PIN del panel** (botón ⚙️ Teacher) está en la línea `TEACHER_PIN`.
-  Solo lo usas tú.
-- `window.CODE_HINT` permite poner un aviso debajo de la casilla del código.
-  Déjalo vacío (`""`) para que no aparezca nada.
+## Acceso
 
-A GitHub solo hace falta subir el `index.html`. Este `LEEME.md` y el
-`reglas-firebase.json` son para ti; si el repositorio es público, mejor no
-los subas.
+Igual que en el resto de tus apps: nombre, apellidos, email, grupo
+(1ESO…2BTO) y código de clase, con modo invitado para los demás profesores.
+Mismos códigos y mismo PIN, en el bloque `C O N F I G U R A C I O N` de
+`index.html`. Los resultados siguen yendo al nodo `irregular_verbs`.
 
-## 3. Otros profesores
+## Panel del profesor
 
-No tienen que tocar nada: entran en la misma web y pulsan **“Practise without
-a code”**. Sus alumnos hacen los 5 módulos, ven su nota y su informe, y pueden
-imprimirlo o hacer captura, pero **no se guarda nada en tu Firebase**: ni un
-solo dato, ni una conexión. A ti no te llega nada de nadie que no tenga tu
-código.
+Una fila por alumno y **una columna por nivel** (L1, L2, L3) con
+*aprobados / 5* y la media de ese nivel: se ve de un vistazo quién se ha
+quedado atascado y en qué dificultad. Al pinchar en el alumno salen los 15
+intentos con todas sus respuestas. El CSV exporta las 15 notas.
 
-Si alguna compañera sí quiere recoger el trabajo de sus alumnos, tiene dos
-caminos:
+## Correcciones de contenido
 
-- **Compartir tu base de datos**: le añades una línea en `EXTRA_TEACHERS` con
-  su código y su contraseña. Ella solo verá lo suyo y tú solo lo tuyo.
-- **Tener la suya propia** (recomendado si son muchos grupos): se copia el
-  `index.html`, crea su proyecto en Firebase y cambia el bloque
-  `firebaseConfig`. Sus datos no pasan por tu cuenta.
-
-## 4. Reglas de Firebase (recomendado)
-
-Copia `reglas-firebase.json` (está en la **raíz del repositorio** y cubre
-todas las apps) en *Firebase → Realtime Database → Reglas → Publicar*. Con eso:
-
-- solo se puede escribir dentro de tus siete códigos;
-- un intento guardado **no se puede borrar ni modificar** desde la web;
-- nadie puede leer la raíz de la base de datos para husmear.
-
-Cuando cambies un código, acuérdate de cambiarlo también en las dos líneas
-donde aparece dentro de ese archivo.
-
-## 5. Mantenimiento de fin de curso
-
-Exporta el CSV desde el panel (botón *Export CSV*) y borra la carpeta del
-curso en la consola de Firebase. Cada intento ocupa ~7 KB: con el plan
-gratuito (1 GB) caben unos 150.000, así que no vas a quedarte sin espacio.
+- *hang* ahora da como forma principal **hung** (antes *hanged*, que solo se
+  usa para “ahorcar”).
+- El nivel 2 conserva las 50 frases por módulo: los 21 verbos en pasado y en
+  participio (42) más 8 frases de refuerzo ya existentes.

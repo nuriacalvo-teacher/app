@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>English Grammar Academy | Irregular Verbs · Fill in the Gaps</title>
+  <title>English Grammar Academy | Irregular Verbs · 5 Modules · 3 Levels</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -30,6 +30,9 @@
       max-width: 100%;
     }
     .gap-input:focus { border-bottom-color: #34d399; background: #0b1220; }
+    .gap-input.wide { display: block; width: 100%; min-width: 0; text-align: left; border: 2px solid #334155; border-radius: 14px; padding: 12px 16px; margin: 0; }
+    .gap-input.wide:focus { border-color: #34d399; }
+    .gap-input.wide::placeholder { color: #475569; font-weight: 600; }
     .gap-ok { border-bottom-color: #10b981 !important; color: #6ee7b7 !important; background: rgba(6,78,59,.45) !important; }
     .gap-ko { border-bottom-color: #f43f5e !important; color: #fda4af !important; background: rgba(76,5,25,.45) !important; }
 
@@ -133,7 +136,7 @@
         </div>
         <div>
           <h1 class="font-black text-2xl md:text-3xl text-white tracking-wider">ENGLISH<span class="text-emerald-400">PRO</span></h1>
-          <p class="text-sm font-semibold text-slate-400">Irregular Verbs · Fill in the Gaps</p>
+          <p class="text-sm font-semibold text-slate-400">Irregular Verbs · 5 modules · 3 levels</p>
         </div>
       </div>
 
@@ -154,8 +157,8 @@
     <section id="viewRegistration" class="space-y-6 max-w-xl mx-auto w-full py-6">
       <div class="text-center space-y-3">
         <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full text-xs md:text-sm font-extrabold uppercase tracking-widest border border-emerald-500/30">Student Portal</span>
-        <h2 class="text-3xl md:text-5xl font-black text-white">Irregular Verbs! ✍️</h2>
-        <p class="text-slate-300 text-base md:text-xl">Fill in the gaps with the <strong>past simple</strong> or the <strong>past participle</strong> of the verb in brackets. No options. Just like in the exam.</p>
+        <h2 class="text-3xl md:text-5xl font-black text-white">Irregular Verbs! 🇬🇧</h2>
+        <p class="text-slate-300 text-base md:text-xl"><strong>5 modules</strong> of 21 verbs, each one with <strong>3 levels</strong>: the three forms, fill in the gaps and translate into English.</p>
       </div>
 
       <form id="regForm" onsubmit="handleRegistration(event)" class="bg-slate-900/95 border-2 border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl space-y-5">
@@ -212,14 +215,14 @@
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-900/90 border-2 border-slate-800 p-6 md:p-8 rounded-3xl">
         <div>
           <h2 class="text-3xl md:text-5xl font-black text-white" id="welcomeUserText">Hi!</h2>
-          <p class="text-slate-300 text-lg md:text-xl mt-1">There are <strong>5 modules</strong> of 50 sentences. Pass each one with at least <strong class="text-amber-400">90%</strong> and send a <strong>screenshot</strong> of your result to your teacher.</p>
+          <p class="text-slate-300 text-lg md:text-xl mt-1">Work through each module from <strong>level 1</strong> to <strong>level 3</strong>. Pass every level and send a <strong>screenshot</strong> of your result to your teacher.</p>
         </div>
         <button onclick="showGlobalReportModal()" class="w-full md:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg md:text-xl px-8 py-5 rounded-2xl transition flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30">
           <i class="fa-solid fa-graduation-cap text-2xl"></i> FINAL REPORT
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid"></div>
+      <div class="space-y-12" id="modulesGrid"></div>
     </section>
 
     <!-- THEORY GUIDE -->
@@ -236,18 +239,12 @@
       <!-- HOW TO ANSWER -->
       <div class="bg-emerald-950/40 border-2 border-emerald-500/40 rounded-3xl p-6 md:p-8 space-y-3">
         <h3 class="text-emerald-300 font-black text-xl md:text-2xl flex items-center gap-3"><i class="fa-solid fa-pen-to-square"></i> How to answer</h3>
-        <ul class="text-base md:text-xl text-slate-200 space-y-2 list-disc list-inside">
-          <li>Write <strong>only the missing verb</strong> in the gap. The base form is <strong>in brackets</strong> at the end: <span class="font-mono text-amber-400">(go)</span>.</li>
-          <li>Finished time (<em>yesterday, last week, ago, in 2010</em>) → <strong>past simple</strong>: <em>I <u>went</u> ...</em></li>
-          <li>After <strong>have / has</strong> → <strong>past participle</strong>: <em>I have <u>gone</u> ...</em></li>
-          <li><strong>Capital letters don't matter.</strong> When the list gives two forms (<em>learnt / learned</em>), both are correct.</li>
-          <li>You need <strong class="text-amber-300">at least 90% (45 out of 50)</strong> to pass. Your progress is saved if you close the page.</li>
-        </ul>
+        <ul id="howToList" class="text-base md:text-xl text-slate-200 space-y-2 list-disc list-inside"></ul>
       </div>
 
       <div class="flex justify-end no-print">
-        <button onclick="startCurrentQuiz()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3">
-          Start the 50 Sentences <i class="fa-solid fa-play"></i>
+        <button id="startQuizBtn" onclick="startCurrentQuiz()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3">
+          Start <i class="fa-solid fa-play"></i>
         </button>
       </div>
     </section>
@@ -257,7 +254,7 @@
       <div class="flex justify-between items-center bg-slate-900 border-2 border-slate-800 p-5 md:p-6 rounded-2xl">
         <div>
           <span class="text-sm md:text-base text-emerald-400 font-extrabold uppercase tracking-wider" id="quizCategoryTitle">Exercises</span>
-          <h3 class="text-2xl md:text-4xl font-black text-white" id="quizQuestionCount">Sentence 1 of 50</h3>
+          <h3 class="text-2xl md:text-4xl font-black text-white" id="quizQuestionCount">Question 1 of 50</h3>
         </div>
         <div class="text-right">
           <span class="text-sm md:text-base text-slate-400 font-bold">Time</span>
@@ -306,7 +303,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Irregular Verbs · Fill in the Gaps</span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Irregular Verbs · 5 modules · 3 levels</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-black text-white mt-1">Final Assessment Report</h2>
           </div>
@@ -356,12 +353,12 @@
   </main>
 
   <footer class="border-t border-slate-800/80 py-4 text-center text-sm text-slate-500 font-semibold no-print">
-    EnglishPRO Academy • Irregular Verbs · Fill in the Gaps • Designed for ESO &amp; Bachillerato
+    EnglishPRO Academy • Irregular Verbs · 5 modules · 3 levels • Designed for ESO &amp; Bachillerato
   </footer>
   <script>
     /* ============================================================
-       IRREGULAR VERB LIST (from the textbook, page 150)
-       key: [base form, past simple forms, past participle forms, Spanish]
+       IRREGULAR VERB LIST  (109 verbs)
+       es = meaning in Spanish | inf = V1 | past = V2 | part = V3
        ============================================================ */
     const VERBS = {
       "be": ["be", ["was", "were"], ["been"], "ser / estar"],
@@ -403,7 +400,7 @@
       "give": ["give", ["gave"], ["given"], "dar"],
       "go": ["go", ["went"], ["gone"], "ir"],
       "grow": ["grow", ["grew"], ["grown"], "crecer, cultivar"],
-      "hang": ["hang", ["hanged", "hung"], ["hanged", "hung"], "colgar"],
+      "hang": ["hang", ["hung", "hanged"], ["hung", "hanged"], "colgar"],
       "have": ["have", ["had"], ["had"], "tener, haber"],
       "hear": ["hear", ["heard"], ["heard"], "oír"],
       "hide": ["hide", ["hid"], ["hidden"], "esconder(se)"],
@@ -769,56 +766,861 @@
       }
     ];
 
-    /* ============================================================
-       SETTINGS
-       ============================================================ */
-    const PASS_THRESHOLD = 90;   // % needed to pass each module
 
-    const TENSES = {
-      ps: { label: "Past Simple", short: "Past (V2)", cls: "text-sky-300", badge: "bg-sky-500/15 text-sky-300 border-sky-500/40", icon: "fa-clock-rotate-left" },
-      pp: { label: "Present Perfect", short: "Participle (V3)", cls: "text-amber-300", badge: "bg-amber-500/15 text-amber-300 border-amber-500/40", icon: "fa-check-double" }
+    /* ============================================================
+       Formas alternativas que tambien se dan por buenas
+       (britanico / americano). Se usan en los niveles 1 y 2.
+       ============================================================ */
+    const ALT_BOTH = {
+      dreamt: ["dreamed"], learnt: ["learned"], leant: ["leaned"], knelt: ["kneeled"],
+      smelt: ["smelled"], spelt: ["spelled"], burnt: ["burned"], lit: ["lighted"],
+      pled: ["pleaded"], sweat: ["sweated"], wet: ["wetted"], spat: ["spit"],
+      hung: ["hanged"], hanged: ["hung"]
+    };
+    const ALT_PAST = { stank: ["stunk"] };
+    const ALT_PART = { got: ["gotten"], trodden: ["trod"] };
+
+    function withAlt(list, extra) {
+      const out = [];
+      (list || []).forEach(a => {
+        out.push(a);
+        (ALT_BOTH[a.toLowerCase()] || []).forEach(x => out.push(x));
+        ((extra || {})[a.toLowerCase()] || []).forEach(x => out.push(x));
+      });
+      return out.filter((v, i, arr) => arr.indexOf(v) === i);
+    }
+
+
+    /* ============================================================
+       LEVEL 3 · la misma frase, pero en español (mismo orden que s[])
+       ============================================================ */
+    const TR_ES = {
+      iv_m1: [
+        "Ayer estaba muy cansado después del partido.",
+        "El sábado pasado estuvimos en la playa todo el día.",
+        "Mis abuelos han estado en Italia tres veces.",
+        "Nuestro equipo ganó a los campeones 3-1 el domingo pasado.",
+        "Nadie ha ganado nunca a mi hermano al ajedrez.",
+        "Ella se hizo una cantante famosa cuando solo tenía dieciocho años.",
+        "Esta canción se ha hecho muy popular este verano.",
+        "La película empezó a las ocho en punto anoche.",
+        "Acaba de empezar a llover, así que coge tu paraguas.",
+        "Él se agachó para recoger la moneda del suelo.",
+        "¡Oh, no! He doblado mis gafas nuevas.",
+        "Mi tío apostó diez euros en la carrera de caballos la semana pasada.",
+        "He apostado con mi amigo una pizza a que nuestro equipo ganará.",
+        "Un perro mordió a mi hermano en la pierna el verano pasado.",
+        "¡Los mosquitos me han picado por todos los brazos!",
+        "Mi rodilla sangró mucho cuando me caí de la bici.",
+        "El corte de su dedo ha sangrado mucho, así que necesita una tirita.",
+        "El viento sopló muy fuerte durante la tormenta de anoche.",
+        "¡Mira! La cumpleañera ha soplado todas las velas.",
+        "Tom se rompió el brazo cuando estaba esquiando en enero.",
+        "Alguien ha roto la ventana de la clase.",
+        "Ayer Sara trajo una tarta de chocolate a la fiesta.",
+        "Te he traído un regalo de Londres.",
+        "Construyeron este puente en 1995.",
+        "El pueblo ha construido un polideportivo nuevo cerca de mi casa.",
+        "Ayer me quemé la mano con el horno caliente.",
+        "¡Oh, no! He quemado las tostadas otra vez.",
+        "Mi padre compró un coche nuevo el mes pasado.",
+        "Ya he comprado las entradas para el concierto.",
+        "La policía atrapó al ladrón dos horas después.",
+        "He cogido un resfriado, así que hoy me quedo en casa.",
+        "El año pasado elegimos camisetas rojas para el equipo del colegio.",
+        "Ella ha elegido el vestido azul para la fiesta.",
+        "Mis primos vinieron a visitarnos las Navidades pasadas.",
+        "¡Por fin ha llegado el verano! Vamos a la piscina.",
+        "Mis zapatillas nuevas costaron sesenta euros en las rebajas la semana pasada.",
+        "Estas vacaciones nos han costado mucho dinero.",
+        "Ayer mamá cortó la tarta de cumpleaños en doce trozos.",
+        "Acabo de cortarme el dedo con un cuchillo.",
+        "Ayer el perro cavó un agujero grande en el jardín.",
+        "Los obreros han cavado un agujero profundo en la calle.",
+        "Anoche hice los deberes antes de cenar.",
+        "¡Genial! Has hecho un trabajo fantástico.",
+        "La fábrica vieja se quemó en 2010.",
+        "El concierto empezó tarde porque el cantante estaba enfermo.",
+        "Ella llegó a casa muy tarde el viernes por la noche.",
+        "Mi hermano pequeño ha roto mi taza favorita.",
+        "Mi hermana mayor se ha hecho médica.",
+        "La profesora me ha elegido para ser el delegado de la clase.",
+        "He hecho todos los ejercicios del libro."
+      ],
+      iv_m2: [
+        "Ayer Leo dibujó un dibujo precioso de su gato.",
+        "Los niños han dibujado un mapa del pueblo.",
+        "Anoche soñé que podía volar.",
+        "Siempre he soñado con visitar Nueva York.",
+        "Bebimos mucha agua después de la carrera.",
+        "El bebé se ha bebido toda su leche.",
+        "Esta mañana mi madre nos llevó al colegio en coche.",
+        "Mi padre ha conducido el mismo coche durante diez años.",
+        "Anoche comimos pizza en un restaurante italiano.",
+        "Nunca he comido sushi.",
+        "Kate se cayó de la bici y se hizo daño en la rodilla.",
+        "¡Mira! Todas las hojas se han caído de los árboles.",
+        "Di de comer al gato antes de irme al colegio.",
+        "No te preocupes, ya he dado de comer al perro.",
+        "Ayer me sentí muy nervioso antes de mi examen.",
+        "¡Nunca me he sentido tan feliz en mi vida!",
+        "Anoche los dos hermanos se pelearon por el mando de la tele.",
+        "Esos dos gatos se han peleado tres veces esta semana.",
+        "Ayer me encontré diez euros en la calle.",
+        "¡Buenas noticias! He encontrado mis llaves.",
+        "El verano pasado volamos a Londres.",
+        "Mi abuela nunca ha volado en avión.",
+        "Ayer Paul se olvidó los deberes en casa.",
+        "¡Oh, no! He olvidado el cumpleaños de mi mejor amigo.",
+        "Emma perdonó a su hermana por romperle el móvil.",
+        "Te he perdonado, pero por favor no lo vuelvas a hacer.",
+        "Hacía tanto frío que el lago se congeló el invierno pasado.",
+        "Mamá ha congelado el resto de la sopa para la semana que viene.",
+        "El mes pasado recibí un móvil nuevo por mi cumpleaños.",
+        "Mi hermano ha conseguido un trabajo en un restaurante.",
+        "Mi abuela me regaló un libro por Navidad.",
+        "Hoy la profesora nos ha puesto muchos deberes.",
+        "El viernes pasado fuimos al cine.",
+        "Papá no está aquí. Se ha ido al supermercado.",
+        "Mi abuelo cultivaba tomates en su huerto cuando era joven.",
+        "¡Hala, has crecido mucho desde el año pasado!",
+        "Colgué el abrigo detrás de la puerta cuando llegué a casa.",
+        "Hemos colgado algunas fotos en la pared del dormitorio.",
+        "Lo pasamos genial en la fiesta el sábado.",
+        "He tenido esta bici desde que tenía diez años.",
+        "Anoche oí un ruido raro en la cocina.",
+        "He oído esta canción muchas veces en la radio.",
+        "Los niños comieron muchas galletas en la fiesta.",
+        "Nuestro avión voló por encima de los Pirineos.",
+        "Después de una hora, encontré las llaves en mi bolso.",
+        "Nos levantamos muy pronto para coger el tren.",
+        "Ella me ha dado su nueva dirección.",
+        "Mis padres ya se han ido a la cama.",
+        "La temperatura ha bajado mucho esta semana.",
+        "Hoy me he bebido tres vasos de agua."
+      ],
+      iv_m3: [
+        "Ayer los niños se escondieron detrás del sofá durante el juego.",
+        "He escondido los regalos en mi armario.",
+        "Él golpeó la pelota muy fuerte y se fue por encima del muro.",
+        "Un coche ha chocado contra la farola que hay delante de mi casa.",
+        "El colegio celebró una gran fiesta al final del año pasado.",
+        "Ella ha tenido al bebé en brazos toda la tarde.",
+        "Me hice daño en la espalda cuando estaba jugando al tenis.",
+        "¡Ten cuidado! Te has hecho daño en la rodilla.",
+        "Mi abuela guardaba todos mis dibujos en una caja cuando yo era pequeño.",
+        "He guardado todos mis juguetes viejos en el desván.",
+        "Yo sabía la respuesta, pero no la dije.",
+        "Nos conocemos desde primaria.",
+        "Anoche mi hermana puso la mesa antes de cenar.",
+        "Las gallinas han puesto seis huevos hoy.",
+        "El guía nos llevó por el casco antiguo.",
+        "Nuestro capitán ha llevado al equipo a la victoria tres veces este año.",
+        "Aprendí a nadar cuando tenía cinco años.",
+        "Hemos aprendido muchas palabras nuevas esta semana.",
+        "El autobús se fue hace diez minutos.",
+        "¡Oh, no! Me he dejado el móvil en el autobús.",
+        "El fin de semana pasado mi amigo me prestó su bici.",
+        "Le he prestado mi diccionario a Sara.",
+        "Anoche mis padres me dejaron ir al concierto.",
+        "Hoy la profesora nos ha dejado salir pronto.",
+        "Estaba tan cansado que me tumbé en el sofá y me quedé dormido.",
+        "Ese libro viejo ha estado tumbado en la estantería durante años.",
+        "Él mintió a su madre sobre sus notas del examen.",
+        "Lo siento, te he mentido.",
+        "Papá encendió el fuego porque hacía mucho frío.",
+        "Hemos encendido las velas de la tarta.",
+        "Nuestro equipo perdió el partido el domingo.",
+        "No encuentro mi cartera. Creo que la he perdido.",
+        "Ayer mi madre hizo una paella deliciosa.",
+        "He hecho muchos amigos nuevos en mi colegio nuevo.",
+        "Perdona, quería llamarte, pero se me olvidó.",
+        "Este colegio siempre ha significado mucho para mí.",
+        "Conocí a mi mejor amigo en un campamento de verano en 2020.",
+        "Nunca he conocido a una persona famosa.",
+        "Ella superó su miedo al agua y aprendió a nadar.",
+        "Él ha superado muchos problemas para llegar a ser médico.",
+        "Pagamos veinte euros por las entradas.",
+        "No te preocupes, ya he pagado la comida.",
+        "El gato estuvo tumbado al sol toda la tarde.",
+        "Mi madre aprendió francés en el colegio.",
+        "Ayer perdí las llaves y no pude entrar en casa.",
+        "El invierno pasado hicimos un muñeco de nieve en el parque.",
+        "¡Ella ha vuelto a mentir sobre su edad!",
+        "Conozco a Emma desde hace seis años.",
+        "¡Date prisa! El tren acaba de irse.",
+        "El gato se ha escondido debajo de la cama."
+      ],
+      iv_m4: [
+        "Metí mis libros en la mochila y me fui.",
+        "Alguien ha puesto mi móvil encima de la nevera.",
+        "Mi tío dejó de fumar hace dos años.",
+        "Ella ha dejado su trabajo y se ha mudado a Madrid.",
+        "El verano pasado leí un libro estupendo en vacaciones.",
+        "He leído todos los libros de esta serie.",
+        "Ayer fuimos en bici hasta el lago.",
+        "Nunca he montado a caballo.",
+        "El martes pasado el teléfono sonó en mitad de la noche.",
+        "¡Acaba de sonar el timbre! Vamos a clase.",
+        "Esta mañana el sol ha salido a las siete en punto.",
+        "El precio de la gasolina ha subido otra vez.",
+        "El domingo pasado Leo corrió cinco kilómetros.",
+        "Mi tía ha corrido tres maratones.",
+        "Ella se despidió y salió de la habitación hace cinco minutos.",
+        "¡Has dicho eso tres veces!",
+        "Anoche vimos una película estupenda en el cine.",
+        "Nunca he visto la nieve.",
+        "El mes pasado mi vecino vendió su coche viejo.",
+        "La tienda ha vendido todas las entradas del concierto.",
+        "Ayer te envié un correo electrónico.",
+        "Acabo de enviarte un mensaje.",
+        "Anoche el sol se puso a las nueve en punto.",
+        "He puesto el despertador a las siete en punto.",
+        "El suelo tembló durante el terremoto del año pasado.",
+        "¡Le he dado la mano al alcalde!",
+        "Ayer el sol brilló todo el día.",
+        "El sol ha brillado todos los días esta semana.",
+        "El jugador disparó y marcó un gol fantástico.",
+        "Han rodado una película nueva en nuestro pueblo.",
+        "Ayer mi amiga me enseñó sus fotos de las vacaciones.",
+        "La profesora nos ha enseñado cómo hacer el ejercicio.",
+        "Él cerró la puerta y se fue a la cama a las once en punto.",
+        "Es tarde. Las tiendas ya han cerrado.",
+        "Le cantamos el 'Cumpleaños feliz' a mi abuela en su fiesta.",
+        "Ella ha cantado en el coro del colegio desde que tenía ocho años.",
+        "El Titanic se hundió en 1912.",
+        "La barca vieja se ha hundido hasta el fondo del lago.",
+        "Ayer me senté al lado de mi mejor amigo en clase.",
+        "¡Llevamos dos horas sentados en esta sala de espera!",
+        "Anoche dormí muy mal.",
+        "El bebé ha dormido toda la tarde.",
+        "Esta mañana papá ha leído el periódico en el desayuno.",
+        "El lunes vi a tu hermano en el parque.",
+        "Él dijo que lo sentía.",
+        "El perro corrió detrás de la pelota.",
+        "He puesto la leche en la nevera.",
+        "Ella ha ido en bici al colegio todos los días esta semana.",
+        "¡Tu móvil ha sonado tres veces!",
+        "Hemos cantado esta canción muchas veces."
+      ],
+      iv_m5: [
+        "Esta mañana la cocina olía a pan recién hecho.",
+        "Nunca he olido unas flores tan bonitas.",
+        "Ayer hablé con el director del colegio.",
+        "Ella ha hablado inglés desde que era pequeña.",
+        "Él escribió mal mi nombre en la tarjeta de cumpleaños.",
+        "¡Muy bien! Has escrito todas las palabras correctamente.",
+        "El verano pasado pasamos dos semanas en Portugal.",
+        "Me he gastado todo el dinero en videojuegos.",
+        "Estuvimos de pie bajo la lluvia durante una hora esperando el autobús.",
+        "El castillo viejo ha estado en pie en esa colina durante 800 años.",
+        "La semana pasada alguien me robó la bici.",
+        "Unos ladrones han robado un cuadro famoso del museo.",
+        "Ayer ella pegó una foto de su perro en la nevera.",
+        "He pegado pegatinas por todo mi cuaderno.",
+        "Una abeja me picó en el brazo en el picnic.",
+        "Una avispa ha picado a mi hermano pequeño.",
+        "Anoche barrí el suelo de la cocina después de cenar.",
+        "Papá ya ha barrido las hojas del jardín.",
+        "Nadamos en el mar todos los días en vacaciones.",
+        "Nunca he nadado en un agua tan fría.",
+        "Hice muchas fotos en mi viaje a París.",
+        "¡Alguien ha cogido mi boli!",
+        "Mi abuelo me enseñó a jugar al ajedrez cuando yo tenía seis años.",
+        "La señora Brown ha dado clase en este colegio durante veinte años.",
+        "Me rompí los vaqueros cuando trepé la valla.",
+        "¡Oh, no! El perro ha roto mis deberes.",
+        "Ayer ella me contó una historia divertida.",
+        "¡Te he dicho cien veces que ordenes tu habitación!",
+        "Pensaba que el examen era fácil, pero no lo era.",
+        "He pensado en tu idea y me gusta.",
+        "Él lanzó la pelota a su perro y el perro la cogió.",
+        "Alguien ha tirado basura al suelo.",
+        "Hoy entendí todo lo que dijo la profesora en clase.",
+        "Ahora he entendido la regla. ¡Es fácil!",
+        "Esta mañana me he despertado a las seis en punto.",
+        "¡Chsss! El bebé acaba de despertarse.",
+        "El sábado pasado ella llevó un vestido precioso a la boda.",
+        "Solo me he puesto estos zapatos dos veces.",
+        "El año pasado nuestra clase ganó el torneo de fútbol.",
+        "Ella ha ganado tres medallas de oro este año.",
+        "Shakespeare escribió 'Romeo y Julieta'.",
+        "He escrito una carta a mi amigo por correspondencia.",
+        "El perro olió la comida y entró corriendo en la cocina.",
+        "Ella deletreó su apellido para el recepcionista.",
+        "Anoche hablamos por teléfono durante una hora.",
+        "Tardamos tres horas en llegar allí.",
+        "¡Mi amigo ha vuelto a escribir mal mi nombre!",
+        "Por fin él me ha dicho la verdad.",
+        "Ella ha llevado esa chaqueta todos los días esta semana.",
+        "Mi hermano ha escrito tres canciones para su grupo."
+      ]
     };
 
-    // Build the modules from the definitions above.
-    const MODULES = MODULE_DEFS.map(def => ({
-      id: def.id,
-      title: def.title,
-      short: def.short,
-      icon: def.icon,
-      verbs: def.verbs,
-      desc: `${def.verbs.length} irregular verbs · ${def.s.length} sentences in past simple and present perfect.`,
-      questions: def.s.map((row, i) => {
-        const [key, tense, text, custom] = row;
-        const v = VERBS[key];
-        return {
-          qid: `${def.id}_${i}`,
-          key: key,
-          tense: tense,
-          text: text,
-          hint: HINTS[key] || v[0],
-          answers: custom || (tense === "ps" ? v[1] : v[2])
-        };
-      })
-    }));
+    /* ============================================================
+       VOCABULARIO de la pista del nivel 3 (español -> inglés)
+       Se muestran solo las palabras que aparecen en esa frase.
+       ============================================================ */
+    const GLOSS = {
+      "carrera de caballos": "horse race",
+      "campamento de verano": "summer camp",
+      "correo electrónico": "email",
+      "muñeco de nieve": "snowman",
+      "sala de espera": "waiting room",
+      "casco antiguo": "old town",
+      "medallas de oro": "gold medals",
+      "torneo de fútbol": "football tournament",
+      "sala": "room",
+      "fin de semana": "weekend",
+      "pan recién hecho": "fresh bread",
+      "tarjeta de cumpleaños": "birthday card",
+      "amigo por correspondencia": "pen friend",
+      "coro del colegio": "school choir",
+      "jugar al ajedrez": "play chess",
+      "dar de comer": "feed",
+      "en punto": "o'clock",
+      "por la noche": "at night",
+      "al ajedrez": "at chess",
+      "esta mañana": "this morning",
+      "esta semana": "this week",
+      "este año": "this year",
+      "esta tarde": "this afternoon",
+      "la semana pasada": "last week",
+      "el año pasado": "last year",
+      "el mes pasado": "last month",
+      "el verano pasado": "last summer",
+      "el invierno pasado": "last winter",
+      "el sábado pasado": "last Saturday",
+      "el domingo pasado": "last Sunday",
+      "el viernes pasado": "last Friday",
+      "el martes pasado": "last Tuesday",
+      "las navidades": "Christmas",
+      "navidad": "Christmas",
+      "vacaciones": "holiday / the holidays",
+      "cumpleañera": "birthday girl",
+      "cumpleaños": "birthday",
+      "partido": "match / game",
+      "equipo": "team",
+      "campeones": "champions",
+      "cantante": "singer",
+      "canción": "song",
+      "película": "film / movie",
+      "cine": "cinema",
+      "concierto": "concert",
+      "entradas": "tickets",
+      "fiesta": "party",
+      "tarta": "cake",
+      "galletas": "biscuits",
+      "tostadas": "toast",
+      "sopa": "soup",
+      "leche": "milk",
+      "agua": "water",
+      "comida": "lunch / food",
+      "pizza": "pizza",
+      "paella": "paella",
+      "tomates": "tomatoes",
+      "cuchillo": "knife",
+      "vaso": "glass",
+      "vasos": "glasses",
+      "nevera": "fridge",
+      "horno": "oven",
+      "cocina": "kitchen",
+      "habitación": "room",
+      "dormitorio": "bedroom",
+      "puerta": "door",
+      "ventana": "window",
+      "pared": "wall",
+      "suelo": "floor / ground",
+      "sofá": "sofa",
+      "estantería": "shelf",
+      "armario": "wardrobe",
+      "desván": "attic",
+      "caja": "box",
+      "mochila": "bag / rucksack",
+      "bolso": "bag",
+      "cartera": "wallet",
+      "llaves": "keys",
+      "móvil": "phone / mobile",
+      "teléfono": "phone",
+      "despertador": "alarm",
+      "boli": "pen",
+      "cuaderno": "notebook",
+      "pegatinas": "stickers",
+      "libro": "book",
+      "libros": "books",
+      "deberes": "homework",
+      "ejercicios": "exercises",
+      "examen": "exam",
+      "respuesta": "answer",
+      "palabras": "words",
+      "nombre": "name",
+      "apellido": "surname",
+      "dirección": "address",
+      "carta": "letter",
+      "periódico": "newspaper",
+      "diccionario": "dictionary",
+      "dibujo": "picture / drawing",
+      "dibujos": "drawings",
+      "foto": "photo",
+      "fotos": "photos",
+      "mapa": "map",
+      "cuadro": "painting",
+      "museo": "museum",
+      "colegio": "school",
+      "clase": "class / classroom",
+      "profesora": "teacher",
+      "profesor": "teacher",
+      "director del colegio": "head teacher",
+      "delegado": "class delegate",
+      "primaria": "primary school",
+      "alcalde": "mayor",
+      "policía": "police",
+      "ladrón": "thief",
+      "ladrones": "thieves",
+      "obreros": "workers",
+      "guía": "guide",
+      "capitán": "captain",
+      "recepcionista": "receptionist",
+      "vecino": "neighbour",
+      "amigo": "friend",
+      "amiga": "friend",
+      "amigos": "friends",
+      "hermano": "brother",
+      "hermana": "sister",
+      "hermanos": "brothers",
+      "padres": "parents",
+      "madre": "mother / mum",
+      "padre": "father / dad",
+      "mamá": "mum",
+      "papá": "dad",
+      "abuela": "grandma",
+      "abuelo": "grandfather",
+      "abuelos": "grandparents",
+      "tío": "uncle",
+      "tía": "aunt",
+      "primos": "cousins",
+      "bebé": "baby",
+      "niños": "children",
+      "persona famosa": "famous person",
+      "gente": "people",
+      "casa": "home / house",
+      "pueblo": "town",
+      "calle": "street",
+      "jardín": "garden",
+      "huerto": "garden / vegetable garden",
+      "parque": "park",
+      "playa": "beach",
+      "mar": "sea",
+      "piscina": "swimming pool",
+      "lago": "lake",
+      "colina": "hill",
+      "castillo": "castle",
+      "puente": "bridge",
+      "polideportivo": "sports centre",
+      "tienda": "shop",
+      "tiendas": "shops",
+      "restaurante": "restaurant",
+      "supermercado": "supermarket",
+      "hospital": "hospital",
+      "farola": "lamp post",
+      "autobús": "bus",
+      "tren": "train",
+      "avión": "plane",
+      "coche": "car",
+      "bici": "bike",
+      "barca": "boat",
+      "caballo": "horse",
+      "perro": "dog",
+      "gato": "cat",
+      "gatos": "cats",
+      "gallinas": "hens",
+      "huevos": "eggs",
+      "pájaro": "bird",
+      "abeja": "bee",
+      "avispa": "wasp",
+      "mosquitos": "mosquitoes",
+      "hojas": "leaves",
+      "árboles": "trees",
+      "flores": "flowers",
+      "velas": "candles",
+      "fuego": "fire",
+      "tormenta": "storm",
+      "viento": "wind",
+      "nieve": "snow",
+      "sol": "sun",
+      "lluvia": "rain",
+      "frío": "cold",
+      "temperatura": "temperature",
+      "terremoto": "earthquake",
+      "gasolina": "petrol",
+      "dinero": "money",
+      "euros": "euros",
+      "precio": "price",
+      "rebajas": "the sales",
+      "trabajo": "job / work",
+      "juguetes": "toys",
+      "juego": "game",
+      "pelota": "ball",
+      "gol": "goal",
+      "vaqueros": "jeans",
+      "abrigo": "coat",
+      "vestido": "dress",
+      "camisetas": "T-shirts",
+      "zapatillas": "trainers",
+      "zapatos": "shoes",
+      "chaqueta": "jacket",
+      "gafas": "glasses",
+      "regalo": "present",
+      "regalos": "presents",
+      "tirita": "plaster",
+      "corte": "cut",
+      "daño": "hurt",
+      "rodilla": "knee",
+      "espalda": "back",
+      "brazo": "arm",
+      "brazos": "arms",
+      "mano": "hand",
+      "dedo": "finger",
+      "pierna": "leg",
+      "resfriado": "cold",
+      "ruido": "noise",
+      "historia": "story",
+      "idea": "idea",
+      "regla": "rule",
+      "verdad": "truth",
+      "miedo": "fear",
+      "edad": "age",
+      "victoria": "victory",
+      "medallas": "medals",
+      "maratones": "marathons",
+      "kilómetros": "kilometres",
+      "horas": "hours",
+      "hora": "hour",
+      "minutos": "minutes",
+      "días": "days",
+      "día": "day",
+      "mes": "month",
+      "año": "year",
+      "años": "years",
+      "semana": "week",
+      "verano": "summer",
+      "invierno": "winter",
+      "mañana": "morning",
+      "tarde": "afternoon",
+      "noche": "night",
+      "ayer": "yesterday",
+      "anoche": "last night",
+      "hoy": "today",
+      "siempre": "always",
+      "nunca": "never",
+      "todavía": "still",
+      "por fin": "at last / finally",
+      "otra vez": "again",
+      "muchas veces": "many times",
+      "tres veces": "three times",
+      "dos veces": "twice",
+      "hace": "ago",
+      "desde": "since / for",
+      "durante": "for / during",
+      "después": "after",
+      "antes": "before",
+      "encima": "on top of",
+      "detrás": "behind",
+      "delante": "in front of",
+      "debajo": "under",
+      "cerca": "near",
+      "dentro": "inside",
+      "fuera": "outside",
+      "basura": "rubbish",
+      "pan": "bread",
+      "comidas": "meals",
+      "cansado": "tired",
+      "nervioso": "nervous",
+      "feliz": "happy",
+      "enfermo": "ill",
+      "famosa": "famous",
+      "popular": "popular",
+      "precioso": "beautiful",
+      "bonitas": "beautiful",
+      "divertida": "funny",
+      "raro": "strange",
+      "fantástico": "fantastic",
+      "estupendo": "great",
+      "genial": "great",
+      "delicioso": "delicious",
+      "deliciosa": "delicious",
+      "nuevo": "new",
+      "nueva": "new",
+      "nuevas": "new",
+      "viejo": "old",
+      "vieja": "old",
+      "antiguo": "old",
+      "joven": "young",
+      "pequeño": "little / small",
+      "grande": "big",
+      "mayor": "older",
+      "profundo": "deep",
+      "caliente": "hot",
+      "fácil": "easy",
+      "difícil": "difficult",
+      "rojas": "red",
+      "azul": "blue",
+      "favorita": "favourite",
+      "mismo": "same",
+      "correctamente": "correctly",
+      "pronto": "early",
+      "tarde para": "late",
+      "mal": "wrong / badly",
+      "muy": "very",
+      "casi": "almost",
+      "también": "too / also",
+      "ya": "already",
+      "todo": "all / everything",
+      "todos los días": "every day"
+    };
+
+    /* ============================================================
+       SINONIMOS aceptados en el nivel 3.
+       El primero de cada linea es la forma "oficial": al corregir,
+       todas las de su linea se consideran la misma palabra.
+       Se pueden anadir mas lineas sin tocar nada mas.
+       ============================================================ */
+    const SWAPS = [
+      // contracciones
+      ["i have", "ive"], ["we have", "weve"], ["they have", "theyve"], ["you have", "youve"],
+      ["he has", "hes", "he is"], ["she has", "shes", "she is"], ["it has", "its", "it is"],
+      ["i am", "im"], ["do not", "dont"], ["does not", "doesnt"], ["did not", "didnt"],
+      ["cannot", "can not", "cant"], ["is not", "isnt"], ["are not", "arent"],
+      ["was not", "wasnt"], ["were not", "werent"], ["has not", "hasnt"], ["have not", "havent"],
+      ["could not", "couldnt"], ["would not", "wouldnt"], ["let us", "lets"], ["there is", "theres"],
+      // ingles britanico / americano
+      ["centre", "center"], ["theatre", "theater"], ["favourite", "favorite"], ["colour", "color"],
+      ["neighbour", "neighbor"], ["kilometres", "kilometers"], ["metres", "meters"],
+      ["practise", "practice"], ["grey", "gray"], ["travelled", "traveled"],
+      // sinonimos de vocabulario
+      ["phone", "mobile", "mobile phone", "cell phone", "cellphone", "telephone"],
+      ["bike", "bicycle"], ["film", "movie"], ["films", "movies"],
+      ["the cinema", "the movies", "the movie theatre"],
+      ["mum", "mom", "mummy"], ["dad", "daddy"], ["mother", "mum", "mom"], ["father", "dad"],
+      ["grandma", "grandmother", "granny", "grandmum"], ["grandfather", "grandpa", "granddad", "grandad"],
+      ["a lot of", "lots of", "many", "much", "plenty of"], ["a lot", "lots", "very much"],
+      ["photos", "pictures", "photographs"], ["photo", "picture", "photograph"],
+      ["picture", "drawing"], ["trainers", "sneakers", "trainers shoes"],
+      ["rubbish", "litter", "trash", "garbage"], ["biscuits", "cookies"],
+      ["sports centre", "sports hall", "leisure centre"], ["holiday", "holidays", "vacation"],
+      ["on holiday", "on vacation"], ["wallet", "purse"], ["wardrobe", "closet"], ["attic", "loft"],
+      ["shop", "store"], ["shops", "stores"], ["town", "village"], ["garden", "yard"],
+      ["petrol", "gas", "gasoline"], ["plaster", "band aid", "bandage", "plasters"],
+      ["head teacher", "headmaster", "headmistress", "principal", "school head"],
+      ["pen friend", "pen pal", "penfriend", "penpal"], ["primary school", "elementary school"],
+      ["bag", "rucksack", "backpack", "schoolbag"], ["sofa", "couch"], ["notebook", "exercise book"],
+      ["marks", "grades", "results"], ["exam", "test", "examination"], ["exams", "tests"],
+      ["flat", "apartment"], ["lorry", "truck"], ["football", "soccer"], ["sweets", "candy"],
+      ["jumper", "sweater"], ["boat", "ship"], ["glasses", "spectacles"],
+      ["pieces", "slices"], ["strange", "weird", "odd", "funny"], ["noise", "sound"],
+      ["very", "really", "so"], ["great", "fantastic", "brilliant", "amazing", "wonderful", "lovely"],
+      ["beautiful", "lovely", "gorgeous", "nice", "pretty"], ["delicious", "tasty"],
+      ["children", "kids"], ["everybody", "everyone"], ["nobody", "no one", "no-one"],
+      ["somebody", "someone"], ["at last", "finally", "in the end"], ["again", "one more time"],
+      ["tidy", "tidy up", "clean", "clean up"], ["ill", "sick"], ["little", "small"],
+      ["old town", "historic centre", "old part of town"], ["job", "work"],
+      ["hens", "chickens"], ["street", "road"], ["angry", "cross"], ["quickly", "fast"],
+      // numeros: se acepta la cifra y la palabra
+      ["one", "1"], ["two", "2"], ["three", "3"], ["four", "4"], ["five", "5"], ["six", "6"],
+      ["seven", "7"], ["eight", "8"], ["nine", "9"], ["ten", "10"], ["eleven", "11"],
+      ["twelve", "12"], ["eighteen", "18"], ["twenty", "20"], ["sixty", "60"], ["hundred", "100"],
+      ["twice", "two times", "2 times"],
+      ["match", "game"], ["floor", "ground"], ["euros", "euro"], ["present", "gift"],
+      ["surname", "last name", "family name"], ["lunch", "food"], ["picture", "drawing"],
+      ["sports centre", "sports center"], ["road", "street"],
+      // formas verbales britanicas / americanas: valen las dos
+      ["burnt", "burned"], ["dreamt", "dreamed"], ["learnt", "learned"], ["leant", "leaned"],
+      ["knelt", "kneeled"], ["smelt", "smelled"], ["spelt", "spelled"], ["lit", "lighted"],
+      ["pled", "pleaded"], ["spat", "spit"], ["sweat", "sweated"], ["stank", "stunk"],
+      ["got", "gotten"], ["trod", "trodden"], ["hung", "hanged"]
+    ];
+
+    /* Expresiones de tiempo: dan igual al principio o al final de la frase. */
+    const TIME_RX = /\b(yesterday|today|tonight|last (?:night|week|weekend|month|year|summer|winter|spring|autumn|monday|tuesday|wednesday|thursday|friday|saturday|sunday|christmas)|this (?:morning|afternoon|evening|week|month|year|summer|winter)|in \d{4}|\d+ (?:years?|months?|weeks?|days?|hours?|minutes?) ago|on (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?: night| morning| afternoon| evening)?|every day|all day|all afternoon|at last|already|only twice|three times|many times)\b/g;
+
+    /* ============================================================
+       LOS 3 NIVELES DE CADA MODULO
+       ============================================================ */
+    const PASS_THRESHOLD = 90;
+
+    const LEVELS = [
+      { n: 1, type: "forms",     name: "Level 1 \u00b7 The three forms",  tag: "L1", icon: "fa-table-columns", pass: 90,
+        blurb: "The verbs of this module, one by one: write the three forms.",
+        chip: "bg-sky-500/15 text-sky-300 border-sky-500/40",
+        how: [
+          "You are given the <strong>meaning in Spanish</strong>. Write the <strong>three forms</strong> of that verb in English.",
+          "Order: <strong class=\"text-emerald-300\">infinitive (V1)</strong> \u2192 <strong class=\"text-sky-300\">past simple (V2)</strong> \u2192 <strong class=\"text-amber-300\">past participle (V3)</strong>.",
+          "<strong>Capital letters don\u2019t matter.</strong> When the list gives two forms (<em>learnt / learned</em>, <em>was / were</em>), either one is accepted.",
+          "The three forms must be right for the answer to count."
+        ] },
+      { n: 2, type: "gap",       name: "Level 2 \u00b7 Fill in the gaps",  tag: "L2", icon: "fa-pen-to-square", pass: 90,
+        blurb: "The same verbs inside sentences, in past simple and present perfect.",
+        chip: "bg-amber-500/15 text-amber-300 border-amber-500/40",
+        how: [
+          "Write <strong>only the missing verb</strong>. The base form is <strong>in brackets</strong> at the end: <span class=\"font-mono text-amber-400\">(go)</span>.",
+          "Finished past time (<em>yesterday, last week, ago</em>) \u2192 <strong>past simple</strong>: <em>I <u>went</u> ...</em>",
+          "After <strong>have / has</strong> \u2192 <strong>past participle</strong>: <em>I have <u>gone</u> ...</em>",
+          "<strong>Capital letters don\u2019t matter</strong> and both forms count when the list gives two."
+        ] },
+      { n: 3, type: "translate", name: "Level 3 \u00b7 Spanish into English", tag: "L3", icon: "fa-language", pass: 70,
+        blurb: "The same sentences, but now you write the whole sentence in English.",
+        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40",
+        how: [
+          "Write the <strong>whole sentence</strong> in English, not only the verb.",
+          "Press <strong class=\"text-amber-300\">\ud83d\udca1 Hint</strong>: it gives you the verb you need and the vocabulary of the sentence.",
+          "<strong>Lots of translations are accepted</strong> (<em>phone / mobile</em>, <em>film / movie</em>, <em>I have / I\u2019ve</em>\u2026), and capital letters, commas and the full stop don\u2019t matter.",
+          "The time expression can go at the beginning or at the end: both are right."
+        ] }
+    ];
+
+    const TYPES = {
+      forms:     { label: "Three forms",  badge: "bg-sky-500/15 text-sky-300 border-sky-500/40",             icon: "fa-table-columns" },
+      gap:       { label: "Fill the gap", badge: "bg-amber-500/15 text-amber-300 border-amber-500/40",       icon: "fa-pen-to-square" },
+      translate: { label: "Translation",  badge: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", icon: "fa-language" }
+    };
+
+    function verbOf(key) {
+      const v = VERBS[key];
+      return { key: key, es: v[3], inf: v[0], past: v[1], part: v[2] };
+    }
+    function fullSentence(row) {
+      const [key, tense, text, custom] = row;
+      const ans = (custom || (tense === "ps" ? VERBS[key][1] : VERBS[key][2]))[0];
+      return text.replace("___", ans);
+    }
+
+    const MODULES = [];
+    LEVELS.forEach(lv => {
+      MODULE_DEFS.forEach((def, mi) => {
+        let questions;
+        if (lv.type === "forms") {
+          questions = def.verbs.map((k, i) => ({
+            qid: `${def.id}_l1_${i}`, type: "forms", prompt: VERBS[k][3], verb: verbOf(k),
+            answers: [VERBS[k][0], VERBS[k][1].join(" / "), VERBS[k][2].join(" / ")]
+          }));
+        } else if (lv.type === "gap") {
+          questions = def.s.map((row, i) => {
+            const [k, tense, text, custom] = row;
+            return {
+              qid: `${def.id}_l2_${i}`, type: "gap", text: text, hint: HINTS[k] || VERBS[k][0],
+              answers: withAlt(custom || (tense === "ps" ? VERBS[k][1] : VERBS[k][2]),
+                               tense === "ps" ? ALT_PAST : ALT_PART)
+            };
+          });
+        } else {
+          questions = def.s.map((row, i) => ({
+            qid: `${def.id}_l3_${i}`, type: "translate",
+            prompt: TR_ES[def.id][i], answers: [fullSentence(row)],
+            verbKey: row[0], tense: row[1]
+          }));
+        }
+        MODULES.push({
+          id: `${def.id}_l${lv.n}`, moduleId: def.id, moduleIndex: mi, level: lv.n,
+          type: lv.type, icon: def.icon, levelIcon: lv.icon, levelName: lv.name,
+          chip: lv.chip, how: lv.how, levelTag: lv.tag,
+          title: `${def.title} \u00b7 ${lv.name.split(" \u00b7 ")[1]}`,
+          moduleTitle: def.title, short: `${def.short.split(" ")[0]} ${lv.tag}`,
+          verbs: def.verbs, pass: lv.pass, questions: questions, size: questions.length,
+          desc: lv.type === "forms"
+            ? `${def.verbs.length} verbs \u00b7 write the infinitive, the past simple and the past participle.`
+            : (lv.type === "gap"
+              ? `${def.s.length} sentences \u00b7 write the missing verb in past simple or past participle.`
+              : `${def.s.length} sentences in Spanish \u00b7 write them in English. Vocabulary hint available.`)
+        });
+      });
+    });
+
+    function passMark(mod) { return (mod && mod.pass) || PASS_THRESHOLD; }
+    function passMarkOf(modId) { return passMark(MODULES.find(m => m.id === modId)); }
+    function modulesOfLevel(n) { return MODULES.filter(m => m.level === n); }
 
     /* ============================================================
        CHECKING
        ============================================================ */
     function normalize(str) {
       return (str || "").toString()
-        .replace(/[‘’ʼ`´]/g, "'")
+        .replace(/[\u2018\u2019\u02bc`\u00b4]/g, "'")
         .trim()
         .toLowerCase()
         .replace(/[.,;!?]+$/g, "")
         .replace(/\s+/g, " ");
     }
 
+    // Para las traducciones: ignora comas, puntos y apostrofes (I've = Ive = I have? no, solo el apostrofe)
+    function normalizeLoose(str) {
+      return normalize(str).replace(/[.,;:!?"']/g, "").replace(/\s+/g, " ").trim();
+    }
+
+    function gradeForms(values, q) {
+      const v = q.verb;
+      const okInf  = normalize(values[0]) === normalize(v.inf);
+      const okPast = withAlt(v.past, ALT_PAST).some(a => normalize(a) === normalize(values[1]))
+                     || normalize(values[1]) === normalize(v.past.join("/"));
+      const okPart = withAlt(v.part, ALT_PART).some(a => normalize(a) === normalize(values[2]))
+                     || normalize(values[2]) === normalize(v.part.join("/"));
+      return { ok: okInf && okPast && okPart, parts: [okInf, okPast, okPart] };
+    }
+
     function gradeGap(userValue, q) {
       let user = normalize(userValue);
       if (!user) return false;
-      // If the student also wrote the auxiliary that is already in the sentence ("has gone"), ignore it.
-      if (q.tense === "pp") user = user.replace(/^(have|has|'ve|'s)\s+/, "");
+      // si el alumno repite el auxiliar que ya esta en la frase ("has gone"), se ignora
+      user = user.replace(/^(have|has|had|been|'ve|'s)\s+/, "");
       return q.answers.some(a => normalize(a) === user);
+    }
+
+    // Todas las alternativas de una linea de SWAPS se reducen a la primera,
+    // asi que da igual cual escriba el alumno.
+    const SWAP_RULES = (function () {
+      const list = [];
+      SWAPS.forEach(g => { g.slice(1).forEach(alt => list.push({ alt: alt, to: g[0] })); });
+      list.sort((a, b) => b.alt.length - a.alt.length);
+      return list.map(r => ({
+        re: new RegExp("\\b" + r.alt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "g"),
+        to: r.to
+      }));
+    })();
+
+    function canonTranslation(str) {
+      let out = normalizeLoose(str).replace(/[\u2013\u2014]/g, "-");
+      out = out.replace(/\boclock\b/g, " ");        // "at eight" = "at eight o'clock"
+      SWAP_RULES.forEach(r => { out = out.replace(r.re, r.to); });
+      const times = [];
+      out = out.replace(TIME_RX, m => { times.push(m.trim()); return " "; });
+      return (out + " " + times.sort().join(" ")).replace(/\s+/g, " ").trim();
+    }
+
+    function gradeTranslation(userValue, q) {
+      if (!normalizeLoose(userValue)) return false;
+      const user = canonTranslation(userValue);
+      return q.answers.some(a => canonTranslation(a) === user);
+    }
+
+    /* ---------- pista de vocabulario del nivel 3 ---------- */
+    function stripAccents(t) { return (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+    const GLOSS_KEYS = Object.keys(GLOSS).sort((a, b) => b.length - a.length);
+
+    function vocabHints(esText, max) {
+      const low = stripAccents((esText || "").toLowerCase());
+      const taken = [], found = [];
+      GLOSS_KEYS.forEach(k => {
+        const kk = stripAccents(k.toLowerCase());
+        const pos = low.indexOf(kk);
+        if (pos < 0) return;
+        const before = pos === 0 ? " " : low[pos - 1];
+        const after = (pos + kk.length >= low.length) ? " " : low[pos + kk.length];
+        if (/[a-z0-9]/.test(before) || /[a-z0-9]/.test(after)) return;
+        if (taken.some(t => pos < t[1] && pos + kk.length > t[0])) return;
+        taken.push([pos, pos + kk.length]);
+        found.push({ pos: pos, es: k, en: GLOSS[k] });
+      });
+      found.sort((a, b) => a.pos - b.pos);
+      return found.slice(0, max || 7);
     }
 
     /* ============================================================
@@ -851,7 +1653,7 @@
     function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
     function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
     function storageDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
-    function progressKey(modId) { return `englishpro_iv_progress_${userScopeKey()}_${modId}`; }
+    function progressKey(modId) { return `englishpro_ivl_progress_${userScopeKey()}_${modId}`; }
 
     /* ---------- class codes ---------- */
     function normalizeCode(c) { return (c || "").toString().trim().toUpperCase().replace(/\s+/g, ""); }
@@ -871,7 +1673,7 @@
     function myResultsRef() { return db.ref(RESULTS_NODE + "/" + normalizeCode(currentUser.classCode)); }
 
     /* ---------- local copy of the results (guest mode / no connection) ---------- */
-    function localResultsKey() { return `englishpro_iv_results_${userScopeKey()}`; }
+    function localResultsKey() { return `englishpro_ivl_results_${userScopeKey()}`; }
     function localResults() {
       try { return JSON.parse(storageGet(localResultsKey()) || "[]"); } catch (e) { return []; }
     }
@@ -891,14 +1693,54 @@
       }, (err) => { console.error("Could not load previous results:", err); cb(localResults()); });
     }
 
-    function sentenceHtml(q, withInput) {
-      const parts = q.text.split("___");
-      const model = q.answers[0];
-      const width = Math.max(8, Math.max.apply(null, q.answers.map(a => a.length)) + 3);
-      const gap = withInput
-        ? `<input type="text" id="gap_0" class="gap-input text-xl md:text-3xl" style="width:${width}ch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`
-        : `<span class="text-slate-500">______</span>`;
-      return `${escapeHtml(parts[0])}${gap}${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono ${withInput ? "text-xl md:text-2xl" : ""}">(${escapeHtml(q.hint)})</span>`;
+    function questionBodyHtml(q) {
+      const inp = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
+      if (q.type === "forms") {
+        const labels = [
+          ["Infinitive (V1)", "text-emerald-300"],
+          ["Past simple (V2)", "text-sky-300"],
+          ["Past participle (V3)", "text-amber-300"]
+        ];
+        return `
+          <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Verb in Spanish</p>
+          <p class="text-2xl md:text-4xl font-extrabold text-white mb-6" lang="es">${escapeHtml(q.prompt)}</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${labels.map(([lab, cls], i) => `
+              <div>
+                <label class="block text-xs md:text-sm font-black uppercase tracking-wider ${cls} mb-2">${lab}</label>
+                <input type="text" id="ans_${i}" class="quiz-input gap-input wide text-lg md:text-2xl" ${inp}>
+              </div>`).join("")}
+          </div>`;
+      }
+      if (q.type === "gap") {
+        const parts = q.text.split("___");
+        const width = Math.max(8, Math.max.apply(null, q.answers.map(a => a.length)) + 3);
+        return `<p class="text-2xl md:text-4xl font-extrabold text-white leading-relaxed">${escapeHtml(parts[0])}<input type="text" id="ans_0" class="quiz-input gap-input text-xl md:text-3xl" style="width:${width}ch" ${inp}>${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono text-xl md:text-2xl">(${escapeHtml(q.hint)})</span></p>`;
+      }
+      return `
+        <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Translate into English</p>
+        <p class="text-2xl md:text-4xl font-extrabold text-white mb-5" lang="es">${escapeHtml(q.prompt)}</p>
+        <input type="text" id="ans_0" class="quiz-input gap-input wide text-lg md:text-2xl" placeholder="Write the whole sentence in English" ${inp}>`;
+    }
+
+    function questionInputs() {
+      return Array.prototype.slice.call(document.querySelectorAll(".quiz-input"));
+    }
+
+    function questionPromptText(q) {
+      if (q.type === "gap") return `${q.text.replace("___", "______")} (${q.hint})`;
+      if (q.type === "forms") return `${q.prompt} \u2192 V1 / V2 / V3`;
+      return q.prompt;
+    }
+
+    function modelAnswer(q) {
+      if (q.type === "forms") return q.answers.join(" \u00b7 ");
+      return q.answers.join("  |  ");
+    }
+
+    function toggleQuizHint() {
+      const box = document.getElementById("hintBox");
+      if (box) box.classList.toggle("hidden");
     }
 
     function studentStrip() {
@@ -930,7 +1772,7 @@
     function buildLesson(mod) {
       const rows = mod.verbs.map(k => {
         const v = VERBS[k];
-        const label = HINTS[k] ? `${v[0]} <span class="text-slate-500 text-sm">(${HINTS[k].split("–")[1].trim()})</span>` : v[0];
+        const label = HINTS[k] ? `${v[0]} <span class="text-slate-500 text-sm">(${HINTS[k].split("\u2013")[1].trim()})</span>` : v[0];
         return `
           <tr class="border-b border-slate-800/80">
             <td class="p-2 md:p-3 font-black text-white">${label}</td>
@@ -940,32 +1782,41 @@
           </tr>`;
       }).join("");
 
+      const examples = {
+        forms: `<p class="text-base md:text-xl text-slate-300" lang="es">You see: <strong>romper</strong></p>
+                <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">break</strong> \u00b7 <strong class="text-sky-300">broke</strong> \u00b7 <strong class="text-amber-300">broken</strong></p>`,
+        gap: `<p class="text-base md:text-xl text-slate-300">Tom ______ his arm in January. <span class="font-mono text-amber-400">(break)</span></p>
+              <p class="mt-2 text-base md:text-xl text-slate-200">You write only: <strong class="text-emerald-300">broke</strong></p>`,
+        translate: `<p class="text-base md:text-xl text-slate-300" lang="es">Tom se rompi\u00f3 el brazo en enero.</p>
+                    <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">Tom broke his arm in January.</strong></p>`
+      };
+
       return `
-        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-3">${mod.title}</h2>
-        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">
-          Study the <strong>three forms</strong> of these ${mod.verbs.length} verbs. Then complete <strong>${mod.questions.length} sentences</strong>:
-          every verb appears in the <strong class="text-sky-300">past simple</strong> and in the <strong class="text-amber-300">present perfect</strong>.
-        </p>
+        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-1">${mod.moduleTitle}</h2>
+        <p class="text-lg md:text-2xl font-black mb-4"><span class="px-3 py-1 rounded-xl border ${mod.chip}">${mod.levelName}</span></p>
+        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">${mod.desc}</p>
         <div class="space-y-6">
-          <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto">
-            <table class="w-full text-left text-base md:text-xl">
-              <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400">
-                <tr><th class="p-2 md:p-3">Base form (V1)</th><th class="p-2 md:p-3">Past simple (V2)</th><th class="p-2 md:p-3">Past participle (V3)</th><th class="p-2 md:p-3">Meaning</th></tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-slate-700">
+              <h3 class="text-white font-black text-xl md:text-2xl mb-3">Example</h3>
+              ${examples[mod.type]}
+            </div>
+            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-emerald-500/30">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">Pass mark</h3>
+              <p class="text-base md:text-xl text-slate-300">You need <strong class="text-amber-300">${passMark(mod)}%</strong> (${Math.ceil(mod.size * passMark(mod) / 100)} out of ${mod.size}) to pass this level.</p>
+              <p class="mt-2 text-base md:text-lg text-slate-400">Your progress is saved if you close the page.</p>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-sky-500/30">
-              <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">Past simple → V2</h3>
-              <p class="text-base md:text-xl text-slate-300">A finished action at a finished time: <em>yesterday, last week, two days ago, in 2010, when I was five</em>.</p>
-              <p class="mt-3 text-base md:text-xl text-slate-200">We <strong class="text-sky-300">went</strong> to the beach <u>last summer</u>.</p>
-            </div>
-            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-amber-500/30">
-              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">Present perfect → have / has + V3</h3>
-              <p class="text-base md:text-xl text-slate-300">Experiences and actions connected to now: <em>ever, never, just, already, for, since, this week</em>.</p>
-              <p class="mt-3 text-base md:text-xl text-slate-200">I <u>have</u> never <strong class="text-amber-300">gone</strong> to Paris.</p>
+          <div>
+            <h3 class="text-xl md:text-2xl font-black text-white mb-3"><i class="fa-solid fa-book text-emerald-400 mr-2"></i>The ${mod.verbs.length} verbs of this module</h3>
+            <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto">
+              <table class="w-full text-left text-base md:text-xl">
+                <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400">
+                  <tr><th class="p-2 md:p-3">Base form (V1)</th><th class="p-2 md:p-3">Past simple (V2)</th><th class="p-2 md:p-3">Past participle (V3)</th><th class="p-2 md:p-3">Meaning</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
             </div>
           </div>
         </div>`;
@@ -1116,37 +1967,37 @@
       if (saved) {
         try {
           const p = JSON.parse(saved);
-          badge = `<span class="text-sm bg-sky-500/20 text-sky-300 border border-sky-500/40 px-4 py-2 rounded-xl font-black">⏸ ${p.idx}/${mod.questions.length} in progress</span>`;
+          badge = `<span class="text-sm bg-sky-500/20 text-sky-300 border border-sky-500/40 px-4 py-2 rounded-xl font-black">\u23f8 ${p.idx}/${mod.size}</span>`;
         } catch (e) {}
       }
       if (bestScore !== null && bestScore !== undefined) {
-        badge = (bestScore >= PASS_THRESHOLD)
-          ? `<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-2 rounded-xl font-black">✅ ${bestScore}% Passed</span>`
-          : `<span class="text-sm bg-rose-500/20 text-rose-400 border border-rose-500/40 px-4 py-2 rounded-xl font-black">${bestScore}% · Try again</span>`;
+        badge = (bestScore >= passMark(mod))
+          ? `<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-2 rounded-xl font-black">\u2705 ${bestScore}%</span>`
+          : `<span class="text-sm bg-rose-500/20 text-rose-400 border border-rose-500/40 px-4 py-2 rounded-xl font-black">${bestScore}% \u00b7 again</span>`;
       }
       const card = document.createElement("div");
-      card.className = "bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/60 p-8 rounded-3xl transition cursor-pointer flex flex-col justify-between neon-border";
+      card.className = "bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/60 p-6 md:p-7 rounded-3xl transition cursor-pointer flex flex-col justify-between neon-border";
       card.onclick = () => openLesson(mod.id);
-      const preview = mod.verbs.map(k => VERBS[k][0]).filter((v, i, arr) => arr.indexOf(v) === i).join(", ");
+      const preview = mod.verbs.map(k => VERBS[k][0]).filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 6).join(", ");
       card.innerHTML = `
         <div>
-          <div class="flex justify-between items-start mb-6 gap-3">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/30 shrink-0">
+          <div class="flex justify-between items-start mb-4 gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-xl font-black border border-emerald-500/30 shrink-0">
               <i class="fa-solid ${mod.icon}"></i>
             </div>
             ${badge}
           </div>
-          <h3 class="text-2xl md:text-3xl font-black text-white mb-3">${mod.title}</h3>
-          <p class="text-base md:text-lg text-slate-300 leading-relaxed mb-3">${mod.desc}</p>
-          <p class="text-sm text-slate-500 mb-4 italic">${preview}</p>
-          <div class="flex flex-wrap gap-2 mb-6 text-xs font-black">
-            <span class="px-3 py-1 rounded-lg border ${TENSES.ps.badge}">${mod.questions.filter(q => q.tense === "ps").length} past simple</span>
-            <span class="px-3 py-1 rounded-lg border ${TENSES.pp.badge}">${mod.questions.filter(q => q.tense === "pp").length} present perfect</span>
-            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Pass mark: ${PASS_THRESHOLD}%</span>
+          <h3 class="text-xl md:text-2xl font-black text-white mb-2">${mod.moduleTitle}</h3>
+          <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-2">${mod.desc}</p>
+          <p class="text-xs text-slate-500 mb-4 italic">${preview}\u2026</p>
+          <div class="flex flex-wrap gap-2 mb-5 text-xs font-black">
+            <span class="px-3 py-1 rounded-lg border ${mod.chip}">${mod.levelTag} \u00b7 ${TYPES[mod.type].label}</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">${mod.size} questions</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Pass: ${passMark(mod)}%</span>
           </div>
         </div>
-        <div class="text-base md:text-lg font-black text-emerald-400 flex items-center gap-2">
-          Verb List &amp; Exercises <i class="fa-solid fa-arrow-right"></i>
+        <div class="text-sm md:text-base font-black text-emerald-400 flex items-center gap-2">
+          Study &amp; start <i class="fa-solid fa-arrow-right"></i>
         </div>`;
       return card;
     }
@@ -1154,9 +2005,32 @@
     function paintModulesGrid(scoresByModule) {
       const grid = document.getElementById("modulesGrid");
       grid.innerHTML = "";
-      MODULES.forEach(mod => {
-        const best = scoresByModule ? scoresByModule[mod.id] : null;
-        grid.appendChild(buildModuleCard(mod, best === undefined ? null : best));
+      LEVELS.forEach(lv => {
+        const mods = modulesOfLevel(lv.n);
+        const passed = mods.filter(m => {
+          const sc = scoresByModule ? scoresByModule[m.id] : null;
+          return sc !== null && sc !== undefined && sc >= passMark(m);
+        }).length;
+        const section = document.createElement("section");
+        section.className = "space-y-5";
+        section.innerHTML = `
+          <div class="flex flex-wrap items-end justify-between gap-3 border-b-2 border-slate-800 pb-3">
+            <div>
+              <h3 class="text-2xl md:text-3xl font-black text-white flex items-center gap-3">
+                <span class="w-11 h-11 rounded-2xl border flex items-center justify-center ${lv.chip}"><i class="fa-solid ${lv.icon}"></i></span>
+                ${lv.name}
+              </h3>
+              <p class="text-sm md:text-base text-slate-400 mt-2">${lv.blurb}</p>
+            </div>
+            <span class="text-sm font-black px-4 py-2 rounded-xl ${passed === mods.length ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/40" : "bg-slate-800 text-slate-300 border border-slate-700"}">${passed} / ${mods.length} passed</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>`;
+        const inner = section.querySelector("div.grid");
+        mods.forEach(mod => {
+          const best = scoresByModule ? scoresByModule[mod.id] : null;
+          inner.appendChild(buildModuleCard(mod, best === undefined ? null : best));
+        });
+        grid.appendChild(section);
       });
     }
 
@@ -1177,6 +2051,8 @@
       const mod = currentModule();
       document.getElementById("lessonTopicCategory").innerText = mod.title;
       document.getElementById("lessonContent").innerHTML = buildLesson(mod);
+      document.getElementById("howToList").innerHTML = mod.how.map(li => `<li>${li}</li>`).join("");
+      document.getElementById("startQuizBtn").innerHTML = `Start the ${mod.size} questions <i class="fa-solid fa-play"></i>`;
       showView("viewLesson");
       window.scrollTo(0, 0);
     }
@@ -1200,20 +2076,20 @@
       if (saved) {
         try {
           const p = JSON.parse(saved);
-          if (p.idx > 0 && p.idx < mod.questions.length &&
-              confirm(`You have an unfinished attempt (${p.idx} of ${mod.questions.length} sentences done).\n\nOK = continue where you stopped\nCancel = start again from the beginning`)) {
+          if (p.idx > 0 && p.idx < mod.size &&
+              confirm(`You have an unfinished attempt (${p.idx} of ${mod.size} questions done).\n\nOK = continue where you stopped\nCancel = start again from the beginning`)) {
             currentQuestions = p.order.map(id => mod.questions.find(q => q.qid === id)).filter(Boolean);
             currentQuestionIdx = p.idx;
             currentScore = p.score;
             quizSeconds = p.seconds || 0;
             attemptLog = p.log || [];
-            resumed = currentQuestions.length === mod.questions.length;
+            resumed = currentQuestions.length === mod.size;
           }
         } catch (e) {}
       }
       if (!resumed) {
         storageDel(progressKey(mod.id));
-        currentQuestions = shuffle(mod.questions);
+        currentQuestions = shuffle(mod.questions).slice(0, mod.size);
         currentQuestionIdx = 0;
         currentScore = 0;
         quizSeconds = 0;
@@ -1242,19 +2118,45 @@
       const q = currentQuestions[currentQuestionIdx];
       const total = currentQuestions.length;
 
-      document.getElementById("quizQuestionCount").innerText = `Sentence ${currentQuestionIdx + 1} of ${total}`;
+      document.getElementById("quizQuestionCount").innerText = `Question ${currentQuestionIdx + 1} of ${total}`;
       document.getElementById("quizProgressBar").style.width = `${((currentQuestionIdx + 1) / total) * 100}%`;
 
-      const t = TENSES[q.tense];
+      const t = TYPES[q.type];
       document.getElementById("quizTypeBadge").innerHTML = `
         <div class="flex flex-wrap justify-between items-center gap-3">
           <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border ${t.badge} text-sm md:text-base font-black uppercase tracking-wider">
             <i class="fa-solid ${t.icon}"></i> ${t.label}
           </span>
-          <span class="text-sm md:text-base font-black text-emerald-400">✔ ${currentScore} / ${currentQuestionIdx} correct</span>
+          <span class="text-sm md:text-base font-black text-emerald-400">\u2714 ${currentScore} / ${currentQuestionIdx} correct</span>
         </div>`;
 
-      document.getElementById("quizSentence").innerHTML = sentenceHtml(q, true);
+      document.getElementById("quizSentence").innerHTML = questionBodyHtml(q);
+
+      const hintZone = document.getElementById("verbFormsHint");
+      if (q.type === "translate") {
+        const v = VERBS[q.verbKey];
+        const words = vocabHints(q.prompt, 7);
+        hintZone.innerHTML = `
+          <button type="button" onclick="toggleQuizHint()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-black px-5 py-3 rounded-2xl transition text-base">
+            \ud83d\udca1 Hint
+          </button>
+          <div id="hintBox" class="hidden mt-3 bg-amber-950/30 border-2 border-amber-500/40 rounded-2xl p-4 space-y-2">
+            <p class="text-base md:text-lg text-amber-100">
+              <span class="font-black uppercase text-xs tracking-widest text-amber-400">Verb</span><br>
+              <strong class="text-white">${escapeHtml(v[0])}</strong> \u2192
+              <strong class="${q.tense === "ps" ? "text-sky-300" : "text-amber-300"}">${escapeHtml((q.tense === "ps" ? v[1] : v[2]).join(" / "))}</strong>
+              <span class="text-amber-300/80">(${q.tense === "ps" ? "past simple" : "have / has + past participle"})</span>
+            </p>
+            ${words.length ? `<div class="pt-2 border-t border-amber-500/30">
+              <span class="font-black uppercase text-xs tracking-widest text-amber-400">Vocabulary</span>
+              ${words.map(w => `<p class="text-base md:text-lg text-amber-200"><strong lang="es">${escapeHtml(w.es)}</strong> = ${escapeHtml(w.en)}</p>`).join("")}
+            </div>` : ""}
+          </div>`;
+        hintZone.classList.remove("hidden");
+      } else {
+        hintZone.innerHTML = "";
+        hintZone.classList.add("hidden");
+      }
 
       document.getElementById("quizFeedback").classList.add("hidden");
       document.getElementById("nextQuestionBtn").classList.add("hidden");
@@ -1262,55 +2164,72 @@
       checkBtn.classList.remove("hidden");
       checkBtn.disabled = false;
 
-      const input = document.getElementById("gap_0");
-      input.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") {
+      const inputs = questionInputs();
+      inputs.forEach((input, i) => {
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key !== "Enter") return;
           ev.preventDefault();
-          if (!answered) checkExercise(); else nextQuestion();
-        }
+          if (answered) { nextQuestion(); return; }
+          if (i < inputs.length - 1) inputs[i + 1].focus(); else checkExercise();
+        });
       });
-      input.focus();
+      if (inputs[0]) inputs[0].focus();
     }
 
     function checkExercise() {
       if (answered) return;
       const q = currentQuestions[currentQuestionIdx];
-      const input = document.getElementById("gap_0");
-      const value = input.value.trim();
-      if (!value) { input.focus(); input.placeholder = "?"; return; }
+      const inputs = questionInputs();
+      const values = inputs.map(i => i.value.trim());
+      if (values.every(v => !v)) { if (inputs[0]) { inputs[0].focus(); inputs[0].placeholder = "?"; } return; }
 
-      const ok = gradeGap(value, q);
-      input.readOnly = true;
-      input.classList.add(ok ? "gap-ok" : "gap-ko");
+      let ok = false, parts = null;
+      if (q.type === "forms") { const r = gradeForms(values, q); ok = r.ok; parts = r.parts; }
+      else if (q.type === "gap") ok = gradeGap(values[0], q);
+      else ok = gradeTranslation(values[0], q);
+
+      inputs.forEach((input, i) => {
+        input.readOnly = true;
+        input.classList.add((parts ? parts[i] : ok) ? "gap-ok" : "gap-ko");
+      });
       answered = true;
       if (ok) currentScore++;
 
-      attemptLog.push({ text: q.text, hint: q.hint, tense: q.tense, user: value, correct: q.answers.join(" / "), ok: ok });
+      attemptLog.push({
+        type: q.type, prompt: questionPromptText(q), user: values.join(" \u00b7 "),
+        correct: modelAnswer(q), ok: ok
+      });
       saveProgress();
 
-      const v = VERBS[q.key];
-      const forms = `<div class="mt-3 text-sm md:text-lg font-black text-slate-300">
-          <span class="text-white">${escapeHtml(v[0])}</span> → <span class="text-sky-300">${escapeHtml(v[1].join(" / "))}</span> → <span class="text-amber-300">${escapeHtml(v[2].join(" / "))}</span>
-          <span class="text-slate-500 font-semibold" lang="es">· ${escapeHtml(v[3])}</span></div>`;
-      const why = q.tense === "ps"
-        ? "Finished past time → <b>past simple (V2)</b>."
-        : "After <b>have / has</b> → <b>past participle (V3)</b>.";
+      let detail = "";
+      if (q.type === "forms") {
+        const v = q.verb;
+        detail = `<div class="mt-3 text-base md:text-xl font-black text-slate-300">
+            <span class="text-emerald-300">${escapeHtml(v.inf)}</span> \u2192 <span class="text-sky-300">${escapeHtml(v.past.join(" / "))}</span> \u2192 <span class="text-amber-300">${escapeHtml(v.part.join(" / "))}</span>
+            <span class="text-slate-500 font-semibold" lang="es"> \u00b7 ${escapeHtml(v.es)}</span></div>`;
+      } else if (q.type === "gap") {
+        detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">${escapeHtml(q.text.replace("___", q.answers[0]))}</div>`;
+      } else {
+        detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">Also accepted:<ul class="list-disc list-inside mt-1 space-y-1">${q.answers.slice(0, 5).map(a => `<li class="text-slate-300 text-base">${escapeHtml(a)}</li>`).join("")}</ul></div>`;
+      }
+
       const feedbackBox = document.getElementById("quizFeedback");
       if (ok) {
         feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-emerald-950/40 border-emerald-500/60 text-emerald-200";
-        feedbackBox.innerHTML = `<strong>CORRECT! 🎉</strong> <span class="font-semibold">${why}</span>${forms}`;
+        feedbackBox.innerHTML = `<strong>CORRECT! \ud83c\udf89</strong>${detail}`;
       } else {
         feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-rose-950/40 border-rose-500/60 text-rose-200";
-        feedbackBox.innerHTML = `
-          <div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${escapeHtml(q.answers.join(" / "))}</span></div>
-          <div class="text-slate-200 font-semibold text-base md:text-xl">${why}</div>${forms}`;
+        const solution = q.type === "forms"
+          ? `${escapeHtml(q.verb.inf)} \u00b7 ${escapeHtml(q.verb.past.join(" / "))} \u00b7 ${escapeHtml(q.verb.part.join(" / "))}`
+          : escapeHtml(q.answers[0]);
+        feedbackBox.innerHTML = `<div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${solution}</span></div>${detail}`;
       }
       feedbackBox.classList.remove("hidden");
       document.getElementById("checkAnswerBtn").classList.add("hidden");
       const nextBtn = document.getElementById("nextQuestionBtn");
       nextBtn.classList.remove("hidden");
       nextBtn.innerHTML = (currentQuestionIdx < currentQuestions.length - 1)
-        ? `Next Sentence <i class="fa-solid fa-arrow-right ml-2"></i>`
+        ? `Next Question <i class="fa-solid fa-arrow-right ml-2"></i>`
         : `See Result <i class="fa-solid fa-flag-checkered ml-2"></i>`;
       nextBtn.focus();
     }
@@ -1339,7 +2258,7 @@
       const percentage = Math.round((currentScore / total) * 100);
       const timeStr = `${Math.floor(quizSeconds / 60)}m ${quizSeconds % 60}s`;
       const nowStr = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
-      const passed = percentage >= PASS_THRESHOLD;
+      const passed = percentage >= passMark(mod);
 
       const record = {
         studentName: fullName(),
@@ -1352,7 +2271,7 @@
         guest: !!currentUser.guest,
         topic: mod.title,
         moduleId: mod.id,
-        exerciseType: "irregular_verbs_gaps",
+        exerciseType: "irregular_verbs_levels",
         score: percentage,
         rawScore: `${currentScore}/${total}`,
         passed: passed,
@@ -1360,7 +2279,7 @@
         timeSpent: timeStr,
         dateTime: nowStr,
         timestamp: Date.now(),
-        answers: attemptLog.map(a => ({ text: a.text, hint: a.hint, tense: a.tense, user: a.user, correct: a.correct, ok: a.ok }))
+        answers: attemptLog.map(a => ({ prompt: a.prompt, type: a.type, user: a.user, correct: a.correct, ok: a.ok }))
       };
 
       const message = passed
@@ -1375,8 +2294,8 @@
         : `
           <div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
             <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> You have to try again!</p>
-            <p class="text-slate-200 text-base md:text-lg">You got <strong>${currentScore} out of ${total}</strong>. You need <strong class="text-amber-300">at least ${PASS_THRESHOLD}% (${Math.ceil(total * PASS_THRESHOLD / 100)} out of ${total})</strong> to pass.
-            Remember: <strong>for your work to count, you must pass ALL the modules</strong>.</p>
+            <p class="text-slate-200 text-base md:text-lg">You got <strong>${currentScore} out of ${total}</strong>. You need <strong class="text-amber-300">at least ${passMark(mod)}% (${Math.ceil(total * passMark(mod) / 100)} out of ${total})</strong> to pass.
+            Remember: <strong>for your work to count, you must pass every level of every module</strong>.</p>
             <p class="text-slate-300 text-base md:text-lg">Study the verb list again, look at your mistakes below and have another go. You can do it! 💪
             When you pass, take a screenshot of your result and send it to your teacher through Google Classroom.</p>
           </div>`;
@@ -1391,9 +2310,9 @@
           <div class="flex justify-between gap-3"><span class="text-slate-400">Name:</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.firstName)}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Surname(s):</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.lastName)}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Group:</span> <span class="font-bold text-emerald-300">${escapeHtml(currentUser.grade)}</span></div>
-          <div class="flex justify-between gap-3"><span class="text-slate-400">Module:</span> <span class="font-bold text-emerald-400 text-right">${mod.title}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Exercise:</span> <span class="font-bold text-emerald-400 text-right">${mod.title}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Score:</span> <span class="font-bold text-white">${record.rawScore} (${percentage}%)</span></div>
-          <div class="flex justify-between gap-3"><span class="text-slate-400">Result:</span> <span class="font-bold ${passed ? "text-emerald-400" : "text-rose-400"} text-right">${passed ? "✅ Passed" : "⚠️ Not passed (minimum " + PASS_THRESHOLD + "%)"}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Result:</span> <span class="font-bold ${passed ? "text-emerald-400" : "text-rose-400"} text-right">${passed ? "✅ Passed" : "⚠️ Not passed (minimum " + passMark(mod) + "%)"}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Time:</span> <span class="font-bold text-emerald-400">${timeStr}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Class code:</span> <span class="font-bold text-amber-400">${currentUser.guest ? "— (guest · not saved)" : escapeHtml(currentUser.classCode)}</span></div>
           <div class="flex justify-between gap-3"><span class="text-slate-400">Date:</span> <span class="font-bold text-white">${nowStr}</span></div>
@@ -1415,21 +2334,22 @@
     function renderReview() {
       const wrong = attemptLog.filter(a => !a.ok).length;
       const rows = attemptLog.map((a, idx) => {
-        const t = TENSES[a.tense];
-        const parts = a.text.split("___");
+        const t = TYPES[a.type] || TYPES.gap;
         return `
           <div class="bg-slate-950 border ${a.ok ? "border-emerald-500/30" : "border-rose-500/50"} rounded-2xl p-3 md:p-4 text-left">
             <div class="flex justify-between items-start gap-3 mb-1">
               <span class="text-sm font-black ${a.ok ? "text-emerald-400" : "text-rose-400"}"><i class="fa-solid ${a.ok ? "fa-circle-check" : "fa-circle-xmark"}"></i> ${idx + 1}</span>
               <span class="text-[11px] font-black uppercase px-2 py-1 rounded-lg border ${t.badge}">${t.label}</span>
             </div>
-            <p class="text-base md:text-lg text-slate-200 font-semibold">${escapeHtml(parts[0])}<span class="${a.ok ? "text-emerald-300" : "text-rose-300 line-through"} font-mono">${escapeHtml(a.user) || "—"}</span>${a.ok ? "" : ` <span class="text-emerald-300 font-mono">${escapeHtml(a.correct)}</span>`}${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono text-sm">(${escapeHtml(a.hint)})</span></p>
+            <p class="text-base md:text-lg text-slate-200 font-semibold">${escapeHtml(a.prompt)}</p>
+            <p class="text-sm md:text-base mt-1"><span class="text-slate-500">You wrote:</span> <span class="${a.ok ? "text-emerald-300" : "text-rose-300"} font-mono">${escapeHtml(a.user) || "\u2014"}</span></p>
+            ${a.ok ? "" : `<p class="text-sm md:text-base"><span class="text-slate-500">Correct:</span> <span class="text-emerald-300 font-mono">${escapeHtml(a.correct)}</span></p>`}
           </div>`;
       }).join("");
       document.getElementById("reviewCard").innerHTML = `
         <p class="text-sm md:text-base font-bold text-slate-300 border-b border-slate-800 pb-3 mb-3">
           <i class="fa-solid fa-user text-emerald-400 mr-1"></i> ${escapeHtml(currentUser.firstName)} <span class="text-emerald-300">${escapeHtml(currentUser.lastName)}</span>
-          <span class="text-slate-500">·</span> <span class="text-amber-300">Group: ${escapeHtml(currentUser.grade)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-amber-300">Group: ${escapeHtml(currentUser.grade)}</span>
         </p>
         <div class="flex justify-between items-center mb-2 gap-3">
           <h3 class="text-xl md:text-2xl font-black text-white"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i>Correction (${wrong} mistake${wrong === 1 ? "" : "s"})</h3>
@@ -1473,16 +2393,23 @@
       fetchMyRecords((records) => {
         let completedCount = 0, passedCount = 0, sum = 0, secondsSum = 0;
         let breakdownHtml = "";
-        MODULES.forEach(mod => {
+        LEVELS.forEach(lv => {
+          const mine = modulesOfLevel(lv.n);
+          const donos = mine.filter(m => records.some(r => r && r.moduleId === m.id)).length;
+          breakdownHtml += `<div class="md:col-span-2 mt-2 flex items-center justify-between gap-3">
+              <span class="text-sm font-black px-3 py-1 rounded-xl border ${lv.chip}">${lv.name}</span>
+              <span class="text-xs font-bold text-slate-500">${donos} / ${mine.length} done</span>
+            </div>`;
+          mine.forEach(mod => {
           const list = records.filter(r => r && r.moduleId === mod.id);
           if (list.length) {
             const best = list.reduce((max, r) => (Number(r.score) > Number(max.score) ? r : max), list[0]);
-            const ok = Number(best.score) >= PASS_THRESHOLD;
+            const ok = Number(best.score) >= passMark(mod);
             completedCount++; if (ok) passedCount++;
             sum += Number(best.score) || 0; secondsSum += best.secondsSpent || 0;
             breakdownHtml += `
               <div class="flex justify-between items-center bg-slate-950/80 p-4 rounded-xl border ${ok ? "border-emerald-500/40" : "border-rose-500/50"} text-sm md:text-base">
-                <span class="font-extrabold text-white">${mod.title}</span>
+                <span class="font-extrabold text-white">${mod.moduleTitle}</span>
                 <div class="text-right">
                   <span class="font-black ${ok ? "text-emerald-400" : "text-rose-400"}">${ok ? "✅" : "❌"} ${best.score}%</span>
                   <span class="text-slate-500 text-xs ml-2">(${best.rawScore || ""} · ${list.length} attempt${list.length > 1 ? "s" : ""})</span>
@@ -1491,10 +2418,11 @@
           } else {
             breakdownHtml += `
               <div class="flex justify-between items-center bg-slate-950/30 p-4 rounded-xl border border-slate-800/40 text-sm opacity-60">
-                <span class="font-bold text-slate-400">${mod.title}</span>
+                <span class="font-bold text-slate-400">${mod.moduleTitle}</span>
                 <span class="text-rose-400 font-bold italic">Pending</span>
               </div>`;
           }
+          });
         });
 
         if (completedCount < MODULES.length) {
@@ -1503,7 +2431,7 @@
             <div class="text-center py-4 space-y-4">
               <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl border-2 border-amber-500/40"><i class="fa-solid fa-triangle-exclamation"></i></div>
               <h3 class="text-2xl font-black text-white">Incomplete</h3>
-              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> modules. Pass all of them with at least <strong class="text-amber-300">${PASS_THRESHOLD}%</strong> to complete the irregular verbs.</p>
+              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> levels (5 modules \u00d7 3 levels). Pass all of them to complete the irregular verbs.</p>
               <div class="space-y-2 text-left my-4">${breakdownHtml}</div>
               <button onclick="goHome()" class="no-print bg-emerald-600 text-white font-extrabold px-8 py-4 rounded-2xl text-base">Go back and continue</button>
             </div>`;
@@ -1517,12 +2445,12 @@
           ? `<div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
                <div class="text-5xl">🏆🎉</div>
                <h3 class="text-2xl md:text-3xl font-black text-emerald-300">CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
-               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} modules</strong>: you know the irregular verbs!</p>
+               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} levels</strong>: you know the irregular verbs!</p>
                <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold"><i class="fa-solid fa-camera"></i> Take a <strong>SCREENSHOT</strong> of this final result and send it to your teacher through <strong>Google Classroom</strong>.</div>
              </div>`
           : `<div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
                <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> Keep going — you're not there yet!</p>
-               <p class="text-slate-200 text-base md:text-lg">You have passed <strong>${passedCount} of ${MODULES.length}</strong> modules. Your work only counts when you pass <strong>ALL the modules</strong> with at least ${PASS_THRESHOLD}%. Repeat the modules marked in red — you can do it! 💪</p>
+               <p class="text-slate-200 text-base md:text-lg">You have passed <strong>${passedCount} of ${MODULES.length}</strong> levels. Your work only counts when you pass <strong>all of them</strong>. Repeat the ones marked in red \u2014 you can do it! \ud83d\udcaa</p>
              </div>`;
 
         container.innerHTML = `
@@ -1542,7 +2470,7 @@
           </div>
           ${msg}
           <div>
-            <p class="text-xs font-black uppercase text-slate-400 mb-3 tracking-wider">Best score in each module</p>
+            <p class="text-xs font-black uppercase text-slate-400 mb-3 tracking-wider">Best score in each module and level</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${breakdownHtml}</div>
           </div>
           <div class="pt-4 border-t border-slate-800 flex justify-center no-print">
@@ -1568,7 +2496,7 @@
     let teacherLegacyRecords = [];
     let teacherOpenRows = new Set();
     let currentTeacherScope = [];
-    const TEACHER_COLSPAN = 7 + MODULES.length;
+    const TEACHER_COLSPAN = 7 + LEVELS.length;
 
     function showTeacherLogin() {
       const pin = prompt("Teacher PIN / PIN del profesor:");
@@ -1687,7 +2615,7 @@
           <th class="p-3">Surname(s)</th>
           <th class="p-3">Group</th>
           <th class="p-3">Code</th>
-          ${MODULES.map(m => `<th class="p-3 text-center">${m.short}</th>`).join("")}
+          ${LEVELS.map(lv => `<th class="p-3 text-center">${lv.tag} \u00b7 ${lv.type === "forms" ? "forms" : (lv.type === "gap" ? "gaps" : "transl.")}</th>`).join("")}
           <th class="p-3 text-center">Average</th>
           <th class="p-3 text-center">Result</th>
           <th class="p-3">Last activity</th>
@@ -1731,11 +2659,18 @@
           return list.length ? Math.max(...list.map(a => Number(a.score) || 0)) : null;
         });
         const moduleAttempts = MODULES.map(mod => st.attempts.filter(a => a.moduleId === mod.id).length);
+        const levelStats = LEVELS.map(lv => {
+          const idx = MODULES.map((m, i) => i).filter(i => MODULES[i].level === lv.n);
+          const got = idx.filter(i => moduleScores[i] !== null);
+          const passed = got.filter(i => moduleScores[i] >= passMark(MODULES[i])).length;
+          const avg = got.length ? Math.round(got.reduce((a, i) => a + moduleScores[i], 0) / got.length) : null;
+          return { done: got.length, total: idx.length, passed: passed, avg: avg };
+        });
         const completedCount = moduleScores.filter(sc => sc !== null).length;
         const allDone = completedCount === MODULES.length;
-        const allPassed = allDone && moduleScores.every(sc => sc >= PASS_THRESHOLD);
+        const allPassed = allDone && moduleScores.every((sc, i) => sc >= passMark(MODULES[i]));
         const finalAverage = allDone ? Math.round(moduleScores.reduce((a, sc) => a + sc, 0) / MODULES.length) : null;
-        return Object.assign({}, st, { moduleScores, moduleAttempts, completedCount, allDone, allPassed, finalAverage });
+        return Object.assign({}, st, { moduleScores, moduleAttempts, levelStats, completedCount, allDone, allPassed, finalAverage });
       });
     }
 
@@ -1746,8 +2681,8 @@
       const avg = done.length ? Math.round(done.reduce((a, s) => a + s.finalAverage, 0) / done.length) : 0;
       document.getElementById("teacherStatsGrid").innerHTML = `
         <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-white">${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Students</div></div>
-        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${done.length}/${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Did all modules</div></div>
-        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${passed}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Passed (all \u2265 ${PASS_THRESHOLD}%)</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${done.length}/${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Did all 15 levels</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${passed}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Passed everything</div></div>
         <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-amber-400">${avg}%</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Group average</div></div>`;
     }
 
@@ -1787,11 +2722,11 @@
           <span class="text-slate-500">\u00b7</span> <span class="text-slate-400">${escapeHtml(s.email)}</span>
         </p>`;
       const body = attempts.map(a => {
-        const ok = Number(a.score) >= PASS_THRESHOLD;
+        const ok = Number(a.score) >= passMarkOf(a.moduleId);
         const answers = Array.isArray(a.answers) ? a.answers : Object.values(a.answers || {});
         const lines = answers.map((x, i) => `
           <div class="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-3 py-1 border-b border-slate-800/60 text-xs md:text-sm">
-            <span class="text-slate-200">${i + 1}. ${escapeHtml((x.text || "").replace("___", "____"))} <span class="text-amber-400">(${escapeHtml(x.hint || "")})</span></span>
+            <span class="text-slate-200">${i + 1}. ${escapeHtml(x.prompt || x.text || "")}</span>
             <span class="${x.ok ? "text-emerald-300" : "text-rose-300"} font-mono">${x.ok ? "\u2714" : "\u2718"} ${escapeHtml(x.user) || "\u2014"}</span>
             <span class="text-slate-400 font-mono">${x.ok ? "" : "\u2192 " + escapeHtml(x.correct)}</span>
           </div>`).join("");
@@ -1825,10 +2760,10 @@
         tr.className = "hover:bg-slate-800/50 transition cursor-pointer";
         tr.onclick = () => toggleStudentDetail(s.key);
 
-        const moduleCells = s.moduleScores.map((score, i) => {
-          if (score === null) return `<td class="p-3 text-center text-slate-600">\u2014</td>`;
-          const cls = score >= PASS_THRESHOLD ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400";
-          return `<td class="p-3 text-center"><span class="inline-block px-2 py-1 rounded-lg font-black text-xs ${cls}">${score}%</span><span class="block text-[10px] text-slate-500 mt-1">${s.moduleAttempts[i]} att.</span></td>`;
+        const moduleCells = s.levelStats.map((st, i) => {
+          if (!st.done) return `<td class="p-3 text-center text-slate-600">\u2014</td>`;
+          const cls = st.passed === st.total ? "bg-emerald-500/15 text-emerald-400" : (st.avg >= passMark(modulesOfLevel(i + 1)[0]) ? "bg-amber-500/15 text-amber-300" : "bg-rose-500/15 text-rose-400");
+          return `<td class="p-3 text-center"><span class="inline-block px-2 py-1 rounded-lg font-black text-xs ${cls}">${st.passed}/${st.total}</span><span class="block text-[10px] text-slate-500 mt-1">avg ${st.avg}%</span></td>`;
         }).join("");
 
         const avgCell = s.allDone
