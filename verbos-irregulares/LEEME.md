@@ -25,30 +25,28 @@ GitHub te preguntará si quieres reemplazar el anterior.
 Están en el archivo, arriba del todo (busca `C O N F I G U R A C I O N`).
 Uno por grupo:
 
-| Grupo | Código |
-|-------|--------|
-| 1º ESO | `1ESO-PWDJ` |
-| 2º ESO | `2ESO-XH9J` |
-| **3º ESO A/B** | **`E3AB`** |
-| **3º ESO B/C** | **`E3BC`** |
-| 4º ESO | `4ESO-XAXD` |
-| 1º BTO | `1BTO-976F` |
-| 2º BTO | `2BTO-KMJR` |
+Los códigos de verdad están escritos en el propio `index.html`, arriba del
+todo, en `CLASS_CODES`. Ahí es donde los cambias.
 
-Un mismo grupo puede tener varios códigos: los de 3º ESO eligen `3ESO` en la
-casilla del grupo y luego escriben `E3AB` o `E3BC` según su clase. En el panel
-del profesor los distingues por la columna **Code**. Debajo de la casilla del
-código los alumnos ven el aviso que hay en `CODE_HINT`, que puedes cambiar.
-
-- Se dictan en clase o se pegan en Google Classroom.
+- Un mismo grupo puede tener **varios códigos**. Por ejemplo, las dos clases
+  de 3º ESO: las dos eligen `3ESO` en el desplegable del curso y cada alumno
+  escribe el código de su clase. **La web no dice en ningún sitio cuál es
+  cuál**: el código se lo das tú en clase o por Google Classroom.
+- En el panel del profesor los distingues por la columna **Code**, o
+  escribiendo el código en el buscador para ver solo esa clase.
 - El **curso** (1ESO … 2BTO) lo elige siempre el alumno en el desplegable,
   tenga código o no: los alumnos de otros profesores también dejan constancia
   de su curso en su informe.
-- Borra del archivo las líneas de los grupos que no des.
 - Si un código se filtra, cámbialo por otro: los resultados antiguos siguen
   guardados bajo el código viejo y los nuevos van al nuevo.
-- **PIN del panel del profesor: `nuria123`** (botón ⚙️ Teacher). Solo lo usas
-  tú; cámbialo cuando quieras en la línea `TEACHER_PIN`.
+- El **PIN del panel** (botón ⚙️ Teacher) está en la línea `TEACHER_PIN`.
+  Solo lo usas tú.
+- `window.CODE_HINT` permite poner un aviso debajo de la casilla del código.
+  Déjalo vacío (`""`) para que no aparezca nada.
+
+A GitHub solo hace falta subir el `index.html`. Este `LEEME.md` y el
+`reglas-firebase.json` son para ti; si el repositorio es público, mejor no
+los subas.
 
 ## 3. Otros profesores
 
