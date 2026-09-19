@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Grammar Academy | Irregular Verbs · Three Exercises</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #090d16 0%, #111827 50%, #14532d 100%); }
+    .neon-border { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+    .neon-border:hover { box-shadow: 0 0 25px rgba(52, 211, 153, 0.45); }
+
+    .gap-input {
+      background: #020617;
+      border: none;
+      border-bottom: 3px solid #475569;
+      color: #fff;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 10px;
+      margin: 0 4px 6px;
+      border-radius: 6px 6px 0 0;
+      outline: none;
+      transition: all .15s ease;
+      display: inline-block;
+      min-width: 7ch;
+      max-width: 100%;
+    }
+    .gap-input:focus { border-bottom-color: #34d399; background: #0b1220; }
+    .gap-input.wide { display: block; width: 100%; min-width: 0; text-align: left; border: 2px solid #334155; border-radius: 14px; padding: 12px 16px; margin: 0; }
+    .gap-input.wide:focus { border-color: #34d399; }
+    .gap-input.wide::placeholder { color: #475569; font-weight: 600; }
+    .gap-ok { border-bottom-color: #10b981 !important; color: #6ee7b7 !important; background: rgba(6,78,59,.45) !important; }
+    .gap-ko { border-bottom-color: #f43f5e !important; color: #fda4af !important; background: rgba(76,5,25,.45) !important; }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-card { border: 2px solid #000 !important; background: #fff !important; color: #000 !important; }
+    }
+  </style>
+
+<!-- 1. Firebase libraries -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  // 2. Firebase configuration (same project as the reference app)
+  window.firebaseConfig = {
+    apiKey: "AIzaSyD1kMkporqrJFZNfEakmzQjFngkmF4detQ",
+    authDomain: "goya-english.firebaseapp.com",
+    databaseURL: "https://goya-english-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "goya-english",
+    storageBucket: "goya-english.firebasestorage.app",
+    messagingSenderId: "707378371042",
+    appId: "1:707378371042:web:a85b3c8d179156cc7a41bb",
+    measurementId: "G-9L8SR3268E"
+  };
+
+  // 3. Safe initialisation
+  if (!firebase.apps.length) {
+    firebase.initializeApp(window.firebaseConfig);
+  }
+  const db = firebase.database();
+
+  // =====================================================================
+  //   C O N F I G U R A C I O N   ->   esto es lo unico que hay que tocar
+  // =====================================================================
+
+  // (1) TU NOMBRE y TU CONTRASENA del boton gris "Teacher" de arriba a la
+  //     derecha. Con ella entras al panel de resultados. Cambiala cuando
+  //     quieras: no hay que avisar a nadie, los alumnos no la usan.
+  window.TEACHER_NAME = "Nuria Calvo";
+  window.TEACHER_PIN  = "nuria123";
+
+  // (2) LOS CODIGOS QUE REPARTES A TUS ALUMNOS: uno por grupo.
+  //     Borra las lineas de los grupos que no des este curso.
+  //     Si cambias un codigo, ese grupo empieza de cero (los resultados
+  //     viejos siguen guardados bajo el codigo antiguo).
+  //     Un mismo grupo puede tener varios codigos (por ejemplo dos clases
+  //     de 3 ESO): el alumno elige su curso en el desplegable y escribe el
+  //     codigo que le corresponda. La web no dice cual es cual.
+  window.CLASS_CODES = [
+    "1ESO-PWDJ",
+    "2ESO-XH9J",
+    "E3AB",
+    "E3BC",
+    "4ESO-XAXD",
+    "1BTO-976F",
+    "2BTO-KMJR"
+  ];
+
+  //     Texto que veran los alumnos debajo de la casilla del codigo.
+  //     Vacio ("") = no aparece nada, que es lo normal: el codigo se lo
+  //     das tu en clase y la web no da ninguna pista.
+  window.CODE_HINT = "";
+
+  // (3) MODO INVITADO: quien no tenga codigo (otros profesores y sus
+  //     alumnos) puede hacer los ejercicios, ver su nota e imprimirla,
+  //     pero NO se guarda nada en la nube: cero gasto de tu Firebase.
+  //     Ponlo en false si quieres que sin codigo no se pueda entrar.
+  window.ALLOW_GUEST_MODE = true;
+
+  // (4) AVANZADO (normalmente se deja vacio): si un companero quiere que
+  //     SUS resultados se guarden en TU base de datos, anade aqui su
+  //     codigo y su contrasena. Solo vera lo suyo y tu solo veras lo tuyo.
+  window.EXTRA_TEACHERS = [
+    // { code: "MARTA26", teacher: "Marta", pin: "supin2026" }
+  ];
+
+  // ---- a partir de aqui no hace falta tocar nada ----
+  // Nodo propio de esta app (no se mezcla con las demas apps).
+  const RESULTS_NODE = "irregular_verbs_3en1";
+
+  window.CLASSES = window.CLASS_CODES
+    .map(c => ({ code: c, teacher: window.TEACHER_NAME, pin: window.TEACHER_PIN }))
+    .concat(window.EXTRA_TEACHERS || []);
+</script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen gradient-bg flex flex-col selection:bg-emerald-500 selection:text-white">
+
+<!-- FLOATING TEACHER BUTTON -->
+<button onclick="showTeacherLogin()" style="position: fixed; top: 15px; right: 15px; z-index: 99999; padding: 10px 16px; background-color: #059669; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);" class="no-print">
+  ⚙️ Teacher
+</button>
+
+  <!-- NAVBAR -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-filter blur-md sticky top-0 z-50 py-4 no-print">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
+      <div class="flex items-center space-x-4 cursor-pointer" onclick="goHome()">
+        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-600 flex items-center justify-center font-black text-2xl md:text-3xl text-white shadow-lg shadow-emerald-500/40">
+          E
+        </div>
+        <div>
+          <h1 class="font-black text-2xl md:text-3xl text-white tracking-wider">ENGLISH<span class="text-emerald-400">PRO</span></h1>
+          <p class="text-sm font-semibold text-slate-400">Irregular Verbs · Three Exercises</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="userInfoHeader" class="hidden text-right text-sm md:text-base text-slate-300 bg-slate-800/90 px-4 py-2 rounded-xl border border-slate-700"></div>
+
+        <button onclick="toggleFullScreen()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 px-5 py-3 rounded-2xl font-black text-sm md:text-base transition flex items-center gap-2 shadow-lg shadow-emerald-600/30">
+          <i class="fa-solid fa-expand text-lg"></i> <span class="hidden md:inline">Full Screen</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center">
+
+    <!-- STUDENT REGISTRATION -->
+    <section id="viewRegistration" class="space-y-6 max-w-xl mx-auto w-full py-6">
+      <div class="text-center space-y-3">
+        <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full text-xs md:text-sm font-extrabold uppercase tracking-widest border border-emerald-500/30">Student Portal</span>
+        <h2 class="text-3xl md:text-5xl font-black text-white">Irregular Verbs! 🇬🇧</h2>
+        <p class="text-slate-300 text-base md:text-xl">Three exercises: write the <strong>three forms</strong> of each verb, <strong>fill in the gaps</strong> and <strong>translate</strong> sentences into English.</p>
+      </div>
+
+      <form id="regForm" onsubmit="handleRegistration(event)" class="bg-slate-900/95 border-2 border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">First name</label>
+          <input type="text" id="regFirstName" required placeholder="e.g. Alex" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Surname(s)</label>
+          <input type="text" id="regLastName" required placeholder="e.g. García López" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Email</label>
+          <input type="email" id="regEmail" required placeholder="student@school.com" class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Group / Grupo</label>
+          <select id="regGrade" required class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-lg md:text-xl text-white focus:outline-none focus:border-emerald-500 transition">
+            <option value="" disabled selected>Select your group...</option>
+            <option value="1ESO">1ESO</option>
+            <option value="2ESO">2ESO</option>
+            <option value="3ESO">3ESO</option>
+            <option value="4ESO">4ESO</option>
+            <option value="1BTO">1BTO</option>
+            <option value="2BTO">2BTO</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Class code</label>
+          <input type="text" id="regClassCode" required placeholder="e.g. ABC123" autocomplete="off" autocapitalize="characters"
+            class="w-full bg-slate-950 border-2 border-amber-500/40 rounded-2xl px-5 py-4 text-lg md:text-xl text-white font-black tracking-widest uppercase focus:outline-none focus:border-amber-400 transition">
+          <p class="text-xs md:text-sm text-slate-400 mt-2 leading-snug">
+            Your own teacher gives you this code. Your work is sent <strong>only</strong> to that teacher.
+          </p>
+          <p id="regCodeHint" class="hidden text-sm font-bold text-amber-300 mt-2"></p>
+          <p id="regCodeError" class="hidden text-sm font-bold text-rose-400 mt-2"></p>
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3 mt-4">
+          Enter the Academy <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <div id="guestBox" class="hidden pt-2 text-center border-t border-slate-800 mt-2">
+          <p class="text-sm text-slate-400 mt-4 mb-3">Don’t have a code? You can still practise: your marks appear on screen and you can print them, but <strong>nothing is sent to any teacher</strong>.</p>
+          <p class="text-xs text-slate-500 mb-3 leading-snug"><i class="fa-solid fa-circle-info"></i> <strong>Other teachers:</strong> your students are welcome to use this app in guest mode. They get every exercise and their own report on screen — it just isn’t stored, so nothing reaches another teacher’s marks list.</p>
+          <button type="button" onclick="enterGuestMode()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-base md:text-lg py-4 rounded-2xl transition flex items-center justify-center gap-3">
+            <i class="fa-solid fa-user-clock"></i> Practise without a code
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- MAIN DASHBOARD -->
+    <section id="viewDashboard" class="hidden space-y-8 py-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-900/90 border-2 border-slate-800 p-6 md:p-8 rounded-3xl">
+        <div>
+          <h2 class="text-3xl md:text-5xl font-black text-white" id="welcomeUserText">Hi!</h2>
+          <p class="text-slate-300 text-lg md:text-xl mt-1">There are <strong>3 exercises</strong> of 50 questions each. Pass every one of them and send a <strong>screenshot</strong> of your result to your teacher.</p>
+        </div>
+        <button onclick="showGlobalReportModal()" class="w-full md:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg md:text-xl px-8 py-5 rounded-2xl transition flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30">
+          <i class="fa-solid fa-graduation-cap text-2xl"></i> FINAL REPORT
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid"></div>
+    </section>
+
+    <!-- THEORY GUIDE -->
+    <section id="viewLesson" class="hidden space-y-6 py-4">
+      <div class="flex justify-between items-center no-print">
+        <button onclick="goHome()" class="text-base md:text-lg font-bold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-chevron-left"></i> Back to dashboard
+        </button>
+        <span class="text-base font-black text-emerald-400 uppercase tracking-widest" id="lessonTopicCategory">Grammar Guide</span>
+      </div>
+
+      <div class="bg-slate-900/95 border-2 border-slate-800 rounded-3xl p-6 md:p-10 space-y-8 text-slate-100 text-xl md:text-2xl leading-relaxed shadow-2xl" id="lessonContent"></div>
+
+      <!-- HOW TO ANSWER -->
+      <div class="bg-emerald-950/40 border-2 border-emerald-500/40 rounded-3xl p-6 md:p-8 space-y-3">
+        <h3 class="text-emerald-300 font-black text-xl md:text-2xl flex items-center gap-3"><i class="fa-solid fa-pen-to-square"></i> How to answer</h3>
+        <ul id="howToList" class="text-base md:text-xl text-slate-200 space-y-2 list-disc list-inside"></ul>
+      </div>
+
+      <div class="flex justify-end no-print">
+        <button id="startQuizBtn" onclick="startCurrentQuiz()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3">
+          Start <i class="fa-solid fa-play"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- LIVE EXERCISES -->
+    <section id="viewQuiz" class="hidden space-y-6 py-2">
+      <div class="flex justify-between items-center bg-slate-900 border-2 border-slate-800 p-5 md:p-6 rounded-2xl">
+        <div>
+          <span class="text-sm md:text-base text-emerald-400 font-extrabold uppercase tracking-wider" id="quizCategoryTitle">Exercises</span>
+          <h3 class="text-2xl md:text-4xl font-black text-white" id="quizQuestionCount">Question 1 of 50</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-sm md:text-base text-slate-400 font-bold">Time</span>
+          <div id="quizTimer" class="font-mono font-black text-3xl md:text-5xl text-emerald-400">00:00</div>
+        </div>
+      </div>
+
+      <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+        <div id="quizProgressBar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width: 10%;"></div>
+      </div>
+
+      <div class="bg-slate-900/90 border-2 border-slate-800 p-6 md:p-10 rounded-3xl space-y-6 shadow-2xl">
+        <div id="quizTypeBadge"></div>
+        <p class="text-2xl md:text-4xl font-extrabold text-white leading-relaxed" id="quizSentence">Loading...</p>
+        <div id="verbFormsHint" class="hidden"></div>
+        <div id="quizFeedback" class="hidden p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2"></div>
+        <div class="flex justify-end no-print">
+          <button id="checkAnswerBtn" onclick="checkExercise()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+            <i class="fa-solid fa-check mr-2"></i> Check
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 no-print">
+        <button onclick="quitQuiz()" class="text-base md:text-lg font-bold text-slate-400 hover:text-slate-200">Quit the test</button>
+        <button id="nextQuestionBtn" onclick="nextQuestion()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+          Next Sentence <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- PARTIAL RESULT -->
+    <section id="viewResults" class="hidden space-y-6 py-6 max-w-3xl mx-auto w-full">
+      <div id="resultsCard" class="bg-slate-900 border-2 border-slate-800 p-8 md:p-10 rounded-3xl text-center space-y-6 shadow-2xl"></div>
+      <div id="reviewCard" class="bg-slate-900 border-2 border-slate-800 p-6 md:p-8 rounded-3xl space-y-3 shadow-2xl"></div>
+    </section>
+
+    <!-- FINAL GLOBAL REPORT -->
+    <section id="viewGlobalReport" class="hidden py-4 max-w-3xl mx-auto w-full">
+      <div id="screenCaptureArea" class="bg-slate-900 border-4 border-emerald-500/50 p-6 md:p-8 rounded-3xl space-y-5 shadow-2xl relative overflow-hidden print-card">
+        <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-9xl font-black text-white select-none">
+          ENGLISHPRO
+        </div>
+
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Irregular Verbs · Three Exercises</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white mt-1">Final Assessment Report</h2>
+          </div>
+          <button onclick="goHome()" class="no-print text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-xmark"></i> Close
+          </button>
+        </div>
+
+        <div id="globalReportDetails" class="space-y-5"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER PANEL -->
+    <section id="viewTeacher" class="hidden space-y-6 py-6">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-black text-white" id="teacherTitle">Teacher Dashboard</h2>
+          <p id="teacherSubtitle" class="text-base text-slate-400">One row per student · click a student to see every attempt and every answer they wrote.</p>
+        </div>
+        <button onclick="goHome()" class="text-sm md:text-base bg-slate-800 text-slate-300 font-bold px-5 py-3 rounded-xl">Exit</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="teacherStatsGrid"></div>
+
+      <div class="flex flex-col md:flex-row gap-3 md:items-center">
+        <input id="teacherSearchInput" type="text" placeholder="🔍 Search student by name, surname, group or email..." oninput="filterTeacherTable(this.value)"
+          class="flex-1 bg-slate-900 border-2 border-slate-800 rounded-2xl px-5 py-3 text-base text-white focus:outline-none focus:border-emerald-500 transition">
+        <button id="teacherRefreshBtn" onclick="refreshTeacherDashboardNow()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-3 rounded-2xl transition flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+        <button onclick="exportTeacherCsv()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-5 py-3 rounded-2xl transition flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+      </div>
+      <p id="teacherLastRefreshed" class="text-xs text-slate-500 -mt-2">Loading...</p>
+
+      <div class="bg-slate-900 border-2 border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm md:text-base text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-xs" id="teacherTableHead"></thead>
+            <tbody id="teacherTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 py-4 text-center text-sm text-slate-500 font-semibold no-print">
+    EnglishPRO Academy • Irregular Verbs · Three Exercises • Designed for ESO &amp; Bachillerato
+  </footer>
+  <script>
+    /* ============================================================
+       IRREGULAR VERB LIST (from the textbook, page 150)
+       key: [base form, past simple forms, past participle forms, Spanish]
+       ============================================================ */
+    /* ============================================================
+       IRREGULAR VERB LIST  (109 verbs)
+       es = meaning in Spanish | inf = V1 | past = V2 | part = V3
+       ============================================================ */
+    const VERBS = [
+      { es: "ser", inf: "be", past: ["was", "were"], part: ["been"] },
+      { es: "golpear, latido", inf: "beat", past: ["beat"], part: ["beaten"] },
+      { es: "volverse, llegar a ser", inf: "become", past: ["became"], part: ["become"] },
+      { es: "comenzar", inf: "begin", past: ["began"], part: ["begun"] },
+      { es: "doblar, torcer", inf: "bend", past: ["bent"], part: ["bent"] },
+      { es: "apostar", inf: "bet", past: ["bet"], part: ["bet"] },
+      { es: "morder", inf: "bite", past: ["bit"], part: ["bitten"] },
+      { es: "sangrar", inf: "bleed", past: ["bled"], part: ["bled"] },
+      { es: "soplar", inf: "blow", past: ["blew"], part: ["blown"] },
+      { es: "romper", inf: "break", past: ["broke"], part: ["broken"] },
+      { es: "traer", inf: "bring", past: ["brought"], part: ["brought"] },
+      { es: "construir", inf: "build", past: ["built"], part: ["built"] },
+      { es: "comprar", inf: "buy", past: ["bought"], part: ["bought"] },
+      { es: "atrapar, coger", inf: "catch", past: ["caught"], part: ["caught"] },
+      { es: "elegir", inf: "choose", past: ["chose"], part: ["chosen"] },
+      { es: "venir", inf: "come", past: ["came"], part: ["come"] },
+      { es: "costar", inf: "cost", past: ["cost"], part: ["cost"] },
+      { es: "cortar", inf: "cut", past: ["cut"], part: ["cut"] },
+      { es: "cavar", inf: "dig", past: ["dug"], part: ["dug"] },
+      { es: "hacer, verbo auxiliar", inf: "do", past: ["did"], part: ["done"] },
+      { es: "dibujar", inf: "draw", past: ["drew"], part: ["drawn"] },
+      { es: "soñar", inf: "dream", past: ["dreamt"], part: ["dreamt"] },
+      { es: "beber", inf: "drink", past: ["drank"], part: ["drunk"] },
+      { es: "conducir", inf: "drive", past: ["drove"], part: ["driven"] },
+      { es: "comer", inf: "eat", past: ["ate"], part: ["eaten"] },
+      { es: "caer", inf: "fall", past: ["fell"], part: ["fallen"] },
+      { es: "alimentar", inf: "feed", past: ["fed"], part: ["fed"] },
+      { es: "sentir", inf: "feel", past: ["felt"], part: ["felt"] },
+      { es: "luchar", inf: "fight", past: ["fought"], part: ["fought"] },
+      { es: "encontrar", inf: "find", past: ["found"], part: ["found"] },
+      { es: "volar", inf: "fly", past: ["flew"], part: ["flown"] },
+      { es: "olvidar", inf: "forget", past: ["forgot"], part: ["forgotten"] },
+      { es: "perdonar", inf: "forgive", past: ["forgave"], part: ["forgiven"] },
+      { es: "congelar", inf: "freeze", past: ["froze"], part: ["frozen"] },
+      { es: "obtener", inf: "get", past: ["got"], part: ["got"] },
+      { es: "dar", inf: "give", past: ["gave"], part: ["given"] },
+      { es: "ir", inf: "go", past: ["went"], part: ["gone"] },
+      { es: "crecer", inf: "grow", past: ["grew"], part: ["grown"] },
+      { es: "tener", inf: "have", past: ["had"], part: ["had"] },
+      { es: "oír", inf: "hear", past: ["heard"], part: ["heard"] },
+      { es: "esconder", inf: "hide", past: ["hid"], part: ["hidden"] },
+      { es: "golpear, chocar", inf: "hit", past: ["hit"], part: ["hit"] },
+      { es: "sostener, celebrar", inf: "hold", past: ["held"], part: ["held"] },
+      { es: "herir", inf: "hurt", past: ["hurt"], part: ["hurt"] },
+      { es: "guardar", inf: "keep", past: ["kept"], part: ["kept"] },
+      { es: "arrodillarse", inf: "kneel", past: ["knelt"], part: ["knelt"] },
+      { es: "saber", inf: "know", past: ["knew"], part: ["known"] },
+      { es: "dirigir, liderar", inf: "lead", past: ["led"], part: ["led"] },
+      { es: "inclinarse, apoyar", inf: "lean", past: ["leant"], part: ["leant"] },
+      { es: "aprender", inf: "learn", past: ["learnt"], part: ["learnt"] },
+      { es: "partir", inf: "leave", past: ["left"], part: ["left"] },
+      { es: "prestar", inf: "lend", past: ["lent"], part: ["lent"] },
+      { es: "permitir, dejar hacer", inf: "let", past: ["let"], part: ["let"] },
+      { es: "tumbarse", inf: "lie", past: ["lay"], part: ["lain"] },
+      { es: "encender", inf: "light", past: ["lit"], part: ["lit"] },
+      { es: "perder", inf: "lose", past: ["lost"], part: ["lost"] },
+      { es: "hacer", inf: "make", past: ["made"], part: ["made"] },
+      { es: "significar", inf: "mean", past: ["meant"], part: ["meant"] },
+      { es: "encontrarse", inf: "meet", past: ["met"], part: ["met"] },
+      { es: "superar, vencer", inf: "overcome", past: ["overcame"], part: ["overcome"] },
+      { es: "pagar", inf: "pay", past: ["paid"], part: ["paid"] },
+      { es: "suplicar", inf: "plead", past: ["pled"], part: ["pled"] },
+      { es: "poner", inf: "put", past: ["put"], part: ["put"] },
+      { es: "renunciar", inf: "quit", past: ["quit"], part: ["quit"] },
+      { es: "leer", inf: "read", past: ["read"], part: ["read"] },
+      { es: "montar", inf: "ride", past: ["rode"], part: ["ridden"] },
+      { es: "sonar, llamar (timbre)", inf: "ring", past: ["rang"], part: ["rung"] },
+      { es: "levantarse", inf: "rise", past: ["rose"], part: ["risen"] },
+      { es: "correr", inf: "run", past: ["ran"], part: ["run"] },
+      { es: "decir", inf: "say", past: ["said"], part: ["said"] },
+      { es: "ver", inf: "see", past: ["saw"], part: ["seen"] },
+      { es: "buscar", inf: "seek", past: ["sought"], part: ["sought"] },
+      { es: "vender", inf: "sell", past: ["sold"], part: ["sold"] },
+      { es: "enviar", inf: "send", past: ["sent"], part: ["sent"] },
+      { es: "establecer", inf: "set", past: ["set"], part: ["set"] },
+      { es: "sacudir", inf: "shake", past: ["shook"], part: ["shaken"] },
+      { es: "brillar", inf: "shine", past: ["shone"], part: ["shone"] },
+      { es: "disparar", inf: "shoot", past: ["shot"], part: ["shot"] },
+      { es: "cerrar", inf: "shut", past: ["shut"], part: ["shut"] },
+      { es: "cantar", inf: "sing", past: ["sang"], part: ["sung"] },
+      { es: "hundirse", inf: "sink", past: ["sank"], part: ["sunk"] },
+      { es: "sentarse", inf: "sit", past: ["sat"], part: ["sat"] },
+      { es: "dormir", inf: "sleep", past: ["slept"], part: ["slept"] },
+      { es: "oler", inf: "smell", past: ["smelt"], part: ["smelt"] },
+      { es: "hablar", inf: "speak", past: ["spoke"], part: ["spoken"] },
+      { es: "deletrear", inf: "spell", past: ["spelt"], part: ["spelt"] },
+      { es: "gastar", inf: "spend", past: ["spent"], part: ["spent"] },
+      { es: "girar", inf: "spin", past: ["spun"], part: ["spun"] },
+      { es: "escupir", inf: "spit", past: ["spat"], part: ["spat"] },
+      { es: "partir, dividir", inf: "split", past: ["split"], part: ["split"] },
+      { es: "estar de pie, soportar", inf: "stand", past: ["stood"], part: ["stood"] },
+      { es: "robar", inf: "steal", past: ["stole"], part: ["stolen"] },
+      { es: "pegar, adherir", inf: "stick", past: ["stuck"], part: ["stuck"] },
+      { es: "apestar", inf: "stink", past: ["stank"], part: ["stunk"] },
+      { es: "jurar", inf: "swear", past: ["swore"], part: ["sworn"] },
+      { es: "sudar", inf: "sweat", past: ["sweat"], part: ["sweat"] },
+      { es: "barrer", inf: "sweep", past: ["swept"], part: ["swept"] },
+      { es: "nadar", inf: "swim", past: ["swam"], part: ["swum"] },
+      { es: "tomar", inf: "take", past: ["took"], part: ["taken"] },
+      { es: "enseñar", inf: "teach", past: ["taught"], part: ["taught"] },
+      { es: "contar, decir", inf: "tell", past: ["told"], part: ["told"] },
+      { es: "pensar", inf: "think", past: ["thought"], part: ["thought"] },
+      { es: "lanzar", inf: "throw", past: ["threw"], part: ["thrown"] },
+      { es: "pisar", inf: "tread", past: ["trod"], part: ["trodden"] },
+      { es: "entender", inf: "understand", past: ["understood"], part: ["understood"] },
+      { es: "llevar", inf: "wear", past: ["wore"], part: ["worn"] },
+      { es: "mojar", inf: "wet", past: ["wet"], part: ["wet"] },
+      { es: "ganar", inf: "win", past: ["won"], part: ["won"] },
+      { es: "escribir", inf: "write", past: ["wrote"], part: ["written"] }
+    ];
+
+    /* Formas alternativas que tambien se dan por buenas (britanico / americano). */
+    const ALT_BOTH = {
+      dreamt: ["dreamed"], learnt: ["learned"], leant: ["leaned"], knelt: ["kneeled"],
+      smelt: ["smelled"], spelt: ["spelled"], burnt: ["burned"], lit: ["lighted"],
+      pled: ["pleaded"], sweat: ["sweated"], wet: ["wetted"], spat: ["spit"]
+    };
+    const ALT_PAST = { stank: ["stunk"] };
+    const ALT_PART = { got: ["gotten"], trodden: ["trod"] };
+
+    function withAlt(list, extra) {
+      const out = [];
+      list.forEach(a => {
+        out.push(a);
+        (ALT_BOTH[a.toLowerCase()] || []).forEach(x => out.push(x));
+        ((extra || {})[a.toLowerCase()] || []).forEach(x => out.push(x));
+      });
+      return out.filter((v, i, arr) => arr.indexOf(v) === i);
+    }
+
+    /* ============================================================
+       EXERCISE 2 · fill in the gap  (50 sentences)
+       ============================================================ */
+    const GAPS = [
+      { t: "I ___ my phone yesterday.", h: "break", a: "broke" },
+      { t: "She has ___ the best restaurant.", h: "choose", a: "chosen" },
+      { t: "They ___ to the party.", h: "come", a: "came" },
+      { t: "He has ___ his homework.", h: "do", a: "done" },
+      { t: "We ___ coffee in the morning.", h: "drink", a: "drank" },
+      { t: "She has ___ all the pizza.", h: "eat", a: "eaten" },
+      { t: "I ___ down the stairs.", h: "fall", a: "fell" },
+      { t: "They ___ the keys.", h: "find", a: "found" },
+      { t: "He has ___ his mistakes.", h: "forgive", a: "forgiven" },
+      { t: "I ___ my wallet at home.", h: "forget", a: "forgot" },
+      { t: "The river ___ completely.", h: "freeze", a: "froze" },
+      { t: "She ___ me a beautiful gift.", h: "give", a: "gave" },
+      { t: "We ___ to the beach.", h: "go", a: "went" },
+      { t: "The grass has ___ very tall.", h: "grow", a: "grown" },
+      { t: "They ___ hands in the park.", h: "hold", a: "held" },
+      { t: "I have ___ the news already.", h: "hear", a: "heard" },
+      { t: "They have ___ the treasure map.", h: "hide", a: "hidden" },
+      { t: "He ___ the answer well.", h: "know", a: "knew" },
+      { t: "She has ___ on the beach.", h: "lie", a: "lain" },
+      { t: "I ___ the office early.", h: "leave", a: "left" },
+      { t: "She ___ me some money.", h: "lend", a: "lent" },
+      { t: "He has ___ the project.", h: "lead", a: "led" },
+      { t: "I ___ a big mistake at work.", h: "make", a: "made" },
+      { t: "They ___ at the station.", h: "meet", a: "met" },
+      { t: "We have ___ difficulties.", h: "overcome", a: "overcome" },
+      { t: "She ___ the bill immediately.", h: "pay", a: "paid" },
+      { t: "I ___ the entire book.", h: "read", a: "read" },
+      { t: "The ring has been ___ forever.", h: "lose", a: "lost" },
+      { t: "He ___ the horse skillfully.", h: "ride", a: "rode" },
+      { t: "The bell ___ loudly at noon.", h: "ring", a: "rang" },
+      { t: "The sun has ___ beautifully.", h: "rise", a: "risen" },
+      { t: "He ___ a marathon.", h: "run", a: "ran" },
+      { t: "She ___ goodbye to everyone.", h: "say", a: "said" },
+      { t: "I ___ a beautiful sunset.", h: "see", a: "saw" },
+      { t: "She has ___ her car recently.", h: "sell", a: "sold" },
+      { t: "I ___ the email yesterday.", h: "send", a: "sent" },
+      { t: "He ___ the table for dinner.", h: "set", a: "set" },
+      { t: "She ___ her head nervously.", h: "shake", a: "shook" },
+      { t: "The stars have ___ brightly.", h: "shine", a: "shone" },
+      { t: "He ___ the arrow accurately.", h: "shoot", a: "shot" },
+      { t: "The shop has ___ for the day.", h: "shut", a: "shut" },
+      { t: "He ___ beautifully at the concert.", h: "sing", a: "sang" },
+      { t: "I ___ on the bench.", h: "sit", a: "sat" },
+      { t: "He ___ peacefully all night.", h: "sleep", a: "slept" },
+      { t: "The ball ___ quickly into water.", h: "sink", a: "sank" },
+      { t: "I ___ with the manager.", h: "speak", a: "spoke" },
+      { t: "He ___ all his money on books.", h: "spend", a: "spent" },
+      { t: "The team has ___ into groups.", h: "split", a: "split" },
+      { t: "The building ___ magnificently.", h: "stand", a: "stood" },
+      { t: "He ___ the painting.", h: "steal", a: "stole" }
+    ];
+
+    /* ============================================================
+       EXERCISE 3 · translate into English  (55 sentences)
+       h = vocabulary shown by the Hint button
+       ============================================================ */
+    const TRANSLATIONS = [
+      { es: "He estado en París.", a: ["I have been to Paris.", "I've been to Paris.", "I have visited Paris."], h: [["París", "Paris"]] },
+      { es: "He asistido a esa conferencia importante.", a: ["I have attended that important conference.", "I've attended that important conference.", "I have gone to that important conference."], h: [["conferencia", "conference"], ["importante", "important"]] },
+      { es: "Ellos se volvieron amigos en la universidad.", a: ["They became friends at the university.", "They became friends at university.", "They turned into friends at the university.", "They grew to be friends at university."], h: [["amigos", "friends"], ["universidad", "university"]] },
+      { es: "La reunión comenzó a tiempo.", a: ["The meeting began on time.", "The meeting started on time.", "The meeting began punctually."], h: [["reunión", "meeting"], ["tiempo", "time"]] },
+      { es: "Se agachó para recoger la moneda perdida.", a: ["He bent down to pick up the lost coin.", "She bent down to pick up the lost coin.", "He bent to pick up the lost coin.", "She bent to pick up the lost coin."], h: [["moneda", "coin"], ["perdida", "lost"]] },
+      { es: "Aposté dinero en el juego.", a: ["I bet money on the game.", "I wagered money on the game.", "I placed a bet on the game."], h: [["dinero", "money"], ["juego", "game"]] },
+      { es: "Mordiste la manzana.", a: ["You bit the apple.", "You have bitten the apple."], h: [["manzana", "apple"]] },
+      { es: "La mano ha sangrado sobre el suelo.", a: ["The hand has bled on the floor.", "The hand has bled onto the floor.", "The hand bled onto the floor.", "Blood bled on the floor."], h: [["mano", "hand"], ["suelo", "floor"]] },
+      { es: "Sopló las velas en su cumpleaños número treinta.", a: ["He blew out the candles on his thirtieth birthday.", "She blew out the candles on her thirtieth birthday.", "He blew the candles out on his thirtieth birthday.", "She blew the candles out on her thirtieth birthday."], h: [["velas", "candles"], ["cumpleaños", "birthday"], ["treinta", "thirtieth"]] },
+      { es: "Construyeron la casa con materiales nuevos.", a: ["They built the house with new materials.", "They constructed the house with new materials.", "They have built the house with new materials."], h: [["casa", "house"], ["materiales", "materials"], ["nuevos", "new"]] },
+      { es: "El fuego se encendió en el campamento.", a: ["The fire lit at the camp.", "The fire started at the camp.", "The fire burned at the camp."], h: [["fuego", "fire"], ["campamento", "camp"]] },
+      { es: "Atrapé al ladrón en la tienda de ropa.", a: ["I caught the thief in the clothes shop.", "I caught the robber in the clothes shop.", "I apprehended the thief in the clothes shop."], h: [["ladrón", "thief"], ["tienda", "shop"], ["ropa", "clothes"]] },
+      { es: "Ella ha pagado todos los gastos del viaje.", a: ["She has paid all the travel expenses.", "She has paid for all the travel expenses.", "She has paid for all the trip expenses.", "She has paid all the trip expenses.", "She has footed all the travel bills."], h: [["gastos", "expenses"], ["viaje", "trip"], ["todos", "all"]] },
+      { es: "Negociaron un nuevo contrato favorable.", a: ["They negotiated a favorable new contract.", "They made a favorable new contract.", "They worked out a favorable new contract.", "They dealt with a favorable new contract."], h: [["contrato", "contract"], ["nuevo", "new"], ["favorable", "favorable"]] },
+      { es: "Excavó el pozo en el jardín.", a: ["He dug the well in the garden.", "She dug the well in the garden.", "He dug the hole in the garden."], h: [["pozo", "well"], ["jardín", "garden"]] },
+      { es: "Disfruté el concierto de jazz.", a: ["I enjoyed the jazz concert.", "I liked the jazz concert.", "I had fun at the jazz concert."], h: [["concierto", "concert"], ["jazz", "jazz"]] },
+      { es: "Ella ha burlado el sistema de seguridad.", a: ["She has eluded the security system.", "She has evaded the security system.", "She has bypassed the security system."], h: [["sistema", "system"], ["seguridad", "security"]] },
+      { es: "Alimenté al gato esta mañana.", a: ["I fed the cat this morning.", "I gave food to the cat this morning.", "I have fed the cat this morning."], h: [["gato", "cat"], ["mañana", "morning"]] },
+      { es: "Él se sintió bien después del viaje.", a: ["He felt well after the trip.", "She felt well after the trip.", "He felt good after the trip."], h: [["viaje", "trip"]] },
+      { es: "Luché contra mis miedos.", a: ["I fought against my fears.", "I struggled with my fears.", "I have fought my fears."], h: [["miedos", "fears"], ["mis", "my"]] },
+      { es: "Él ha volado a Nueva York varias veces.", a: ["He has flown to New York several times.", "He has traveled to New York several times.", "He has gone to New York several times."], h: [["Nueva York", "New York"], ["veces", "times"], ["varias", "several"]] },
+      { es: "Olvidé mi cartera en el restaurante.", a: ["I forgot my wallet at the restaurant.", "I forgot my wallet in the restaurant.", "I left my wallet at the restaurant.", "I left my wallet in the restaurant.", "I have forgotten my wallet at the restaurant."], h: [["cartera", "wallet"], ["restaurante", "restaurant"]] },
+      { es: "He perdonado su comportamiento.", a: ["I have forgiven his behavior.", "I have forgiven her behavior.", "I've excused his behavior.", "I've excused her behavior."], h: [["comportamiento", "behavior"]] },
+      { es: "Los lagos se congelaron en invierno.", a: ["The lakes froze in winter.", "The lakes have frozen in winter.", "The lakes froze during winter."], h: [["lagos", "lakes"], ["invierno", "winter"]] },
+      { es: "Ella ha obtenido una beca importante.", a: ["She has obtained an important scholarship.", "She has received an important scholarship.", "She has gotten an important scholarship.", "She has earned an important scholarship."], h: [["beca", "scholarship"], ["importante", "important"]] },
+      { es: "Fui al cine con mi familia.", a: ["I went to the cinema with my family.", "I went to the movies with my family.", "I have gone to the cinema with my family."], h: [["cine", "cinema"], ["familia", "family"], ["mi", "my"]] },
+      { es: "Las plantas crecieron en el invernadero.", a: ["The plants grew in the greenhouse.", "The plants have grown in the greenhouse.", "The plants developed in the greenhouse."], h: [["plantas", "plants"], ["invernadero", "greenhouse"]] },
+      { es: "Colgué el cuadro en la pared.", a: ["I hung the picture on the wall.", "I hung the painting on the wall.", "I have hung the picture on the wall."], h: [["cuadro", "picture"], ["pared", "wall"]] },
+      { es: "Ellos han lastimado sus sentimientos.", a: ["They have hurt his feelings.", "They have hurt her feelings.", "They've injured his feelings.", "They've injured her feelings."], h: [["sentimientos", "feelings"]] },
+      { es: "Mantuve mi promesa.", a: ["I kept my promise.", "I kept my word.", "I have kept my promise.", "I honored my promise."], h: [["promesa", "promise"]] },
+      { es: "Él supo la respuesta correcta a la pregunta.", a: ["He knew the correct answer to the question.", "She knew the correct answer to the question.", "He knew the right answer to the question."], h: [["respuesta", "answer"], ["pregunta", "question"], ["correcta", "correct"]] },
+      { es: "Dirigí el proyecto desde el inicio.", a: ["I led the project from the start.", "I led the project from the beginning.", "I directed the project from the start."], h: [["proyecto", "project"], ["inicio", "start"]] },
+      { es: "Ella ha encendido todas las luces.", a: ["She has lit all the lights.", "She has turned on all the lights.", "She has switched on all the lights."], h: [["luces", "lights"], ["todas", "all"]] },
+      { es: "Presté atención en la clase.", a: ["I paid attention in the class.", "I listened in the class.", "I was attentive in the class."], h: [["atención", "attention"], ["clase", "class"]] },
+      { es: "Él percibió el peligro en esa situación.", a: ["He perceived the danger in that situation.", "She perceived the danger in that situation.", "He noticed the danger in that situation.", "She noticed the danger in that situation."], h: [["peligro", "danger"], ["situación", "situation"]] },
+      { es: "Mostré mi talento en la competición.", a: ["I showed my talent in the competition.", "I displayed my talent in the competition.", "I proved my talent in the competition."], h: [["talento", "talent"], ["competencia", "competition"], ["mi", "my"]] },
+      { es: "Ellos han leído todos los libros.", a: ["They have read all the books.", "They have finished all the books."], h: [["libros", "books"], ["todos", "all"]] },
+      { es: "Ella viajó al extranjero sola.", a: ["She traveled abroad alone.", "She went abroad alone.", "She journeyed abroad alone.", "She traveled overseas alone."], h: [["extranjero", "abroad"], ["sola", "alone"]] },
+      { es: "Usé el teléfono para llamar.", a: ["I used the phone to call.", "I called using the phone.", "I phoned someone."], h: [["teléfono", "phone"]] },
+      { es: "Desgarré el papel sin querer.", a: ["I tore the paper by accident.", "I ripped the paper by mistake.", "I tore the paper accidentally."], h: [["papel", "paper"]] },
+      { es: "Ella ha caminado por todo el parque.", a: ["She has walked through the entire park.", "She has walked all around the park.", "She has walked the entire park."], h: [["parque", "park"], ["todo", "entire"]] },
+      { es: "Adquirí las entradas para el concierto.", a: ["I acquired the tickets for the concert.", "I got the tickets for the concert.", "I obtained the tickets for the concert.", "I bought the tickets for the concert."], h: [["entradas", "tickets"], ["concierto", "concert"]] },
+      { es: "Me desperté temprano esta mañana.", a: ["I woke up early this morning.", "I awoke early this morning.", "I have woken up early this morning."], h: [["mañana", "morning"], ["temprano", "early"]] },
+      { es: "Gasté todo mi dinero.", a: ["I spent all my money.", "I have spent all my money.", "I wasted all my money."], h: [["dinero", "money"], ["todo", "all"]] },
+      { es: "El bebé nació en el hospital.", a: ["The baby was born in the hospital.", "The baby was born at the hospital.", "A baby was born in the hospital."], h: [["bebé", "baby"], ["hospital", "hospital"]] },
+      { es: "Rompí el vaso en la cocina.", a: ["I broke the glass in the kitchen.", "I have broken the glass in the kitchen.", "I broke the cup in the kitchen."], h: [["vaso", "glass"], ["cocina", "kitchen"]] },
+      { es: "Él nos llevó a casa.", a: ["He took us home.", "She took us home.", "He brought us home.", "She brought us home."], h: [["casa", "home"]] },
+      { es: "Encontré mis llaves al fin.", a: ["I found my keys at last.", "I found my keys finally.", "I have found my keys at last."], h: [["llaves", "keys"], ["mis", "my"]] },
+      { es: "El río se secó en verano.", a: ["The river dried up in summer.", "The river ran dry in summer."], h: [["río", "river"], ["verano", "summer"]] },
+      { es: "Comí una manzana roja.", a: ["I ate a red apple.", "I have eaten a red apple.", "I ate a red one."], h: [["manzana", "apple"], ["roja", "red"]] },
+      { es: "La puerta se cerró sola.", a: ["The door closed by itself.", "The door shut by itself.", "The door closed on its own."], h: [["puerta", "door"]] },
+      { es: "Vimos una película en el cine.", a: ["We saw a movie at the cinema.", "We watched a movie at the cinema.", "We have seen a movie at the cinema."], h: [["película", "movie"], ["cine", "cinema"]] },
+      { es: "Él escribió una carta hermosa.", a: ["He wrote a beautiful letter.", "She wrote a beautiful letter.", "He has written a beautiful letter.", "She has written a beautiful letter."], h: [["carta", "letter"], ["hermosa", "beautiful"]] },
+      { es: "Bebimos café en la mañana.", a: ["We drank coffee in the morning.", "We have drunk coffee in the morning.", "We had coffee in the morning."], h: [["café", "coffee"], ["mañana", "morning"]] },
+      { es: "El pájaro voló hacia el cielo.", a: ["The bird flew to the sky.", "The bird has flown to the sky.", "The bird flew toward the sky."], h: [["pájaro", "bird"], ["cielo", "sky"]] }
+    ];
+
+
+    /* ============================================================
+       SETTINGS  ->  nota minima de cada ejercicio
+       ============================================================ */
+    const PASS_THRESHOLD = 90;   // % por defecto
+
+    const TYPES = {
+      forms:     { label: "Three forms",    badge: "bg-sky-500/15 text-sky-300 border-sky-500/40",         icon: "fa-table-columns" },
+      gap:       { label: "Fill the gap",   badge: "bg-amber-500/15 text-amber-300 border-amber-500/40",   icon: "fa-pen-to-square" },
+      translate: { label: "Translation",    badge: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", icon: "fa-language" }
+    };
+
+    const MODULE_DEFS = [
+      {
+        id: "ex1", type: "forms", icon: "fa-table-columns",
+        title: "Exercise 1 \u00b7 The three forms", short: "3 forms",
+        sample: 50, pass: 90,
+        desc: `50 verbs taken at random from the list of ${VERBS.length}. Write the infinitive, the past simple and the past participle.`,
+        how: [
+          "You are given the <strong>meaning in Spanish</strong>. Write the <strong>three forms</strong> of that verb in English.",
+          "Order: <strong class=\"text-emerald-300\">infinitive (V1)</strong> \u2192 <strong class=\"text-sky-300\">past simple (V2)</strong> \u2192 <strong class=\"text-amber-300\">past participle (V3)</strong>.",
+          "<strong>Capital letters don\u2019t matter.</strong> When the list gives two forms (<em>learnt / learned</em>, <em>was / were</em>), either one is accepted.",
+          "The three forms must be right for the answer to count."
+        ]
+      },
+      {
+        id: "ex2", type: "gap", icon: "fa-pen-to-square",
+        title: "Exercise 2 \u00b7 Fill in the gaps", short: "Gaps",
+        sample: 50, pass: 90,
+        desc: `${GAPS.length} sentences. Write the missing verb: past simple or past participle, as the sentence requires.`,
+        how: [
+          "Write <strong>only the missing verb</strong>. The base form is <strong>in brackets</strong> at the end: <span class=\"font-mono text-amber-400\">(go)</span>.",
+          "Finished time (<em>yesterday, last week, ago</em>) \u2192 <strong>past simple</strong>: <em>I <u>went</u> ...</em>",
+          "After <strong>have / has / been</strong> \u2192 <strong>past participle</strong>: <em>I have <u>gone</u> ...</em>",
+          "<strong>Capital letters don\u2019t matter.</strong>"
+        ]
+      },
+      {
+        id: "ex3", type: "translate", icon: "fa-language",
+        title: "Exercise 3 \u00b7 Translate into English", short: "Translation",
+        sample: 50, pass: 70,
+        desc: `50 sentences taken at random from ${TRANSLATIONS.length}. Translate the whole Spanish sentence into English.`,
+        how: [
+          "Write the <strong>whole sentence</strong> in English, not just the verb.",
+          "Press <strong class=\"text-amber-300\">\ud83d\udca1 Hint</strong> if you need the vocabulary of that sentence.",
+          "Several translations are accepted. <strong>Capital letters, commas and the final full stop don\u2019t matter.</strong>",
+          "This is the hardest exercise, so the pass mark is lower."
+        ]
+      }
+    ];
+
+    const MODULES = MODULE_DEFS.map(def => {
+      let questions;
+      if (def.type === "forms") {
+        questions = VERBS.map((v, i) => ({
+          qid: `${def.id}_${i}`, type: "forms", prompt: v.es, verb: v,
+          answers: [v.inf, v.past.join(" / "), v.part.join(" / ")]
+        }));
+      } else if (def.type === "gap") {
+        questions = GAPS.map((g, i) => ({
+          qid: `${def.id}_${i}`, type: "gap", text: g.t, hint: g.h, answers: withAlt([g.a])
+        }));
+      } else {
+        questions = TRANSLATIONS.map((t, i) => ({
+          qid: `${def.id}_${i}`, type: "translate", prompt: t.es, answers: t.a, hints: t.h || []
+        }));
+      }
+      const size = Math.min(def.sample || questions.length, questions.length);
+      return Object.assign({}, def, { questions: questions, size: size });
+    });
+
+    function passMark(mod) { return (mod && mod.pass) || PASS_THRESHOLD; }
+    function passMarkOf(modId) { return passMark(MODULES.find(m => m.id === modId)); }
+
+    /* ============================================================
+       CHECKING
+       ============================================================ */
+    function normalize(str) {
+      return (str || "").toString()
+        .replace(/[\u2018\u2019\u02bc`\u00b4]/g, "'")
+        .trim()
+        .toLowerCase()
+        .replace(/[.,;!?]+$/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    // Para las traducciones: ignora comas, puntos y apostrofes (I've = Ive = I have? no, solo el apostrofe)
+    function normalizeLoose(str) {
+      return normalize(str).replace(/[.,;:!?"']/g, "").replace(/\s+/g, " ").trim();
+    }
+
+    function gradeForms(values, q) {
+      const v = q.verb;
+      const okInf  = normalize(values[0]) === normalize(v.inf);
+      const okPast = withAlt(v.past, ALT_PAST).some(a => normalize(a) === normalize(values[1]))
+                     || normalize(values[1]) === normalize(v.past.join("/"));
+      const okPart = withAlt(v.part, ALT_PART).some(a => normalize(a) === normalize(values[2]))
+                     || normalize(values[2]) === normalize(v.part.join("/"));
+      return { ok: okInf && okPast && okPart, parts: [okInf, okPast, okPart] };
+    }
+
+    function gradeGap(userValue, q) {
+      let user = normalize(userValue);
+      if (!user) return false;
+      // si el alumno repite el auxiliar que ya esta en la frase ("has gone"), se ignora
+      user = user.replace(/^(have|has|had|been|'ve|'s)\s+/, "");
+      return q.answers.some(a => normalize(a) === user);
+    }
+
+    function gradeTranslation(userValue, q) {
+      const user = normalizeLoose(userValue);
+      if (!user) return false;
+      return q.answers.some(a => normalizeLoose(a) === user);
+    }
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    let currentUser = null;
+    let currentTeacherLoggedIn = null;
+    let currentModuleId = null;
+    let currentQuestions = [];
+    let currentQuestionIdx = 0;
+    let currentScore = 0;
+    let quizTimerInterval = null;
+    let quizSeconds = 0;
+    let answered = false;
+    let attemptLog = [];
+
+    function escapeHtml(str) {
+      return (str || "").toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function currentModule() { return MODULES.find(m => m.id === currentModuleId); }
+    function fullName() { return currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : ""; }
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function storageDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+    function progressKey(modId) { return `englishpro_iv3_progress_${userScopeKey()}_${modId}`; }
+
+    /* ---------- class codes ---------- */
+    function normalizeCode(c) { return (c || "").toString().trim().toUpperCase().replace(/\s+/g, ""); }
+    function findClassByCode(c) {
+      const n = normalizeCode(c);
+      return (window.CLASSES || []).find(x => normalizeCode(x.code) === n) || null;
+    }
+    function findClassesByPin(p) {
+      const pin = (p || "").toString().trim();
+      return (window.CLASSES || []).filter(x => String(x.pin) === pin);
+    }
+    function userScopeKey() {
+      if (!currentUser) return "";
+      const who = (currentUser.email || fullName() || "anon").toLowerCase();
+      return `${currentUser.guest ? "GUEST" : normalizeCode(currentUser.classCode)}_${who}`;
+    }
+    function myResultsRef() { return db.ref(RESULTS_NODE + "/" + normalizeCode(currentUser.classCode)); }
+
+    /* ---------- local copy of the results (guest mode / no connection) ---------- */
+    function localResultsKey() { return `englishpro_iv3_results_${userScopeKey()}`; }
+    function localResults() {
+      try { return JSON.parse(storageGet(localResultsKey()) || "[]"); } catch (e) { return []; }
+    }
+    function saveResultLocally(record) {
+      const light = Object.assign({}, record);
+      delete light.answers;                       // keep localStorage small
+      const all = localResults().concat([light]).slice(-60);
+      storageSet(localResultsKey(), JSON.stringify(all));
+    }
+    function fetchMyRecords(cb) {
+      if (!currentUser) { cb([]); return; }
+      if (currentUser.guest) { cb(localResults()); return; }
+      myResultsRef().orderByChild("email").equalTo(currentUser.email).once("value", (snapshot) => {
+        const out = [];
+        snapshot.forEach(childSnap => { if (childSnap.val()) out.push(childSnap.val()); });
+        cb(out);
+      }, (err) => { console.error("Could not load previous results:", err); cb(localResults()); });
+    }
+
+    function questionBodyHtml(q) {
+      const inp = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
+      if (q.type === "forms") {
+        const labels = [
+          ["Infinitive (V1)", "text-emerald-300"],
+          ["Past simple (V2)", "text-sky-300"],
+          ["Past participle (V3)", "text-amber-300"]
+        ];
+        return `
+          <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Verb in Spanish</p>
+          <p class="text-2xl md:text-4xl font-extrabold text-white mb-6" lang="es">${escapeHtml(q.prompt)}</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${labels.map(([lab, cls], i) => `
+              <div>
+                <label class="block text-xs md:text-sm font-black uppercase tracking-wider ${cls} mb-2">${lab}</label>
+                <input type="text" id="ans_${i}" class="quiz-input gap-input wide text-lg md:text-2xl" ${inp}>
+              </div>`).join("")}
+          </div>`;
+      }
+      if (q.type === "gap") {
+        const parts = q.text.split("___");
+        const width = Math.max(8, Math.max.apply(null, q.answers.map(a => a.length)) + 3);
+        return `<p class="text-2xl md:text-4xl font-extrabold text-white leading-relaxed">${escapeHtml(parts[0])}<input type="text" id="ans_0" class="quiz-input gap-input text-xl md:text-3xl" style="width:${width}ch" ${inp}>${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono text-xl md:text-2xl">(${escapeHtml(q.hint)})</span></p>`;
+      }
+      return `
+        <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Translate into English</p>
+        <p class="text-2xl md:text-4xl font-extrabold text-white mb-5" lang="es">${escapeHtml(q.prompt)}</p>
+        <input type="text" id="ans_0" class="quiz-input gap-input wide text-lg md:text-2xl" placeholder="Write the whole sentence in English" ${inp}>`;
+    }
+
+    function questionInputs() {
+      return Array.prototype.slice.call(document.querySelectorAll(".quiz-input"));
+    }
+
+    function questionPromptText(q) {
+      if (q.type === "gap") return `${q.text.replace("___", "______")} (${q.hint})`;
+      if (q.type === "forms") return `${q.prompt} \u2192 V1 / V2 / V3`;
+      return q.prompt;
+    }
+
+    function modelAnswer(q) {
+      if (q.type === "forms") return q.answers.join(" \u00b7 ");
+      return q.answers.join("  |  ");
+    }
+
+    function toggleQuizHint() {
+      const box = document.getElementById("hintBox");
+      if (box) box.classList.toggle("hidden");
+    }
+
+    function studentStrip() {
+      if (!currentUser) return "";
+      return `
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:justify-between md:items-center gap-3 text-left">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Name</p>
+              <p class="text-lg md:text-xl font-black text-white leading-tight">${escapeHtml(currentUser.firstName)}</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Surname(s)</p>
+              <p class="text-lg md:text-xl font-black text-emerald-300 leading-tight">${escapeHtml(currentUser.lastName)}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 text-sm font-bold">
+            <span class="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"><i class="fa-solid fa-users"></i> Group: ${escapeHtml(currentUser.grade)}</span>
+            ${currentUser.guest
+              ? `<span class="px-3 py-1 rounded-lg bg-slate-700/40 text-slate-300 border border-slate-600"><i class="fa-solid fa-user-clock"></i> Guest · not saved</span>`
+              : `<span class="px-3 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30"><i class="fa-solid fa-key"></i> Code: ${escapeHtml(currentUser.classCode)}</span>`}
+          </div>
+        </div>`;
+    }
+
+    /* ============================================================
+       THEORY PAGE
+       ============================================================ */
+    function buildLesson(mod) {
+      const rows = VERBS.map(v => `
+          <tr class="border-b border-slate-800/80">
+            <td class="p-2 md:p-3 font-black text-white">${escapeHtml(v.inf)}</td>
+            <td class="p-2 md:p-3 font-bold text-sky-300">${escapeHtml(v.past.join(" / "))}</td>
+            <td class="p-2 md:p-3 font-bold text-amber-300">${escapeHtml(v.part.join(" / "))}</td>
+            <td class="p-2 md:p-3 text-slate-400 text-sm md:text-base" lang="es">${escapeHtml(v.es)}</td>
+          </tr>`).join("");
+
+      const examples = {
+        forms: `
+          <div class="bg-slate-950 p-6 rounded-3xl border-2 border-sky-500/30">
+            <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">Example</h3>
+            <p class="text-base md:text-xl text-slate-300" lang="es">You see: <strong>romper</strong></p>
+            <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">break</strong> \u00b7 <strong class="text-sky-300">broke</strong> \u00b7 <strong class="text-amber-300">broken</strong></p>
+          </div>`,
+        gap: `
+          <div class="bg-slate-950 p-6 rounded-3xl border-2 border-amber-500/30">
+            <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">Example</h3>
+            <p class="text-base md:text-xl text-slate-300">I ______ my phone yesterday. <span class="font-mono text-amber-400">(break)</span></p>
+            <p class="mt-2 text-base md:text-xl text-slate-200">You write only: <strong class="text-emerald-300">broke</strong></p>
+          </div>`,
+        translate: `
+          <div class="bg-slate-950 p-6 rounded-3xl border-2 border-fuchsia-500/30">
+            <h3 class="text-fuchsia-300 font-black text-xl md:text-2xl mb-3">Example</h3>
+            <p class="text-base md:text-xl text-slate-300" lang="es">He estado en Par\u00eds.</p>
+            <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">I have been to Paris.</strong></p>
+          </div>`
+      };
+
+      return `
+        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-3">${mod.title}</h2>
+        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">${mod.desc}</p>
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${examples[mod.type]}
+            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-emerald-500/30">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">Pass mark</h3>
+              <p class="text-base md:text-xl text-slate-300">You need at least <strong class="text-amber-300">${passMark(mod)}%</strong> (${Math.ceil(mod.size * passMark(mod) / 100)} out of ${mod.size}) to pass this exercise.</p>
+              <p class="mt-2 text-base md:text-lg text-slate-400">Your progress is saved if you close the page.</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xl md:text-2xl font-black text-white mb-3"><i class="fa-solid fa-book text-emerald-400 mr-2"></i>The ${VERBS.length} irregular verbs</h3>
+            <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto max-h-[60vh] overflow-y-auto">
+              <table class="w-full text-left text-base md:text-xl">
+                <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400 sticky top-0 bg-slate-950">
+                  <tr><th class="p-2 md:p-3">Base form (V1)</th><th class="p-2 md:p-3">Past simple (V2)</th><th class="p-2 md:p-3">Past participle (V3)</th><th class="p-2 md:p-3">Meaning</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* ============================================================
+       APP
+       ============================================================ */
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    function initApp() {
+      const guestBox = document.getElementById("guestBox");
+      if (guestBox && window.ALLOW_GUEST_MODE) guestBox.classList.remove("hidden");
+
+      const hint = document.getElementById("regCodeHint");
+      if (hint && window.CODE_HINT) {
+        hint.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${escapeHtml(window.CODE_HINT)}`;
+        hint.classList.remove("hidden");
+      }
+
+      const savedUser = storageGet("englishpro_iv_user");
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+        } catch (e) { currentUser = null; }
+        // If the saved code no longer exists (or the app was shared with a
+        // different teacher), the student has to register again.
+        if (currentUser && !currentUser.guest && !findClassByCode(currentUser.classCode)) {
+          storageDel("englishpro_iv_user");
+          currentUser = null;
+        }
+      }
+      if (currentUser) {
+        updateUserHeader();
+        showView("viewDashboard");
+        renderModules();
+      } else {
+        showView("viewRegistration");
+      }
+    }
+
+    function readRegistrationForm() {
+      return {
+        firstName: document.getElementById("regFirstName").value.trim(),
+        lastName: document.getElementById("regLastName").value.trim(),
+        email: document.getElementById("regEmail").value.trim().toLowerCase(),
+        grade: document.getElementById("regGrade").value
+      };
+    }
+
+    function showCodeError(msg) {
+      const el = document.getElementById("regCodeError");
+      if (!el) return;
+      if (!msg) { el.classList.add("hidden"); el.innerText = ""; return; }
+      el.classList.remove("hidden");
+      el.innerText = msg;
+    }
+
+    function startSession(user) {
+      currentUser = user;
+      storageSet("englishpro_iv_user", JSON.stringify(currentUser));
+      showCodeError("");
+      updateUserHeader();
+      showView("viewDashboard");
+      renderModules();
+      window.scrollTo(0, 0);
+    }
+
+    function handleRegistration(e) {
+      e.preventDefault();
+      const typed = document.getElementById("regClassCode").value;
+      const cls = findClassByCode(typed);
+      if (!cls) {
+        showCodeError("⚠️ Wrong class code. Ask your own teacher for it" +
+          (window.ALLOW_GUEST_MODE ? ", or use the button below to practise without saving." : "."));
+        document.getElementById("regClassCode").focus();
+        return;
+      }
+      const user = readRegistrationForm();
+      user.guest = false;
+      user.classCode = normalizeCode(cls.code);
+      startSession(user);
+    }
+
+    function enterGuestMode() {
+      if (!window.ALLOW_GUEST_MODE) return;
+      const user = readRegistrationForm();
+      if (!user.firstName || !user.lastName || !user.grade) {
+        showCodeError("⚠️ Please write your name, your surname(s) and choose your group first.");
+        return;
+      }
+      if (!confirm("Guest mode: you can do all the exercises and see your marks, but NOTHING is sent to a teacher.\n\nContinue?")) return;
+      user.guest = true;
+      user.classCode = "";
+      startSession(user);
+    }
+
+    function logout() {
+      if (!confirm("Log out?")) return;
+      storageDel("englishpro_iv_user");
+      currentUser = null;
+      document.getElementById("userInfoHeader").classList.add("hidden");
+      document.getElementById("regForm").reset();
+      showCodeError("");
+      showView("viewRegistration");
+    }
+
+    function updateUserHeader() {
+      if (!currentUser) return;
+      const el = document.getElementById("userInfoHeader");
+      el.classList.remove("hidden");
+      el.innerHTML = `
+        <span class="font-extrabold text-white">${escapeHtml(fullName())}</span><br>
+        <span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-users"></i> Group: ${escapeHtml(currentUser.grade)}</span>
+        ${currentUser.guest
+          ? `<span class="text-slate-400 font-bold text-xs"> · <i class="fa-solid fa-user-clock"></i> Guest</span>`
+          : `<span class="text-amber-400 font-bold text-xs"> · <i class="fa-solid fa-key"></i> ${escapeHtml(currentUser.classCode)}</span>`}
+        · <button onclick="logout()" class="text-xs text-slate-400 hover:text-white underline">Log out</button>`;
+      document.getElementById("welcomeUserText").innerText = `Hi, ${currentUser.firstName}! 👋`;
+    }
+
+    function showView(viewId) {
+      ["viewRegistration", "viewDashboard", "viewLesson", "viewQuiz", "viewResults", "viewGlobalReport", "viewTeacher"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById(viewId).classList.remove("hidden");
+    }
+
+    function goHome() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      if (currentUser) {
+        showView("viewDashboard");
+        renderModules();
+      } else {
+        showView("viewRegistration");
+      }
+    }
+
+    function buildModuleCard(mod, bestScore) {
+      let badge = `<span class="text-sm bg-slate-800 text-slate-400 px-4 py-2 rounded-xl font-bold">Pending</span>`;
+      const saved = storageGet(progressKey(mod.id));
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          badge = `<span class="text-sm bg-sky-500/20 text-sky-300 border border-sky-500/40 px-4 py-2 rounded-xl font-black">\u23f8 ${p.idx}/${mod.size} in progress</span>`;
+        } catch (e) {}
+      }
+      if (bestScore !== null && bestScore !== undefined) {
+        badge = (bestScore >= passMark(mod))
+          ? `<span class="text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-4 py-2 rounded-xl font-black">\u2705 ${bestScore}% Passed</span>`
+          : `<span class="text-sm bg-rose-500/20 text-rose-400 border border-rose-500/40 px-4 py-2 rounded-xl font-black">${bestScore}% \u00b7 Try again</span>`;
+      }
+      const t = TYPES[mod.type];
+      const card = document.createElement("div");
+      card.className = "bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/60 p-8 rounded-3xl transition cursor-pointer flex flex-col justify-between neon-border";
+      card.onclick = () => openLesson(mod.id);
+      card.innerHTML = `
+        <div>
+          <div class="flex justify-between items-start mb-6 gap-3">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/30 shrink-0">
+              <i class="fa-solid ${mod.icon}"></i>
+            </div>
+            ${badge}
+          </div>
+          <h3 class="text-2xl md:text-3xl font-black text-white mb-3">${mod.title}</h3>
+          <p class="text-base md:text-lg text-slate-300 leading-relaxed mb-4">${mod.desc}</p>
+          <div class="flex flex-wrap gap-2 mb-6 text-xs font-black">
+            <span class="px-3 py-1 rounded-lg border ${t.badge}"><i class="fa-solid ${t.icon}"></i> ${t.label}</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">${mod.size} questions</span>
+            <span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">Pass mark: ${passMark(mod)}%</span>
+          </div>
+        </div>
+        <div class="text-base md:text-lg font-black text-emerald-400 flex items-center gap-2">
+          Verb List &amp; Exercise <i class="fa-solid fa-arrow-right"></i>
+        </div>`;
+      return card;
+    }
+
+    function paintModulesGrid(scoresByModule) {
+      const grid = document.getElementById("modulesGrid");
+      grid.innerHTML = "";
+      MODULES.forEach(mod => {
+        const best = scoresByModule ? scoresByModule[mod.id] : null;
+        grid.appendChild(buildModuleCard(mod, best === undefined ? null : best));
+      });
+    }
+
+    function renderModules() {
+      paintModulesGrid(null);
+      fetchMyRecords((scores) => {
+        const best = {};
+        MODULES.forEach(mod => {
+          const userScores = scores.filter(s => s && s.moduleId === mod.id);
+          best[mod.id] = userScores.length > 0 ? Math.max(...userScores.map(s => Number(s.score) || 0)) : null;
+        });
+        paintModulesGrid(best);
+      });
+    }
+
+    function openLesson(modId) {
+      currentModuleId = modId;
+      const mod = currentModule();
+      document.getElementById("lessonTopicCategory").innerText = mod.title;
+      document.getElementById("lessonContent").innerHTML = buildLesson(mod);
+      document.getElementById("howToList").innerHTML = mod.how.map(li => `<li>${li}</li>`).join("");
+      document.getElementById("startQuizBtn").innerHTML = `Start the ${mod.size} questions <i class="fa-solid fa-play"></i>`;
+      showView("viewLesson");
+      window.scrollTo(0, 0);
+    }
+
+    /* ---------- progress saved in the browser (so a closed tab is not lost) ---------- */
+    function saveProgress() {
+      const mod = currentModule();
+      storageSet(progressKey(mod.id), JSON.stringify({
+        order: currentQuestions.map(q => q.qid),
+        idx: currentQuestionIdx + (answered ? 1 : 0),
+        score: currentScore,
+        seconds: quizSeconds,
+        log: attemptLog
+      }));
+    }
+
+    function startCurrentQuiz(forceNew) {
+      const mod = currentModule();
+      const saved = forceNew ? null : storageGet(progressKey(mod.id));
+      let resumed = false;
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          if (p.idx > 0 && p.idx < mod.size &&
+              confirm(`You have an unfinished attempt (${p.idx} of ${mod.size} questions done).\n\nOK = continue where you stopped\nCancel = start again from the beginning`)) {
+            currentQuestions = p.order.map(id => mod.questions.find(q => q.qid === id)).filter(Boolean);
+            currentQuestionIdx = p.idx;
+            currentScore = p.score;
+            quizSeconds = p.seconds || 0;
+            attemptLog = p.log || [];
+            resumed = currentQuestions.length === mod.size;
+          }
+        } catch (e) {}
+      }
+      if (!resumed) {
+        storageDel(progressKey(mod.id));
+        currentQuestions = shuffle(mod.questions).slice(0, mod.size);
+        currentQuestionIdx = 0;
+        currentScore = 0;
+        quizSeconds = 0;
+        attemptLog = [];
+      }
+      document.getElementById("quizCategoryTitle").innerText = mod.title;
+      showView("viewQuiz");
+      window.scrollTo(0, 0);
+      startTimer();
+      renderQuestion();
+    }
+
+    function startTimer() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      const paint = () => {
+        const mins = String(Math.floor(quizSeconds / 60)).padStart(2, "0");
+        const secs = String(quizSeconds % 60).padStart(2, "0");
+        document.getElementById("quizTimer").innerText = `${mins}:${secs}`;
+      };
+      paint();
+      quizTimerInterval = setInterval(() => { quizSeconds++; paint(); }, 1000);
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const q = currentQuestions[currentQuestionIdx];
+      const total = currentQuestions.length;
+
+      document.getElementById("quizQuestionCount").innerText = `Question ${currentQuestionIdx + 1} of ${total}`;
+      document.getElementById("quizProgressBar").style.width = `${((currentQuestionIdx + 1) / total) * 100}%`;
+
+      const t = TYPES[q.type];
+      document.getElementById("quizTypeBadge").innerHTML = `
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border ${t.badge} text-sm md:text-base font-black uppercase tracking-wider">
+            <i class="fa-solid ${t.icon}"></i> ${t.label}
+          </span>
+          <span class="text-sm md:text-base font-black text-emerald-400">\u2714 ${currentScore} / ${currentQuestionIdx} correct</span>
+        </div>`;
+
+      document.getElementById("quizSentence").innerHTML = questionBodyHtml(q);
+
+      const hintZone = document.getElementById("verbFormsHint");
+      if (q.type === "translate" && q.hints && q.hints.length) {
+        hintZone.innerHTML = `
+          <button type="button" onclick="toggleQuizHint()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-black px-5 py-3 rounded-2xl transition text-base">
+            \ud83d\udca1 Hint
+          </button>
+          <div id="hintBox" class="hidden mt-3 bg-amber-950/30 border-2 border-amber-500/40 rounded-2xl p-4 space-y-1">
+            ${q.hints.map(h => `<p class="text-base md:text-lg text-amber-200"><strong lang="es">${escapeHtml(h[0])}</strong> = ${escapeHtml(h[1])}</p>`).join("")}
+          </div>`;
+        hintZone.classList.remove("hidden");
+      } else {
+        hintZone.innerHTML = "";
+        hintZone.classList.add("hidden");
+      }
+
+      document.getElementById("quizFeedback").classList.add("hidden");
+      document.getElementById("nextQuestionBtn").classList.add("hidden");
+      const checkBtn = document.getElementById("checkAnswerBtn");
+      checkBtn.classList.remove("hidden");
+      checkBtn.disabled = false;
+
+      const inputs = questionInputs();
+      inputs.forEach((input, i) => {
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key !== "Enter") return;
+          ev.preventDefault();
+          if (answered) { nextQuestion(); return; }
+          if (i < inputs.length - 1) inputs[i + 1].focus(); else checkExercise();
+        });
+      });
+      if (inputs[0]) inputs[0].focus();
+    }
+
+    function checkExercise() {
+      if (answered) return;
+      const q = currentQuestions[currentQuestionIdx];
+      const inputs = questionInputs();
+      const values = inputs.map(i => i.value.trim());
+      if (values.every(v => !v)) { if (inputs[0]) { inputs[0].focus(); inputs[0].placeholder = "?"; } return; }
+
+      let ok = false, parts = null;
+      if (q.type === "forms") { const r = gradeForms(values, q); ok = r.ok; parts = r.parts; }
+      else if (q.type === "gap") ok = gradeGap(values[0], q);
+      else ok = gradeTranslation(values[0], q);
+
+      inputs.forEach((input, i) => {
+        input.readOnly = true;
+        input.classList.add((parts ? parts[i] : ok) ? "gap-ok" : "gap-ko");
+      });
+      answered = true;
+      if (ok) currentScore++;
+
+      attemptLog.push({
+        type: q.type, prompt: questionPromptText(q), user: values.join(" \u00b7 "),
+        correct: modelAnswer(q), ok: ok
+      });
+      saveProgress();
+
+      let detail = "";
+      if (q.type === "forms") {
+        const v = q.verb;
+        detail = `<div class="mt-3 text-base md:text-xl font-black text-slate-300">
+            <span class="text-emerald-300">${escapeHtml(v.inf)}</span> \u2192 <span class="text-sky-300">${escapeHtml(v.past.join(" / "))}</span> \u2192 <span class="text-amber-300">${escapeHtml(v.part.join(" / "))}</span>
+            <span class="text-slate-500 font-semibold" lang="es"> \u00b7 ${escapeHtml(v.es)}</span></div>`;
+      } else if (q.type === "gap") {
+        detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">${escapeHtml(q.text.replace("___", q.answers[0]))}</div>`;
+      } else {
+        detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">Also accepted:<ul class="list-disc list-inside mt-1 space-y-1">${q.answers.slice(0, 5).map(a => `<li class="text-slate-300 text-base">${escapeHtml(a)}</li>`).join("")}</ul></div>`;
+      }
+
+      const feedbackBox = document.getElementById("quizFeedback");
+      if (ok) {
+        feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-emerald-950/40 border-emerald-500/60 text-emerald-200";
+        feedbackBox.innerHTML = `<strong>CORRECT! \ud83c\udf89</strong>${detail}`;
+      } else {
+        feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-rose-950/40 border-rose-500/60 text-rose-200";
+        const solution = q.type === "forms"
+          ? `${escapeHtml(q.verb.inf)} \u00b7 ${escapeHtml(q.verb.past.join(" / "))} \u00b7 ${escapeHtml(q.verb.part.join(" / "))}`
+          : escapeHtml(q.answers[0]);
+        feedbackBox.innerHTML = `<div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${solution}</span></div>${detail}`;
+      }
+      feedbackBox.classList.remove("hidden");
+      document.getElementById("checkAnswerBtn").classList.add("hidden");
+      const nextBtn = document.getElementById("nextQuestionBtn");
+      nextBtn.classList.remove("hidden");
+      nextBtn.innerHTML = (currentQuestionIdx < currentQuestions.length - 1)
+        ? `Next Question <i class="fa-solid fa-arrow-right ml-2"></i>`
+        : `See Result <i class="fa-solid fa-flag-checkered ml-2"></i>`;
+      nextBtn.focus();
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIdx < currentQuestions.length - 1) {
+        currentQuestionIdx++;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function quitQuiz() {
+      if (confirm("Leave this module now? Your progress is saved on this device and you can continue later.")) {
+        clearInterval(quizTimerInterval);
+        goHome();
+      }
+    }
+
+    function finishQuiz() {
+      clearInterval(quizTimerInterval);
+      const mod = currentModule();
+      storageDel(progressKey(mod.id));
+      const total = currentQuestions.length;
+      const percentage = Math.round((currentScore / total) * 100);
+      const timeStr = `${Math.floor(quizSeconds / 60)}m ${quizSeconds % 60}s`;
+      const nowStr = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+      const passed = percentage >= passMark(mod);
+
+      const record = {
+        studentName: fullName(),
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        grade: currentUser.grade,
+        group: currentUser.grade,
+        classCode: currentUser.guest ? "" : currentUser.classCode,
+        guest: !!currentUser.guest,
+        topic: mod.title,
+        moduleId: mod.id,
+        exerciseType: "irregular_verbs_3en1",
+        score: percentage,
+        rawScore: `${currentScore}/${total}`,
+        passed: passed,
+        secondsSpent: quizSeconds,
+        timeSpent: timeStr,
+        dateTime: nowStr,
+        timestamp: Date.now(),
+        answers: attemptLog.map(a => ({ prompt: a.prompt, type: a.type, user: a.user, correct: a.correct, ok: a.ok }))
+      };
+
+      const message = passed
+        ? `
+          <div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
+            <h3 class="text-2xl md:text-3xl font-black text-emerald-300">🎉 CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
+            <p class="text-slate-100 text-base md:text-xl">You have passed <strong>${mod.title}</strong>. Well done!</p>
+            <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold">
+              <i class="fa-solid fa-camera"></i> Now take a <strong>SCREENSHOT</strong> of this result and send it to your teacher through <strong>Google Classroom</strong>.
+            </div>
+          </div>`
+        : `
+          <div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
+            <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> You have to try again!</p>
+            <p class="text-slate-200 text-base md:text-lg">You got <strong>${currentScore} out of ${total}</strong>. You need <strong class="text-amber-300">at least ${passMark(mod)}% (${Math.ceil(total * passMark(mod) / 100)} out of ${total})</strong> to pass.
+            Remember: <strong>for your work to count, you must pass ALL THREE exercises</strong>.</p>
+            <p class="text-slate-300 text-base md:text-lg">Study the verb list again, look at your mistakes below and have another go. You can do it! 💪
+            When you pass, take a screenshot of your result and send it to your teacher through Google Classroom.</p>
+          </div>`;
+
+      document.getElementById("resultsCard").innerHTML = `
+        ${studentStrip()}
+        <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-4xl font-black ${passed ? "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50" : "bg-rose-500/20 text-rose-400 border-2 border-rose-500/50"}">
+          ${percentage}%
+        </div>
+        ${message}
+        <div class="bg-slate-950 p-6 rounded-2xl border-2 border-slate-800 text-left text-base md:text-xl text-slate-200 space-y-3 max-w-lg mx-auto">
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Name:</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.firstName)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Surname(s):</span> <span class="font-bold text-white text-right">${escapeHtml(currentUser.lastName)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Group:</span> <span class="font-bold text-emerald-300">${escapeHtml(currentUser.grade)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Exercise:</span> <span class="font-bold text-emerald-400 text-right">${mod.title}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Score:</span> <span class="font-bold text-white">${record.rawScore} (${percentage}%)</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Result:</span> <span class="font-bold ${passed ? "text-emerald-400" : "text-rose-400"} text-right">${passed ? "✅ Passed" : "⚠️ Not passed (minimum " + passMark(mod) + "%)"}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Time:</span> <span class="font-bold text-emerald-400">${timeStr}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Class code:</span> <span class="font-bold text-amber-400">${currentUser.guest ? "— (guest · not saved)" : escapeHtml(currentUser.classCode)}</span></div>
+          <div class="flex justify-between gap-3"><span class="text-slate-400">Date:</span> <span class="font-bold text-white">${nowStr}</span></div>
+        </div>
+        <div id="saveStatusLine" class="text-xs font-bold text-slate-500 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Saving to the cloud...
+        </div>
+        <div class="pt-4 flex flex-col md:flex-row gap-3 justify-center no-print">
+          ${!passed ? `<button onclick="startCurrentQuiz(true)" class="bg-rose-600 hover:bg-rose-500 text-white font-black text-lg px-8 py-4 rounded-2xl transition order-first">🔁 Try this module again</button>` : ""}
+          <button onclick="goHome()" class="${passed ? "bg-emerald-600 hover:bg-emerald-500" : "bg-slate-800 hover:bg-slate-700"} text-white font-black text-lg px-8 py-4 rounded-2xl transition">Back to Dashboard</button>
+        </div>`;
+
+      renderReview();
+      showView("viewResults");
+      window.scrollTo(0, 0);
+      saveResultToFirebase(record);
+    }
+
+    function renderReview() {
+      const wrong = attemptLog.filter(a => !a.ok).length;
+      const rows = attemptLog.map((a, idx) => {
+        const t = TYPES[a.type] || TYPES.gap;
+        return `
+          <div class="bg-slate-950 border ${a.ok ? "border-emerald-500/30" : "border-rose-500/50"} rounded-2xl p-3 md:p-4 text-left">
+            <div class="flex justify-between items-start gap-3 mb-1">
+              <span class="text-sm font-black ${a.ok ? "text-emerald-400" : "text-rose-400"}"><i class="fa-solid ${a.ok ? "fa-circle-check" : "fa-circle-xmark"}"></i> ${idx + 1}</span>
+              <span class="text-[11px] font-black uppercase px-2 py-1 rounded-lg border ${t.badge}">${t.label}</span>
+            </div>
+            <p class="text-base md:text-lg text-slate-200 font-semibold">${escapeHtml(a.prompt)}</p>
+            <p class="text-sm md:text-base mt-1"><span class="text-slate-500">You wrote:</span> <span class="${a.ok ? "text-emerald-300" : "text-rose-300"} font-mono">${escapeHtml(a.user) || "\u2014"}</span></p>
+            ${a.ok ? "" : `<p class="text-sm md:text-base"><span class="text-slate-500">Correct:</span> <span class="text-emerald-300 font-mono">${escapeHtml(a.correct)}</span></p>`}
+          </div>`;
+      }).join("");
+      document.getElementById("reviewCard").innerHTML = `
+        <p class="text-sm md:text-base font-bold text-slate-300 border-b border-slate-800 pb-3 mb-3">
+          <i class="fa-solid fa-user text-emerald-400 mr-1"></i> ${escapeHtml(currentUser.firstName)} <span class="text-emerald-300">${escapeHtml(currentUser.lastName)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-amber-300">Group: ${escapeHtml(currentUser.grade)}</span>
+        </p>
+        <div class="flex justify-between items-center mb-2 gap-3">
+          <h3 class="text-xl md:text-2xl font-black text-white"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i>Correction (${wrong} mistake${wrong === 1 ? "" : "s"})</h3>
+          <button onclick="window.print()" class="no-print text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2 rounded-xl"><i class="fa-solid fa-print"></i> Print</button>
+        </div>
+        <div class="grid grid-cols-1 gap-2">${rows}</div>`;
+    }
+
+    function saveResultToFirebase(record, isRetry) {
+      if (!isRetry) saveResultLocally(record);
+
+      if (currentUser.guest) {
+        const line = document.getElementById("saveStatusLine");
+        if (line) line.innerHTML = `<i class="fa-solid fa-user-clock text-slate-400"></i> <span class="text-slate-400">Guest mode: this result is only on this device, it is not sent to any teacher.</span>`;
+        return;
+      }
+
+      myResultsRef().push(record).then(() => {
+        const line = document.getElementById("saveStatusLine");
+        if (line) line.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span class="text-emerald-400">Saved to the cloud</span>`;
+      }).catch(err => {
+        console.error("Error saving to Firebase:", err);
+        if (!isRetry) {
+          setTimeout(() => saveResultToFirebase(record, true), 2500);
+        } else {
+          const line = document.getElementById("saveStatusLine");
+          if (line) line.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> <span class="text-amber-400">Could not save. Please tell your teacher.</span>`;
+        }
+      });
+    }
+
+    /* ============================================================
+       FINAL REPORT
+       ============================================================ */
+    function showGlobalReportModal() {
+      showView("viewGlobalReport");
+      window.scrollTo(0, 0);
+      const container = document.getElementById("globalReportDetails");
+      container.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin text-2xl mb-3"></i><br>Loading your report...</div>`;
+
+      fetchMyRecords((records) => {
+        let completedCount = 0, passedCount = 0, sum = 0, secondsSum = 0;
+        let breakdownHtml = "";
+        MODULES.forEach(mod => {
+          const list = records.filter(r => r && r.moduleId === mod.id);
+          if (list.length) {
+            const best = list.reduce((max, r) => (Number(r.score) > Number(max.score) ? r : max), list[0]);
+            const ok = Number(best.score) >= passMark(mod);
+            completedCount++; if (ok) passedCount++;
+            sum += Number(best.score) || 0; secondsSum += best.secondsSpent || 0;
+            breakdownHtml += `
+              <div class="flex justify-between items-center bg-slate-950/80 p-4 rounded-xl border ${ok ? "border-emerald-500/40" : "border-rose-500/50"} text-sm md:text-base">
+                <span class="font-extrabold text-white">${mod.title}</span>
+                <div class="text-right">
+                  <span class="font-black ${ok ? "text-emerald-400" : "text-rose-400"}">${ok ? "✅" : "❌"} ${best.score}%</span>
+                  <span class="text-slate-500 text-xs ml-2">(${best.rawScore || ""} · ${list.length} attempt${list.length > 1 ? "s" : ""})</span>
+                </div>
+              </div>`;
+          } else {
+            breakdownHtml += `
+              <div class="flex justify-between items-center bg-slate-950/30 p-4 rounded-xl border border-slate-800/40 text-sm opacity-60">
+                <span class="font-bold text-slate-400">${mod.title}</span>
+                <span class="text-rose-400 font-bold italic">Pending</span>
+              </div>`;
+          }
+        });
+
+        if (completedCount < MODULES.length) {
+          container.innerHTML = `
+            ${studentStrip()}
+            <div class="text-center py-4 space-y-4">
+              <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl border-2 border-amber-500/40"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <h3 class="text-2xl font-black text-white">Incomplete</h3>
+              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> exercises. Pass all three to complete the irregular verbs.</p>
+              <div class="space-y-2 text-left my-4">${breakdownHtml}</div>
+              <button onclick="goHome()" class="no-print bg-emerald-600 text-white font-extrabold px-8 py-4 rounded-2xl text-base">Go back and continue</button>
+            </div>`;
+          return;
+        }
+
+        const allPassed = passedCount === MODULES.length;
+        const avg = Math.round(sum / MODULES.length);
+        const nowStr = new Date().toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" });
+        const msg = allPassed
+          ? `<div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
+               <div class="text-5xl">🏆🎉</div>
+               <h3 class="text-2xl md:text-3xl font-black text-emerald-300">CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
+               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} exercises</strong>: you know the irregular verbs!</p>
+               <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold"><i class="fa-solid fa-camera"></i> Take a <strong>SCREENSHOT</strong> of this final result and send it to your teacher through <strong>Google Classroom</strong>.</div>
+             </div>`
+          : `<div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
+               <p class="text-rose-200 text-lg md:text-xl font-black"><i class="fa-solid fa-rotate-right"></i> Keep going — you're not there yet!</p>
+               <p class="text-slate-200 text-base md:text-lg">You have passed <strong>${passedCount} of ${MODULES.length}</strong> exercises. Your work only counts when you pass <strong>ALL THREE</strong>. Repeat the ones marked in red — you can do it! 💪</p>
+             </div>`;
+
+        container.innerHTML = `
+          <div class="grid grid-cols-3 gap-4 items-center bg-slate-950/80 p-5 rounded-2xl border border-slate-800">
+            <div class="col-span-2 space-y-1">
+              <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Student</p>
+              <h3 class="text-xl md:text-2xl font-black text-white leading-tight">${escapeHtml(currentUser.firstName)} <span class="text-emerald-300">${escapeHtml(currentUser.lastName)}</span></h3>
+              <p class="text-sm md:text-base text-emerald-300 font-black">Group: ${escapeHtml(currentUser.grade)}</p>
+              <p class="text-xs text-slate-400 font-semibold">${escapeHtml(currentUser.email)}</p>
+              <p class="text-xs text-amber-400 font-extrabold mt-1">${currentUser.guest ? "Guest · not sent to any teacher" : "Class code: " + escapeHtml(currentUser.classCode)} · ${nowStr}</p>
+            </div>
+            <div class="text-center ${allPassed ? "bg-emerald-500/10 border-2 border-emerald-500/40" : "bg-rose-500/10 border-2 border-rose-500/40"} p-4 rounded-2xl">
+              <span class="text-xs font-bold ${allPassed ? "text-emerald-400" : "text-rose-400"} block uppercase">Average</span>
+              <span class="text-4xl md:text-5xl font-black ${allPassed ? "text-emerald-400" : "text-rose-400"} leading-none">${avg}%</span>
+              <span class="block text-[11px] md:text-xs font-black mt-1 ${allPassed ? "text-emerald-300" : "text-rose-300"}">${allPassed ? "✅ PASSED" : "⚠️ NOT PASSED"}</span>
+            </div>
+          </div>
+          ${msg}
+          <div>
+            <p class="text-xs font-black uppercase text-slate-400 mb-3 tracking-wider">Best score in each exercise</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${breakdownHtml}</div>
+          </div>
+          <div class="pt-4 border-t border-slate-800 flex justify-center no-print">
+            <button onclick="window.print()" class="px-8 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition text-base md:text-lg flex items-center justify-center gap-3"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+          </div>`;
+      });
+    }
+    /* ============================================================
+       TEACHER PANEL
+       ------------------------------------------------------------
+       Cada profesor/a entra con SU PIN (ver window.CLASSES arriba) y
+       solo ve los resultados guardados bajo SU codigo de clase.
+       ============================================================ */
+
+    // true = ademas de tu codigo, muestra los intentos antiguos que se
+    // guardaron antes de existir los codigos (solo los que no tienen codigo).
+    const INCLUDE_LEGACY_RECORDS = true;
+
+    let teacherAllRecords = [];
+    let teacherSearchTerm = "";
+    let teacherRefs = [];
+    let teacherRecordsByCode = {};
+    let teacherLegacyRecords = [];
+    let teacherOpenRows = new Set();
+    let currentTeacherScope = [];
+    const TEACHER_COLSPAN = 7 + MODULES.length;
+
+    function showTeacherLogin() {
+      const pin = prompt("Teacher PIN / PIN del profesor:");
+      if (pin === null) return;
+      const mine = findClassesByPin(pin);
+      if (!mine.length) { alert("Wrong PIN / PIN incorrecto"); return; }
+      currentTeacherScope = mine;
+      currentTeacherLoggedIn = mine[0].teacher || "Teacher";
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      renderTeacherDashboard();
+      showView("viewTeacher");
+    }
+
+    function teacherCodes() { return currentTeacherScope.map(c => normalizeCode(c.code)); }
+
+    function isRecord(v) {
+      return v && typeof v === "object" && (v.moduleId || v.studentName || v.score !== undefined);
+    }
+
+    function detachTeacherRefs() {
+      teacherRefs.forEach(r => { try { r.off("value"); } catch (e) {} });
+      teacherRefs = [];
+    }
+
+    function mergeTeacherRecords() {
+      let all = [];
+      Object.keys(teacherRecordsByCode).forEach(k => { all = all.concat(teacherRecordsByCode[k]); });
+      teacherAllRecords = all.concat(teacherLegacyRecords);
+    }
+
+    function readBranch(snapshot, code) {
+      const out = [];
+      snapshot.forEach(childSnap => {
+        const v = childSnap.val();
+        if (isRecord(v)) out.push(Object.assign({}, v, { classCode: v.classCode || code }));
+      });
+      return out;
+    }
+
+    function loadLegacyRecords() {
+      if (!INCLUDE_LEGACY_RECORDS) return Promise.resolve([]);
+      return db.ref(RESULTS_NODE).once("value").then(snapshot => {
+        const out = [];
+        snapshot.forEach(childSnap => {
+          const v = childSnap.val();                  // los hijos que son carpetas de codigo no son registros
+          if (isRecord(v) && !normalizeCode(v.classCode)) out.push(Object.assign({}, v, { classCode: "\u2014" }));
+        });
+        return out;
+      }).catch(() => []);
+    }
+
+    function renderTeacherDashboard() {
+      const codes = teacherCodes();
+      document.getElementById("teacherTitle").innerText = currentTeacherLoggedIn;
+      const sub = document.getElementById("teacherSubtitle");
+      if (sub) sub.innerHTML = `Class code${codes.length > 1 ? "s" : ""}: <span class="text-amber-300 font-bold">${escapeHtml(codes.join(" \u00b7 "))}</span><br>One row per student \u00b7 click a student to see every attempt and every answer they wrote.`;
+      renderTeacherTableHead();
+      teacherSearchTerm = "";
+      teacherRecordsByCode = {};
+      teacherLegacyRecords = [];
+      const searchInput = document.getElementById("teacherSearchInput");
+      if (searchInput) searchInput.value = "";
+      const tbody = document.getElementById("teacherTableBody");
+      tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-slate-400 font-bold">Loading data from the cloud...</td></tr>`;
+
+      detachTeacherRefs();
+      loadLegacyRecords().then(list => {
+        teacherLegacyRecords = list;
+        mergeTeacherRecords();
+        paintTeacherTable();
+      });
+
+      codes.forEach(code => {
+        const ref = db.ref(RESULTS_NODE + "/" + code);
+        teacherRefs.push(ref);
+        ref.on("value", (snapshot) => {
+          teacherRecordsByCode[code] = readBranch(snapshot, code);
+          mergeTeacherRecords();
+          paintTeacherTable();
+          updateTeacherLastRefreshed();
+        }, (err) => {
+          console.error("Error reading Firebase results:", err);
+          tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-rose-400 font-bold">\u26a0\ufe0f Could not load the data (${escapeHtml(err.message)}). Check your connection.</td></tr>`;
+        });
+      });
+    }
+
+    function refreshTeacherDashboardNow() {
+      const btn = document.getElementById("teacherRefreshBtn");
+      if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...`; }
+      const jobs = teacherCodes().map(code =>
+        db.ref(RESULTS_NODE + "/" + code).once("value").then(snapshot => {
+          teacherRecordsByCode[code] = readBranch(snapshot, code);
+        }));
+      jobs.push(loadLegacyRecords().then(list => { teacherLegacyRecords = list; }));
+      Promise.all(jobs).then(() => {
+        mergeTeacherRecords();
+        paintTeacherTable();
+        updateTeacherLastRefreshed();
+      }).catch((err) => {
+        alert("Could not refresh: " + err.message);
+      }).then(() => {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Refresh`; }
+      });
+    }
+
+    function updateTeacherLastRefreshed() {
+      const el = document.getElementById("teacherLastRefreshed");
+      if (el) el.innerText = `Last updated: ${new Date().toLocaleTimeString("en-GB")}`;
+    }
+
+    function renderTeacherTableHead() {
+      document.getElementById("teacherTableHead").innerHTML = `
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Surname(s)</th>
+          <th class="p-3">Group</th>
+          <th class="p-3">Code</th>
+          ${MODULES.map(m => `<th class="p-3 text-center">${m.short}</th>`).join("")}
+          <th class="p-3 text-center">Average</th>
+          <th class="p-3 text-center">Result</th>
+          <th class="p-3">Last activity</th>
+        </tr>`;
+    }
+
+    function splitName(r) {
+      const first = (r.firstName || "").toString().trim();
+      const last = (r.lastName || "").toString().trim();
+      if (first || last) return { first: first, last: last };
+      const parts = (r.studentName || "").toString().trim().split(/\s+/);
+      return { first: parts.shift() || "\u2014", last: parts.join(" ") };
+    }
+
+    function buildStudentSummaries(records) {
+      const byStudent = {};
+      records.forEach(r => {
+        const n = splitName(r);
+        const key = ((r.email || (n.first + " " + n.last) || "no_name") + "|" + (r.classCode || "")).toString().trim().toLowerCase();
+        if (!byStudent[key]) {
+          byStudent[key] = { key, firstName: n.first, lastName: n.last, studentName: r.studentName || (n.first + " " + n.last),
+            grade: r.grade || r.group || "\u2014", classCode: r.classCode || "\u2014", email: r.email || "",
+            attempts: [], lastTimestamp: 0, lastDateTime: "" };
+        }
+        const st = byStudent[key];
+        st.attempts.push(r);
+        const ts = Number(r.timestamp) || 0;
+        if (ts >= st.lastTimestamp || !st.lastDateTime) {
+          st.lastTimestamp = ts;
+          st.lastDateTime = r.dateTime || "";
+          if (n.first) st.firstName = n.first;
+          if (n.last) st.lastName = n.last;
+          st.studentName = (st.firstName + " " + st.lastName).trim();
+          if (r.grade || r.group) st.grade = r.grade || r.group;
+        }
+      });
+
+      return Object.values(byStudent).map(st => {
+        const moduleScores = MODULES.map(mod => {
+          const list = st.attempts.filter(a => a.moduleId === mod.id);
+          return list.length ? Math.max(...list.map(a => Number(a.score) || 0)) : null;
+        });
+        const moduleAttempts = MODULES.map(mod => st.attempts.filter(a => a.moduleId === mod.id).length);
+        const completedCount = moduleScores.filter(sc => sc !== null).length;
+        const allDone = completedCount === MODULES.length;
+        const allPassed = allDone && moduleScores.every((sc, i) => sc >= passMark(MODULES[i]));
+        const finalAverage = allDone ? Math.round(moduleScores.reduce((a, sc) => a + sc, 0) / MODULES.length) : null;
+        return Object.assign({}, st, { moduleScores, moduleAttempts, completedCount, allDone, allPassed, finalAverage });
+      });
+    }
+
+    function renderTeacherStats(students) {
+      const total = students.length;
+      const done = students.filter(s => s.allDone);
+      const passed = students.filter(s => s.allPassed).length;
+      const avg = done.length ? Math.round(done.reduce((a, s) => a + s.finalAverage, 0) / done.length) : 0;
+      document.getElementById("teacherStatsGrid").innerHTML = `
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-white">${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Students</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${done.length}/${total}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Did all modules</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-emerald-400">${passed}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Passed all 3 exercises</div></div>
+        <div class="bg-slate-900 border-2 border-slate-800 rounded-2xl p-4 text-center"><div class="text-3xl font-black text-amber-400">${avg}%</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Group average</div></div>`;
+    }
+
+    function filterTeacherTable(term) {
+      teacherSearchTerm = term || "";
+      paintTeacherTable();
+    }
+
+    function visibleStudents() {
+      let students = buildStudentSummaries(teacherAllRecords);
+      const term = teacherSearchTerm.trim().toLowerCase();
+      if (term) {
+        students = students.filter(s =>
+          (s.firstName || "").toLowerCase().includes(term) ||
+          (s.lastName || "").toLowerCase().includes(term) ||
+          (s.email || "").toLowerCase().includes(term) ||
+          (s.grade || "").toLowerCase().includes(term) ||
+          (s.classCode || "").toLowerCase().includes(term));
+      }
+      students.sort((a, b) =>
+        (a.lastName || "").localeCompare(b.lastName || "", "es") ||
+        (a.firstName || "").localeCompare(b.firstName || "", "es"));
+      return students;
+    }
+
+    function toggleStudentDetail(key) {
+      if (teacherOpenRows.has(key)) teacherOpenRows.delete(key); else teacherOpenRows.add(key);
+      paintTeacherTable();
+    }
+
+    function studentDetailHtml(s) {
+      const attempts = s.attempts.slice().sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
+      const header = `
+        <p class="text-sm md:text-base font-bold text-slate-200 mb-2">
+          <i class="fa-solid fa-user text-emerald-400 mr-1"></i> ${escapeHtml(s.firstName)} <span class="text-emerald-300">${escapeHtml(s.lastName)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-amber-300">Group: ${escapeHtml(s.grade)}</span>
+          <span class="text-slate-500">\u00b7</span> <span class="text-slate-400">${escapeHtml(s.email)}</span>
+        </p>`;
+      const body = attempts.map(a => {
+        const ok = Number(a.score) >= passMarkOf(a.moduleId);
+        const answers = Array.isArray(a.answers) ? a.answers : Object.values(a.answers || {});
+        const lines = answers.map((x, i) => `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-3 py-1 border-b border-slate-800/60 text-xs md:text-sm">
+            <span class="text-slate-200">${i + 1}. ${escapeHtml(x.prompt || x.text || "")}</span>
+            <span class="${x.ok ? "text-emerald-300" : "text-rose-300"} font-mono">${x.ok ? "\u2714" : "\u2718"} ${escapeHtml(x.user) || "\u2014"}</span>
+            <span class="text-slate-400 font-mono">${x.ok ? "" : "\u2192 " + escapeHtml(x.correct)}</span>
+          </div>`).join("");
+        return `
+          <details class="bg-slate-950 border ${ok ? "border-emerald-500/30" : "border-rose-500/30"} rounded-xl p-3 mb-2">
+            <summary class="cursor-pointer font-bold text-sm md:text-base flex flex-wrap gap-3 items-center">
+              <span class="text-white">${escapeHtml(a.topic || a.moduleId)}</span>
+              <span class="${ok ? "text-emerald-400" : "text-rose-400"} font-black">${a.score}% (${a.rawScore || ""})</span>
+              <span class="text-slate-500 text-xs">${escapeHtml(a.dateTime || "")} \u00b7 ${escapeHtml(a.timeSpent || "")}</span>
+            </summary>
+            <div class="mt-2">${lines || '<p class="text-slate-500 text-sm">No answer details saved.</p>'}</div>
+          </details>`;
+      }).join("");
+      return header + body;
+    }
+
+    function paintTeacherTable() {
+      const tbody = document.getElementById("teacherTableBody");
+      renderTeacherStats(buildStudentSummaries(teacherAllRecords));
+      const students = visibleStudents();
+
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-slate-500 font-bold">
+          ${teacherAllRecords.length === 0 ? "No attempts recorded for your class code yet." : "No student matches your search."}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      students.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/50 transition cursor-pointer";
+        tr.onclick = () => toggleStudentDetail(s.key);
+
+        const moduleCells = s.moduleScores.map((score, i) => {
+          if (score === null) return `<td class="p-3 text-center text-slate-600">\u2014</td>`;
+          const cls = score >= passMark(MODULES[i]) ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400";
+          return `<td class="p-3 text-center"><span class="inline-block px-2 py-1 rounded-lg font-black text-xs ${cls}">${score}%</span><span class="block text-[10px] text-slate-500 mt-1">${s.moduleAttempts[i]} att.</span></td>`;
+        }).join("");
+
+        const avgCell = s.allDone
+          ? `<span class="font-black text-white">${s.finalAverage}%</span>`
+          : `<span class="font-bold text-slate-400">${s.completedCount}/${MODULES.length}</span>`;
+        const resultCell = !s.allDone
+          ? `<span class="text-xs font-bold text-slate-500">In progress</span>`
+          : (s.allPassed ? `<span class="text-xs font-black text-emerald-400">\u2705 Passed</span>` : `<span class="text-xs font-black text-rose-400">\u26a0\ufe0f Not passed</span>`);
+        const open = teacherOpenRows.has(s.key);
+
+        tr.innerHTML = `
+          <td class="p-3 font-extrabold text-white"><i class="fa-solid ${open ? "fa-chevron-down" : "fa-chevron-right"} text-slate-500 text-xs mr-1"></i>${escapeHtml(s.firstName)}</td>
+          <td class="p-3 font-extrabold text-emerald-300">${escapeHtml(s.lastName)}<span class="block text-[11px] text-slate-500 font-medium">${escapeHtml(s.email)}</span></td>
+          <td class="p-3 text-slate-300 font-bold">${escapeHtml(s.grade || "\u2014")}</td>
+          <td class="p-3 text-amber-300/80 font-mono text-xs">${escapeHtml(s.classCode || "\u2014")}</td>
+          ${moduleCells}
+          <td class="p-3 text-center">${avgCell}</td>
+          <td class="p-3 text-center">${resultCell}</td>
+          <td class="p-3 text-slate-400 text-xs">${escapeHtml(s.lastDateTime || "\u2014")}</td>`;
+        tbody.appendChild(tr);
+
+        if (open) {
+          const dr = document.createElement("tr");
+          dr.innerHTML = `<td colspan="${TEACHER_COLSPAN}" class="p-3 md:p-4 bg-slate-900/60">${studentDetailHtml(s)}</td>`;
+          tbody.appendChild(dr);
+        }
+      });
+    }
+
+    function exportTeacherCsv() {
+      const students = visibleStudents();
+      const esc = v => `"${(v === null || v === undefined ? "" : String(v)).replace(/"/g, '""')}"`;
+      const header = ["Name", "Surname(s)", "Group", "Class code", "Email",
+        ...MODULES.map(m => m.short + " (best %)"), ...MODULES.map(m => m.short + " (attempts)"),
+        "Average %", "Result", "Last activity"];
+      const rows = students.map(s => [
+        s.firstName, s.lastName, s.grade, s.classCode, s.email,
+        ...s.moduleScores.map(v => v === null ? "" : v),
+        ...s.moduleAttempts,
+        s.allDone ? s.finalAverage : "",
+        !s.allDone ? "In progress" : (s.allPassed ? "Passed" : "Not passed"),
+        s.lastDateTime
+      ]);
+      const csv = "\ufeff" + [header, ...rows].map(r => r.map(esc).join(";")).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `irregular_verbs_3en1_${teacherCodes().join("_")}_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>

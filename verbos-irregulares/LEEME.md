@@ -67,8 +67,8 @@ caminos:
 
 ## 4. Reglas de Firebase (recomendado)
 
-Copia `reglas-firebase.json` en *Firebase → Realtime Database → Reglas →
-Publicar*. Con eso:
+Copia `reglas-firebase.json` (está en la **raíz del repositorio** y cubre
+todas las apps) en *Firebase → Realtime Database → Reglas → Publicar*. Con eso:
 
 - solo se puede escribir dentro de tus siete códigos;
 - un intento guardado **no se puede borrar ni modificar** desde la web;
