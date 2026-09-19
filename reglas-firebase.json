@@ -21,6 +21,10 @@
           ".validate": "newData.hasChildren(['firstName','lastName','grade','moduleId','score'])"
         }
       }
+    },
+    "$resto_de_apps": {
+      ".read": true,
+      ".write": true
     }
   }
 }
