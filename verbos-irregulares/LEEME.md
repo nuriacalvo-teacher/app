@@ -88,8 +88,8 @@ nota, pero no se guarda nada.
 |---|---|
 | 1º ESO | `1ESO-PWDJ` |
 | 2º ESO | `2ESO-XH9J` |
-| 3º ESO A/B | `3ESO-AB-7HML` |
-| 3º ESO B/C | `3ESO-BC-UAVE` |
+| 3º ESO A/B | `3ESO-AB` |
+| 3º ESO B/C | `3ESO-BC` |
 | 4º ESO | `4ESO-XAXD` |
 | 1º BTO | `1BTO-976F` |
 | 2º BTO | `2BTO-KMJR` |
