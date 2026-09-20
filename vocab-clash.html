@@ -305,6 +305,18 @@
       </div>
       <div class="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3" id="formatPicker"></div>
       <p class="text-sm text-slate-400 leading-snug"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Everything except multiple choice is written on the board and scores <strong class="text-slate-300">+1 extra point</strong>. An on-screen keyboard appears, so no physical keyboard is needed. <strong class="text-slate-300">Listen &amp; write</strong> reads the word out loud (the music stops so the class can hear it).</p>
+      <div id="voiceBox" class="hidden bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-2">
+        <p class="text-sm font-black text-slate-300 uppercase tracking-widest"><i class="fa-solid fa-microphone-lines text-emerald-400 mr-1"></i> Reading voice</p>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select id="voiceSelect" onchange="setVoice(this.value)"
+            class="flex-grow min-w-0 bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm md:text-base text-white focus:outline-none focus:border-emerald-500"></select>
+          <button onclick="testVoice()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-3 rounded-xl transition whitespace-nowrap">
+            <i class="fa-solid fa-play mr-1"></i> Hear it
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 leading-snug">Pick the voice that sounds most human on this computer and try it before the lesson. Voices with “Natural”, “Neural” or “Google” in the name are the good ones; “eSpeak” or “Compact” are the tinny robots.</p>
+      </div>
+
       <button onclick="openWordList()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-base md:text-lg py-4 rounded-2xl transition flex items-center justify-center gap-3">
         <i class="fa-solid fa-list-check text-emerald-400"></i> See / print the vocabulary list
       </button>
@@ -734,31 +746,51 @@ const FORMATS = {
   listen:   { label:"Listen & write",  icon:"fa-headphones",  bonus:1, help:"Listen, then write the word", sub:"+1 bonus point" }
 };
 const TYPED = ["gap", "vowels", "listen"];
-const isTyped = f => TYPED.includes(f);
-const VOWELS = "AEIOU";
-
-/* --- speech: used by the "Listen & write" challenge --- */
-let VOICE = null;
-function pickVoice() {
-  try {
-    const vs = speechSynthesis.getVoices();
-    VOICE = vs.find(v => /^en-GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
-  } catch (e) { VOICE = null; }
-  return VOICE;
-}
-function speechReady() { return typeof speechSynthesis !== "undefined" && !!(VOICE || pickVoice()); }
-function speakWord(w) {
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(w);
-    if (VOICE || pickVoice()) { u.voice = VOICE; u.lang = VOICE.lang; } else u.lang = "en-GB";
-    u.rate = 0.8; u.pitch = 1;
-    speechSynthesis.speak(u);
-  } catch (e) {}
-}
 /* Speed points: answer in the first third of the time = 3, middle third = 2, last third = 1 */
 const speedPoints = frac => frac > 2/3 ? 3 : frac > 1/3 ? 2 : 1;
 const speedLabel  = p => p === 3 ? "lightning fast ⚡" : p === 2 ? "quick 👍" : "just in time ⏳";
+const isTyped = f => TYPED.includes(f);
+const VOWELS = "AEIOU";
+
+/* --- speech: used by the "Listen & write" challenge ---------------------
+   Browsers expose very different voices. Some (eSpeak on Linux, old SAPI
+   voices) really do sound like a tin robot, so we rank them and let the
+   teacher pick and preview another one before the lesson. */
+let VOICE = null, VOICES = [];
+function voiceScore(v) {
+  const n = (v.name || "").toLowerCase(), l = (v.lang || "").toLowerCase();
+  let s = 0;
+  if (/natural|neural|premium|enhanced/.test(n)) s += 70;   // Edge/Windows 11 natural voices
+  if (/google/.test(n)) s += 45;                            // Chrome's online voices
+  if (/siri|samantha|daniel|serena|karen|moira/.test(n)) s += 35;  // macOS/iOS
+  if (/microsoft/.test(n)) s += 20;
+  if (/espeak|festival|pico|robot|compact/.test(n)) s -= 80; // the tinny ones
+  if (v.localService === false) s += 12;
+  if (l.startsWith("en-gb")) s += 22; else if (l.startsWith("en-us")) s += 16; else if (l.startsWith("en")) s += 8;
+  return s;
+}
+function loadVoices() {
+  try {
+    VOICES = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a));
+  } catch (e) { VOICES = []; }
+  VOICE = VOICES.find(v => v.name === S.voiceName) || VOICES[0] || null;
+  return VOICE;
+}
+function speechReady() { return typeof speechSynthesis !== "undefined" && !!(VOICE || loadVoices()); }
+const CARRIERS = ["Listen carefully.", "Here is your word.", "Are you ready?", "Your word is:"];
+function speakWord(w, plain) {
+  try {
+    speechSynthesis.cancel();
+    if (!VOICE) loadVoices();
+    // a bare word read on its own is what sounds mechanical; a short carrier
+    // phrase plus a repeat gives the engine something to put a rhythm on
+    const text = plain ? w : `${CARRIERS[Math.floor(Math.random() * CARRIERS.length)]} ${w}. ${w}.`;
+    const u = new SpeechSynthesisUtterance(text);
+    if (VOICE) { u.voice = VOICE; u.lang = VOICE.lang; } else u.lang = "en-GB";
+    u.rate = 0.92; u.pitch = 1.02; u.volume = 1;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
 
 const S = {
   teamCount: 2, rounds: 8, level: 1,
@@ -767,7 +799,7 @@ const S = {
   challengeEvery: 1, challengeOffset: 0,
   teams: [], customQs: [], customHard: [], onlyCustom: false, queue: [], index: 0,
   answered: false, timer: null, deadline: 0, limitMs: 15000, lastTick: -1,
-  musicOn: true, sfxOn: true, countdownTimer: null,
+  musicOn: true, sfxOn: true, voiceName: "", countdownTimer: null,
   gapTyped: "", scrambleSlots: [], scrambleUsed: []
 };
 
@@ -787,62 +819,143 @@ function toggleFullScreen() {
   else document.exitFullscreen?.();
 }
 
-/* ================================================================ AUDIO */
-let AC = null;
+/* ================================================================ AUDIO
+   Everything is synthesised live (no audio files to load in class). The
+   signal chain gives it some air: bus -> gentle compressor -> output, with a
+   reverb send, so it sounds like a room and not like a 1980s handheld. */
+let AC = null, MASTER = null, MUSIC_BUS = null, SFX_BUS = null, REVERB = null, NOISE = null;
+function buildChain() {
+  const c = AC;
+  MASTER = c.createGain(); MASTER.gain.value = 0.85;
+  const comp = c.createDynamicsCompressor();
+  comp.threshold.value = -20; comp.knee.value = 24; comp.ratio.value = 3.5;
+  comp.attack.value = 0.006; comp.release.value = 0.25;
+  MASTER.connect(comp); comp.connect(c.destination);
+
+  REVERB = c.createConvolver();
+  const len = Math.floor(c.sampleRate * 2.4), buf = c.createBuffer(2, len, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8);
+  }
+  REVERB.buffer = buf;
+  const rev = c.createGain(); rev.gain.value = 0.3;
+  REVERB.connect(rev); rev.connect(MASTER);
+
+  const warm = c.createBiquadFilter();                 // takes the edge off the top end
+  warm.type = "lowpass"; warm.frequency.value = 3200; warm.Q.value = 0.5;
+  MUSIC_BUS = c.createGain(); MUSIC_BUS.gain.value = 0.55;
+  MUSIC_BUS.connect(warm); warm.connect(MASTER);
+  const mSend = c.createGain(); mSend.gain.value = 0.35; MUSIC_BUS.connect(mSend); mSend.connect(REVERB);
+
+  SFX_BUS = c.createGain(); SFX_BUS.gain.value = 0.9;
+  SFX_BUS.connect(MASTER);
+  const sSend = c.createGain(); sSend.gain.value = 0.45; SFX_BUS.connect(sSend); sSend.connect(REVERB);
+
+  const nLen = Math.floor(c.sampleRate * 1.2);
+  NOISE = c.createBuffer(1, nLen, c.sampleRate);
+  const nd = NOISE.getChannelData(0);
+  for (let i = 0; i < nLen; i++) nd[i] = Math.random() * 2 - 1;
+}
 function ac() {
-  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); buildChain(); }
   if (AC.state === "suspended") AC.resume();
   return AC;
 }
-function tone(freq, dur, type = "sine", vol = 0.2, delay = 0) {
+const bus = name => (name === "sfx" ? SFX_BUS : MUSIC_BUS);
+
+/* one soft note: two slightly detuned oscillators, smooth attack and release */
+function note(freq, dur, o = {}) {
   try {
-    const c = ac(), t = c.currentTime + delay;
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
+    const c = ac(), t = c.currentTime + (o.at || 0);
+    const g = c.createGain(), out = bus(o.bus || "music");
+    const vol = o.vol == null ? 0.2 : o.vol, atk = o.attack == null ? 0.02 : o.attack;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + atk);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(c.destination);
-    o.start(t); o.stop(t + dur + 0.05);
+    let dest = g;
+    if (o.filter) {
+      const f = c.createBiquadFilter();
+      f.type = "lowpass"; f.frequency.setValueAtTime(o.filter, t); f.Q.value = 0.7;
+      g.connect(f); f.connect(out);
+    } else g.connect(out);
+    [0, o.detune == null ? 6 : o.detune].forEach((cents, i) => {
+      if (i && !cents) return;
+      const osc = c.createOscillator();
+      osc.type = o.type || "sine";
+      osc.frequency.setValueAtTime(freq, t);
+      if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+      osc.detune.value = cents;
+      osc.connect(dest); osc.start(t); osc.stop(t + dur + 0.08);
+    });
   } catch (e) {}
 }
-function sweep(f1, f2, dur, type = "sawtooth", vol = 0.18) {
+/* filtered noise: hats, clicks and whooshes sound far better than square beeps */
+function noise(dur, o = {}) {
   try {
-    const c = ac(), t = c.currentTime;
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.setValueAtTime(f1, t);
-    o.frequency.exponentialRampToValueAtTime(f2, t + dur);
-    g.gain.setValueAtTime(vol, t);
+    const c = ac(), t = c.currentTime + (o.at || 0);
+    const src = c.createBufferSource(); src.buffer = NOISE;
+    const f = c.createBiquadFilter();
+    f.type = o.type || "bandpass";
+    f.frequency.setValueAtTime(o.from || 1800, t);
+    if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+    f.Q.value = o.q == null ? 1.2 : o.q;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.vol == null ? 0.12 : o.vol, t + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(c.destination);
-    o.start(t); o.stop(t + dur + 0.05);
+    src.connect(f); f.connect(g); g.connect(bus(o.bus || "sfx"));
+    src.start(t); src.stop(t + dur + 0.05);
   } catch (e) {}
 }
+
 const sfx = {
-  correct(){ if(!S.sfxOn) return; [523,659,784,1047].forEach((f,i)=>tone(f,.22,"triangle",.26,i*.075)); },
-  wrong()  { if(!S.sfxOn) return; sweep(320,90,.45,"sawtooth",.2); tone(140,.4,"square",.14,.05); },
-  timeout(){ if(!S.sfxOn) return; [440,349,262].forEach((f,i)=>tone(f,.3,"square",.18,i*.16)); },
-  tick()   { if(!S.sfxOn) return; tone(980,.07,"square",.14); },
-  whoosh() { if(!S.sfxOn) return; sweep(200,1400,.35,"sine",.13); },
-  click()  { if(!S.sfxOn) return; tone(660,.06,"triangle",.12); },
-  type()   { if(!S.sfxOn) return; tone(880,.04,"square",.07); },
-  count()  { if(!S.sfxOn) return; tone(880,.12,"triangle",.18); },
-  star()   { if(!S.sfxOn) return; [784,988,1319,1568].forEach((f,i)=>tone(f,.3,"triangle",.2,i*.1)); },
-  fanfare(){ if(!S.sfxOn) return; [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.42,"triangle",.24,i*.16)); [131,196,262].forEach((f,i)=>tone(f,.9,"sine",.16,i*.16)); }
+  correct() { if (!S.sfxOn) return;                       // bright bell arpeggio
+    [784, 988, 1175, 1568].forEach((f, i) => note(f, .9, { bus:"sfx", type:"sine", vol:.22, at:i*.07, attack:.008 }));
+    note(392, 1.1, { bus:"sfx", type:"triangle", vol:.12, attack:.01 }); },
+  wrong()   { if (!S.sfxOn) return;                       // soft low thud, no buzzsaw
+    note(196, .5, { bus:"sfx", type:"triangle", vol:.16, to:98, filter:900 });
+    note(98, .7, { bus:"sfx", type:"sine", vol:.18, at:.05, filter:500 }); },
+  timeout() { if (!S.sfxOn) return;
+    [523, 415, 330].forEach((f, i) => note(f, .55, { bus:"sfx", type:"triangle", vol:.16, at:i*.17, filter:2200 })); },
+  tick()    { if (!S.sfxOn) return; noise(.06, { from:2600, to:1200, vol:.07, q:2.4 });
+    note(1200, .07, { bus:"sfx", type:"sine", vol:.05, attack:.004 }); },
+  whoosh()  { if (!S.sfxOn) return; noise(.5, { type:"bandpass", from:300, to:3200, vol:.1, q:.8 }); },
+  click()   { if (!S.sfxOn) return; note(880, .09, { bus:"sfx", type:"sine", vol:.08, attack:.005 }); },
+  type()    { if (!S.sfxOn) return; noise(.03, { from:3000, to:2000, vol:.05, q:3 }); },
+  count()   { if (!S.sfxOn) return; note(660, .35, { bus:"sfx", type:"sine", vol:.16, attack:.006 }); },
+  star()    { if (!S.sfxOn) return;
+    [1047, 1319, 1568, 2093].forEach((f, i) => note(f, .8, { bus:"sfx", type:"sine", vol:.14, at:i*.09, attack:.006 })); },
+  fanfare() { if (!S.sfxOn) return;                       // little brass section
+    const chord = (root, at) => [1, 1.26, 1.5, 2].forEach(m =>
+      note(root * m, 1.1, { bus:"sfx", type:"sawtooth", vol:.07, at, attack:.05, filter:2400, detune:9 }));
+    chord(262, 0); chord(349, .34); chord(392, .68); chord(523, 1.05);
+    [65, 87, 98, 131].forEach((f, i) => note(f, 1.2, { bus:"sfx", type:"triangle", vol:.12, at:i*.34 })); }
 };
 
-/* background "thinking" music — generated live, no audio files needed */
-const MEL  = [659,587,523,587,659,784,659,587,523,587,659,523,440,523,587,659];
-const BASS = [110,110,147,147,165,165,131,131];
+/* ------- background "thinking" music: warm pad + bass + soft arpeggio ------- */
+const CHORDS = [                                   // Am - F - C - G, one bar each
+  { bass: 110, notes: [220, 262, 330] },
+  { bass: 87,  notes: [175, 220, 262] },
+  { bass: 131, notes: [196, 262, 330] },
+  { bass: 98,  notes: [196, 247, 294] }
+];
+const ARP = [0, 2, 1, 2, 0, 1, 2, 1];
 let musicStep = 0, musicTimeout = null, tense = false;
 function musicLoop() {
   if (!S.musicOn) return;
-  const i = musicStep % 16;
-  tone(MEL[i], tense ? .16 : .24, "triangle", tense ? .075 : .055);
-  if (i % 2 === 0) tone(BASS[(musicStep >> 1) % 8], .3, "sine", .11);
-  if (i % 4 === 2) tone(1800, .03, "square", .035);
+  const step = musicStep % 32, bar = Math.floor(step / 8) % 4, ch = CHORDS[bar];
+  if (step % 8 === 0) {                                     // pad, once per bar
+    ch.notes.forEach((f, i) => note(f, tense ? 1.2 : 2.1,
+      { type:"triangle", vol: tense ? .05 : .045, attack:.5, at:i*.02, filter:1800, detune:7 }));
+    note(ch.bass, tense ? 1.1 : 1.9, { type:"sine", vol:.14, attack:.03, filter:700 });
+  }
+  if (step % 4 === 2) note(ch.bass * 1.5, .5, { type:"sine", vol:.07, filter:800 });
+  note(ch.notes[ARP[step % 8]] * 2, .5, { type:"triangle", vol: tense ? .05 : .035, attack:.012, filter:2600 });
+  if (step % 2 === 1) noise(.04, { bus:"music", from:6000, to:4000, vol: tense ? .035 : .022, q:1.8 });
+  if (tense && step % 4 === 0) note(55, .35, { type:"sine", vol:.18, filter:300 });   // heartbeat
   musicStep++;
-  musicTimeout = setTimeout(musicLoop, tense ? 148 : 252);
+  musicTimeout = setTimeout(musicLoop, tense ? 190 : 300);
 }
 function startMusic() { stopMusic(); tense = false; musicStep = 0; if (S.musicOn) musicLoop(); }
 function stopMusic() { clearTimeout(musicTimeout); musicTimeout = null; }
@@ -852,7 +965,7 @@ function toggleMusic() {
     (S.musicOn ? "bg-slate-800 hover:bg-slate-700 border-slate-700 text-emerald-400" : "bg-slate-900 border-slate-800 text-slate-600");
   $("btnMusic").innerHTML = '<i class="fa-solid fa-' + (S.musicOn ? "music" : "volume-xmark") + '"></i>';
   if (!S.musicOn) stopMusic();
-  else if ($("screenQuestion").classList.contains("active") && !S.answered) startMusic();
+  else if ($("screenQuestion").classList.contains("active") && !S.answered && S.queue[S.index] && S.queue[S.index].format !== "listen") startMusic();
 }
 function toggleSfx() {
   S.sfxOn = !S.sfxOn;
@@ -990,11 +1103,25 @@ function renderFormats() {
     </button>`;
   }).join("");
 }
+function renderVoicePicker() {
+  const box = $("voiceBox");
+  if (!speechReady() || !VOICES.length) { box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  $("voiceSelect").innerHTML = VOICES.map(v =>
+    `<option value="${esc(v.name)}" ${VOICE && v.name === VOICE.name ? "selected" : ""}>${esc(v.name)} — ${esc(v.lang)}${voiceScore(v) >= 45 ? " ⭐" : ""}</option>`).join("");
+}
+function setVoice(name) {
+  S.voiceName = name;
+  VOICE = VOICES.find(v => v.name === name) || VOICE;
+  testVoice();
+}
+function testVoice() { speakWord("Listen and write the word: champion.", true); }
+
 function toggleFormat(k) {
   if (k === "listen" && !speechReady()) return;
   const next = S.formats.includes(k) ? S.formats.filter(x => x !== k) : S.formats.concat(k);
   if (!next.length) return;
-  S.formats = next; renderFormats(); parseCustomWords(); sfx.click();
+  S.formats = next; renderFormats(); renderVoicePicker(); parseCustomWords(); sfx.click();
 }
 
 function renderCustomMode() {
@@ -1347,7 +1474,7 @@ function renderTyping(q, team) {
       <span class="block mt-2">Put the vowels back and write the whole word.</span>`;
   } else if (q.format === "listen") {
     extra.classList.remove("hidden"); extra.className = "flex justify-center";
-    extra.innerHTML = `<button onclick="speakWord(S.queue[S.index].correct)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-3xl px-8 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center gap-4">
+    extra.innerHTML = `<button onclick="speakWord(S.queue[S.index].correct, true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-3xl px-8 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center gap-4">
         <i class="fa-solid fa-volume-high"></i> Play the word again</button>`;
     $("gapHint").innerHTML = `The word has <strong class="text-white">${len}</strong> letters. Listen as many times as you need — the clock is running! 🔊`;
     setTimeout(() => speakWord(w), 350);
@@ -1699,13 +1826,14 @@ document.addEventListener("keydown", e => {
 });
 
 /* ================================================================== INIT */
-try { speechSynthesis.onvoiceschanged = () => { pickVoice(); renderFormats(); }; pickVoice(); } catch (e) {}
+try { speechSynthesis.onvoiceschanged = () => { loadVoices(); renderFormats(); renderVoicePicker(); }; loadVoices(); } catch (e) {}
 buildTeams();
 renderTeamCount();
 renderTeamNames();
 renderDifficulty();
 renderTopics();
 renderFormats();
+renderVoicePicker();
 renderChallenge();
 renderCustomMode();
 setRounds(8);
