@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>English Grammar Academy | Irregular Verbs · 5 Modules · 3 Levels</title>
+  <title>English Grammar Academy | Present Tenses · 6 modules · 3 levels</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -33,6 +33,9 @@
     .gap-input.wide { display: block; width: 100%; min-width: 0; text-align: left; border: 2px solid #334155; border-radius: 14px; padding: 12px 16px; margin: 0; }
     .gap-input.wide:focus { border-color: #34d399; }
     .gap-input.wide::placeholder { color: #475569; font-weight: 600; }
+    .mcq-opt:disabled { cursor: default; }
+    .mcq-ok { border-color: #10b981 !important; background: rgba(6,78,59,.55) !important; color: #6ee7b7 !important; }
+    .mcq-ko { border-color: #f43f5e !important; background: rgba(76,5,25,.55) !important; color: #fda4af !important; }
     .gap-ok { border-bottom-color: #10b981 !important; color: #6ee7b7 !important; background: rgba(6,78,59,.45) !important; }
     .gap-ko { border-bottom-color: #f43f5e !important; color: #fda4af !important; background: rgba(76,5,25,.45) !important; }
 
@@ -117,7 +120,7 @@
 
   // ---- a partir de aqui no hace falta tocar nada ----
   // Nodo propio de esta app (no se mezcla con las demas apps).
-  const RESULTS_NODE = "irregular_verbs";
+  const RESULTS_NODE = "present_tenses_v2";
 
   window.CLASSES = window.CLASS_CODES
     .map(c => ({ code: c, teacher: window.TEACHER_NAME, email: window.TEACHER_EMAIL }))
@@ -140,7 +143,7 @@
         </div>
         <div>
           <h1 class="font-black text-2xl md:text-3xl text-white tracking-wider">ENGLISH<span class="text-emerald-400">PRO</span></h1>
-          <p class="text-sm font-semibold text-slate-400">Irregular Verbs · Step by step</p>
+          <p class="text-sm font-semibold text-slate-400">Present Tenses · 6 modules · 3 levels</p>
         </div>
       </div>
 
@@ -161,8 +164,8 @@
     <section id="viewRegistration" class="space-y-6 max-w-xl mx-auto w-full py-6">
       <div class="text-center space-y-3">
         <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full text-xs md:text-sm font-extrabold uppercase tracking-widest border border-emerald-500/30">Student Portal</span>
-        <h2 class="text-3xl md:text-5xl font-black text-white">Irregular Verbs · Step by Step 🇬🇧</h2>
-        <p class="text-slate-300 text-base md:text-xl"><strong>5 modules</strong> of 21 verbs, each one with <strong>3 levels</strong>: the three forms, fill in the gaps and translate into English.</p>
+        <h2 class="text-3xl md:text-5xl font-black text-white">Master the Present! 🇬🇧</h2>
+        <p class="text-slate-300 text-base md:text-xl"><strong>6 modules</strong> of present tenses, each one with <strong>3 levels</strong>: choose the right option, fill in the gaps and translate into English.</p>
       </div>
 
       <form id="regForm" onsubmit="handleRegistration(event)" class="bg-slate-900/95 border-2 border-slate-800 p-6 md:p-10 rounded-3xl shadow-2xl space-y-5">
@@ -323,7 +326,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Irregular Verbs · 5 modules · 3 levels</span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Official • Present Tenses · 6 modules · 3 levels</span>
             </div>
             <h2 class="text-2xl md:text-3xl font-black text-white mt-1">Final Assessment Report</h2>
           </div>
@@ -373,1086 +376,478 @@
   </main>
 
   <footer class="border-t border-slate-800/80 py-4 text-center text-sm text-slate-500 font-semibold no-print">
-    EnglishPRO Academy • Irregular Verbs · 5 modules · 3 levels • Designed for ESO &amp; Bachillerato
+    EnglishPRO Academy • Present Tenses · 6 modules · 3 levels • Designed for ESO &amp; Bachillerato
   </footer>
   <script>
     /* ============================================================
-       IRREGULAR VERB LIST  (109 verbs)
-       es = meaning in Spanish | inf = V1 | past = V2 | part = V3
-       ============================================================ */
-    const VERBS = {
-      "be": ["be", ["was", "were"], ["been"], "ser / estar"],
-      "beat": ["beat", ["beat"], ["beaten"], "vencer, golpear"],
-      "become": ["become", ["became"], ["become"], "llegar a ser, convertirse"],
-      "begin": ["begin", ["began"], ["begun"], "empezar"],
-      "bend": ["bend", ["bent"], ["bent"], "doblar, agacharse"],
-      "bet": ["bet", ["bet"], ["bet"], "apostar"],
-      "bite": ["bite", ["bit"], ["bitten"], "morder"],
-      "bleed": ["bleed", ["bled"], ["bled"], "sangrar"],
-      "blow": ["blow", ["blew"], ["blown"], "soplar"],
-      "break": ["break", ["broke"], ["broken"], "romper"],
-      "bring": ["bring", ["brought"], ["brought"], "traer"],
-      "build": ["build", ["built"], ["built"], "construir"],
-      "burn": ["burn", ["burnt", "burned"], ["burnt", "burned"], "quemar(se)"],
-      "buy": ["buy", ["bought"], ["bought"], "comprar"],
-      "catch": ["catch", ["caught"], ["caught"], "coger, atrapar"],
-      "choose": ["choose", ["chose"], ["chosen"], "elegir"],
-      "come": ["come", ["came"], ["come"], "venir"],
-      "cost": ["cost", ["cost"], ["cost"], "costar"],
-      "cut": ["cut", ["cut"], ["cut"], "cortar"],
-      "dig": ["dig", ["dug"], ["dug"], "cavar"],
-      "do": ["do", ["did"], ["done"], "hacer"],
-      "draw": ["draw", ["drew"], ["drawn"], "dibujar"],
-      "dream": ["dream", ["dreamt", "dreamed"], ["dreamt", "dreamed"], "soñar"],
-      "drink": ["drink", ["drank"], ["drunk"], "beber"],
-      "drive": ["drive", ["drove"], ["driven"], "conducir"],
-      "eat": ["eat", ["ate"], ["eaten"], "comer"],
-      "fall": ["fall", ["fell"], ["fallen"], "caer(se)"],
-      "feed": ["feed", ["fed"], ["fed"], "dar de comer, alimentar"],
-      "feel": ["feel", ["felt"], ["felt"], "sentir(se)"],
-      "fight": ["fight", ["fought"], ["fought"], "luchar, pelear"],
-      "find": ["find", ["found"], ["found"], "encontrar"],
-      "fly": ["fly", ["flew"], ["flown"], "volar"],
-      "forget": ["forget", ["forgot"], ["forgotten"], "olvidar"],
-      "forgive": ["forgive", ["forgave"], ["forgiven"], "perdonar"],
-      "freeze": ["freeze", ["froze"], ["frozen"], "congelar(se)"],
-      "get": ["get", ["got"], ["got"], "conseguir, recibir, llegar"],
-      "give": ["give", ["gave"], ["given"], "dar"],
-      "go": ["go", ["went"], ["gone"], "ir"],
-      "grow": ["grow", ["grew"], ["grown"], "crecer, cultivar"],
-      "hang": ["hang", ["hung", "hanged"], ["hung", "hanged"], "colgar"],
-      "have": ["have", ["had"], ["had"], "tener, haber"],
-      "hear": ["hear", ["heard"], ["heard"], "oír"],
-      "hide": ["hide", ["hid"], ["hidden"], "esconder(se)"],
-      "hit": ["hit", ["hit"], ["hit"], "golpear"],
-      "hold": ["hold", ["held"], ["held"], "sujetar, celebrar"],
-      "hurt": ["hurt", ["hurt"], ["hurt"], "hacer(se) daño, doler"],
-      "keep": ["keep", ["kept"], ["kept"], "guardar, mantener"],
-      "know": ["know", ["knew"], ["known"], "saber, conocer"],
-      "lay": ["lay", ["laid"], ["laid"], "poner (la mesa), poner huevos"],
-      "lead": ["lead", ["led"], ["led"], "dirigir, guiar"],
-      "learn": ["learn", ["learnt", "learned"], ["learnt", "learned"], "aprender"],
-      "leave": ["leave", ["left"], ["left"], "dejar, marcharse"],
-      "lend": ["lend", ["lent"], ["lent"], "prestar"],
-      "let": ["let", ["let"], ["let"], "dejar, permitir"],
-      "lie_rest": ["lie", ["lay"], ["lain"], "tumbarse, estar tumbado"],
-      "lie_untrue": ["lie", ["lied"], ["lied"], "mentir (regular verb)"],
-      "light": ["light", ["lit"], ["lit"], "encender"],
-      "lose": ["lose", ["lost"], ["lost"], "perder"],
-      "make": ["make", ["made"], ["made"], "hacer, fabricar"],
-      "mean": ["mean", ["meant"], ["meant"], "significar, querer decir"],
-      "meet": ["meet", ["met"], ["met"], "conocer, quedar con"],
-      "overcome": ["overcome", ["overcame"], ["overcome"], "superar"],
-      "pay": ["pay", ["paid"], ["paid"], "pagar"],
-      "put": ["put", ["put"], ["put"], "poner"],
-      "quit": ["quit", ["quit", "quitted"], ["quit", "quitted"], "dejar (de hacer algo)"],
-      "read": ["read", ["read"], ["read"], "leer"],
-      "ride": ["ride", ["rode"], ["ridden"], "montar (bici, caballo)"],
-      "ring": ["ring", ["rang"], ["rung"], "sonar, llamar"],
-      "rise": ["rise", ["rose"], ["risen"], "subir, salir (el sol)"],
-      "run": ["run", ["ran"], ["run"], "correr"],
-      "say": ["say", ["said"], ["said"], "decir"],
-      "see": ["see", ["saw"], ["seen"], "ver"],
-      "sell": ["sell", ["sold"], ["sold"], "vender"],
-      "send": ["send", ["sent"], ["sent"], "enviar"],
-      "set": ["set", ["set"], ["set"], "poner, fijar, ponerse (el sol)"],
-      "shake": ["shake", ["shook"], ["shaken"], "agitar, temblar"],
-      "shine": ["shine", ["shone"], ["shone"], "brillar"],
-      "shoot": ["shoot", ["shot"], ["shot"], "disparar, chutar, rodar (película)"],
-      "show": ["show", ["showed"], ["shown"], "mostrar, enseñar"],
-      "shut": ["shut", ["shut"], ["shut"], "cerrar"],
-      "sing": ["sing", ["sang"], ["sung"], "cantar"],
-      "sink": ["sink", ["sank"], ["sunk"], "hundir(se)"],
-      "sit": ["sit", ["sat"], ["sat"], "sentarse"],
-      "sleep": ["sleep", ["slept"], ["slept"], "dormir"],
-      "smell": ["smell", ["smelt", "smelled"], ["smelt", "smelled"], "oler"],
-      "speak": ["speak", ["spoke"], ["spoken"], "hablar"],
-      "spell": ["spell", ["spelt", "spelled"], ["spelt", "spelled"], "deletrear, escribir (una palabra)"],
-      "spend": ["spend", ["spent"], ["spent"], "gastar, pasar (tiempo)"],
-      "stand": ["stand", ["stood"], ["stood"], "estar de pie"],
-      "steal": ["steal", ["stole"], ["stolen"], "robar"],
-      "stick": ["stick", ["stuck"], ["stuck"], "pegar"],
-      "sting": ["sting", ["stung"], ["stung"], "picar (insecto)"],
-      "sweep": ["sweep", ["swept"], ["swept"], "barrer"],
-      "swim": ["swim", ["swam"], ["swum"], "nadar"],
-      "take": ["take", ["took"], ["taken"], "coger, tomar, llevar"],
-      "teach": ["teach", ["taught"], ["taught"], "enseñar"],
-      "tear": ["tear", ["tore"], ["torn"], "romper, rasgar"],
-      "tell": ["tell", ["told"], ["told"], "decir, contar"],
-      "think": ["think", ["thought"], ["thought"], "pensar, creer"],
-      "throw": ["throw", ["threw"], ["thrown"], "lanzar, tirar"],
-      "understand": ["understand", ["understood"], ["understood"], "entender"],
-      "wake_up": ["wake up", ["woke up"], ["woken up"], "despertarse"],
-      "wear": ["wear", ["wore"], ["worn"], "llevar puesto"],
-      "win": ["win", ["won"], ["won"], "ganar"],
-      "write": ["write", ["wrote"], ["written"], "escribir"]
-    };
-
-    // Hints shown in brackets when the base form alone is ambiguous.
-    const HINTS = {
-      "lie_rest": "lie – rest",
-      "lie_untrue": "lie – not tell the truth"
-    };
-
-    /* ============================================================
-       SENTENCES — [verb key, "ps" (past simple) | "pp" (present perfect), sentence, (optional) accepted answers]
-       ___ = gap. The base form in brackets is added automatically at the end.
+       CONTENIDO · 6 módulos × 3 niveles
+       Cada módulo trae: teoría, 10 de opción múltiple, 8 de huecos
+       y 6 de traducción.
        ============================================================ */
     const MODULE_DEFS = [
       {
-        id: "iv_m1", title: "Module 1 · be → do", short: "M1 be–do", icon: "fa-1",
-        verbs: ["be", "beat", "become", "begin", "bend", "bet", "bite", "bleed", "blow", "break", "bring", "build", "burn", "buy", "catch", "choose", "come", "cost", "cut", "dig", "do"],
-        s: [
-          ["be", "ps", "I ___ very tired after the match yesterday.", ["was"]],
-          ["be", "ps", "We ___ at the beach all day last Saturday.", ["were"]],
-          ["be", "pp", "My grandparents have ___ to Italy three times."],
-          ["beat", "ps", "Our team ___ the champions 3–1 last Sunday."],
-          ["beat", "pp", "Nobody has ever ___ my brother at chess."],
-          ["become", "ps", "She ___ a famous singer when she was only eighteen."],
-          ["become", "pp", "This song has ___ very popular this summer."],
-          ["begin", "ps", "The film ___ at eight o'clock last night."],
-          ["begin", "pp", "It has just ___ to rain, so take your umbrella."],
-          ["bend", "ps", "He ___ down to pick up the coin from the floor."],
-          ["bend", "pp", "Oh no! I have ___ my new glasses."],
-          ["bet", "ps", "My uncle ___ ten euros on the horse race last week."],
-          ["bet", "pp", "I have ___ my friend a pizza that our team will win."],
-          ["bite", "ps", "A dog ___ my brother on the leg last summer."],
-          ["bite", "pp", "The mosquitoes have ___ me all over my arms!"],
-          ["bleed", "ps", "My knee ___ a lot when I fell off my bike."],
-          ["bleed", "pp", "The cut on his finger has ___ a lot, so he needs a plaster."],
-          ["blow", "ps", "The wind ___ very hard during the storm last night."],
-          ["blow", "pp", "Look! The birthday girl has ___ out all the candles."],
-          ["break", "ps", "Tom ___ his arm when he was skiing in January."],
-          ["break", "pp", "Someone has ___ the classroom window."],
-          ["bring", "ps", "Sara ___ a chocolate cake to the party yesterday."],
-          ["bring", "pp", "I have ___ you a present from London."],
-          ["build", "ps", "They ___ this bridge in 1995."],
-          ["build", "pp", "The town has ___ a new sports centre near my house."],
-          ["burn", "ps", "I ___ my hand on the hot oven yesterday."],
-          ["burn", "pp", "Oh no! I have ___ the toast again."],
-          ["buy", "ps", "My dad ___ a new car last month."],
-          ["buy", "pp", "I have already ___ the tickets for the concert."],
-          ["catch", "ps", "The police ___ the thief two hours later."],
-          ["catch", "pp", "I have ___ a cold, so I'm staying at home today."],
-          ["choose", "ps", "We ___ red T-shirts for the school team last year."],
-          ["choose", "pp", "She has ___ the blue dress for the party."],
-          ["come", "ps", "My cousins ___ to visit us last Christmas."],
-          ["come", "pp", "Summer has ___ at last! Let's go to the pool."],
-          ["cost", "ps", "My new trainers ___ sixty euros in the sales last week."],
-          ["cost", "pp", "This holiday has ___ us a lot of money."],
-          ["cut", "ps", "Mum ___ the birthday cake into twelve pieces yesterday."],
-          ["cut", "pp", "I have just ___ my finger with a knife."],
-          ["dig", "ps", "The dog ___ a big hole in the garden yesterday."],
-          ["dig", "pp", "The workers have ___ a deep hole in the street."],
-          ["do", "ps", "I ___ my homework before dinner last night."],
-          ["do", "pp", "Great! You have ___ a fantastic job."],
-          // extra practice
-          ["burn", "ps", "The old factory ___ down in 2010."],
-          ["begin", "ps", "The concert ___ late because the singer was ill."],
-          ["come", "ps", "She ___ home very late on Friday night."],
-          ["break", "pp", "My little brother has ___ my favourite mug."],
-          ["become", "pp", "My older sister has ___ a doctor."],
-          ["choose", "pp", "The teacher has ___ me to be the class delegate."],
-          ["do", "pp", "I have ___ all the exercises in the book."]
+        id: "ps", title: "1 · Present Simple", short: "Pr. Simple", icon: "fa-repeat",
+        desc: "Rutinas, verdades generales, horarios y estados.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-indigo-400 mb-3">1 · Present Simple</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Lo que pasa <strong>siempre</strong>, <strong>a menudo</strong> o <strong>nunca</strong>. No hablamos de este momento, sino de lo habitual.</p>
+          <div class="space-y-5">
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-amber-400 font-black text-xl md:text-2xl mb-3">📌 Cuándo se usa</h3>
+              <ul class="space-y-3 text-base md:text-xl text-slate-300">
+                <li><strong class="text-indigo-300">Rutinas y hábitos:</strong> I <u>get up</u> at seven every day.</li>
+                <li><strong class="text-indigo-300">Verdades generales:</strong> Water <u>boils</u> at 100 degrees.</li>
+                <li><strong class="text-indigo-300">Horarios fijos:</strong> The train <u>leaves</u> at 8:15.</li>
+                <li><strong class="text-indigo-300">Verbos de estado:</strong> I <u>like</u> pizza. She <u>knows</u> the answer.</li>
+                <li><strong class="text-indigo-300">Opiniones y gustos:</strong> He <u>thinks</u> it's a good idea.</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-950/40 p-5 md:p-7 rounded-3xl border-2 border-emerald-500/50">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">⚙️ La forma</h3>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Afirmativa:</strong> I / you / we / they <strong>work</strong> · he / she / it <strong>work<span class="text-emerald-300">s</span></strong></p>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Negativa:</strong> I <strong>don't</strong> work · she <strong>doesn't</strong> work <span class="text-amber-300">(sin -s: doesn't work, NO doesn't works)</span></p>
+              <p class="text-base md:text-xl text-slate-200"><strong>Interrogativa:</strong> <strong>Do</strong> you work? · <strong>Does</strong> she work?</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">✍️ La -s de la 3ª persona</h3>
+              <p class="text-base md:text-xl text-slate-300">work → work<strong>s</strong> · watch → watch<strong>es</strong> · go → go<strong>es</strong> · study → stud<strong>ies</strong> · have → <strong>has</strong></p>
+            </div>
+            <div class="bg-amber-950/30 p-5 md:p-7 rounded-3xl border-2 border-amber-500/40">
+              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">⏰ Palabras que lo acompañan</h3>
+              <p class="text-base md:text-xl text-slate-300">always, usually, often, sometimes, never, every day/week, on Mondays, twice a week.</p>
+              <p class="text-base md:text-lg text-slate-400 mt-2">Van <strong>antes</strong> del verbo (I <u>always</u> read) pero <strong>después</strong> de <em>be</em> (She <u>is</u> always late).</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "My sister _____ the piano every afternoon.", options: ["plays", "play", "is playing", "playes"], x: "3ª persona del singular (my sister) → play + s." },
+          { q: "_____ your parents work on Saturdays?", options: ["Do", "Does", "Are", "Is"], x: "Pregunta con sujeto plural (your parents) → Do." },
+          { q: "Tom _____ coffee. He prefers tea.", options: ["doesn't like", "don't like", "doesn't likes", "isn't liking"], x: "Negativa en 3ª persona: doesn't + verbo SIN -s. 'Like' es de estado, no admite continuo." },
+          { q: "The museum _____ at nine o'clock every morning.", options: ["opens", "is opening", "open", "opening"], x: "Horario fijo → present simple." },
+          { q: "We _____ to the cinema twice a month.", options: ["go", "goes", "are going", "gos"], x: "'Twice a month' indica frecuencia → present simple, sujeto we." },
+          { q: "She _____ late for class.", options: ["is never", "never is", "doesn't never", "never"], x: "Con el verbo 'be', el adverbio de frecuencia va DETRÁS: she is never late." },
+          { q: "_____ she live near the school?", options: ["Does", "Do", "Is", "Has"], x: "Pregunta en 3ª persona del singular → Does + verbo en infinitivo." },
+          { q: "Water _____ at zero degrees.", options: ["freezes", "is freezing", "freeze", "freezing"], x: "Verdad científica → present simple." },
+          { q: "My grandparents _____ television in the evening.", options: ["watch", "watches", "are watching", "watchs"], x: "Sujeto plural → sin -s." },
+          { q: "I _____ understand this exercise.", options: ["don't", "am not", "doesn't", "not"], x: "Negativa con 'I' → don't. 'Understand' es verbo de estado." }
+        ],
+        gaps: [
+          { text: "My brother ___ his homework after dinner.", hint: "do", answers: ["does"], x: "3ª persona: do → does." },
+          { text: "They ___ in a small village near Huesca.", hint: "live", answers: ["live"], x: "Sujeto plural → forma base." },
+          { text: "Sarah ___ to work by bus every morning.", hint: "go", answers: ["goes"], x: "go → goes en 3ª persona." },
+          { text: "We ___ television during the week.", hint: "not / watch", answers: ["don't watch", "do not watch"], x: "Negativa con 'we' → don't + infinitivo." },
+          { text: "___ your sister speak French?", hint: "speak", answers: ["does she speak", "does your sister speak"], x: "Pregunta en 3ª persona: Does + sujeto + infinitivo." },
+          { text: "The shop ___ on Sundays.", hint: "not / open", answers: ["doesn't open", "does not open"], x: "3ª persona negativa: doesn't + infinitivo, sin -s." },
+          { text: "Peter always ___ his teeth before bed.", hint: "brush", answers: ["brushes"], x: "Verbos en -sh añaden -es: brushes." },
+          { text: "My cousins ___ football every weekend.", hint: "play", answers: ["play"], x: "Sujeto plural → forma base." }
+        ],
+        tr: [
+          { es: "Me levanto a las siete todos los días.", verb: "(get up)", en: "I get up at seven every day.", alts: ["Every day I get up at seven.", "I get up at seven o'clock every day."], x: "Rutina diaria → present simple." },
+          { es: "Mi madre no trabaja los viernes.", verb: "(work)", en: "My mother doesn't work on Fridays.", alts: ["My mum doesn't work on Fridays.", "My mother does not work on Fridays."], x: "Negativa en 3ª persona: doesn't + infinitivo." },
+          { es: "¿Hablas inglés en casa?", verb: "(speak)", en: "Do you speak English at home?", alts: ["Do you speak English in your house?"], x: "Pregunta con 'you' → Do you + infinitivo." },
+          { es: "El tren sale a las ocho.", verb: "(leave)", en: "The train leaves at eight.", alts: ["The train leaves at eight o'clock."], x: "Horario fijo → present simple." },
+          { es: "Nunca llegamos tarde a clase.", verb: "(arrive)", en: "We never arrive late for class.", alts: ["We are never late for class.", "We never arrive late to class.", "We are never late to class."], x: "'Never' va delante del verbo principal." },
+          { es: "Mi hermana estudia medicina en Zaragoza.", verb: "(study)", en: "My sister studies medicine in Zaragoza.", alts: ["My sister studies Medicine in Zaragoza."], x: "study → studies (consonante + y)." }
         ]
       },
       {
-        id: "iv_m2", title: "Module 2 · draw → hear", short: "M2 draw–hear", icon: "fa-2",
-        verbs: ["draw", "dream", "drink", "drive", "eat", "fall", "feed", "feel", "fight", "find", "fly", "forget", "forgive", "freeze", "get", "give", "go", "grow", "hang", "have", "hear"],
-        s: [
-          ["draw", "ps", "Leo ___ a beautiful picture of his cat yesterday."],
-          ["draw", "pp", "The children have ___ a map of the town."],
-          ["dream", "ps", "Last night I ___ that I could fly."],
-          ["dream", "pp", "I have always ___ of visiting New York."],
-          ["drink", "ps", "We ___ lots of water after the race."],
-          ["drink", "pp", "The baby has ___ all her milk."],
-          ["drive", "ps", "My mum ___ us to school this morning."],
-          ["drive", "pp", "My dad has ___ the same car for ten years."],
-          ["eat", "ps", "We ___ pizza at an Italian restaurant last night."],
-          ["eat", "pp", "I have never ___ sushi."],
-          ["fall", "ps", "Kate ___ off her bike and hurt her knee."],
-          ["fall", "pp", "Look! All the leaves have ___ from the trees."],
-          ["feed", "ps", "I ___ the cat before I went to school."],
-          ["feed", "pp", "Don't worry, I have already ___ the dog."],
-          ["feel", "ps", "I ___ very nervous before my exam yesterday."],
-          ["feel", "pp", "I have never ___ so happy in my life!"],
-          ["fight", "ps", "The two brothers ___ about the TV remote last night."],
-          ["fight", "pp", "Those two cats have ___ three times this week."],
-          ["find", "ps", "I ___ ten euros in the street yesterday."],
-          ["find", "pp", "Good news! I have ___ my keys."],
-          ["fly", "ps", "We ___ to London last summer."],
-          ["fly", "pp", "My grandma has never ___ in a plane."],
-          ["forget", "ps", "Paul ___ his homework at home yesterday."],
-          ["forget", "pp", "Oh no! I have ___ my best friend's birthday."],
-          ["forgive", "ps", "Emma ___ her sister for breaking her phone."],
-          ["forgive", "pp", "I have ___ you, but please don't do it again."],
-          ["freeze", "ps", "It was so cold that the lake ___ last winter."],
-          ["freeze", "pp", "Mum has ___ the rest of the soup for next week."],
-          ["get", "ps", "I ___ a new phone for my birthday last month."],
-          ["get", "pp", "My brother has ___ a job in a restaurant."],
-          ["give", "ps", "My grandma ___ me a book for Christmas."],
-          ["give", "pp", "The teacher has ___ us a lot of homework today."],
-          ["go", "ps", "We ___ to the cinema last Friday."],
-          ["go", "pp", "Dad isn't here. He has ___ to the supermarket."],
-          ["grow", "ps", "My grandfather ___ tomatoes in his garden when he was young."],
-          ["grow", "pp", "Wow, you have ___ a lot since last year!"],
-          ["hang", "ps", "I ___ my coat behind the door when I got home."],
-          ["hang", "pp", "We have ___ some photos on the bedroom wall."],
-          ["have", "ps", "We ___ a great time at the party on Saturday."],
-          ["have", "pp", "I have ___ this bike since I was ten."],
-          ["hear", "ps", "I ___ a strange noise in the kitchen last night."],
-          ["hear", "pp", "I have ___ this song many times on the radio."],
-          // extra practice
-          ["eat", "ps", "The kids ___ lots of biscuits at the party."],
-          ["fly", "ps", "Our plane ___ over the Pyrenees."],
-          ["find", "ps", "After an hour, I ___ my keys in my bag."],
-          ["get", "ps", "We ___ up very early to catch the train."],
-          ["give", "pp", "She has ___ me her new address."],
-          ["go", "pp", "My parents have already ___ to bed."],
-          ["fall", "pp", "The temperature has ___ a lot this week."],
-          ["drink", "pp", "I have ___ three glasses of water today."]
+        id: "pc", title: "2 · Present Continuous", short: "Pr. Continuous", icon: "fa-person-running",
+        desc: "Lo que ocurre ahora mismo o en esta temporada.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-sky-400 mb-3">2 · Present Continuous</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Acciones <strong>en marcha</strong>: ahora mismo, estos días, o planes ya cerrados para el futuro.</p>
+          <div class="space-y-5">
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-amber-400 font-black text-xl md:text-2xl mb-3">📌 Cuándo se usa</h3>
+              <ul class="space-y-3 text-base md:text-xl text-slate-300">
+                <li><strong class="text-sky-300">Ahora mismo:</strong> Look! It <u>is raining</u>.</li>
+                <li><strong class="text-sky-300">Temporada actual (no justo ahora):</strong> I <u>am reading</u> a great book these days.</li>
+                <li><strong class="text-sky-300">Situación temporal:</strong> She <u>is living</u> with her aunt this month.</li>
+                <li><strong class="text-sky-300">Planes futuros ya cerrados:</strong> We <u>are flying</u> to Rome on Friday.</li>
+                <li><strong class="text-sky-300">Cambios en progreso:</strong> The weather <u>is getting</u> warmer.</li>
+                <li><strong class="text-sky-300">Quejas con "always":</strong> He <u>is always losing</u> his keys!</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-950/40 p-5 md:p-7 rounded-3xl border-2 border-emerald-500/50">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">⚙️ La forma</h3>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Afirmativa:</strong> am / is / are + verbo-<strong>ing</strong></p>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Negativa:</strong> I'm not working · She isn't working · They aren't working</p>
+              <p class="text-base md:text-xl text-slate-200"><strong>Interrogativa:</strong> Am I...? · Is she working? · Are they working?</p>
+              <p class="text-base md:text-lg text-amber-300 mt-3">⚠️ El verbo <strong>be</strong> es obligatorio: <s>She working</s> → She <strong>is</strong> working.</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">✍️ Ortografía del -ing</h3>
+              <p class="text-base md:text-xl text-slate-300">write → writ<strong>ing</strong> (cae la -e) · run → run<strong>ning</strong> (dobla) · lie → l<strong>ying</strong> · study → study<strong>ing</strong></p>
+            </div>
+            <div class="bg-rose-950/30 p-5 md:p-7 rounded-3xl border-2 border-rose-500/40">
+              <h3 class="text-rose-300 font-black text-xl md:text-2xl mb-3">🚫 Verbos que NO van en continuo</h3>
+              <p class="text-base md:text-xl text-slate-300">like, love, hate, want, need, know, understand, believe, remember, seem, belong, prefer.</p>
+              <p class="text-base md:text-lg text-slate-400 mt-2"><s>I am knowing</s> → I <strong>know</strong>. Pero: <em>I'm having lunch</em> ✓ (have = comer, sí es acción).</p>
+            </div>
+            <div class="bg-amber-950/30 p-5 md:p-7 rounded-3xl border-2 border-amber-500/40">
+              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">⏰ Palabras que lo acompañan</h3>
+              <p class="text-base md:text-xl text-slate-300">now, right now, at the moment, today, these days, this week, Look!, Listen!</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "Be quiet! The baby _____.", options: ["is sleeping", "sleeps", "sleep", "are sleeping"], x: "Acción ocurriendo ahora mismo → present continuous." },
+          { q: "I _____ a really interesting book these days.", options: ["am reading", "read", "reads", "am read"], x: "'These days' = temporada actual → continuous." },
+          { q: "Look! Those boys _____ our car.", options: ["are washing", "wash", "is washing", "washes"], x: "'Look!' + sujeto plural → are + -ing." },
+          { q: "She _____ the answer to that question.", options: ["knows", "is knowing", "know", "are knowing"], x: "'Know' es verbo de estado: nunca en continuo." },
+          { q: "_____ you listening to me?", options: ["Are", "Do", "Is", "Does"], x: "Pregunta en continuo con 'you' → Are." },
+          { q: "We _____ to Barcelona next Saturday. We've got the tickets.", options: ["are travelling", "travel", "travels", "are travel"], x: "Plan futuro ya cerrado → present continuous." },
+          { q: "My father _____ dinner at the moment.", options: ["is cooking", "cooks", "cook", "is cook"], x: "'At the moment' → continuous." },
+          { q: "They _____ today because it's a holiday.", options: ["aren't working", "don't work", "isn't working", "not working"], x: "'Today' + acción temporal → negativa en continuo: aren't + -ing." },
+          { q: "He _____ his mobile phone! It's so annoying.", options: ["is always losing", "always loses", "is always lose", "always is losing"], x: "Queja con 'always' → present continuous." },
+          { q: "The children _____ in the garden right now.", options: ["are playing", "play", "plays", "is playing"], x: "'Right now' + sujeto plural → are playing." }
+        ],
+        gaps: [
+          { text: "Listen! Somebody ___ the guitar.", hint: "play", answers: ["is playing"], x: "'Listen!' → ahora mismo. 'Somebody' es singular." },
+          { text: "We ___ for the bus at the moment.", hint: "wait", answers: ["are waiting"], x: "'At the moment' → are + waiting." },
+          { text: "I ___ TV right now, I'm studying.", hint: "not / watch", answers: ["am not watching", "'m not watching", "amn't watching"], x: "Negativa con 'I' → am not + -ing." },
+          { text: "___ it ___ outside?", hint: "rain", answers: ["is raining", "is it raining"], x: "Pregunta: Is + sujeto + -ing." },
+          { text: "My parents ___ in Italy this week.", hint: "travel", answers: ["are travelling", "are traveling"], x: "Situación temporal. Ambas grafías son correctas." },
+          { text: "She ___ a new job these days.", hint: "look for", answers: ["is looking for"], x: "'These days' → continuous, sin olvidar 'for'." },
+          { text: "The days ___ longer in spring.", hint: "get", answers: ["are getting"], x: "Cambio en progreso → continuous." },
+          { text: "Why ___ you ___ at me like that?", hint: "look", answers: ["are looking", "are you looking"], x: "Pregunta con 'why': Why are you looking...?" }
+        ],
+        tr: [
+          { es: "Estoy haciendo los deberes ahora mismo.", verb: "(do)", en: "I am doing my homework right now.", alts: ["I'm doing my homework right now.", "I am doing the homework right now.", "Right now I am doing my homework."], x: "Ahora mismo → am + doing." },
+          { es: "¡Mira! Está nevando.", verb: "(snow)", en: "Look! It is snowing.", alts: ["Look! It's snowing."], x: "'It' obligatorio para el tiempo meteorológico." },
+          { es: "Mi hermano no está estudiando esta tarde.", verb: "(study)", en: "My brother isn't studying this afternoon.", alts: ["My brother is not studying this afternoon.", "My brother isn't studying this evening."], x: "Negativa: isn't + -ing." },
+          { es: "¿Qué estás leyendo?", verb: "(read)", en: "What are you reading?", alts: ["What're you reading?"], x: "Wh- + are + sujeto + -ing." },
+          { es: "Este mes vivimos con mis abuelos.", verb: "(live)", en: "This month we are living with my grandparents.", alts: ["We are living with my grandparents this month.", "This month we're living with my grandparents.", "We're living with my grandparents this month."], x: "Situación temporal → continuous." },
+          { es: "Mañana cenamos con Marta, ya está decidido.", verb: "(have)", en: "We are having dinner with Marta tomorrow.", alts: ["Tomorrow we are having dinner with Marta.", "We're having dinner with Marta tomorrow."], x: "Plan cerrado → present continuous con valor de futuro." }
         ]
       },
       {
-        id: "iv_m3", title: "Module 3 · hide → pay", short: "M3 hide–pay", icon: "fa-3",
-        verbs: ["hide", "hit", "hold", "hurt", "keep", "know", "lay", "lead", "learn", "leave", "lend", "let", "lie_rest", "lie_untrue", "light", "lose", "make", "mean", "meet", "overcome", "pay"],
-        s: [
-          ["hide", "ps", "The children ___ behind the sofa during the game yesterday."],
-          ["hide", "pp", "I have ___ the presents in my wardrobe."],
-          ["hit", "ps", "He ___ the ball very hard and it went over the wall."],
-          ["hit", "pp", "A car has ___ the lamp post in front of my house."],
-          ["hold", "ps", "The school ___ a big party at the end of last year."],
-          ["hold", "pp", "She has ___ the baby in her arms all afternoon."],
-          ["hurt", "ps", "I ___ my back when I was playing tennis."],
-          ["hurt", "pp", "Be careful! You have ___ your knee."],
-          ["keep", "ps", "My grandma ___ all my drawings in a box when I was little."],
-          ["keep", "pp", "I have ___ all my old toys in the attic."],
-          ["know", "ps", "I ___ the answer, but I didn't say it."],
-          ["know", "pp", "We have ___ each other since primary school."],
-          ["lay", "ps", "My sister ___ the table before dinner last night."],
-          ["lay", "pp", "The hens have ___ six eggs today."],
-          ["lead", "ps", "The guide ___ us through the old town."],
-          ["lead", "pp", "Our captain has ___ the team to victory three times this year."],
-          ["learn", "ps", "I ___ to swim when I was five."],
-          ["learn", "pp", "We have ___ a lot of new words this week."],
-          ["leave", "ps", "The bus ___ ten minutes ago."],
-          ["leave", "pp", "Oh no! I have ___ my phone on the bus."],
-          ["lend", "ps", "My friend ___ me his bike last weekend."],
-          ["lend", "pp", "I have ___ my dictionary to Sara."],
-          ["let", "ps", "My parents ___ me go to the concert last night."],
-          ["let", "pp", "The teacher has ___ us leave early today."],
-          ["lie_rest", "ps", "I was so tired that I ___ on the sofa and fell asleep."],
-          ["lie_rest", "pp", "That old book has ___ on the shelf for years."],
-          ["lie_untrue", "ps", "He ___ to his mum about his exam results."],
-          ["lie_untrue", "pp", "I'm sorry, I have ___ to you."],
-          ["light", "ps", "Dad ___ the fire because it was very cold."],
-          ["light", "pp", "We have ___ the candles on the cake."],
-          ["lose", "ps", "Our team ___ the match on Sunday."],
-          ["lose", "pp", "I can't find my wallet. I think I have ___ it."],
-          ["make", "ps", "My mum ___ a delicious paella yesterday."],
-          ["make", "pp", "I have ___ a lot of new friends at my new school."],
-          ["mean", "ps", "Sorry, I ___ to call you, but I forgot."],
-          ["mean", "pp", "This school has always ___ a lot to me."],
-          ["meet", "ps", "I ___ my best friend at a summer camp in 2020."],
-          ["meet", "pp", "I have never ___ a famous person."],
-          ["overcome", "ps", "She ___ her fear of water and learnt to swim."],
-          ["overcome", "pp", "He has ___ many problems to become a doctor."],
-          ["pay", "ps", "We ___ twenty euros for the tickets."],
-          ["pay", "pp", "Don't worry, I have already ___ for lunch."],
-          // extra practice
-          ["lie_rest", "ps", "The cat ___ in the sun all afternoon."],
-          ["learn", "ps", "My mother ___ French at school."],
-          ["lose", "ps", "I ___ my keys yesterday and I couldn't get into the house."],
-          ["make", "ps", "We ___ a snowman in the park last winter."],
-          ["lie_untrue", "pp", "She has ___ about her age again!"],
-          ["know", "pp", "I have ___ Emma for six years."],
-          ["leave", "pp", "Hurry up! The train has just ___."],
-          ["hide", "pp", "The cat has ___ under the bed."]
+        id: "pp", title: "3 · Present Perfect", short: "Pr. Perfect", icon: "fa-clock-rotate-left",
+        desc: "El pasado que todavía importa ahora.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-violet-400 mb-3">3 · Present Perfect</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Une el <strong>pasado con el presente</strong>. Nunca decimos <em>cuándo</em> pasó: lo que importa es el <strong>resultado o la experiencia de ahora</strong>.</p>
+          <div class="space-y-5">
+            <div class="bg-emerald-950/40 p-5 md:p-7 rounded-3xl border-2 border-emerald-500/50">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">⚙️ La forma</h3>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Afirmativa:</strong> I / you / we / they <strong>have</strong> + participio · he / she / it <strong>has</strong> + participio</p>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Negativa:</strong> haven't / hasn't + participio</p>
+              <p class="text-base md:text-xl text-slate-200"><strong>Interrogativa:</strong> Have you...? · Has she...?</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-amber-400 font-black text-xl md:text-2xl mb-3">📌 Los seis usos</h3>
+              <ul class="space-y-3 text-base md:text-xl text-slate-300">
+                <li><strong class="text-violet-300">1. Experiencias de vida</strong> (ever / never, sin decir cuándo):<br>I <u>have been</u> to London. · <u>Have</u> you <u>ever eaten</u> sushi?</li>
+                <li><strong class="text-violet-300">2. Resultado que se ve ahora:</strong><br>I <u>have lost</u> my keys. (→ ahora no puedo entrar)<br>She <u>has broken</u> her leg. (→ ahora lleva escayola)</li>
+                <li><strong class="text-violet-300">3. Acción recién terminada</strong> (just):<br>The film <u>has just finished</u>.</li>
+                <li><strong class="text-violet-300">4. Periodo de tiempo SIN terminar</strong> (today, this week, this year):<br>I <u>have drunk</u> three coffees today. (el día no ha acabado)</li>
+                <li><strong class="text-violet-300">5. Duración hasta ahora</strong> (for / since):<br>We <u>have lived</u> here <u>for</u> ten years. · I <u>have known</u> her <u>since</u> 2019.</li>
+                <li><strong class="text-violet-300">6. Repetición hasta ahora:</strong><br>I <u>have seen</u> that film three times.</li>
+              </ul>
+            </div>
+            <div class="bg-sky-950/30 p-5 md:p-7 rounded-3xl border-2 border-sky-500/40">
+              <h3 class="text-sky-300 font-black text-xl md:text-2xl mb-3">🔑 FOR y SINCE</h3>
+              <p class="text-base md:text-xl text-slate-300"><strong>FOR</strong> + cantidad de tiempo: for three years, for an hour, for a long time.</p>
+              <p class="text-base md:text-xl text-slate-300"><strong>SINCE</strong> + momento de inicio: since 2020, since Monday, since I was a child.</p>
+            </div>
+            <div class="bg-amber-950/30 p-5 md:p-7 rounded-3xl border-2 border-amber-500/40">
+              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">📍 BEEN o GONE</h3>
+              <p class="text-base md:text-xl text-slate-300">He <strong>has been</strong> to Paris. → fue y <strong>ya ha vuelto</strong>.</p>
+              <p class="text-base md:text-xl text-slate-300">He <strong>has gone</strong> to Paris. → <strong>sigue allí</strong>, no está aquí.</p>
+            </div>
+            <div class="bg-rose-950/30 p-5 md:p-7 rounded-3xl border-2 border-rose-500/40">
+              <h3 class="text-rose-300 font-black text-xl md:text-2xl mb-3">🚫 El error más caro en el examen</h3>
+              <p class="text-base md:text-xl text-slate-300">Con tiempo pasado <strong>terminado</strong> (yesterday, last week, in 2019, two days ago, when I was little) <strong>NUNCA</strong> se usa el present perfect: va <strong>past simple</strong>.</p>
+              <p class="text-base md:text-xl text-slate-300 mt-2"><s>I have seen him yesterday.</s> → I <strong>saw</strong> him yesterday.</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-violet-300 font-black text-xl md:text-2xl mb-3">📐 Dónde va cada palabra</h3>
+              <p class="text-base md:text-xl text-slate-300"><strong>already</strong> y <strong>just</strong>: entre have y el participio → I have <u>already</u> finished.</p>
+              <p class="text-base md:text-xl text-slate-300"><strong>yet</strong>: al final, en negativas y preguntas → Have you finished <u>yet</u>?</p>
+              <p class="text-base md:text-xl text-slate-300"><strong>ever / never</strong>: entre have y el participio → I have <u>never</u> tried it.</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "I _____ Sarah since primary school.", options: ["have known", "know", "knew", "have know"], x: "'Since' + duración hasta ahora → present perfect." },
+          { q: "_____ you ever been to Ireland?", options: ["Have", "Did", "Do", "Are"], x: "Experiencia de vida con 'ever' → Have + participio." },
+          { q: "She _____ her homework yet.", options: ["hasn't finished", "didn't finish", "hasn't finish", "haven't finished"], x: "'Yet' + 3ª persona → hasn't + participio." },
+          { q: "I _____ him at the party last Saturday.", options: ["saw", "have seen", "has seen", "have saw"], x: "'Last Saturday' es tiempo terminado → past simple, NO present perfect." },
+          { q: "We _____ three exams this week.", options: ["have had", "had", "have has", "are having"], x: "'This week' aún no ha terminado → present perfect." },
+          { q: "My brother isn't here. He _____ to the shops.", options: ["has gone", "has been", "went", "is going"], x: "Sigue fuera → has GONE. 'Has been' significaría que ya ha vuelto." },
+          { q: "The train _____ arrived. Let's get on.", options: ["has just", "just has", "has yet", "is just"], x: "'Just' va entre have/has y el participio." },
+          { q: "They _____ in that house for twenty years.", options: ["have lived", "live", "are living", "has lived"], x: "'For' + duración hasta el presente → present perfect, sujeto plural." },
+          { q: "I've read that book _____.", options: ["twice", "yesterday", "last year", "in 2020"], x: "Repetición hasta ahora. Las otras son tiempos terminados, incompatibles." },
+          { q: "_____ she finished the project already?", options: ["Has", "Have", "Did", "Is"], x: "Pregunta en 3ª persona del singular → Has." }
+        ],
+        gaps: [
+          { text: "I ___ my keys. I can't open the door!", hint: "lose", answers: ["have lost", "'ve lost", "ve lost"], x: "Resultado visible ahora → have + lost." },
+          { text: "We ___ here since 2018.", hint: "live", answers: ["have lived", "'ve lived", "ve lived"], x: "'Since' + duración hasta ahora." },
+          { text: "She ___ never ___ a horse.", hint: "ride", answers: ["has ridden", "has rode"], x: "Experiencia: has + never + participio (ridden)." },
+          { text: "___ you ___ your homework yet?", hint: "finish", answers: ["have finished", "have you finished"], x: "Pregunta con 'yet': Have + sujeto + participio." },
+          { text: "My father ___ to Japan three times.", hint: "be", answers: ["has been"], x: "Experiencia repetida, y ya ha vuelto → has BEEN." },
+          { text: "They ___ the new film yet.", hint: "not / see", answers: ["haven't seen", "have not seen"], x: "Negativa con 'yet' → haven't + participio." },
+          { text: "I ___ three cups of tea today.", hint: "drink", answers: ["have drunk", "'ve drunk", "ve drunk", "have drank"], x: "'Today' no ha terminado → present perfect." },
+          { text: "He ___ his arm, so he can't play.", hint: "break", answers: ["has broken"], x: "Resultado presente → has + broken." }
+        ],
+        tr: [
+          { es: "He perdido el móvil.", verb: "(lose)", en: "I have lost my mobile.", alts: ["I've lost my mobile.", "I have lost my phone.", "I've lost my mobile phone."], x: "Resultado ahora → have + lost." },
+          { es: "¿Has estado alguna vez en Londres?", verb: "(be)", en: "Have you ever been to London?", alts: ["Have you ever been in London?"], x: "Experiencia con 'ever' → Have you ever been...?" },
+          { es: "Vivimos aquí desde hace diez años.", verb: "(live)", en: "We have lived here for ten years.", alts: ["We've lived here for ten years.", "We have been living here for ten years."], x: "Cantidad de tiempo → FOR, no SINCE." },
+          { es: "Mi hermana todavía no ha llegado.", verb: "(arrive)", en: "My sister hasn't arrived yet.", alts: ["My sister has not arrived yet.", "My sister still hasn't arrived."], x: "'Yet' al final en negativa." },
+          { es: "Nunca he comido sushi.", verb: "(eat)", en: "I have never eaten sushi.", alts: ["I've never eaten sushi."], x: "'Never' entre have y el participio." },
+          { es: "Acaban de salir de casa.", verb: "(leave)", en: "They have just left home.", alts: ["They've just left home.", "They have just left the house.", "They have just left their house."], x: "'Acabar de' → have just + participio." }
+        ]
+      }
+      ,{
+        id: "ppc", title: "4 · Present Perfect Continuous", short: "Pr. Perf. Cont.", icon: "fa-hourglass-half",
+        desc: "Cuánto tiempo llevas haciendo algo.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-rose-400 mb-3">4 · Present Perfect Continuous</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Es el <strong>«llevar + gerundio»</strong> del español: una actividad que empezó en el pasado y <strong>sigue ahora</strong> (o acaba de parar y se nota).</p>
+          <div class="space-y-5">
+            <div class="bg-emerald-950/40 p-5 md:p-7 rounded-3xl border-2 border-emerald-500/50">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">⚙️ La forma</h3>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>have / has + been + verbo-ing</strong></p>
+              <p class="text-base md:text-xl text-slate-200 mb-2"><strong>Negativa:</strong> haven't / hasn't been + -ing</p>
+              <p class="text-base md:text-xl text-slate-200"><strong>Interrogativa:</strong> How long have you been waiting?</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-amber-400 font-black text-xl md:text-2xl mb-3">📌 Cuándo se usa</h3>
+              <ul class="space-y-3 text-base md:text-xl text-slate-300">
+                <li><strong class="text-rose-300">Duración de una actividad</strong> (for / since / how long):<br>I <u>have been studying</u> English <u>for</u> six years. = Llevo seis años estudiando inglés.</li>
+                <li><strong class="text-rose-300">Actividad reciente con efecto visible:</strong><br>Your eyes are red. <u>Have</u> you <u>been crying</u>?</li>
+                <li><strong class="text-rose-300">Actividad repetida últimamente:</strong><br>She <u>has been going</u> to the gym a lot lately.</li>
+              </ul>
+            </div>
+            <div class="bg-violet-950/30 p-5 md:p-7 rounded-3xl border-2 border-violet-500/40">
+              <h3 class="text-violet-300 font-black text-xl md:text-2xl mb-3">⚖️ Perfect o Perfect Continuous</h3>
+              <p class="text-base md:text-xl text-slate-300 mb-2"><strong>Continuous → la actividad</strong>, cuánto ha durado:<br>I <u>have been painting</u> all morning. (estoy manchado, cansado)</p>
+              <p class="text-base md:text-xl text-slate-300"><strong>Perfect simple → el resultado</strong>, cuánto has completado:<br>I <u>have painted</u> three rooms. (resultado terminado, con cantidad)</p>
+              <p class="text-base md:text-lg text-amber-300 mt-3">💡 Si hay una cantidad (three rooms, two books, five emails) → <strong>perfect simple</strong>.</p>
+            </div>
+            <div class="bg-rose-950/30 p-5 md:p-7 rounded-3xl border-2 border-rose-500/40">
+              <h3 class="text-rose-300 font-black text-xl md:text-2xl mb-3">🚫 Verbos de estado</h3>
+              <p class="text-base md:text-xl text-slate-300">know, be, like, have (poseer) no van en continuo:<br><s>I have been knowing her for years.</s> → I <strong>have known</strong> her for years.</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "I _____ English for six years.", options: ["have been studying", "have studied since", "am studying", "study"], x: "Duración de una actividad con 'for' → have been + -ing." },
+          { q: "Your hands are dirty! What _____?", options: ["have you been doing", "have you done", "do you do", "are you do"], x: "Efecto visible ahora → present perfect continuous." },
+          { q: "How long _____ for the bus?", options: ["have you been waiting", "do you wait", "you have waited", "are you waiting"], x: "'How long' + actividad en marcha → have been + -ing." },
+          { q: "She _____ that novel. It's on the table, half finished.", options: ["has been reading", "has read", "reads", "is read"], x: "Actividad sin terminar → continuous. 'Has read' significaría que ya la acabó." },
+          { q: "I _____ her since we were at school.", options: ["have known", "have been knowing", "know since", "am knowing"], x: "'Know' es verbo de estado: no admite continuo." },
+          { q: "They _____ football all afternoon.", options: ["have been playing", "have play", "are play", "has been playing"], x: "Duración de la actividad, sujeto plural → have been playing." },
+          { q: "He's exhausted. He _____ all day.", options: ["has been working", "has worked three hours", "works", "is worked"], x: "Cansancio visible ahora → continuous." },
+          { q: "We _____ five emails this morning.", options: ["have written", "have been writing", "write", "has written"], x: "Hay cantidad (five emails) → perfect simple, no continuous." },
+          { q: "It _____ since Monday. The streets are flooded.", options: ["has been raining", "has rained since", "is raining since", "rains"], x: "'Since' + actividad continuada → has been + -ing." },
+          { q: "_____ you been going to the gym lately?", options: ["Have", "Has", "Are", "Do"], x: "Pregunta con 'you' → Have you been + -ing." }
+        ],
+        gaps: [
+          { text: "I ___ for you for twenty minutes!", hint: "wait", answers: ["have been waiting", "'ve been waiting", "ve been waiting"], x: "Duración con 'for' → have been waiting." },
+          { text: "She ___ the piano since she was six.", hint: "play", answers: ["has been playing"], x: "'Since' + actividad que continúa." },
+          { text: "How long ___ you ___ in this town?", hint: "live", answers: ["have been living", "have you been living"], x: "'How long' → have you been living." },
+          { text: "They ___ that house for months.", hint: "build", answers: ["have been building"], x: "Actividad larga sin terminar." },
+          { text: "Your eyes are red. ___ you ___?", hint: "cry", answers: ["have been crying", "have you been crying"], x: "Efecto visible → have you been crying?" },
+          { text: "We ___ very well lately.", hint: "not / sleep", answers: ["haven't been sleeping", "have not been sleeping"], x: "Negativa: haven't been + -ing." },
+          { text: "He ___ tennis since three o'clock.", hint: "play", answers: ["has been playing"], x: "3ª persona: has been playing." },
+          { text: "I ___ her for ten years.", hint: "know", answers: ["have known", "'ve known", "ve known"], x: "'Know' es de estado: perfect simple, NO continuous." }
+        ],
+        tr: [
+          { es: "Llevo dos horas estudiando.", verb: "(study)", en: "I have been studying for two hours.", alts: ["I've been studying for two hours.", "I have studied for two hours."], x: "'Llevar + gerundio' → have been + -ing + for." },
+          { es: "¿Cuánto tiempo llevas esperando?", verb: "(wait)", en: "How long have you been waiting?", alts: ["How long have you been waiting for?"], x: "How long + have + sujeto + been + -ing." },
+          { es: "Está lloviendo desde el lunes.", verb: "(rain)", en: "It has been raining since Monday.", alts: ["It's been raining since Monday.", "It has rained since Monday."], x: "'Desde' + día concreto → since." },
+          { es: "Llevan todo el día trabajando.", verb: "(work)", en: "They have been working all day.", alts: ["They've been working all day.", "They have worked all day."], x: "Duración de la actividad." },
+          { es: "Mi hermana lleva tres años aprendiendo alemán.", verb: "(learn)", en: "My sister has been learning German for three years.", alts: ["My sister's been learning German for three years.", "My sister has learnt German for three years.", "My sister has learned German for three years."], x: "3ª persona → has been learning." },
+          { es: "No he estado durmiendo bien últimamente.", verb: "(sleep)", en: "I haven't been sleeping well lately.", alts: ["I have not been sleeping well lately.", "I haven't slept well lately."], x: "Negativa + lately." }
         ]
       },
       {
-        id: "iv_m4", title: "Module 4 · put → sleep", short: "M4 put–sleep", icon: "fa-4",
-        verbs: ["put", "quit", "read", "ride", "ring", "rise", "run", "say", "see", "sell", "send", "set", "shake", "shine", "shoot", "show", "shut", "sing", "sink", "sit", "sleep"],
-        s: [
-          ["put", "ps", "I ___ my books in my bag and left."],
-          ["put", "pp", "Someone has ___ my phone on top of the fridge."],
-          ["quit", "ps", "My uncle ___ smoking two years ago."],
-          ["quit", "pp", "She has ___ her job and moved to Madrid."],
-          ["read", "ps", "I ___ a great book on holiday last summer."],
-          ["read", "pp", "I have ___ all the books in this series."],
-          ["ride", "ps", "We ___ our bikes to the lake yesterday."],
-          ["ride", "pp", "I have never ___ a horse."],
-          ["ring", "ps", "The phone ___ in the middle of the night last Tuesday."],
-          ["ring", "pp", "The bell has just ___. Let's go to class!"],
-          ["rise", "ps", "The sun ___ at seven o'clock this morning."],
-          ["rise", "pp", "The price of petrol has ___ again."],
-          ["run", "ps", "Leo ___ five kilometres last Sunday."],
-          ["run", "pp", "My aunt has ___ three marathons."],
-          ["say", "ps", "She ___ goodbye and left the room five minutes ago."],
-          ["say", "pp", "You have ___ that three times!"],
-          ["see", "ps", "We ___ a great film at the cinema last night."],
-          ["see", "pp", "I have never ___ snow."],
-          ["sell", "ps", "My neighbour ___ his old car last month."],
-          ["sell", "pp", "The shop has ___ all the tickets for the concert."],
-          ["send", "ps", "I ___ you an email yesterday."],
-          ["send", "pp", "I have just ___ you a message."],
-          ["set", "ps", "The sun ___ at nine o'clock last night."],
-          ["set", "pp", "I have ___ my alarm for seven o'clock."],
-          ["shake", "ps", "The ground ___ during the earthquake last year."],
-          ["shake", "pp", "I have ___ hands with the mayor!"],
-          ["shine", "ps", "The sun ___ all day yesterday."],
-          ["shine", "pp", "The sun has ___ every day this week."],
-          ["shoot", "ps", "The player ___ and scored a fantastic goal."],
-          ["shoot", "pp", "They have ___ a new film in our town."],
-          ["show", "ps", "My friend ___ me her holiday photos yesterday."],
-          ["show", "pp", "The teacher has ___ us how to do the exercise."],
-          ["shut", "ps", "He ___ the door and went to bed at eleven o'clock."],
-          ["shut", "pp", "It's late. The shops have already ___."],
-          ["sing", "ps", "We ___ 'Happy Birthday' to my grandma at her party."],
-          ["sing", "pp", "She has ___ in the school choir since she was eight."],
-          ["sink", "ps", "The Titanic ___ in 1912."],
-          ["sink", "pp", "The old boat has ___ to the bottom of the lake."],
-          ["sit", "ps", "I ___ next to my best friend in class yesterday."],
-          ["sit", "pp", "We have ___ in this waiting room for two hours!"],
-          ["sleep", "ps", "I ___ very badly last night."],
-          ["sleep", "pp", "The baby has ___ all afternoon."],
-          // extra practice
-          ["read", "ps", "Dad ___ the newspaper at breakfast this morning."],
-          ["see", "ps", "I ___ your brother at the park on Monday."],
-          ["say", "ps", "He ___ he was sorry."],
-          ["run", "ps", "The dog ___ after the ball."],
-          ["put", "pp", "I have ___ the milk in the fridge."],
-          ["ride", "pp", "She has ___ her bike to school every day this week."],
-          ["ring", "pp", "Your phone has ___ three times!"],
-          ["sing", "pp", "We have ___ this song many times."]
+        id: "vs", title: "5 · Simple o Continuous", short: "Simple vs Cont.", icon: "fa-code-compare",
+        desc: "Elegir bien entre los cuatro presentes.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-amber-400 mb-3">5 · Simple o Continuous</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Aquí se decide la nota del examen: <strong>elegir el tiempo correcto</strong>. Fíjate siempre en las palabras que acompañan.</p>
+          <div class="space-y-5">
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-amber-400 font-black text-xl md:text-2xl mb-3">🔍 La pista está en el tiempo</h3>
+              <ul class="space-y-3 text-base md:text-xl text-slate-300">
+                <li><strong class="text-indigo-300">every day, usually, never, on Mondays</strong> → Present Simple</li>
+                <li><strong class="text-sky-300">now, at the moment, today, Look!</strong> → Present Continuous</li>
+                <li><strong class="text-violet-300">ever, never, already, yet, just, twice</strong> → Present Perfect</li>
+                <li><strong class="text-rose-300">how long, for, since</strong> + actividad → Present Perfect Continuous</li>
+                <li><strong class="text-slate-400">yesterday, last week, ago, in 2019</strong> → ¡Past Simple! Ninguno de los presentes.</li>
+              </ul>
+            </div>
+            <div class="bg-emerald-950/40 p-5 md:p-7 rounded-3xl border-2 border-emerald-500/50">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">⚖️ Mismo verbo, distinto significado</h3>
+              <p class="text-base md:text-xl text-slate-300 mb-2">I <strong>work</strong> in a bank. → mi trabajo, siempre.</p>
+              <p class="text-base md:text-xl text-slate-300 mb-2">I <strong>am working</strong> in a bank this summer. → solo por ahora.</p>
+              <p class="text-base md:text-xl text-slate-300 mb-2">I <strong>have worked</strong> here for a year. → llevo un año y sigo.</p>
+              <p class="text-base md:text-xl text-slate-300">I <strong>have been working</strong> since 8 a.m. → y estoy agotado.</p>
+            </div>
+            <div class="bg-rose-950/30 p-5 md:p-7 rounded-3xl border-2 border-rose-500/40">
+              <h3 class="text-rose-300 font-black text-xl md:text-2xl mb-3">🚫 Los tres fallos que más caen</h3>
+              <p class="text-base md:text-xl text-slate-300">1. Verbos de estado en continuo: <s>I am wanting</s> → I <strong>want</strong>.</p>
+              <p class="text-base md:text-xl text-slate-300">2. Present perfect con tiempo terminado: <s>I have gone yesterday</s> → I <strong>went</strong>.</p>
+              <p class="text-base md:text-xl text-slate-300">3. Olvidar el verbo <em>be</em>: <s>She working</s> → She <strong>is</strong> working.</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "I usually _____ at seven, but today I _____ at nine.", options: ["get up / got up", "am getting up / get up", "get up / am getting up", "have got up / get up"], x: "'Usually' → simple; 'today' con excepción → continuous. Ojo: el orden importa." },
+          { q: "Listen! The neighbours _____ again.", options: ["are arguing", "argue", "have argued", "argues"], x: "'Listen!' → ahora mismo." },
+          { q: "She _____ chocolate, but she _____ a piece right now.", options: ["doesn't like / is eating", "isn't liking / eats", "doesn't like / eats", "don't like / is eating"], x: "'Like' de estado → simple; acción de ahora → continuous." },
+          { q: "We _____ this film before. Let's watch another one.", options: ["have seen", "saw", "are seeing", "see"], x: "Experiencia previa sin decir cuándo → present perfect." },
+          { q: "My dad _____ in that factory since 2015.", options: ["has worked", "works", "is working", "worked"], x: "'Since' + hasta ahora → present perfect." },
+          { q: "_____ you usually _____ to school by bus?", options: ["Do / go", "Are / going", "Have / gone", "Does / go"], x: "'Usually' + sujeto you → Do you go?" },
+          { q: "I _____ my grandmother last weekend.", options: ["visited", "have visited", "visit", "am visiting"], x: "'Last weekend' terminado → past simple." },
+          { q: "The water _____. Can you turn off the cooker?", options: ["is boiling", "boils", "has boiled", "boil"], x: "Está ocurriendo ahora → continuous. 'Water boils at 100°' sería verdad general." },
+          { q: "How long _____ that jacket?", options: ["have you had", "have you been having", "do you have", "are you having"], x: "'Have' (poseer) es de estado: perfect simple, no continuous." },
+          { q: "She _____ to Rome twice this year.", options: ["has been", "has gone", "went", "goes"], x: "Experiencia repetida y ya ha vuelto → has been. 'This year' no ha terminado." }
+        ],
+        gaps: [
+          { text: "Be quiet! I ___ to concentrate.", hint: "try", answers: ["am trying", "'m trying", "m trying"], x: "Ahora mismo → am trying." },
+          { text: "My mother ___ the guitar very well.", hint: "play", answers: ["plays"], x: "Habilidad permanente → present simple." },
+          { text: "I ___ that programme three times.", hint: "watch", answers: ["have watched", "'ve watched", "ve watched"], x: "Repetición hasta ahora → present perfect." },
+          { text: "They ___ in Selgua since they got married.", hint: "live", answers: ["have lived", "'ve lived", "ve lived", "have been living"], x: "'Since' → perfect; con 'live' también se acepta el continuo." },
+          { text: "We ___ to the beach every summer.", hint: "go", answers: ["go"], x: "'Every summer' → rutina." },
+          { text: "Look! It ___ again.", hint: "snow", answers: ["is snowing", "'s snowing", "s snowing"], x: "'Look!' → continuous." },
+          { text: "She ___ what you mean.", hint: "not / understand", answers: ["doesn't understand", "does not understand"], x: "'Understand' de estado → present simple." },
+          { text: "How long ___ you ___ that bike?", hint: "have", answers: ["have had", "have you had"], x: "'Have' posesión → perfect simple: have you had?" }
+        ],
+        tr: [
+          { es: "Normalmente ceno a las nueve, pero hoy estoy cenando antes.", verb: "(have dinner)", en: "I usually have dinner at nine, but today I am having dinner earlier.", alts: ["I usually have dinner at nine, but today I'm having dinner earlier.", "I usually have dinner at nine, but today I am having it earlier."], x: "Rutina en simple + excepción de hoy en continuous." },
+          { es: "Conozco a Ana desde 2020.", verb: "(know)", en: "I have known Ana since 2020.", alts: ["I've known Ana since 2020.", "I have known Ana since the year 2020."], x: "'Know' de estado → perfect simple + since." },
+          { es: "¿Qué haces los fines de semana?", verb: "(do)", en: "What do you do at weekends?", alts: ["What do you do on weekends?", "What do you do at the weekend?"], x: "Rutina → Do you...?" },
+          { es: "Mi hermano está viviendo en Dublín este año.", verb: "(live)", en: "My brother is living in Dublin this year.", alts: ["My brother's living in Dublin this year.", "This year my brother is living in Dublin."], x: "Situación temporal → continuous." },
+          { es: "Todavía no he visto esa serie.", verb: "(see)", en: "I haven't seen that series yet.", alts: ["I have not seen that series yet.", "I haven't seen that show yet.", "I still haven't seen that series."], x: "Negativa + yet → present perfect." },
+          { es: "El agua hierve a cien grados.", verb: "(boil)", en: "Water boils at one hundred degrees.", alts: ["Water boils at 100 degrees."], x: "Verdad científica → present simple." }
         ]
       },
       {
-        id: "iv_m5", title: "Module 5 · smell → write", short: "M5 smell–write", icon: "fa-5",
-        verbs: ["smell", "speak", "spell", "spend", "stand", "steal", "stick", "sting", "sweep", "swim", "take", "teach", "tear", "tell", "think", "throw", "understand", "wake_up", "wear", "win", "write"],
-        s: [
-          ["smell", "ps", "The kitchen ___ of fresh bread this morning."],
-          ["smell", "pp", "I have never ___ such beautiful flowers."],
-          ["speak", "ps", "I ___ to the head teacher yesterday."],
-          ["speak", "pp", "She has ___ English since she was a child."],
-          ["spell", "ps", "He ___ my name wrong on the birthday card."],
-          ["spell", "pp", "Well done! You have ___ all the words correctly."],
-          ["spend", "ps", "We ___ two weeks in Portugal last summer."],
-          ["spend", "pp", "I have ___ all my money on video games."],
-          ["stand", "ps", "We ___ in the rain for an hour waiting for the bus."],
-          ["stand", "pp", "The old castle has ___ on that hill for 800 years."],
-          ["steal", "ps", "Someone ___ my bike last week."],
-          ["steal", "pp", "Thieves have ___ a famous painting from the museum."],
-          ["stick", "ps", "Yesterday she ___ a photo of her dog on the fridge."],
-          ["stick", "pp", "I have ___ stickers all over my notebook."],
-          ["sting", "ps", "A bee ___ me on the arm at the picnic."],
-          ["sting", "pp", "A wasp has ___ my little brother."],
-          ["sweep", "ps", "I ___ the kitchen floor after dinner last night."],
-          ["sweep", "pp", "Dad has already ___ the leaves in the garden."],
-          ["swim", "ps", "We ___ in the sea every day on holiday."],
-          ["swim", "pp", "I have never ___ in such cold water."],
-          ["take", "ps", "I ___ a lot of photos on my trip to Paris."],
-          ["take", "pp", "Someone has ___ my pen!"],
-          ["teach", "ps", "My grandfather ___ me how to play chess when I was six."],
-          ["teach", "pp", "Mrs Brown has ___ at this school for twenty years."],
-          ["tear", "ps", "I ___ my jeans when I climbed the fence."],
-          ["tear", "pp", "Oh no! The dog has ___ my homework."],
-          ["tell", "ps", "She ___ me a funny story yesterday."],
-          ["tell", "pp", "I have ___ you a hundred times to tidy your room!"],
-          ["think", "ps", "I ___ the exam was easy, but it wasn't."],
-          ["think", "pp", "I have ___ about your idea and I like it."],
-          ["throw", "ps", "He ___ the ball to his dog and the dog caught it."],
-          ["throw", "pp", "Someone has ___ rubbish on the floor."],
-          ["understand", "ps", "I ___ everything the teacher said in class today."],
-          ["understand", "pp", "Now I have ___ the rule. It's easy!"],
-          ["wake_up", "ps", "I ___ at six o'clock this morning."],
-          ["wake_up", "pp", "Shh! The baby has just ___."],
-          ["wear", "ps", "She ___ a beautiful dress to the wedding last Saturday."],
-          ["wear", "pp", "I have ___ these shoes only twice."],
-          ["win", "ps", "Our class ___ the football tournament last year."],
-          ["win", "pp", "She has ___ three gold medals this year."],
-          ["write", "ps", "Shakespeare ___ 'Romeo and Juliet'."],
-          ["write", "pp", "I have ___ a letter to my pen friend."],
-          // extra practice
-          ["smell", "ps", "The dog ___ the food and ran into the kitchen."],
-          ["spell", "ps", "She ___ her surname for the receptionist."],
-          ["speak", "ps", "We ___ on the phone for an hour last night."],
-          ["take", "ps", "It ___ us three hours to get there."],
-          ["spell", "pp", "My friend has ___ my name wrong again!"],
-          ["tell", "pp", "Finally, he has ___ me the truth."],
-          ["wear", "pp", "She has ___ that jacket every day this week."],
-          ["write", "pp", "My brother has ___ three songs for his band."]
+        id: "master", title: "6 · Master Present", short: "Master", icon: "fa-trophy",
+        desc: "Todo mezclado, como en el examen.",
+        theory: `
+          <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-3">6 · Master Present</h2>
+          <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">Sin avisos ni pistas de módulo: aquí cae de todo, como en el examen. Antes de responder, hazte <strong>estas tres preguntas</strong>.</p>
+          <div class="space-y-5">
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">1️⃣ ¿Hay una expresión de tiempo?</h3>
+              <p class="text-base md:text-xl text-slate-300">Es la pista más fiable. <em>every day</em> → simple · <em>now</em> → continuous · <em>yet, ever, twice</em> → perfect · <em>how long, for, since</em> → perfect (continuous si es actividad) · <em>yesterday, ago</em> → past simple.</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">2️⃣ ¿Es un verbo de estado?</h3>
+              <p class="text-base md:text-xl text-slate-300">know, like, want, need, understand, believe, have (poseer), seem, prefer → <strong>nunca en continuo</strong>.</p>
+            </div>
+            <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800">
+              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">3️⃣ ¿Quién es el sujeto?</h3>
+              <p class="text-base md:text-xl text-slate-300">Decide la -s del simple (he work<strong>s</strong>), el am/is/are del continuous y el have/has del perfect.</p>
+            </div>
+            <div class="bg-amber-950/30 p-5 md:p-7 rounded-3xl border-2 border-amber-500/40">
+              <h3 class="text-amber-300 font-black text-xl md:text-2xl mb-3">✅ Repasa siempre esto antes de entregar</h3>
+              <p class="text-base md:text-xl text-slate-300">¿Le falta la -s a la 3ª persona? ¿Has puesto el <em>be</em> en el continuo? ¿Has usado el participio (no el pasado) detrás de have? ¿Hay un <em>yesterday</em> escondido que te obliga al past simple?</p>
+            </div>
+          </div>`,
+        mcq: [
+          { q: "My cousin _____ in Germany since last September.", options: ["has been working", "works", "is working", "worked"], x: "'Since' + actividad que sigue → present perfect continuous (también valdría 'has worked')." },
+          { q: "_____ your brother like classical music?", options: ["Does", "Is", "Has", "Do"], x: "'Like' de estado + 3ª persona → Does." },
+          { q: "We _____ that museum two years ago.", options: ["visited", "have visited", "visit", "are visiting"], x: "'Ago' es tiempo terminado → past simple." },
+          { q: "Hurry up! The bus _____.", options: ["is coming", "comes", "has come", "come"], x: "Ocurre ahora mismo → continuous." },
+          { q: "She _____ a shower every morning before breakfast.", options: ["has", "is having", "have", "has had"], x: "Rutina → present simple, 3ª persona: has." },
+          { q: "I _____ that word before. What does it mean?", options: ["have never heard", "never heard", "am never hearing", "never hear"], x: "Experiencia negativa → have never + participio." },
+          { q: "They _____ their grandparents every Sunday.", options: ["visit", "are visiting", "have visited", "visits"], x: "'Every Sunday' → rutina." },
+          { q: "How long _____ you _____ that dictionary?", options: ["have / had", "are / having", "do / have", "have / been having"], x: "'Have' posesión → perfect simple: have you had?" },
+          { q: "Look at Ben! He _____ his new bike.", options: ["is riding", "rides", "has ridden", "ride"], x: "'Look!' → continuous." },
+          { q: "The shop _____ yet. We'll have to wait.", options: ["hasn't opened", "didn't open", "doesn't open", "isn't opening"], x: "'Yet' → present perfect negativo." }
+        ],
+        gaps: [
+          { text: "My father ___ the newspaper every morning.", hint: "read", answers: ["reads"], x: "Rutina, 3ª persona." },
+          { text: "Be careful! You ___ on my foot.", hint: "stand", answers: ["are standing", "'re standing", "re standing"], x: "Ahora mismo → continuous." },
+          { text: "I ___ to Portugal twice.", hint: "be", answers: ["have been", "'ve been", "ve been"], x: "Experiencia + repetición → have been." },
+          { text: "We ___ for the results since Monday.", hint: "wait", answers: ["have been waiting", "'ve been waiting", "ve been waiting"], x: "'Since' + actividad → perfect continuous." },
+          { text: "She ___ meat. She's a vegetarian.", hint: "not / eat", answers: ["doesn't eat", "does not eat"], x: "Hábito permanente → present simple negativo." },
+          { text: "___ they ___ the match yet?", hint: "win", answers: ["have won", "have they won"], x: "'Yet' en pregunta → Have + sujeto + participio." },
+          { text: "It ___ a lot in this region in winter.", hint: "rain", answers: ["rains"], x: "Verdad general → present simple." },
+          { text: "My friends ___ a party at the moment.", hint: "have", answers: ["are having"], x: "'Have a party' es acción, no estado → continuous." }
+        ],
+        tr: [
+          { es: "Mi padre trabaja en una oficina.", verb: "(work)", en: "My father works in an office.", alts: ["My dad works in an office."], x: "Rutina/situación permanente → present simple." },
+          { es: "Llevo esperándote media hora.", verb: "(wait)", en: "I have been waiting for you for half an hour.", alts: ["I've been waiting for you for half an hour.", "I have been waiting half an hour for you.", "I have been waiting for half an hour."], x: "'Llevar + gerundio' → have been waiting for." },
+          { es: "¿Alguna vez has montado a caballo?", verb: "(ride)", en: "Have you ever ridden a horse?", alts: [], x: "Experiencia con 'ever' + participio 'ridden'." },
+          { es: "Están comiendo en la cocina.", verb: "(eat)", en: "They are eating in the kitchen.", alts: ["They're eating in the kitchen.", "They are having lunch in the kitchen."], x: "Acción en marcha → are + -ing." },
+          { es: "No entiendo esta pregunta.", verb: "(understand)", en: "I don't understand this question.", alts: ["I do not understand this question."], x: "'Understand' de estado → present simple negativo." },
+          { es: "Ya he terminado los deberes.", verb: "(finish)", en: "I have already finished my homework.", alts: ["I've already finished my homework.", "I have already finished the homework."], x: "'Already' entre have y el participio." }
         ]
       }
     ];
 
-
     /* ============================================================
-       Formas alternativas que tambien se dan por buenas
-       (britanico / americano). Se usan en los niveles 1 y 2.
-       ============================================================ */
-    const ALT_BOTH = {
-      dreamt: ["dreamed"], learnt: ["learned"], leant: ["leaned"], knelt: ["kneeled"],
-      smelt: ["smelled"], spelt: ["spelled"], burnt: ["burned"], lit: ["lighted"],
-      pled: ["pleaded"], sweat: ["sweated"], wet: ["wetted"], spat: ["spit"],
-      hung: ["hanged"], hanged: ["hung"]
-    };
-    const ALT_PAST = { stank: ["stunk"] };
-    const ALT_PART = { got: ["gotten"], trodden: ["trod"] };
-
-    function withAlt(list, extra) {
-      const out = [];
-      (list || []).forEach(a => {
-        out.push(a);
-        (ALT_BOTH[a.toLowerCase()] || []).forEach(x => out.push(x));
-        ((extra || {})[a.toLowerCase()] || []).forEach(x => out.push(x));
-      });
-      return out.filter((v, i, arr) => arr.indexOf(v) === i);
-    }
-
-
-    /* ============================================================
-       LEVEL 3 · frases CORTAS para traducir (42 por modulo:
-       cada verbo del modulo una vez en pasado y otra en participio).
-       [verbo, tiempo, espanol, ingles, (otras traducciones validas)]
-       ============================================================ */
-    const TR3 = {
-      iv_m1: [
-        ["be", "ps", "Estuve en Roma hace dos años.", "I was in Rome two years ago."],
-        ["be", "pp", "He estado aquí desde las ocho.", "I have been here since eight o'clock.", ["I have been here since eight."]],
-        ["beat", "ps", "Ganamos a tu equipo hace dos semanas.", "We beat your team two weeks ago."],
-        ["beat", "pp", "Ella me ha ganado otra vez.", "She has beaten me again."],
-        ["become", "ps", "Él se hizo famoso.", "He became famous."],
-        ["become", "pp", "Mi hermana se ha hecho médica.", "My sister has become a doctor."],
-        ["begin", "ps", "La clase empezó hace diez minutos.", "The class began ten minutes ago."],
-        ["begin", "pp", "La película ha empezado.", "The film has begun."],
-        ["bend", "ps", "Doblé el papel.", "I bent the paper."],
-        ["bend", "pp", "Él ha doblado la cuchara.", "He has bent the spoon."],
-        ["bet", "ps", "Aposté cinco euros.", "I bet five euros."],
-        ["bet", "pp", "Hemos apostado una pizza.", "We have bet a pizza."],
-        ["bite", "ps", "El perro me mordió hace una semana.", "The dog bit me a week ago."],
-        ["bite", "pp", "Un mosquito me ha picado.", "A mosquito has bitten me."],
-        ["bleed", "ps", "Mi nariz sangró mucho.", "My nose bled a lot."],
-        ["bleed", "pp", "Mi dedo ha sangrado.", "My finger has bled."],
-        ["blow", "ps", "El viento sopló muy fuerte.", "The wind blew very hard."],
-        ["blow", "pp", "Ella ha soplado las velas.", "She has blown out the candles.", ["She has blown the candles."]],
-        ["break", "ps", "Rompí un vaso hace dos días.", "I broke a glass two days ago."],
-        ["break", "pp", "Él ha roto la ventana.", "He has broken the window."],
-        ["bring", "ps", "Traje mi libro.", "I brought my book."],
-        ["bring", "pp", "Ella nos ha traído un regalo.", "She has brought us a present."],
-        ["build", "ps", "Construyeron esta casa hace cien años.", "They built this house a hundred years ago.", ["They built this house one hundred years ago.", "They built this house 100 years ago."]],
-        ["build", "pp", "Han construido un puente.", "They have built a bridge."],
-        ["burn", "ps", "Quemé la comida.", "I burnt the food."],
-        ["burn", "pp", "He quemado las tostadas.", "I have burnt the toast."],
-        ["buy", "ps", "Compré un móvil hace un mes.", "I bought a phone a month ago."],
-        ["buy", "pp", "Ella ha comprado las entradas.", "She has bought the tickets."],
-        ["catch", "ps", "La policía atrapó al ladrón.", "The police caught the thief.", ["The police caught the robber."]],
-        ["catch", "pp", "He cogido un resfriado.", "I have caught a cold."],
-        ["choose", "ps", "Elegí el vestido azul.", "I chose the blue dress."],
-        ["choose", "pp", "Él ha elegido una película.", "He has chosen a film."],
-        ["come", "ps", "Mis primos vinieron ayer.", "My cousins came yesterday."],
-        ["come", "pp", "El verano ha llegado.", "Summer has come.", ["Summer has arrived."]],
-        ["cost", "ps", "El libro costó diez euros.", "The book cost ten euros."],
-        ["cost", "pp", "Ha costado mucho dinero.", "It has cost a lot of money."],
-        ["cut", "ps", "Corté la tarta.", "I cut the cake."],
-        ["cut", "pp", "Me he cortado el dedo.", "I have cut my finger."],
-        ["dig", "ps", "El perro cavó un agujero.", "The dog dug a hole."],
-        ["dig", "pp", "Han cavado en el jardín.", "They have dug in the garden."],
-        ["do", "ps", "Hice los deberes.", "I did my homework."],
-        ["do", "pp", "Ella ha hecho un buen trabajo.", "She has done a good job."]
-      ],
-      iv_m2: [
-        ["draw", "ps", "Dibujé un gato.", "I drew a cat."],
-        ["draw", "pp", "Ella ha dibujado un mapa.", "She has drawn a map."],
-        ["dream", "ps", "Anoche soñé con mi perro.", "Last night I dreamt about my dog."],
-        ["dream", "pp", "Siempre he soñado con volar.", "I have always dreamt of flying."],
-        ["drink", "ps", "Bebí mucha agua.", "I drank a lot of water."],
-        ["drink", "pp", "El bebé se ha bebido la leche.", "The baby has drunk the milk."],
-        ["drive", "ps", "Mi madre condujo el coche.", "My mother drove the car."],
-        ["drive", "pp", "Él ha conducido durante seis horas.", "He has driven for six hours."],
-        ["eat", "ps", "Comimos pizza anoche.", "We ate pizza last night."],
-        ["eat", "pp", "Nunca he comido sushi.", "I have never eaten sushi."],
-        ["fall", "ps", "Me caí de la bici.", "I fell off my bike."],
-        ["fall", "pp", "Las hojas se han caído.", "The leaves have fallen."],
-        ["feed", "ps", "Di de comer al gato.", "I fed the cat."],
-        ["feed", "pp", "Ya he dado de comer al perro.", "I have already fed the dog."],
-        ["feel", "ps", "Ayer me sentí muy cansado.", "I felt very tired yesterday."],
-        ["feel", "pp", "Me he sentido mal desde el desayuno.", "I have felt ill since breakfast.", ["I have felt bad since breakfast.", "I have felt sick since breakfast."]],
-        ["fight", "ps", "Los dos hermanos se pelearon.", "The two brothers fought."],
-        ["fight", "pp", "Los gatos se han peleado.", "The cats have fought."],
-        ["find", "ps", "Encontré mis llaves.", "I found my keys."],
-        ["find", "pp", "Ella ha encontrado su móvil.", "She has found her phone."],
-        ["fly", "ps", "Volamos a Londres hace un año.", "We flew to London a year ago."],
-        ["fly", "pp", "Nunca he volado en avión.", "I have never flown in a plane."],
-        ["forget", "ps", "Olvidé tu nombre.", "I forgot your name."],
-        ["forget", "pp", "He olvidado mis deberes.", "I have forgotten my homework."],
-        ["forgive", "ps", "Ella perdonó a su hermano.", "She forgave her brother."],
-        ["forgive", "pp", "Te he perdonado.", "I have forgiven you."],
-        ["freeze", "ps", "El lago se congeló hace dos semanas.", "The lake froze two weeks ago."],
-        ["freeze", "pp", "Mamá ha congelado la sopa.", "Mum has frozen the soup."],
-        ["get", "ps", "Recibí un regalo hace tres días.", "I got a present three days ago.", ["I was given a present three days ago.", "I was given a present.", "I received a present.", "I received a present three days ago."]],
-        ["get", "pp", "Él ha conseguido un trabajo.", "He has got a job.", ["He has found a job."]],
-        ["give", "ps", "Mi abuela me dio un libro.", "My grandma gave me a book."],
-        ["give", "pp", "La profesora nos ha dado deberes.", "The teacher has given us homework."],
-        ["go", "ps", "Fuimos al cine.", "We went to the cinema."],
-        ["go", "pp", "Ella se ha ido a casa.", "She has gone home."],
-        ["grow", "ps", "Mi abuelo cultivó tomates.", "My grandfather grew tomatoes.", ["My grandfather grew tomatoes.", "My grandad planted tomatoes."]],
-        ["grow", "pp", "Has crecido mucho desde el verano.", "You have grown a lot since the summer."],
-        ["hang", "ps", "Colgué mi abrigo.", "I hung my coat."],
-        ["hang", "pp", "Hemos colgado las fotos.", "We have hung the photos."],
-        ["have", "ps", "Tuvimos un examen hace dos días.", "We had an exam two days ago."],
-        ["have", "pp", "He tenido esta bici desde hace tres años.", "I have had this bike for three years."],
-        ["hear", "ps", "Oí un ruido raro.", "I heard a strange noise."],
-        ["hear", "pp", "He oído esa canción.", "I have heard that song."]
-      ],
-      iv_m3: [
-        ["hide", "ps", "Escondí el regalo.", "I hid the present."],
-        ["hide", "pp", "El gato se ha escondido.", "The cat has hidden."],
-        ["hit", "ps", "Él golpeó la pelota.", "He hit the ball."],
-        ["hit", "pp", "Un coche ha chocado con el árbol.", "A car has hit the tree."],
-        ["hold", "ps", "Ella sostuvo mi mano.", "She held my hand."],
-        ["hold", "pp", "Él ha sostenido la caja durante diez minutos.", "He has held the box for ten minutes."],
-        ["hurt", "ps", "Me hice daño en la rodilla hace una semana.", "I hurt my knee a week ago."],
-        ["hurt", "pp", "Te has hecho daño en el brazo.", "You have hurt your arm."],
-        ["keep", "ps", "Guardé el dinero.", "I kept the money."],
-        ["keep", "pp", "He guardado tus cartas durante años.", "I have kept your letters for years."],
-        ["know", "ps", "Yo sabía la respuesta.", "I knew the answer."],
-        ["know", "pp", "La conozco desde 2020.", "I have known her since 2020."],
-        ["lay", "ps", "Puse la mesa.", "I laid the table.", ["I set the table."]],
-        ["lay", "pp", "La gallina ha puesto un huevo.", "The hen has laid an egg."],
-        ["lead", "ps", "El guía nos llevó al museo.", "The guide led us to the museum.", ["The guide took us to the museum."]],
-        ["lead", "pp", "Ella ha dirigido el equipo.", "She has led the team."],
-        ["learn", "ps", "Aprendí a nadar hace cinco años.", "I learnt to swim five years ago."],
-        ["learn", "pp", "Hemos aprendido inglés durante tres años.", "We have learnt English for three years."],
-        ["leave", "ps", "El tren salió hace diez minutos.", "The train left ten minutes ago."],
-        ["leave", "pp", "Me he dejado el móvil en casa.", "I have left my phone at home."],
-        ["lend", "ps", "Le presté mi bici.", "I lent him my bike."],
-        ["lend", "pp", "Ella me ha prestado un libro.", "She has lent me a book."],
-        ["let", "ps", "Mis padres me dejaron salir.", "My parents let me go out.", ["My parents allowed me to go out.", "My parents let me out."]],
-        ["let", "pp", "La profesora nos ha dejado salir pronto.", "The teacher has let us leave early.", ["The teacher has allowed us to leave early."]],
-        ["lie_rest", "ps", "Me tumbé en el sofá.", "I lay on the sofa."],
-        ["lie_rest", "pp", "El perro ha estado tumbado aquí desde las dos.", "The dog has lain here since two o'clock.", ["The dog has been lying here.", "The dog has lain here since two."]],
-        ["lie_untrue", "ps", "Él mintió a su madre.", "He lied to his mother."],
-        ["lie_untrue", "pp", "Me has mentido.", "You have lied to me."],
-        ["light", "ps", "Papá encendió el fuego.", "Dad lit the fire."],
-        ["light", "pp", "Ella ha encendido las velas.", "She has lit the candles."],
-        ["lose", "ps", "Perdimos el partido hace dos semanas.", "We lost the match two weeks ago."],
-        ["lose", "pp", "He perdido mis llaves.", "I have lost my keys."],
-        ["make", "ps", "Hice una tarta.", "I made a cake."],
-        ["make", "pp", "Él ha hecho muchos amigos desde septiembre.", "He has made a lot of friends since September."],
-        ["mean", "ps", "Eso significó mucho para mí.", "That meant a lot to me.", ["That was very important to me."]],
-        ["mean", "pp", "Esta canción ha significado mucho.", "This song has meant a lot."],
-        ["meet", "ps", "Conocí a tu hermana hace un año.", "I met your sister a year ago."],
-        ["meet", "pp", "Nunca he conocido a un actor.", "I have never met an actor."],
-        ["overcome", "ps", "Ella superó su miedo.", "She overcame her fear."],
-        ["overcome", "pp", "Él ha superado muchos problemas.", "He has overcome many problems."],
-        ["pay", "ps", "Pagué las entradas.", "I paid for the tickets.", ["I paid the tickets."]],
-        ["pay", "pp", "Ya he pagado.", "I have already paid."]
-      ],
-      iv_m4: [
-        ["put", "ps", "Puse el libro en la mesa.", "I put the book on the table."],
-        ["put", "pp", "Ella ha puesto la leche en la nevera.", "She has put the milk in the fridge."],
-        ["quit", "ps", "Mi tío dejó de fumar hace dos años.", "My uncle quit smoking two years ago.", ["My uncle stopped smoking.", "My uncle gave up smoking.", "My uncle stopped smoking two years ago.", "My uncle gave up smoking two years ago."]],
-        ["quit", "pp", "Ella ha dejado su trabajo.", "She has quit her job.", ["She has left her job.", "She has given up her job."]],
-        ["read", "ps", "Leí este libro hace un mes.", "I read this book a month ago."],
-        ["read", "pp", "He leído tu mensaje.", "I have read your message."],
-        ["ride", "ps", "Monté a caballo.", "I rode a horse."],
-        ["ride", "pp", "Nunca he montado en moto.", "I have never ridden a motorbike."],
-        ["ring", "ps", "El teléfono sonó hace cinco minutos.", "The phone rang five minutes ago."],
-        ["ring", "pp", "El timbre ha sonado.", "The bell has rung."],
-        ["rise", "ps", "El sol salió a las siete.", "The sun rose at seven.", ["The sun came up at seven."]],
-        ["rise", "pp", "Los precios han subido.", "Prices have risen."],
-        ["run", "ps", "Corrí cinco kilómetros.", "I ran five kilometres."],
-        ["run", "pp", "El perro ha corrido durante una hora.", "The dog has run for an hour."],
-        ["say", "ps", "Ella dijo hola.", "She said hello."],
-        ["say", "pp", "Lo has dicho tres veces.", "You have said it three times."],
-        ["see", "ps", "Vi una película.", "I saw a film."],
-        ["see", "pp", "Nunca he visto la nieve.", "I have never seen snow."],
-        ["sell", "ps", "Él vendió su coche hace un mes.", "He sold his car a month ago."],
-        ["sell", "pp", "Han vendido todas las entradas.", "They have sold all the tickets."],
-        ["send", "ps", "Te envié un mensaje hace una hora.", "I sent you a message an hour ago."],
-        ["send", "pp", "Ella me ha enviado un correo.", "She has sent me an email."],
-        ["set", "ps", "Puse el despertador.", "I set the alarm.", ["I set my alarm."]],
-        ["set", "pp", "El sol se ha puesto.", "The sun has set."],
-        ["shake", "ps", "El suelo tembló.", "The ground shook."],
-        ["shake", "pp", "Él ha agitado la botella.", "He has shaken the bottle.", ["He has shaken the bottle up."]],
-        ["shine", "ps", "Ayer brilló el sol.", "The sun shone yesterday."],
-        ["shine", "pp", "El sol ha brillado desde el lunes.", "The sun has shone since Monday."],
-        ["shoot", "ps", "El jugador disparó.", "The player shot."],
-        ["shoot", "pp", "Han rodado una película aquí.", "They have shot a film here.", ["They have filmed a film here.", "They have made a film here."]],
-        ["show", "ps", "Ella me enseñó sus fotos.", "She showed me her photos."],
-        ["show", "pp", "Él nos ha enseñado su casa.", "He has shown us his house."],
-        ["shut", "ps", "Cerré la puerta.", "I shut the door."],
-        ["shut", "pp", "Las tiendas han cerrado.", "The shops have shut."],
-        ["sing", "ps", "Cantamos una canción.", "We sang a song."],
-        ["sing", "pp", "Ella ha cantado en el coro desde 2019.", "She has sung in the choir since 2019."],
-        ["sink", "ps", "El barco se hundió hace cien años.", "The ship sank a hundred years ago.", ["The ship sank one hundred years ago.", "The ship sank 100 years ago."]],
-        ["sink", "pp", "La barca se ha hundido.", "The boat has sunk."],
-        ["sit", "ps", "Me senté al lado de Ana.", "I sat next to Ana."],
-        ["sit", "pp", "Hemos estado sentados aquí durante dos horas.", "We have sat here for two hours."],
-        ["sleep", "ps", "Dormí muy bien.", "I slept very well."],
-        ["sleep", "pp", "El bebé ha dormido durante tres horas.", "The baby has slept for three hours."]
-      ],
-      iv_m5: [
-        ["smell", "ps", "La cocina olía a pan.", "The kitchen smelt of bread."],
-        ["smell", "pp", "He olido estas flores.", "I have smelt these flowers."],
-        ["speak", "ps", "Hablé con mi profesora.", "I spoke to my teacher."],
-        ["speak", "pp", "Ella ha hablado inglés desde que era pequeña.", "She has spoken English since she was a child.", ["She has spoken English since she was little.", "She has spoken English since she was small."]],
-        ["spell", "ps", "Él escribió mal mi nombre.", "He spelt my name wrong.", ["He misspelt my name.", "He spelt my name wrongly."]],
-        ["spell", "pp", "Has escrito bien la palabra.", "You have spelt the word correctly."],
-        ["spend", "ps", "Gasté todo mi dinero.", "I spent all my money."],
-        ["spend", "pp", "Hemos pasado dos semanas en Italia.", "We have spent two weeks in Italy."],
-        ["stand", "ps", "Estuvimos de pie una hora.", "We stood for an hour."],
-        ["stand", "pp", "Él ha estado de pie durante una hora.", "He has stood for an hour.", ["He has been standing all day."]],
-        ["steal", "ps", "Alguien robó mi bici hace dos días.", "Someone stole my bike two days ago."],
-        ["steal", "pp", "Han robado un cuadro.", "They have stolen a painting."],
-        ["stick", "ps", "Pegué una foto en la pared.", "I stuck a photo on the wall."],
-        ["stick", "pp", "Ella ha pegado pegatinas en su libro.", "She has stuck stickers on her book."],
-        ["sting", "ps", "Una abeja me picó.", "A bee stung me."],
-        ["sting", "pp", "Una avispa le ha picado.", "A wasp has stung him."],
-        ["sweep", "ps", "Barrí el suelo.", "I swept the floor."],
-        ["sweep", "pp", "Papá ha barrido las hojas.", "Dad has swept the leaves."],
-        ["swim", "ps", "Nadamos en el mar hace un mes.", "We swam in the sea a month ago."],
-        ["swim", "pp", "Nunca he nadado aquí.", "I have never swum here."],
-        ["take", "ps", "Hice muchas fotos.", "I took a lot of photos."],
-        ["take", "pp", "Alguien ha cogido mi boli.", "Someone has taken my pen.", ["Someone has taken my biro."]],
-        ["teach", "ps", "Mi abuelo me enseñó ajedrez.", "My grandfather taught me chess."],
-        ["teach", "pp", "Ella ha dado clase aquí desde 2010.", "She has taught here since 2010.", ["She has taught us a lot of things."]],
-        ["tear", "ps", "Rompí el papel.", "I tore the paper.", ["I ripped the paper."]],
-        ["tear", "pp", "El perro ha roto mis deberes.", "The dog has torn my homework."],
-        ["tell", "ps", "Ella me contó una historia.", "She told me a story."],
-        ["tell", "pp", "Él me ha dicho la verdad.", "He has told me the truth."],
-        ["think", "ps", "Pensé que era fácil.", "I thought it was easy."],
-        ["think", "pp", "He pensado en tu idea.", "I have thought about your idea."],
-        ["throw", "ps", "Él lanzó la pelota.", "He threw the ball."],
-        ["throw", "pp", "Alguien ha tirado basura.", "Someone has thrown rubbish."],
-        ["understand", "ps", "Entendí la pregunta.", "I understood the question."],
-        ["understand", "pp", "Ahora he entendido la regla.", "Now I have understood the rule."],
-        ["wake_up", "ps", "Me desperté hace una hora.", "I woke up an hour ago."],
-        ["wake_up", "pp", "El bebé se ha despertado.", "The baby has woken up."],
-        ["wear", "ps", "Ella llevó un vestido rojo.", "She wore a red dress."],
-        ["wear", "pp", "He llevado estos zapatos dos veces.", "I have worn these shoes twice."],
-        ["win", "ps", "Ganamos el partido hace tres semanas.", "We won the match three weeks ago."],
-        ["win", "pp", "Ella ha ganado tres medallas.", "She has won three medals."],
-        ["write", "ps", "Escribí una carta hace dos días.", "I wrote a letter two days ago."],
-        ["write", "pp", "Él ha escrito tres canciones.", "He has written three songs."]
-      ]
-    };
-
-    /* ============================================================
-       VOCABULARIO de la pista del nivel 3 (español -> inglés)
-       Se muestran solo las palabras que aparecen en esa frase.
+       PISTAS DE VOCABULARIO DEL NIVEL 3
+       Da las palabras de la frase, nunca la forma del verbo:
+       esa la tiene que pensar el alumno.
        ============================================================ */
     const GLOSS = {
-      "carrera de caballos": "horse race",
-      "campamento de verano": "summer camp",
-      "correo electrónico": "email",
-      "muñeco de nieve": "snowman",
-      "sala de espera": "waiting room",
-      "casco antiguo": "old town",
-      "medallas de oro": "gold medals",
-      "torneo de fútbol": "football tournament",
-      "sala": "room",
-      "fin de semana": "weekend",
-      "pan recién hecho": "fresh bread",
-      "tarjeta de cumpleaños": "birthday card",
-      "amigo por correspondencia": "pen friend",
-      "coro del colegio": "school choir",
-      "jugar al ajedrez": "play chess",
-      "dar de comer": "feed",
-      "en punto": "o'clock",
-      "por la noche": "at night",
-      "al ajedrez": "at chess",
-      "esta mañana": "this morning",
-      "esta semana": "this week",
-      "este año": "this year",
-      "esta tarde": "this afternoon",
-      "la semana pasada": "last week",
-      "el año pasado": "last year",
-      "el mes pasado": "last month",
-      "el verano pasado": "last summer",
-      "el invierno pasado": "last winter",
-      "el sábado pasado": "last Saturday",
-      "el domingo pasado": "last Sunday",
-      "el viernes pasado": "last Friday",
-      "el martes pasado": "last Tuesday",
-      "las navidades": "Christmas",
-      "navidad": "Christmas",
-      "vacaciones": "holiday / the holidays",
-      "cumpleañera": "birthday girl",
-      "cumpleaños": "birthday",
-      "partido": "match / game",
-      "equipo": "team",
-      "campeones": "champions",
-      "cantante": "singer",
-      "canción": "song",
-      "película": "film / movie",
-      "cine": "cinema",
-      "concierto": "concert",
-      "entradas": "tickets",
-      "fiesta": "party",
-      "tarta": "cake",
-      "galletas": "biscuits",
-      "tostadas": "toast",
-      "sopa": "soup",
-      "leche": "milk",
-      "agua": "water",
-      "comida": "lunch / food",
-      "pizza": "pizza",
-      "paella": "paella",
-      "tomates": "tomatoes",
-      "cuchillo": "knife",
-      "vaso": "glass",
-      "vasos": "glasses",
-      "nevera": "fridge",
-      "horno": "oven",
-      "cocina": "kitchen",
-      "habitación": "room",
-      "dormitorio": "bedroom",
-      "puerta": "door",
-      "ventana": "window",
-      "pared": "wall",
-      "suelo": "floor",
-      "sofá": "sofa",
-      "estantería": "shelf",
-      "armario": "wardrobe",
-      "desván": "attic",
-      "caja": "box",
-      "mochila": "bag / rucksack",
-      "bolso": "bag",
-      "cartera": "wallet",
-      "llaves": "keys",
-      "móvil": "phone / mobile",
-      "teléfono": "phone",
-      "despertador": "alarm",
-      "boli": "pen",
-      "cuaderno": "notebook",
-      "pegatinas": "stickers",
-      "libro": "book",
-      "libros": "books",
-      "deberes": "homework",
-      "ejercicios": "exercises",
-      "examen": "exam",
-      "respuesta": "answer",
-      "palabras": "words",
-      "nombre": "name",
-      "apellido": "surname",
-      "dirección": "address",
-      "carta": "letter",
-      "periódico": "newspaper",
-      "diccionario": "dictionary",
-      "dibujo": "picture / drawing",
-      "dibujos": "drawings",
-      "foto": "photo",
-      "fotos": "photos",
-      "mapa": "map",
-      "cuadro": "painting",
-      "museo": "museum",
-      "colegio": "school",
-      "clase": "class / classroom",
-      "profesora": "teacher",
-      "profesor": "teacher",
-      "director del colegio": "head teacher",
-      "delegado": "class delegate",
-      "primaria": "primary school",
-      "alcalde": "mayor",
-      "policía": "police",
-      "ladrón": "thief",
-      "ladrones": "thieves",
-      "obreros": "workers",
-      "guía": "guide",
-      "capitán": "captain",
-      "recepcionista": "receptionist",
-      "vecino": "neighbour",
-      "amigo": "friend",
-      "amiga": "friend",
-      "amigos": "friends",
-      "hermano": "brother",
-      "hermana": "sister",
-      "hermanos": "brothers",
-      "padres": "parents",
-      "madre": "mother / mum",
-      "padre": "father / dad",
-      "mamá": "mum",
-      "papá": "dad",
-      "abuela": "grandma",
-      "abuelo": "grandfather",
-      "abuelos": "grandparents",
-      "tío": "uncle",
-      "tía": "aunt",
-      "primos": "cousins",
-      "bebé": "baby",
-      "niños": "children",
-      "persona famosa": "famous person",
-      "gente": "people",
-      "casa": "home / house",
-      "pueblo": "town",
-      "calle": "street",
-      "jardín": "garden",
-      "huerto": "garden / vegetable garden",
-      "parque": "park",
-      "playa": "beach",
-      "mar": "sea",
-      "piscina": "swimming pool",
-      "lago": "lake",
-      "colina": "hill",
-      "castillo": "castle",
-      "puente": "bridge",
-      "polideportivo": "sports centre",
-      "tienda": "shop",
-      "tiendas": "shops",
-      "restaurante": "restaurant",
-      "supermercado": "supermarket",
-      "hospital": "hospital",
-      "farola": "lamp post",
-      "autobús": "bus",
-      "tren": "train",
-      "avión": "plane",
-      "coche": "car",
-      "bici": "bike",
-      "barca": "boat",
-      "caballo": "horse",
-      "perro": "dog",
-      "gato": "cat",
-      "gatos": "cats",
-      "gallinas": "hens",
-      "huevos": "eggs",
-      "pájaro": "bird",
-      "abeja": "bee",
-      "avispa": "wasp",
-      "mosquitos": "mosquitoes",
-      "hojas": "leaves",
-      "árboles": "trees",
-      "flores": "flowers",
-      "velas": "candles",
-      "fuego": "fire",
-      "tormenta": "storm",
-      "viento": "wind",
-      "nieve": "snow",
-      "sol": "sun",
-      "lluvia": "rain",
-      "frío": "cold",
-      "temperatura": "temperature",
-      "terremoto": "earthquake",
-      "gasolina": "petrol",
-      "dinero": "money",
-      "euros": "euros",
-      "precio": "price",
-      "rebajas": "the sales",
-      "trabajo": "job / work",
-      "juguetes": "toys",
-      "juego": "game",
-      "pelota": "ball",
-      "gol": "goal",
-      "vaqueros": "jeans",
-      "abrigo": "coat",
-      "vestido": "dress",
-      "camisetas": "T-shirts",
-      "zapatillas": "trainers",
-      "zapatos": "shoes",
-      "chaqueta": "jacket",
-      "gafas": "glasses",
-      "regalo": "present",
-      "regalos": "presents",
-      "tirita": "plaster",
-      "corte": "cut",
-      "daño": "hurt",
-      "rodilla": "knee",
-      "espalda": "back",
-      "brazo": "arm",
-      "brazos": "arms",
-      "mano": "hand",
-      "dedo": "finger",
-      "pierna": "leg",
-      "resfriado": "cold",
-      "ruido": "noise",
-      "historia": "story",
-      "idea": "idea",
-      "regla": "rule",
-      "verdad": "truth",
-      "miedo": "fear",
-      "edad": "age",
-      "victoria": "victory",
-      "medallas": "medals",
-      "maratones": "marathons",
-      "kilómetros": "kilometres",
-      "horas": "hours",
-      "hora": "hour",
-      "minutos": "minutes",
-      "días": "days",
-      "día": "day",
-      "mes": "month",
-      "año": "year",
-      "años": "years",
-      "semana": "week",
-      "verano": "summer",
-      "invierno": "winter",
-      "mañana": "morning",
-      "tarde": "afternoon",
-      "noche": "night",
-      "ayer": "yesterday",
-      "anoche": "last night",
-      "hoy": "today",
-      "siempre": "always",
-      "nunca": "never",
-      "todavía": "still",
-      "por fin": "at last / finally",
-      "otra vez": "again",
-      "muchas veces": "many times",
-      "tres veces": "three times",
-      "dos veces": "twice",
-      "hace": "ago (+ past simple)",
-      "desde": "since (+ when it started)",
-      "durante": "for (+ how long)",
-      "después": "after",
-      "antes": "before",
-      "encima": "on top of",
-      "detrás": "behind",
-      "delante": "in front of",
-      "debajo": "under",
-      "cerca": "near",
-      "dentro": "inside",
-      "fuera": "outside",
-      "basura": "rubbish",
-      "pan": "bread",
-      "comidas": "meals",
-      "cansado": "tired",
-      "nervioso": "nervous",
-      "feliz": "happy",
-      "enfermo": "ill",
-      "famosa": "famous",
-      "popular": "popular",
-      "precioso": "beautiful",
-      "bonitas": "beautiful",
-      "divertida": "funny",
-      "raro": "strange",
-      "fantástico": "fantastic",
-      "estupendo": "great",
-      "genial": "great",
-      "delicioso": "delicious",
-      "deliciosa": "delicious",
-      "nuevo": "new",
-      "nueva": "new",
-      "nuevas": "new",
-      "viejo": "old",
-      "vieja": "old",
-      "antiguo": "old",
-      "joven": "young",
-      "pequeño": "little / small",
-      "grande": "big",
-      "mayor": "older",
-      "profundo": "deep",
-      "caliente": "hot",
-      "fácil": "easy",
-      "difícil": "difficult",
-      "rojas": "red",
-      "azul": "blue",
-      "favorita": "favourite",
-      "mismo": "same",
-      "correctamente": "correctly",
-      "pronto": "early",
-      "tarde para": "late",
-      "mal": "wrong / badly",
-      "muy": "very",
-      "casi": "almost",
-      "también": "too / also",
-      "ya": "already",
-      "todo": "all / everything",
-      "todos los días": "every day",
-      "nariz": "nose",
-      "cuchara": "spoon",
-      "papel": "paper",
-      "moto": "motorbike",
-      "botella": "bottle",
-      "timbre": "bell",
-      "precios": "prices",
-      "barco": "ship",
-      "ajedrez": "chess",
-      "actor": "actor",
-      "huevo": "egg",
-      "gallina": "hen",
-      "problemas": "problems",
-      "mensaje": "message",
-      "correo": "email",
-      "palabra": "word",
-      "pregunta": "question",
-      "canciones": "songs",
-      "coro": "choir",
-      "hola": "hello",
-      "agujero": "hole",
-      "árbol": "tree",
-      "cartas": "letters",
-      "mesa": "table",
-      "bien": "well / correctly",
-      "desde hace": "for (+ how long)"
+      "todos los días": "every day", "todos los dias": "every day",
+      "los viernes": "on Fridays", "los fines de semana": "at weekends",
+      "esta tarde": "this afternoon", "este mes": "this month", "este año": "this year",
+      "ahora mismo": "right now", "últimamente": "lately", "ultimamente": "lately",
+      "ya": "already", "todavía no": "not ... yet", "todavia no": "not ... yet",
+      "nunca": "never", "alguna vez": "ever", "siempre": "always",
+      "dos veces": "twice", "tres veces": "three times",
+      "desde hace": "for", "desde": "since", "media hora": "half an hour",
+      "dos horas": "two hours", "diez años": "ten years", "tres años": "three years",
+      "a las siete": "at seven", "a las ocho": "at eight", "a las nueve": "at nine",
+      "mañana": "tomorrow", "el lunes": "Monday", "todo el día": "all day",
+      "en casa": "at home", "en la cocina": "in the kitchen", "en una oficina": "in an office",
+      "el móvil": "mobile / phone", "el movil": "mobile / phone",
+      "los deberes": "homework", "la pregunta": "question", "esa serie": "that series",
+      "el tren": "train", "el agua": "water", "cien grados": "one hundred degrees",
+      "a caballo": "a horse", "el piano": "the piano", "alemán": "German", "aleman": "German",
+      "inglés": "English", "ingles": "English", "medicina": "medicine",
+      "mi madre": "my mother / mum", "mi padre": "my father / dad",
+      "mi hermano": "my brother", "mi hermana": "my sister",
+      "mis abuelos": "my grandparents", "mi amigo": "my friend",
+      "tarde": "late", "clase": "class", "antes": "earlier", "bien": "well",
+      "está lloviendo": "it + rain", "esta lloviendo": "it + rain",
+      "está nevando": "it + snow", "esta nevando": "it + snow",
+      "cenar": "have dinner", "cenamos": "have dinner", "ceno": "have dinner",
+      "conozco": "know", "trabaja": "work", "vivimos": "live", "estudia": "study"
     };
 
     /* ============================================================
-       SINONIMOS aceptados en el nivel 3.
-       El primero de cada linea es la forma "oficial": al corregir,
-       todas las de su linea se consideran la misma palabra.
-       Se pueden anadir mas lineas sin tocar nada mas.
+       SINÓNIMOS ACEPTADOS
+       Todas las variantes de una línea valen igual: el corrector las
+       reduce a la primera antes de comparar.
        ============================================================ */
     const SWAPS = [
-      // contracciones
-      ["i have", "ive"], ["we have", "weve"], ["they have", "theyve"], ["you have", "youve"],
-      ["he has", "hes", "he is"], ["she has", "shes", "she is"], ["it has", "its", "it is"],
-      ["i am", "im"], ["do not", "dont"], ["does not", "doesnt"], ["did not", "didnt"],
-      ["cannot", "can not", "cant"], ["is not", "isnt"], ["are not", "arent"],
-      ["was not", "wasnt"], ["were not", "werent"], ["has not", "hasnt"], ["have not", "havent"],
-      ["could not", "couldnt"], ["would not", "wouldnt"], ["let us", "lets"], ["there is", "theres"],
-      // ingles britanico / americano
-      ["centre", "center"], ["theatre", "theater"], ["favourite", "favorite"], ["colour", "color"],
-      ["neighbour", "neighbor"], ["kilometres", "kilometers"], ["metres", "meters"],
-      ["practise", "practice"], ["grey", "gray"], ["travelled", "traveled"],
-      // sinonimos de vocabulario
-      ["phone", "mobile", "mobile phone", "cell phone", "cellphone", "telephone"],
-      ["bike", "bicycle"], ["film", "movie"], ["films", "movies"],
-      ["the cinema", "the movies", "the movie theatre"],
-      ["mum", "mom", "mummy"], ["dad", "daddy"], ["mother", "mum", "mom"], ["father", "dad"],
-      ["grandma", "grandmother", "granny", "grandmum"], ["grandfather", "grandpa", "granddad", "grandad"],
-      ["a lot of", "lots of", "many", "much", "plenty of"], ["a lot", "lots", "very much"],
-      ["photos", "pictures", "photographs"], ["photo", "picture", "photograph"],
-      ["picture", "drawing"], ["trainers", "sneakers", "trainers shoes"],
-      ["rubbish", "litter", "trash", "garbage"], ["biscuits", "cookies"],
-      ["sports centre", "sports hall", "leisure centre"], ["holiday", "holidays", "vacation"],
-      ["on holiday", "on vacation"], ["wallet", "purse"], ["wardrobe", "closet"], ["attic", "loft"],
-      ["shop", "store"], ["shops", "stores"], ["town", "village"], ["garden", "yard"],
-      ["petrol", "gas", "gasoline"], ["plaster", "band aid", "bandage", "plasters"],
-      ["head teacher", "headmaster", "headmistress", "principal", "school head"],
-      ["pen friend", "pen pal", "penfriend", "penpal"], ["primary school", "elementary school"],
-      ["bag", "rucksack", "backpack", "schoolbag"], ["sofa", "couch"], ["notebook", "exercise book"],
-      ["marks", "grades", "results"], ["exam", "test", "examination"], ["exams", "tests"],
-      ["flat", "apartment"], ["lorry", "truck"], ["football", "soccer"], ["sweets", "candy"],
-      ["jumper", "sweater"], ["boat", "ship"], ["glasses", "spectacles"],
-      ["pieces", "slices"], ["strange", "weird", "odd", "funny"], ["noise", "sound"],
-      ["very", "really", "so"], ["great", "fantastic", "brilliant", "amazing", "wonderful", "lovely"],
-      ["beautiful", "lovely", "gorgeous", "nice", "pretty"], ["delicious", "tasty"],
-      ["children", "kids"], ["everybody", "everyone"], ["nobody", "no one", "no-one"],
-      ["somebody", "someone"], ["at last", "finally", "in the end"], ["again", "one more time"],
-      ["tidy", "tidy up", "clean", "clean up"], ["ill", "sick"], ["little", "small"],
-      ["old town", "historic centre", "old part of town"], ["job", "work"],
-      ["hens", "chickens"], ["street", "road"], ["angry", "cross"], ["quickly", "fast"],
-      // numeros: se acepta la cifra y la palabra
-      ["one", "1"], ["two", "2"], ["three", "3"], ["four", "4"], ["five", "5"], ["six", "6"],
-      ["seven", "7"], ["eight", "8"], ["nine", "9"], ["ten", "10"], ["eleven", "11"],
-      ["twelve", "12"], ["eighteen", "18"], ["twenty", "20"], ["sixty", "60"], ["hundred", "100"],
-      ["twice", "two times", "2 times"],
-      ["match", "game"], ["floor", "ground"], ["euros", "euro"], ["present", "gift"],
-      ["surname", "last name", "family name"], ["lunch", "food"], ["picture", "drawing"],
-      ["sports centre", "sports center"], ["road", "street"],
-      // formas verbales britanicas / americanas: valen las dos
-      ["burnt", "burned"], ["dreamt", "dreamed"], ["learnt", "learned"], ["leant", "leaned"],
-      ["knelt", "kneeled"], ["smelt", "smelled"], ["spelt", "spelled"], ["lit", "lighted"],
-      ["pled", "pleaded"], ["spat", "spit"], ["sweat", "sweated"], ["stank", "stunk"],
-      ["got", "gotten", "received", "obtained"], ["trod", "trodden"], ["hung", "hanged"],
-      ["came", "arrived"], ["thief", "robber", "burglar"], ["pen", "biro"],
-      ["motorbike", "motorcycle"], ["correctly", "right", "well"], ["hello", "hi"],
-      ["chess", "the chess"], ["hard", "strongly"], ["hole", "big hole"]
+      ["mobile", "mobile phone", "phone", "cell phone", "cellphone", "smartphone"],
+      ["mother", "mum", "mom", "mummy"],
+      ["father", "dad", "daddy"],
+      ["grandparents", "grandmother and grandfather"],
+      ["film", "movie"],
+      ["television", "tv", "telly"],
+      ["flat", "apartment"],
+      ["series", "show", "tv series"],
+      ["at weekends", "on weekends", "at the weekend", "on the weekend"],
+      ["lately", "recently"],
+      ["half an hour", "thirty minutes", "30 minutes"],
+      ["one hundred", "a hundred", "100"],
+      ["earlier", "sooner"],
+      ["class", "the class", "lesson"],
+      ["medicine", "medical studies"],
+      ["german", "deutsch"],
+      ["right now", "now", "at this moment", "at the moment"],
+      ["homework", "the homework"],
+      ["dinner", "supper"],
+      ["office", "an office"],
+      ["seven", "7"], ["eight", "8"], ["nine", "9"], ["ten", "10"],
+      ["twice", "two times"],
+      ["two", "2"], ["three", "3"], ["six", "6"], ["twenty", "20"],
+      ["german", "deutsch"],
+      ["learnt", "learned"], ["series", "serie"]
     ];
 
-    /* Expresiones de tiempo: dan igual al principio o al final de la frase. */
-    const TIME_RX = /\b(yesterday|today|tonight|last (?:night|week|weekend|month|year|summer|winter|spring|autumn|monday|tuesday|wednesday|thursday|friday|saturday|sunday|christmas)|this (?:morning|afternoon|evening|week|month|year|summer|winter)|in \d{4}|\d+ (?:years?|months?|weeks?|days?|hours?|minutes?) ago|on (?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?: night| morning| afternoon| evening)?|every day|all day|all afternoon|at last|already|only twice|three times|many times)\b/g;
+    /* Expresiones de tiempo: se extraen y se ordenan, de modo que da
+       igual ponerlas al principio o al final de la frase. */
+    const TIME_RX = /\b(every (?:day|morning|afternoon|evening|night|week|month|year|summer|winter|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|right now|at the moment|at this moment|these days|this (?:morning|afternoon|evening|week|month|year|summer|winter)|today|tonight|tomorrow|lately|recently|already|yet|ever|never|twice|two times|three times|all (?:day|morning|afternoon|evening)|on (?:mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)|at weekends|on weekends|at the weekend|for (?:\d+|a|an|two|three|four|five|six|seven|eight|nine|ten|twenty|half) [a-z ]*?(?:seconds?|minutes?|hours?|days?|weeks?|months?|years?)|since (?:\d{4}|monday|tuesday|wednesday|thursday|friday|saturday|sunday|september|last [a-z]+))\b/g;
+
 
     /* ============================================================
        LOS 3 NIVELES DE CADA MODULO
@@ -1460,91 +855,86 @@
     const PASS_THRESHOLD = 90;
 
     const LEVELS = [
-      { n: 1, type: "forms",     name: "Level 1 \u00b7 The three forms",  tag: "L1", icon: "fa-table-columns", pass: 90,
-        blurb: "The verbs of this module, one by one: write the three forms.",
+      { n: 1, type: "mcq",       name: "Level 1 \u00b7 Choose the right option", tag: "L1", icon: "fa-list-check", pass: 90,
+        blurb: "Recognise the right form among four options.",
         chip: "bg-sky-500/15 text-sky-300 border-sky-500/40",
         how: [
-          "You are given the <strong>meaning in Spanish</strong>. Write the <strong>three forms</strong> of that verb in English.",
-          "Order: <strong class=\"text-emerald-300\">infinitive (V1)</strong> \u2192 <strong class=\"text-sky-300\">past simple (V2)</strong> \u2192 <strong class=\"text-amber-300\">past participle (V3)</strong>.",
-          "<strong>Capital letters don\u2019t matter.</strong> When the list gives two forms (<em>learnt / learned</em>, <em>was / were</em>), either one is accepted.",
-          "The three forms must be right for the answer to count."
+          "Read the sentence and choose <strong>one of the four options</strong>. The order changes every time, so do not learn the position.",
+          "Look at the <strong>time expressions</strong> (every day, now, yet, since\u2026): they almost always tell you which tense you need.",
+          "After answering you will see <strong>why</strong> that one is right and the others are not.",
+          "You need <strong>90%</strong> to pass this level."
         ] },
-      { n: 2, type: "gap",       name: "Level 2 \u00b7 Fill in the gaps",  tag: "L2", icon: "fa-pen-to-square", pass: 90,
-        blurb: "The same verbs inside sentences, in past simple and present perfect.",
+      { n: 2, type: "gap",       name: "Level 2 \u00b7 Fill in the gap",  tag: "L2", icon: "fa-pen-to-square", pass: 80,
+        blurb: "Now you write the verb form inside the sentence.",
         chip: "bg-amber-500/15 text-amber-300 border-amber-500/40",
         how: [
-          "Write <strong>only the missing verb</strong>. The base form is <strong>in brackets</strong> at the end: <span class=\"font-mono text-amber-400\">(go)</span>.",
-          "Finished past time (<em>yesterday, last week, ago</em>) \u2192 <strong>past simple</strong>: <em>I <u>went</u> ...</em>",
-          "After <strong>have / has</strong> \u2192 <strong>past participle</strong>: <em>I have <u>gone</u> ...</em>",
-          "<strong>Capital letters don\u2019t matter</strong> and both forms count when the list gives two."
+          "Write <strong>only the missing verb</strong>. The infinitive is <strong>in brackets</strong>: <span class=\"font-mono text-amber-400\">(go)</span>.",
+          "If it says <span class=\"font-mono text-amber-400\">(not / go)</span>, write the <strong>whole negative</strong>: <em>doesn\u2019t go</em>.",
+          "<strong>Contractions</strong> are accepted (don\u2019t, isn\u2019t, I\u2019ve\u2026) and <strong>capital letters do not matter</strong>.",
+          "You need <strong>80%</strong> to pass this level."
         ] },
-      { n: 3, type: "translate", name: "Level 3 \u00b7 Spanish into English", tag: "L3", icon: "fa-language", pass: 70,
-        blurb: "The same sentences, but now you write the whole sentence in English.",
+      { n: 3, type: "translate", name: "Level 3 \u00b7 Spanish into English", tag: "L3", icon: "fa-language", pass: 80,
+        blurb: "Write the whole sentence in English. They are short sentences.",
         chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40",
         how: [
-          "Write the <strong>whole sentence</strong> in English, not only the verb. They are <strong>short sentences</strong>.",
-          "The verb you have to use is written <strong>in brackets</strong> next to the sentence.",
-          "The <strong class=\"text-amber-300\">\ud83d\udca1 Vocabulary</strong> button gives you the words of the sentence, but <strong>not</strong> the form of the verb: that one you have to think about.",
-          "<strong>Lots of translations are accepted</strong> (<em>phone / mobile</em>, <em>film / movie</em>, <em>I have / I\u2019ve</em>\u2026), and capital letters, commas and the full stop don\u2019t matter.",
-          "The time expression can go at the beginning or at the end: both are right."
+          "Write the <strong>whole sentence</strong> in English. They are short, exam-style sentences.",
+          "The verb you need is <strong>in brackets, in the infinitive</strong>. <strong>You decide the tense</strong>: that is what is being assessed.",
+          "The <strong class=\"text-amber-300\">\ud83d\udca1 Vocabulary</strong> button gives you the words of the sentence, but <strong>never</strong> the form of the verb.",
+          "<strong>Many translations are accepted</strong> (phone / mobile, mum / mother, I have / I\u2019ve\u2026). Capital letters, commas and the full stop do not matter.",
+          "The time expression can go at the beginning or at the end: both are right.",
+          "You need <strong>80%</strong> to pass this level."
         ] }
     ];
 
     const TYPES = {
-      forms:     { label: "Three forms",  badge: "bg-sky-500/15 text-sky-300 border-sky-500/40",             icon: "fa-table-columns" },
+      mcq:       { label: "Choose the right one", badge: "bg-sky-500/15 text-sky-300 border-sky-500/40",        icon: "fa-list-check" },
       gap:       { label: "Fill the gap", badge: "bg-amber-500/15 text-amber-300 border-amber-500/40",       icon: "fa-pen-to-square" },
-      translate: { label: "Translation",  badge: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", icon: "fa-language" }
+      translate: { label: "Translation", badge: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40", icon: "fa-language" }
     };
 
-    function verbOf(key) {
-      const v = VERBS[key];
-      return { key: key, es: v[3], inf: v[0], past: v[1], part: v[2] };
-    }
-    function fullSentence(row) {
-      const [key, tense, text, custom] = row;
-      const ans = (custom || (tense === "ps" ? VERBS[key][1] : VERBS[key][2]))[0];
-      return text.replace("___", ans);
+    /* Baraja las opciones para que la correcta no caiga siempre en el mismo sitio */
+    function shuffleOptions(opts) {
+      const arr = opts.map((text, i) => ({ text: text, correct: i === 0 }));
+      for (let k = arr.length - 1; k > 0; k--) {
+        const r = Math.floor(Math.random() * (k + 1));
+        const t = arr[k]; arr[k] = arr[r]; arr[r] = t;
+      }
+      return arr;
     }
 
     const MODULES = [];
     LEVELS.forEach(lv => {
       MODULE_DEFS.forEach((def, mi) => {
         let questions;
-        if (lv.type === "forms") {
-          questions = def.verbs.map((k, i) => ({
-            qid: `${def.id}_l1_${i}`, type: "forms", prompt: VERBS[k][3], verb: verbOf(k),
-            answers: [VERBS[k][0], VERBS[k][1].join(" / "), VERBS[k][2].join(" / ")]
+        if (lv.type === "mcq") {
+          questions = def.mcq.map((row, i) => ({
+            qid: `${def.id}_l1_${i}`, type: "mcq", text: row.q,
+            options: row.options, answers: [row.options[0]], x: row.x
           }));
         } else if (lv.type === "gap") {
-          questions = def.s.map((row, i) => {
-            const [k, tense, text, custom] = row;
-            return {
-              qid: `${def.id}_l2_${i}`, type: "gap", text: text, hint: HINTS[k] || VERBS[k][0],
-              answers: withAlt(custom || (tense === "ps" ? VERBS[k][1] : VERBS[k][2]),
-                               tense === "ps" ? ALT_PAST : ALT_PART)
-            };
-          });
+          questions = def.gaps.map((row, i) => ({
+            qid: `${def.id}_l2_${i}`, type: "gap", text: row.text, hint: row.hint,
+            answers: row.answers, x: row.x
+          }));
         } else {
-          questions = TR3[def.id].map((row, i) => {
-            const [vk, tense, es, en, alts] = row;
-            return {
-              qid: `${def.id}_l3_${i}`, type: "translate", prompt: es,
-              answers: [en].concat(alts || []), verbKey: vk, tense: tense
-            };
-          });
+          questions = def.tr.map((row, i) => ({
+            qid: `${def.id}_l3_${i}`, type: "translate", prompt: row.es, verbHint: row.verb,
+            answers: [row.en].concat(row.alts || []), x: row.x
+          }));
         }
         MODULES.push({
           id: `${def.id}_l${lv.n}`, moduleId: def.id, moduleIndex: mi, level: lv.n,
           type: lv.type, icon: def.icon, levelIcon: lv.icon, levelName: lv.name,
           chip: lv.chip, how: lv.how, levelTag: lv.tag,
           title: `${def.title} \u00b7 ${lv.name.split(" \u00b7 ")[1]}`,
-          moduleTitle: def.title, short: `${def.short.split(" ")[0]} ${lv.tag}`,
-          verbs: def.verbs, pass: lv.pass, questions: questions, size: questions.length,
-          desc: lv.type === "forms"
-            ? `${def.verbs.length} verbs \u00b7 write the infinitive, the past simple and the past participle.`
+          moduleTitle: def.title, short: `${def.short} ${lv.tag}`,
+          theory: def.theory, moduleDesc: def.desc,
+          pass: lv.pass, questions: questions, size: questions.length,
+          desc: lv.type === "mcq"
+            ? `${def.mcq.length} questions \u00b7 choose the right form among four options.`
             : (lv.type === "gap"
-              ? `${def.s.length} sentences \u00b7 write the missing verb in past simple or past participle.`
-              : `${TR3[def.id].length} short sentences \u00b7 write them in English. The verb you need is shown, and the hint gives you the vocabulary.`)
+              ? `${def.gaps.length} sentences \u00b7 write the missing verb.`
+              : `${def.tr.length} sentences \u00b7 write them in English. You decide the tense.`)
         });
       });
     });
@@ -1570,22 +960,30 @@
       return normalize(str).replace(/[.,;:!?"']/g, "").replace(/\s+/g, " ").trim();
     }
 
-    function gradeForms(values, q) {
-      const v = q.verb;
-      const okInf  = normalize(values[0]) === normalize(v.inf);
-      const okPast = withAlt(v.past, ALT_PAST).some(a => normalize(a) === normalize(values[1]))
-                     || normalize(values[1]) === normalize(v.past.join("/"));
-      const okPart = withAlt(v.part, ALT_PART).some(a => normalize(a) === normalize(values[2]))
-                     || normalize(values[2]) === normalize(v.part.join("/"));
-      return { ok: okInf && okPast && okPart, parts: [okInf, okPast, okPart] };
+    function gradeMcq(userValue, q) {
+      return normalize(userValue) === normalize(q.answers[0]);
+    }
+
+    /* Las contracciones se expanden en los dos lados, as\u00ed que da igual que el
+       alumno escriba "haven't seen" o "have not seen". */
+    function expandGapForms(s) {
+      return s
+        .replace(/\bcan't\b/g, "can not").replace(/\bcannot\b/g, "can not")
+        .replace(/\bwon't\b/g, "will not")
+        .replace(/n't\b/g, " not")
+        .replace(/'m\b/g, " am").replace(/'re\b/g, " are")
+        .replace(/'ve\b/g, " have").replace(/'ll\b/g, " will")
+        .replace(/\s+/g, " ").trim();
     }
 
     function gradeGap(userValue, q) {
-      let user = normalize(userValue);
+      const user = normalize(userValue);
       if (!user) return false;
-      // si el alumno repite el auxiliar que ya esta en la frase ("has gone"), se ignora
-      user = user.replace(/^(have|has|had|been|'ve|'s)\s+/, "");
-      return q.answers.some(a => normalize(a) === user);
+      const userExp = expandGapForms(user);
+      return q.answers.some(ans => {
+        const a = normalize(ans);
+        return a === user || expandGapForms(a) === userExp;
+      });
     }
 
     // Todas las alternativas de una linea de SWAPS se reducen a la primera,
@@ -1600,7 +998,29 @@
       }));
     })();
 
-    function canonTranslation(str) {
+    /* Las contracciones se expanden ANTES de quitar el ap\u00f3strofo, para que
+       "I've lost" y "I have lost" acaben siendo la misma frase. */
+    function expandTrContractions(s) {
+      return s
+        .replace(/\bcan't\b/g, "can not").replace(/\bcannot\b/g, "can not")
+        .replace(/\bwon't\b/g, "will not")
+        .replace(/n't\b/g, " not")
+        .replace(/'m\b/g, " am").replace(/'re\b/g, " are")
+        .replace(/'ve\b/g, " have").replace(/'ll\b/g, " will")
+        .replace(/\s+/g, " ").trim();
+    }
+
+    /* "'s" puede ser IS, HAS o un posesivo: se prueban las tres lecturas. */
+    function sReadings(s) {
+      if (!/\w's\b/.test(s)) return [s];
+      return [
+        s.replace(/(\w)'s\b/g, "$1 is"),
+        s.replace(/(\w)'s\b/g, "$1 has"),
+        s.replace(/(\w)'s\b/g, "$1s")
+      ];
+    }
+
+    function canonCore(str) {
       let out = normalizeLoose(str).replace(/[\u2013\u2014]/g, "-");
       out = out.replace(/\boclock\b/g, " ");        // "at eight" = "at eight o'clock"
       SWAP_RULES.forEach(r => { out = out.replace(r.re, r.to); });
@@ -1608,6 +1028,12 @@
       out = out.replace(TIME_RX, m => { times.push(m.trim()); return " "; });
       return (out + " " + times.sort().join(" ")).replace(/\s+/g, " ").trim();
     }
+
+    function canonVariants(str) {
+      return sReadings(expandTrContractions(normalize(str))).map(canonCore);
+    }
+
+    function canonTranslation(str) { return canonCore(str); }
 
     // Palabras de pegamento: no cuentan al comparar. Asi valen igual
     // "lent Sara my bike" y "lent my bike to Sara", o que falte un articulo.
@@ -1621,10 +1047,11 @@
 
     function gradeTranslation(userValue, q) {
       if (!normalizeLoose(userValue)) return false;
-      const user = canonTranslation(userValue);
-      if (q.answers.some(a => canonTranslation(a) === user)) return true;
-      const bag = contentBag(user);
-      return q.answers.some(a => contentBag(canonTranslation(a)) === bag);
+      const mias = canonVariants(userValue);
+      const suyas = q.answers.reduce((acc, a) => acc.concat(canonVariants(a)), []);
+      if (mias.some(u => suyas.indexOf(u) >= 0)) return true;
+      const bolsasSuyas = suyas.map(contentBag);
+      return mias.map(contentBag).some(u => bolsasSuyas.indexOf(u) >= 0);
     }
 
     /* ---------- pista de vocabulario del nivel 3 ---------- */
@@ -1679,7 +1106,7 @@
     function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
     function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
     function storageDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
-    function progressKey(modId) { return `englishpro_ivl_progress_${userScopeKey()}_${modId}`; }
+    function progressKey(modId) { return `englishpro_pt_progress_${userScopeKey()}_${modId}`; }
 
     /* ---------- class codes ---------- */
     function normalizeCode(c) { return (c || "").toString().trim().toUpperCase().replace(/\s+/g, ""); }
@@ -1712,7 +1139,7 @@
     }
 
     /* ---------- local copy of the results (guest mode / no connection) ---------- */
-    function localResultsKey() { return `englishpro_ivl_results_${userScopeKey()}`; }
+    function localResultsKey() { return `englishpro_pt_results_${userScopeKey()}`; }
     function localResults() {
       try { return JSON.parse(storageGet(localResultsKey()) || "[]"); } catch (e) { return []; }
     }
@@ -1735,49 +1162,58 @@
 
     function questionBodyHtml(q) {
       const inp = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
-      if (q.type === "forms") {
-        const labels = [
-          ["Infinitive (V1)", "text-emerald-300"],
-          ["Past simple (V2)", "text-sky-300"],
-          ["Past participle (V3)", "text-amber-300"]
-        ];
+      if (q.type === "mcq") {
+        const opts = q.shuffled || (q.shuffled = shuffleOptions(q.options));
         return `
-          <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Verb in Spanish</p>
-          <p class="text-2xl md:text-4xl font-extrabold text-white mb-6" lang="es">${escapeHtml(q.prompt)}</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            ${labels.map(([lab, cls], i) => `
-              <div>
-                <label class="block text-xs md:text-sm font-black uppercase tracking-wider ${cls} mb-2">${lab}</label>
-                <input type="text" id="ans_${i}" class="quiz-input gap-input wide text-lg md:text-2xl" ${inp}>
-              </div>`).join("")}
-          </div>`;
+          <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Choose the right option</p>
+          <p class="text-2xl md:text-4xl font-extrabold text-white mb-6 leading-snug">${escapeHtml(q.text)}</p>
+          <div id="mcqOptions" class="grid grid-cols-1 gap-3">
+            ${opts.map((o, i) => `
+              <button type="button" class="mcq-opt text-left w-full px-5 py-4 rounded-2xl border-2 border-slate-700 bg-slate-950 hover:border-sky-500 text-lg md:text-2xl font-bold text-slate-100 transition"
+                      data-value="${escapeHtml(o.text)}" onclick="pickOption(this)">
+                <span class="inline-block w-8 h-8 mr-3 rounded-lg bg-slate-800 text-sky-300 text-base font-black text-center leading-8">${String.fromCharCode(65 + i)}</span>${escapeHtml(o.text)}
+              </button>`).join("")}
+          </div>
+          <input type="hidden" id="ans_0" class="quiz-input" value="">`;
       }
       if (q.type === "gap") {
         const parts = q.text.split("___");
         const width = Math.max(8, Math.max.apply(null, q.answers.map(a => a.length)) + 3);
         return `<p class="text-2xl md:text-4xl font-extrabold text-white leading-relaxed">${escapeHtml(parts[0])}<input type="text" id="ans_0" class="quiz-input gap-input text-xl md:text-3xl" style="width:${width}ch" ${inp}>${escapeHtml(parts[1] || "")} <span class="text-amber-400 font-mono text-xl md:text-2xl">(${escapeHtml(q.hint)})</span></p>`;
       }
-      const base = q.verbKey ? VERBS[q.verbKey][0] : "";
       return `
         <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Translate into English</p>
-        <p class="text-2xl md:text-4xl font-extrabold text-white mb-3" lang="es">${escapeHtml(q.prompt)}
-          <span class="text-amber-400 font-mono text-xl md:text-2xl whitespace-nowrap">(${escapeHtml(base)})</span></p>
-        <p class="text-sm md:text-base font-black uppercase tracking-widest mb-4 ${q.tense === "ps" ? "text-sky-300" : "text-amber-300"}">${q.tense === "ps" ? "Past simple" : "Present perfect"}</p>
+        <p class="text-2xl md:text-4xl font-extrabold text-white mb-4" lang="es">${escapeHtml(q.prompt)}
+          <span class="text-amber-400 font-mono text-xl md:text-2xl whitespace-nowrap">${escapeHtml(q.verbHint || "")}</span></p>
         <input type="text" id="ans_0" class="quiz-input gap-input wide text-lg md:text-2xl" placeholder="Write the whole sentence in English" ${inp}>`;
     }
 
     function questionInputs() {
-      return Array.prototype.slice.call(document.querySelectorAll(".quiz-input"));
+      return Array.prototype.slice.call(document.querySelectorAll(".quiz-input")).filter(i => i.type !== "hidden");
+    }
+
+    /* Nivel 1: marcar una opci\u00f3n (todav\u00eda no corrige; corrige el bot\u00f3n Comprobar) */
+    function pickOption(btn) {
+      if (answered) return;
+      document.querySelectorAll(".mcq-opt").forEach(b => {
+        b.classList.remove("border-sky-400", "bg-sky-950/40");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("border-sky-400", "bg-sky-950/40");
+      btn.setAttribute("aria-pressed", "true");
+      const hidden = document.getElementById("ans_0");
+      if (hidden) hidden.value = btn.dataset.value;
+      const check = document.getElementById("checkAnswerBtn");
+      if (check) check.disabled = false;
     }
 
     function questionPromptText(q) {
       if (q.type === "gap") return `${q.text.replace("___", "______")} (${q.hint})`;
-      if (q.type === "forms") return `${q.prompt} \u2192 V1 / V2 / V3`;
+      if (q.type === "mcq") return q.text;
       return q.prompt;
     }
 
     function modelAnswer(q) {
-      if (q.type === "forms") return q.answers.join(" \u00b7 ");
       return q.answers.join("  |  ");
     }
 
@@ -1813,62 +1249,33 @@
        THEORY PAGE
        ============================================================ */
     function buildLesson(mod) {
-      const rows = mod.verbs.map(k => {
-        const v = VERBS[k];
-        const label = HINTS[k] ? `${v[0]} <span class="text-slate-500 text-sm">(${HINTS[k].split("\u2013")[1].trim()})</span>` : v[0];
-        return `
-          <tr class="border-b border-slate-800/80">
-            <td class="p-2 md:p-3 font-black text-white">${label}</td>
-            <td class="p-2 md:p-3 font-bold text-sky-300">${v[1].join(" / ")}</td>
-            <td class="p-2 md:p-3 font-bold text-amber-300">${v[2].join(" / ")}</td>
-            <td class="p-2 md:p-3 text-slate-400 text-sm md:text-base" lang="es">${v[3]}</td>
-          </tr>`;
-      }).join("");
-
-      const examples = {
-        forms: `<p class="text-base md:text-xl text-slate-300" lang="es">You see: <strong>romper</strong></p>
-                <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">break</strong> \u00b7 <strong class="text-sky-300">broke</strong> \u00b7 <strong class="text-amber-300">broken</strong></p>`,
-        gap: `<p class="text-base md:text-xl text-slate-300">Tom ______ his arm in January. <span class="font-mono text-amber-400">(break)</span></p>
-              <p class="mt-2 text-base md:text-xl text-slate-200">You write only: <strong class="text-emerald-300">broke</strong></p>`,
-        translate: `<p class="text-base md:text-xl text-slate-300" lang="es">Ayer romp\u00ed un vaso. <span class="font-mono text-amber-400">(break)</span></p>
-                    <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">I broke a glass yesterday.</strong></p>
-                    <p class="mt-2 text-base md:text-lg text-slate-400">Short sentences: the verb you need is always written next to the sentence.</p>`
+      const ejemplos = {
+        mcq: `<p class="text-base md:text-xl text-slate-300">She ______ to school every day.</p>
+              <p class="mt-2 text-base md:text-xl text-slate-200">You choose: <strong class="text-emerald-300">goes</strong> (y no <em>go</em>, <em>is going</em> ni <em>has gone</em>).</p>`,
+        gap: `<p class="text-base md:text-xl text-slate-300">She ______ to school every day. <span class="font-mono text-amber-400">(go)</span></p>
+              <p class="mt-2 text-base md:text-xl text-slate-200">You write only: <strong class="text-emerald-300">goes</strong></p>`,
+        translate: `<p class="text-base md:text-xl text-slate-300" lang="es">Va al colegio todos los d\u00edas. <span class="font-mono text-amber-400">(go)</span></p>
+              <p class="mt-2 text-base md:text-xl text-slate-200">You write: <strong class="text-emerald-300">She goes to school every day.</strong></p>
+              <p class="mt-2 text-base md:text-lg text-slate-400">Nobody tells you it is present simple: that is your decision.</p>`
       };
-
       return `
-        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-1">${mod.moduleTitle}</h2>
-        <p class="text-lg md:text-2xl font-black mb-4"><span class="px-3 py-1 rounded-xl border ${mod.chip}">${mod.levelName}</span></p>
-        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">${mod.desc}</p>
-        <div class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-slate-700">
-              <h3 class="text-white font-black text-xl md:text-2xl mb-3">Example</h3>
-              ${examples[mod.type]}
-            </div>
-            <div class="bg-slate-950 p-6 rounded-3xl border-2 border-emerald-500/30">
-              <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">Pass mark</h3>
-              <p class="text-base md:text-xl text-slate-300">You need <strong class="text-amber-300">${passMark(mod)}%</strong> (${Math.ceil(mod.size * passMark(mod) / 100)} out of ${mod.size}) to pass this level.</p>
-              <p class="mt-2 text-base md:text-lg text-slate-400">Your progress is saved if you close the page.</p>
-            </div>
+        ${mod.theory}
+        <div class="bg-slate-950 p-5 md:p-7 rounded-3xl border-2 border-slate-800 mt-8">
+          <h3 class="text-xl md:text-2xl font-black text-white mb-3">
+            <i class="fa-solid ${mod.levelIcon} text-emerald-400 mr-2"></i>${mod.levelName}</h3>
+          <ul class="list-disc list-inside space-y-2 text-base md:text-xl text-slate-300">
+            ${mod.how.map(li => `<li>${li}</li>`).join("")}
+          </ul>
+          <div class="mt-5 bg-slate-900/80 border border-slate-700 rounded-2xl p-4 md:p-5">
+            <p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-500 mb-2">Example</p>
+            ${ejemplos[mod.type]}
           </div>
-
-          <div>
-            <h3 class="text-xl md:text-2xl font-black text-white mb-3"><i class="fa-solid fa-book text-emerald-400 mr-2"></i>The ${mod.verbs.length} verbs of this module</h3>
-            <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto">
-              <table class="w-full text-left text-base md:text-xl">
-                <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400">
-                  <tr><th class="p-2 md:p-3">Base form (V1)</th><th class="p-2 md:p-3">Past simple (V2)</th><th class="p-2 md:p-3">Past participle (V3)</th><th class="p-2 md:p-3">Meaning</th></tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-            </div>
-          </div>
+          <p class="mt-5 text-base md:text-xl text-slate-300">
+            <i class="fa-solid fa-flag-checkered text-amber-400"></i>
+            ${mod.size} exercises \u00b7 you need <strong class="text-emerald-300">${mod.pass}%</strong> to pass this level.</p>
         </div>`;
     }
 
-    /* ============================================================
-       APP
-       ============================================================ */
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
@@ -2090,7 +1497,7 @@
       const card = document.createElement("div");
       card.className = "bg-slate-900 border-2 border-slate-800 hover:border-emerald-500/60 p-6 md:p-7 rounded-3xl transition cursor-pointer flex flex-col justify-between neon-border";
       card.onclick = () => openLesson(mod.id);
-      const preview = mod.verbs.map(k => VERBS[k][0]).filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 6).join(", ");
+      const preview = mod.moduleDesc || "";
       card.innerHTML = `
         <div>
           <div class="flex justify-between items-start mb-4 gap-3">
@@ -2269,7 +1676,7 @@
       document.getElementById("nextQuestionBtn").classList.add("hidden");
       const checkBtn = document.getElementById("checkAnswerBtn");
       checkBtn.classList.remove("hidden");
-      checkBtn.disabled = false;
+      checkBtn.disabled = (q.type === "mcq");
 
       const inputs = questionInputs();
       inputs.forEach((input, i) => {
@@ -2286,19 +1693,35 @@
     function checkExercise() {
       if (answered) return;
       const q = currentQuestions[currentQuestionIdx];
+      const isMcq = q.type === "mcq";
       const inputs = questionInputs();
-      const values = inputs.map(i => i.value.trim());
-      if (values.every(v => !v)) { if (inputs[0]) { inputs[0].focus(); inputs[0].placeholder = "?"; } return; }
+      const hidden = document.getElementById("ans_0");
+      const values = isMcq ? [(hidden && hidden.value) || ""] : inputs.map(i => i.value.trim());
+      if (values.every(v => !v)) {
+        if (isMcq) return;
+        if (inputs[0]) { inputs[0].focus(); inputs[0].placeholder = "?"; }
+        return;
+      }
 
       let ok = false, parts = null;
-      if (q.type === "forms") { const r = gradeForms(values, q); ok = r.ok; parts = r.parts; }
+      if (isMcq) ok = gradeMcq(values[0], q);
       else if (q.type === "gap") ok = gradeGap(values[0], q);
       else ok = gradeTranslation(values[0], q);
 
-      inputs.forEach((input, i) => {
-        input.readOnly = true;
-        input.classList.add((parts ? parts[i] : ok) ? "gap-ok" : "gap-ko");
-      });
+      if (isMcq) {
+        document.querySelectorAll(".mcq-opt").forEach(b => {
+          b.disabled = true;
+          const esta = normalize(b.dataset.value);
+          if (esta === normalize(q.answers[0])) b.classList.add("mcq-ok");
+          else if (esta === normalize(values[0])) b.classList.add("mcq-ko");
+          else b.classList.add("opacity-50");
+        });
+      } else {
+        inputs.forEach((input, i) => {
+          input.readOnly = true;
+          input.classList.add((parts ? parts[i] : ok) ? "gap-ok" : "gap-ko");
+        });
+      }
       answered = true;
       if (ok) currentScore++;
 
@@ -2309,15 +1732,17 @@
       saveProgress();
 
       let detail = "";
-      if (q.type === "forms") {
-        const v = q.verb;
-        detail = `<div class="mt-3 text-base md:text-xl font-black text-slate-300">
-            <span class="text-emerald-300">${escapeHtml(v.inf)}</span> \u2192 <span class="text-sky-300">${escapeHtml(v.past.join(" / "))}</span> \u2192 <span class="text-amber-300">${escapeHtml(v.part.join(" / "))}</span>
-            <span class="text-slate-500 font-semibold" lang="es"> \u00b7 ${escapeHtml(v.es)}</span></div>`;
-      } else if (q.type === "gap") {
+      if (q.type === "gap") {
         detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">${escapeHtml(q.text.replace("___", q.answers[0]))}</div>`;
-      } else {
-        detail = `<div class="mt-3 text-base md:text-xl text-slate-200 font-semibold">Also accepted:<ul class="list-disc list-inside mt-1 space-y-1">${q.answers.slice(0, 5).map(a => `<li class="text-slate-300 text-base">${escapeHtml(a)}</li>`).join("")}</ul></div>`;
+      } else if (q.type === "translate") {
+        const otras = q.answers.slice(1, 4);
+        detail = otras.length
+          ? `<div class="mt-3 text-base md:text-lg text-slate-300 font-semibold">Also accepted: ${otras.map(a => `<span class="font-mono text-emerald-200">${escapeHtml(a)}</span>`).join(" \u00b7 ")}</div>`
+          : "";
+      }
+      if (q.x) {
+        detail += `<div class="mt-3 text-base md:text-lg text-slate-300 font-semibold border-t border-slate-700/60 pt-3">
+          <i class="fa-solid fa-lightbulb text-amber-400"></i> ${q.x}</div>`;
       }
 
       const feedbackBox = document.getElementById("quizFeedback");
@@ -2326,18 +1751,15 @@
         feedbackBox.innerHTML = `<strong>CORRECT! \ud83c\udf89</strong>${detail}`;
       } else {
         feedbackBox.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 bg-rose-950/40 border-rose-500/60 text-rose-200";
-        const solution = q.type === "forms"
-          ? `${escapeHtml(q.verb.inf)} \u00b7 ${escapeHtml(q.verb.past.join(" / "))} \u00b7 ${escapeHtml(q.verb.part.join(" / "))}`
-          : escapeHtml(q.answers[0]);
-        feedbackBox.innerHTML = `<div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${solution}</span></div>${detail}`;
+        feedbackBox.innerHTML = `<div class="mb-2"><strong>SOLUTION:</strong> <span class="text-emerald-300 font-mono">${escapeHtml(q.answers[0])}</span></div>${detail}`;
       }
       feedbackBox.classList.remove("hidden");
       document.getElementById("checkAnswerBtn").classList.add("hidden");
       const nextBtn = document.getElementById("nextQuestionBtn");
       nextBtn.classList.remove("hidden");
       nextBtn.innerHTML = (currentQuestionIdx < currentQuestions.length - 1)
-        ? `Next Question <i class="fa-solid fa-arrow-right ml-2"></i>`
-        : `See Result <i class="fa-solid fa-flag-checkered ml-2"></i>`;
+        ? `Next question <i class="fa-solid fa-arrow-right ml-2"></i>`
+        : `See result <i class="fa-solid fa-flag-checkered ml-2"></i>`;
       nextBtn.focus();
     }
 
@@ -2378,7 +1800,7 @@
         guest: !!currentUser.guest,
         topic: mod.title,
         moduleId: mod.id,
-        exerciseType: "irregular_verbs_levels",
+        exerciseType: "present_tenses_levels",
         score: percentage,
         rawScore: `${currentScore}/${total}`,
         passed: passed,
@@ -2538,7 +1960,7 @@
             <div class="text-center py-4 space-y-4">
               <div class="w-16 h-16 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl border-2 border-amber-500/40"><i class="fa-solid fa-triangle-exclamation"></i></div>
               <h3 class="text-2xl font-black text-white">Incomplete</h3>
-              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> levels (5 modules \u00d7 3 levels). Pass all of them to complete the irregular verbs.</p>
+              <p class="text-slate-300 text-base md:text-lg max-w-md mx-auto">You have done <strong>${completedCount} of ${MODULES.length}</strong> levels (6 modules \u00d7 3 levels). Pass them all to master the present tenses.</p>
               <div class="space-y-2 text-left my-4">${breakdownHtml}</div>
               <button onclick="goHome()" class="no-print bg-emerald-600 text-white font-extrabold px-8 py-4 rounded-2xl text-base">Go back and continue</button>
             </div>`;
@@ -2552,7 +1974,7 @@
           ? `<div class="bg-emerald-950/50 border-2 border-emerald-400/60 rounded-2xl p-5 md:p-6 text-center space-y-3">
                <div class="text-5xl">🏆🎉</div>
                <h3 class="text-2xl md:text-3xl font-black text-emerald-300">CONGRATULATIONS, ${escapeHtml(currentUser.firstName.toUpperCase())}!</h3>
-               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} levels</strong>: you know the irregular verbs!</p>
+               <p class="text-slate-100 text-base md:text-xl">You have passed <strong>all ${MODULES.length} levels</strong>: you have mastered the present tenses!</p>
                <div class="bg-amber-400/15 border-2 border-amber-400/60 rounded-xl p-4 text-amber-200 text-base md:text-xl font-bold"><i class="fa-solid fa-camera"></i> Take a <strong>SCREENSHOT</strong> of this final result and send it to your teacher through <strong>Google Classroom</strong>.</div>
              </div>`
           : `<div class="bg-rose-950/40 border-2 border-rose-500/50 rounded-2xl p-5 md:p-6 text-left space-y-2">
@@ -2753,7 +2175,7 @@
           <th class="p-3">Surname(s)</th>
           <th class="p-3">Group</th>
           <th class="p-3">Code</th>
-          ${LEVELS.map(lv => `<th class="p-3 text-center">${lv.tag} \u00b7 ${lv.type === "forms" ? "forms" : (lv.type === "gap" ? "gaps" : "transl.")}</th>`).join("")}
+          ${LEVELS.map(lv => `<th class="p-3 text-center">${lv.tag} \u00b7 ${lv.type === "mcq" ? "choice" : (lv.type === "gap" ? "gaps" : "transl.")}</th>`).join("")}
           <th class="p-3 text-center">Average</th>
           <th class="p-3 text-center">Result</th>
           <th class="p-3">Last activity</th>
@@ -2949,7 +2371,7 @@
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `irregular_verbs_${teacherCodes().join("_")}_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `present_tenses_${teacherCodes().join("_")}_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
