@@ -1,24 +1,25 @@
 # Present Tenses · 6 módulos × 3 niveles
 
 Tu app de tiempos presentes, con el **mismo acceso que las de verbos
-irregulares**. El contenido no lo he tocado: siguen siendo los 6 módulos
-(present simple, present continuous, present perfect, present perfect
-continuous…) con sus tres niveles y 18 unidades.
+irregulares**. El contenido no lo he tocado: los 6 módulos con sus tres
+niveles, 18 unidades.
 
-## Lo único que ha cambiado
+## Quién puede entrar
 
-- **Se entra con Google**, alumnos y profesora. Ya no hay ningún PIN escrito
-  en el archivo.
-- Los resultados de cada alumno cuelgan de **su cuenta**, así que los ve
-  desde cualquier dispositivo y nadie más puede verlos.
-- Un intento guardado no se puede borrar ni modificar.
-- El modo invitado sigue igual: sin cuenta, sin guardar nada.
+Hacen falta **las dos cosas**:
 
-Los resultados van al nodo `present_tenses_v2`, separados de las otras apps,
-y los códigos de clase son los mismos que en las demás.
+1. Una cuenta de Google **@iesgoya.es** (lo comprueba la página y también
+   Firebase, por su cuenta).
+2. El **código de clase** que tú le hayas dado.
 
-## Recuerda
+Los códigos **ya no están dentro del archivo**: viven solo en las reglas de
+Firebase, que nadie puede leer. Por eso, un alumno de otro profesor —aunque
+sea del instituto y mire el código fuente— no encuentra ningún código y no
+puede registrarse. Puede usar la app como **invitado**: hace todo, ve su
+nota, pero no se guarda nada.
 
-Esta app también necesita que estén hechos los pasos de Firebase (habilitar
-Google, añadir el dominio y publicar `reglas-firebase.json`, que ya incluye
-este nodo).
+### Recuerda
+
+Los resultados van al nodo `present_tenses_v2`, separado de las otras apps.
+Necesita los mismos pasos en Firebase: habilitar Google, añadir el dominio de
+la web y publicar `reglas-firebase.json`, que ya incluye este nodo.
