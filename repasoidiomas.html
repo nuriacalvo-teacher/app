@@ -371,7 +371,8 @@
           <i class="fa-solid fa-paste text-rose-400"></i> <strong>Copiar y pegar está bloqueado</strong> en esta tarea (ni desde fuera ni desde dentro de la app): es un examen, el texto tiene que ser tuyo.
           <span id="pasteWarning" class="hidden text-rose-300 font-black ml-1"></span>
         </p>
-        <div class="flex flex-col md:flex-row justify-between items-center gap-3 pt-1 no-print">
+          <div id="phraseBankBox" class="pt-2"></div>
+      <div class="flex flex-col md:flex-row justify-between items-center gap-3 pt-1 no-print">
           <button onclick="quitTask()" class="text-base md:text-lg font-bold text-slate-400 hover:text-slate-200">Quit the task</button>
           <button id="writeCheckBtn" onclick="checkWriting()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-lg shadow-emerald-600/30">
             <i class="fa-solid fa-clipboard-check mr-2"></i> Corregir mi texto
@@ -4365,6 +4366,42 @@ var CONNECTOR_FAMILIES = {
   "Alternativa": ["alternatively", "otherwise", "if not", "in that case", "if so", "either way", "on the one hand"]
 };
 
+
+/* =====================================================================
+   2b · FAMILIAS DE SINÓNIMOS
+   Un alumno puede contar lo mismo con otras palabras ("se me cayó al agua"
+   en lugar de "la pantalla estaba rota"). Al comprobar los puntos de la
+   tarea, cada palabra clave arrastra a toda su familia.
+   ===================================================================== */
+var SYN_GROUPS = [
+  ["broken","damaged","cracked","smashed","faulty","dead","stopped","stopped working","doesn't work","does not work","didn't work","did not work","wouldn't turn on","won't turn on","fell","dropped","water","wet","ruined","problem","wrong","issue","trouble","screen","battery","charging","port","slow","freezes","spilt","spilled","crack","damage","failed","broke"],
+  ["repair","repaired","repairing","fixed","fix","mended","mend","technician","workshop","service","repair shop","sorted out","replaced","changed","restored"],
+  ["euros","pounds","cost","costs","cheap","cheaper","expensive","price","paid","pay","free","spend","spent","money","bill","discount","charged","worth"],
+  ["days","weeks","hours","months","minutes","took","lasted","quickly","fast","waiting","a week","two days","same day"],
+  ["advise","advice","should","if i were you","why don't you","i recommend","my advice","i'd","i would","you could","try","suggest","it's worth","worth it","don't"],
+  ["come","visit","stay","invite","join us","we could","you could come","see you","bring you"],
+  ["i think","in my opinion","i believe","personally","to my mind","i feel","from my point of view","in my view","honestly","i'd say","for me"],
+  ["because","since","the reason","that's why","that is why","as","due to","so"],
+  ["for example","for instance","such as","in my case","last year","last month","my cousin","a friend","once","when i"],
+  ["i recommend","i'd recommend","you should","worth","perfect for","ideal for","don't miss","i suggest","will appeal","go for it"],
+  ["let me know","tell me","what do you think","could you","can you","write back","any questions"],
+  ["careful","be careful","remember","don't forget","watch out","bear in mind","note that","make sure","warning","important"],
+  ["deadline","before","by friday","until","no later than","closes on","last day","in advance"],
+  ["i liked","i loved","i enjoyed","the best","my favourite","brilliant","great","i didn't like","the only problem","the worst","disappointing","too long","too slow"],
+  ["change","changed","changes","new","from now on","instead of","no longer","as of","different","moved"],
+  ["free","gratis","no charge","at no cost","included","covered","without paying"],
+  ["book","booked","booking","reserve","reservation","register","sign up","apply"],
+  ["email","message","write","send","contact","get in touch","letter"],
+  ["hot","heat","warm","temperature","degrees","weather","cold","rain"],
+  ["children","kids","child","son","daughter","students","pupils"],
+  ["old people","elderly","over 65","over 70","over 75","pensioners","grandmother","grandfather"]
+];
+var SYN_INDEX = (function () {
+  var idx = {};
+  SYN_GROUPS.forEach(function (g) { g.forEach(function (w) { (idx[w] = idx[w] || []).push(g); }); });
+  return idx;
+})();
+
 var STRUCTURES = [
   { name: "Present perfect", adv: false, re: /\b(have|has|haven't|hasn't|have not|has not|i've|we've|they've|you've)\s+(just\s+|already\s+|never\s+|always\s+|recently\s+)?(been|got|had|come|gone|seen|done|made|written|taken|given|found|become|read|sent|left|lost|met|put|spoken|risen|changed|decided|\w+ed)\b/i },
   { name: "Pasado narrativo", adv: false, re: /\b(was|were|had|did|went|took|said|made|saw|came|got|knew|felt|kept|told|left|gave|thought|began|decided|arrived|started|moved|stayed|walked|asked|opened|closed|finished|watched|wanted|needed|tried|looked|worked|lived|played|waited|happened|realised|realized|discovered|prepared|laughed|spent|bought|brought|wrote|read)\b/i },
@@ -5208,67 +5245,310 @@ function stopTimer() { if (taskTimerInterval) { clearInterval(taskTimerInterval)
 function timeString() { return Math.floor(taskSeconds / 60) + "m " + (taskSeconds % 60) + "s"; }
 
 /* =====================================================================
-   9 · AUDIO (voz del navegador)
+   9 · AUDIO · reproductor de escucha
+   La voz la pone el navegador. Aquí se busca la mejor voz disponible,
+   se lee frase a frase con pausas naturales y se evitan los fallos
+   típicos (Chrome corta a los 15 segundos, Safari carga las voces
+   tarde, algunos motores no avisan cuando terminan).
    ===================================================================== */
 var voicesCache = [];
 var speaking = false;
+var audioQueue = [];
+var audioIndex = 0;
+var keepAliveTimer = null;
+var watchdogTimer = null;
 
 function primeVoices() {
   if (!window.speechSynthesis) return;
-  voicesCache = window.speechSynthesis.getVoices() || [];
-  window.speechSynthesis.onvoiceschanged = function () {
+  var load = function () {
     voicesCache = window.speechSynthesis.getVoices() || [];
+    if (voicesCache.length) paintVoicePicker();
   };
+  load();
+  window.speechSynthesis.onvoiceschanged = load;
+  /* Safari e iOS tardan en publicar la lista */
+  setTimeout(load, 400);
+  setTimeout(load, 1500);
+}
+function allVoices() {
+  var v = [];
+  try { v = (window.speechSynthesis && window.speechSynthesis.getVoices()) || []; } catch (e) {}
+  return (v && v.length) ? v : (voicesCache || []);
+}
+/* Puntuación: primero la calidad del motor, después el acento */
+function voiceScore(v) {
+  var n = (v.name || "") + " " + (v.voiceURI || "");
+  var lang = (v.lang || "").replace("_", "-");
+  var s = 0;
+  if (/natural|neural|premium|enhanced|siri|wavenet|studio/i.test(n)) s += 60;
+  if (/google/i.test(n)) s += 45;
+  if (/microsoft/i.test(n)) s += 30;
+  if (/libby|sonia|ryan|thomas|hazel|george|maisie|abbi|bella|olivia/i.test(n)) s += 25;
+  if (/daniel|serena|kate|oliver|stephanie|arthur|martha/i.test(n)) s += 20;
+  if (/compact|eloquence|espeak|pico/i.test(n)) s -= 40;
+  if (/^en-GB/i.test(lang)) s += 40;
+  else if (/^en-(IE|AU|NZ)/i.test(lang)) s += 25;
+  else if (/^en-US/i.test(lang)) s += 18;
+  else if (/^en/i.test(lang)) s += 10;
+  else s -= 100;
+  if (v.localService) s += 5;
+  return s;
 }
 function englishVoices() {
-  var v = (window.speechSynthesis && window.speechSynthesis.getVoices()) || voicesCache || [];
-  var gb = v.filter(function (x) { return /en[-_]GB/i.test(x.lang); });
-  var en = v.filter(function (x) { return /^en/i.test(x.lang); });
-  var list = gb.length ? gb : en;
-  return list.length ? list : [];
+  return allVoices()
+    .filter(function (v) { return /^en/i.test((v.lang || "").replace("_", "-")); })
+    .sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+}
+function storedVoiceName() { return storageGet("cova_voice") || ""; }
+function storedRate() { return parseFloat(storageGet("cova_rate") || "0") || 0; }
+
+/* Las dos voces que se usarán: la mejor y otra distinta para el segundo
+   interlocutor (si el dispositivo tiene más de una). */
+function chosenVoices() {
+  var list = englishVoices();
+  if (!list.length) return [];
+  var first = list.find(function (v) { return v.name === storedVoiceName(); }) || list[0];
+  var second = list.find(function (v) {
+    if (v.name === first.name) return false;
+    var f = /female|woman|libby|sonia|hazel|serena|kate|maisie|abbi|martha|zira|aria/i.test(first.name);
+    var g = /female|woman|libby|sonia|hazel|serena|kate|maisie|abbi|martha|zira|aria/i.test(v.name);
+    return f !== g;                      /* mejor si son de distinto timbre */
+  }) || list[1] || first;
+  return [first, second];
 }
 function audioAvailable() { return !!window.speechSynthesis; }
+function voiceQualityWarning() {
+  var list = englishVoices();
+  if (!list.length) return "Tu navegador no tiene ninguna voz en inglés instalada. Puedes leer la transcripción para no perder la práctica.";
+  if (voiceScore(list[0]) < 30) return "La voz de este dispositivo es de calidad baja. Se oye mucho mejor en Chrome o en Edge, o instalando una voz de inglés en los ajustes del sistema.";
+  return "";
+}
+
+/* ---------- troceado en frases, con pausas ---------- */
+function speechChunks(task) {
+  var out = [];
+  (task.lines || []).forEach(function (line, li) {
+    var parts = sentencesOf(line.t);
+    if (!parts.length) parts = [line.t];
+    parts.forEach(function (s, si) {
+      out.push({
+        text: s,
+        sp: line.sp,
+        v: line.v || 0,
+        /* pausa mayor al cambiar de interlocutor o de párrafo */
+        pause: (si === parts.length - 1) ? (li < (task.lines.length - 1) ? 520 : 0) : 230,
+        newSpeaker: si === 0 && (li === 0 || task.lines[li - 1].sp !== line.sp)
+      });
+    });
+  });
+  return out;
+}
+
+function updateAudioUI(state) {
+  var btn = document.getElementById("playBtn");
+  var wave = document.getElementById("waveBox");
+  var bar = document.getElementById("audioBar");
+  var who = document.getElementById("audioSpeaker");
+  var left = document.getElementById("playsLeftLine");
+  if (btn) {
+    btn.disabled = (state === "playing") || playsLeft <= 0;
+    btn.innerHTML = state === "playing"
+      ? '<i class="fa-solid fa-volume-high mr-2"></i> Playing…'
+      : (playsLeft > 0
+        ? '<i class="fa-solid ' + (playsLeft === SPEC[currentLevel].plays ? "fa-play" : "fa-rotate-right") + ' mr-2"></i> ' +
+          (playsLeft === SPEC[currentLevel].plays ? "Play" : "Listen again") + ' (' + playsLeft + ')'
+        : '<i class="fa-solid fa-check mr-2"></i> No plays left');
+  }
+  if (wave) wave.classList.toggle("hidden", state !== "playing");
+  if (bar) bar.style.width = (audioQueue.length ? Math.round(audioIndex / audioQueue.length * 100) : 0) + "%";
+  if (who) {
+    if (state === "playing" && audioQueue[audioIndex]) { who.classList.remove("hidden"); who.innerText = audioQueue[audioIndex].sp; }
+    else who.classList.add("hidden");
+  }
+  if (left && state !== "playing") {
+    left.innerText = playsLeft > 0
+      ? (playsLeft === 1 ? "Te queda 1 escucha." : "Puedes escucharlo " + playsLeft + " veces.")
+      : "Ya has usado las dos escuchas.";
+  }
+}
+function clearTimers() {
+  if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+  if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+}
 function stopAudio() {
   speaking = false;
+  clearTimers();
   try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-  var b = document.getElementById("playBtn");
-  if (b) { b.disabled = playsLeft <= 0; b.innerHTML = '<i class="fa-solid fa-play mr-2"></i> Play (' + playsLeft + ' left)'; }
-  var w = document.getElementById("waveBox");
-  if (w) w.classList.add("hidden");
+  audioQueue = []; audioIndex = 0;
+  updateAudioUI("idle");
+}
+function currentRate(task) {
+  var r = storedRate();
+  return r || (task && task.rate) || 0.95;
 }
 function playAudio() {
-  if (!audioAvailable() || speaking || playsLeft <= 0) return;
+  if (!audioAvailable() || speaking || playsLeft <= 0 || !currentTask) return;
+  var synth = window.speechSynthesis;
+  try { synth.cancel(); } catch (e) {}
   playsLeft--;
   speaking = true;
-  var voices = englishVoices();
-  var btn = document.getElementById("playBtn");
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-volume-high mr-2"></i> Playing...'; }
-  var wave = document.getElementById("waveBox");
-  if (wave) wave.classList.remove("hidden");
-  var lines = currentTask.lines;
-  var i = 0;
-  function next() {
+  audioQueue = speechChunks(currentTask);
+  audioIndex = 0;
+  var voices = chosenVoices();
+  var rate = currentRate(currentTask);
+  var startedAt = Date.now();
+  var errorCount = 0;
+  var expectedMs = audioQueue.reduce(function (a, c) {
+    return a + (c.text.split(/\s+/).length / (2.6 * rate)) * 1000 + c.pause;
+  }, 0);
+  updateAudioUI("playing");
+
+  /* Chrome deja de hablar a los ~15 s si no se le "despierta" */
+  clearTimers();
+  keepAliveTimer = setInterval(function () {
     if (!speaking) return;
-    if (i >= lines.length) {
-      speaking = false;
-      if (btn) { btn.disabled = playsLeft <= 0; btn.innerHTML = playsLeft > 0 ? '<i class="fa-solid fa-rotate-right mr-2"></i> Listen again (' + playsLeft + ' left)' : '<i class="fa-solid fa-check mr-2"></i> No plays left'; }
-      if (wave) wave.classList.add("hidden");
-      var left = document.getElementById("playsLeftLine");
-      if (left) left.innerText = playsLeft > 0 ? "Te queda " + playsLeft + " escucha." : "Ya has usado las dos escuchas.";
-      return;
-    }
-    var line = lines[i++];
-    var u = new SpeechSynthesisUtterance(line.t);
-    u.lang = "en-GB";
-    u.rate = currentTask.rate || 0.95;
-    var v = voices.length ? (voices[(line.v || 0) % voices.length] || voices[0]) : null;
-    if (v) u.voice = v;
-    u.pitch = (line.v === 1) ? 1.18 : 0.95;
-    u.onend = next;
-    u.onerror = next;
-    window.speechSynthesis.speak(u);
+    try { if (synth.speaking && !synth.paused) { synth.pause(); synth.resume(); } } catch (e) {}
+  }, 9000);
+
+  function finish() {
+    speaking = false;
+    clearTimers();
+    audioIndex = audioQueue.length;
+    /* Si el motor de voz no ha sonado (sin voces instaladas, permisos, etc.)
+       no se pierde la escucha y se ofrece la transcripción. */
+    var tooFast = (Date.now() - startedAt) < expectedMs * 0.35;
+    if (errorCount >= Math.ceil(audioQueue.length / 2) || tooFast) { audioFailed(); return; }
+    updateAudioUI("idle");
   }
-  next();
+  function speakNext() {
+    if (!speaking) return;
+    if (audioIndex >= audioQueue.length) { finish(); return; }
+    var chunk = audioQueue[audioIndex];
+    updateAudioUI("playing");
+    var u = new SpeechSynthesisUtterance(chunk.text);
+    var v = voices.length ? (voices[chunk.v] || voices[0]) : null;
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-GB"; }
+    u.rate = rate * (chunk.v === 1 ? 0.99 : 1);
+    u.pitch = chunk.v === 1 ? 1.06 : 0.98;   /* diferencia leve, no de dibujos animados */
+    u.volume = 1;
+    var done = false;
+    var advance = function () {
+      if (done) return;
+      done = true;
+      if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+      audioIndex++;
+      if (!speaking) return;
+      setTimeout(speakNext, chunk.pause);
+    };
+    u.onend = advance;
+    u.onerror = function () {
+      errorCount++;
+      /* si falla desde el principio, no hacemos esperar al alumno */
+      if (errorCount >= 3 && audioIndex <= 4) { speaking = false; clearTimers(); audioFailed(); return; }
+      advance();
+    };
+    /* si el motor no avisa del final (fallo conocido), seguimos igualmente */
+    var expected = Math.max(2500, (chunk.text.split(/\s+/).length / (2.6 * rate)) * 1000 + 3000);
+    watchdogTimer = setTimeout(function () {
+      if (!done && speaking && !synth.speaking) advance();
+      else if (!done && speaking) { watchdogTimer = setTimeout(advance, 4000); }
+    }, expected);
+    try { synth.speak(u); } catch (e) { advance(); }
+  }
+  speakNext();
+}
+function audioFailed() {
+  playsLeft++;                                   /* no se descuenta la escucha */
+  updateAudioUI("idle");
+  var box = document.getElementById("audioFailBox");
+  if (box) {
+    box.classList.remove("hidden");
+    box.innerHTML = '<p class="font-bold text-amber-200 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> El audio no ha sonado en este dispositivo.</p>' +
+      '<p class="text-sm text-amber-100/90">No te hemos descontado la escucha. Prueba a elegir otra voz en <strong>Ajustes de voz</strong>, súbele el volumen, o usa Chrome o Edge. ' +
+      'Si aun así no suena, puedes hacer el ejercicio leyendo la transcripción.</p>' +
+      '<button type="button" onclick="revealTranscript()" class="mt-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-2 rounded-xl text-sm">' +
+      '<i class="fa-solid fa-file-lines mr-2"></i>Leer la transcripción</button>';
+  }
+}
+function revealTranscript() {
+  var box = document.getElementById("audioFailBox");
+  if (!box || !currentTask) return;
+  box.innerHTML = '<p class="font-bold text-amber-200 mb-2"><i class="fa-solid fa-file-lines"></i> Transcripción (porque el audio no funciona en este dispositivo)</p>' +
+    '<div class="space-y-2 text-base text-slate-100 nocopy">' +
+      currentTask.lines.map(function (l) { return '<p><strong class="text-white">' + escapeHtml(l.sp) + ':</strong> ' + escapeHtml(l.t) + '</p>'; }).join("") +
+    '</div>';
+}
+
+/* iOS y Safari exigen que la primera voz salga de un gesto del usuario */
+function warmUpSpeech() {
+  if (!audioAvailable() || window.__speechWarm) return;
+  window.__speechWarm = true;
+  try {
+    var u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0; u.rate = 1;
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function setVoice(name) {
+  storageSet("cova_voice", name || "");
+  if (speaking) stopAudio();
+}
+function setRate(r) {
+  storageSet("cova_rate", String(r));
+  if (speaking) stopAudio();
+}
+function paintVoicePicker() {
+  var sel = document.getElementById("voiceSelect");
+  if (!sel) return;
+  var list = englishVoices();
+  var chosen = storedVoiceName() || (list[0] && list[0].name) || "";
+  sel.innerHTML = list.map(function (v) {
+    var tag = /^en-GB/i.test((v.lang || "").replace("_", "-")) ? "🇬🇧" : (/^en-US/i.test(v.lang) ? "🇺🇸" : "🌍");
+    return '<option value="' + escapeHtml(v.name) + '"' + (v.name === chosen ? " selected" : "") + '>' +
+      tag + " " + escapeHtml(v.name.replace(/^(Microsoft|Google)\s+/i, "")) + "</option>";
+  }).join("");
+  var warn = document.getElementById("voiceWarning");
+  if (warn) {
+    var msg = voiceQualityWarning();
+    warn.innerHTML = msg ? '<i class="fa-solid fa-circle-info"></i> ' + msg : "";
+    warn.classList.toggle("hidden", !msg);
+  }
+}
+function audioPlayerHtml() {
+  var rate = storedRate() || 0.95;
+  return '<div class="bg-slate-950 border-2 border-emerald-500/30 rounded-3xl p-5 md:p-6 space-y-4">' +
+    '<div class="flex flex-col md:flex-row items-center gap-4">' +
+      '<button id="playBtn" onclick="playAudio()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">' +
+        '<i class="fa-solid fa-play mr-2"></i> Play (' + playsLeft + ')</button>' +
+      '<button onclick="stopAudio()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-4 rounded-2xl"><i class="fa-solid fa-stop mr-2"></i> Stop</button>' +
+      '<div id="waveBox" class="wave hidden flex items-end h-8"><span></span><span></span><span></span><span></span><span></span></div>' +
+      '<span id="audioSpeaker" class="hidden text-sm font-black text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-xl"></span>' +
+      '<p id="playsLeftLine" class="text-sm text-slate-400 font-bold md:ml-auto">Puedes escucharlo ' + playsLeft + ' veces. Lee las preguntas antes.</p>' +
+    '</div>' +
+    '<div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden"><div id="audioBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width:0%"></div></div>' +
+    '<div id="audioFailBox" class="hidden bg-amber-950/40 border-2 border-amber-500/40 rounded-2xl p-4"></div>' +
+    '<details class="border-t border-slate-800 pt-3">' +
+      '<summary class="cursor-pointer text-sm font-bold text-slate-400"><i class="fa-solid fa-sliders mr-2"></i>Ajustes de voz (si no se oye bien)</summary>' +
+      '<div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">' +
+        '<div><label class="block text-xs font-black uppercase text-slate-500 mb-1">Voz</label>' +
+          '<select id="voiceSelect" onchange="setVoice(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"></select></div>' +
+        '<div><label class="block text-xs font-black uppercase text-slate-500 mb-1">Velocidad</label>' +
+          '<div class="flex gap-2">' +
+            [["0.8", "Lenta"], ["0.95", "Normal"], ["1.1", "Rápida"]].map(function (o) {
+              return '<button type="button" onclick="setRate(' + o[0] + ');markRate(this)" data-rate="' + o[0] + '" class="rate-btn flex-1 px-3 py-2 rounded-xl border text-sm font-bold ' +
+                (Math.abs(rate - parseFloat(o[0])) < 0.02 ? "border-emerald-500 text-emerald-300 bg-emerald-500/10" : "border-slate-700 text-slate-300 bg-slate-900") + '">' + o[1] + "</button>";
+            }).join("") +
+          '</div></div>' +
+      '</div>' +
+      '<p id="voiceWarning" class="hidden text-xs text-amber-300 mt-3"></p>' +
+      '<p class="text-xs text-slate-500 mt-2">Se oye mejor con auriculares. Si la voz suena metálica, prueba otra de la lista: cada dispositivo trae voces distintas.</p>' +
+    '</details></div>';
+}
+function markRate(btn) {
+  Array.prototype.forEach.call(document.querySelectorAll(".rate-btn"), function (b) {
+    b.className = "rate-btn flex-1 px-3 py-2 rounded-xl border text-sm font-bold border-slate-700 text-slate-300 bg-slate-900";
+  });
+  btn.className = "rate-btn flex-1 px-3 py-2 rounded-xl border text-sm font-bold border-emerald-500 text-emerald-300 bg-emerald-500/10";
 }
 
 /* =====================================================================
@@ -5338,13 +5618,7 @@ function startQuizTask() {
       (noAudio
         ? '<div class="bg-amber-950/40 border-2 border-amber-500/40 rounded-2xl p-4 text-amber-200 text-base">Tu navegador no puede generar el audio. Puedes leer la transcripción para no perder la práctica:' +
           '<div class="mt-3 text-slate-200 text-base space-y-2">' + t.lines.map(function (l) { return '<p><strong>' + escapeHtml(l.sp) + ':</strong> ' + escapeHtml(l.t) + '</p>'; }).join("") + '</div></div>'
-        : '<div class="bg-slate-950 border-2 border-emerald-500/30 rounded-3xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-4">' +
-            '<button id="playBtn" onclick="playAudio()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">' +
-              '<i class="fa-solid fa-play mr-2"></i> Play (' + playsLeft + ' left)</button>' +
-            '<button onclick="stopAudio()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-4 rounded-2xl"><i class="fa-solid fa-stop mr-2"></i> Stop</button>' +
-            '<div id="waveBox" class="wave hidden flex items-end h-8"><span></span><span></span><span></span><span></span><span></span></div>' +
-            '<p id="playsLeftLine" class="text-sm text-slate-400 font-bold md:ml-auto">Puedes escucharlo ' + playsLeft + ' veces. Lee las preguntas antes.</p>' +
-          '</div>') +
+        : audioPlayerHtml()) +
       '<details class="bg-slate-950 border border-slate-700 rounded-2xl p-4">' +
         '<summary class="cursor-pointer font-black text-base text-amber-300"><i class="fa-solid fa-book mr-2"></i>Vocabulary help (' + t.vocab.length + ')</summary>' +
         '<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 text-base text-slate-300">' +
@@ -5354,6 +5628,7 @@ function startQuizTask() {
   document.getElementById("taskSourceBox").innerHTML = src;
   document.getElementById("taskQuestionsBox").innerHTML =
     t.questions.map(function (q, i) { return questionHtml(q, i); }).join("");
+  if (mod.skill === "listening") { paintVoicePicker(); warmUpSpeech(); }
   var btn = document.getElementById("taskCheckBtn");
   btn.disabled = false;
   btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Check my answers';
@@ -5593,6 +5868,7 @@ function startWriteTask() {
   document.getElementById("writeTitle").innerText = t.title;
   document.getElementById("writeTarget").innerHTML = "Objetivo: <strong>" + len.target + "</strong> palabras (" + len.min + "–" + len.max + ")";
   document.getElementById("writeTaskBox").innerHTML = mod.skill === "writing" ? writingTaskHtml(mod, t) : mediationTaskHtml(mod, t);
+  document.getElementById("phraseBankBox").innerHTML = phraseBankHtml(mod, t);
   var area = document.getElementById("writeArea");
   area.value = "";
   area.readOnly = false;
@@ -5605,6 +5881,60 @@ function startWriteTask() {
   window.scrollTo(0, 0);
   area.focus();
 }
+function liveChecklistHtml(t, isMed) {
+  var pts = (t.points || []).map(function (p, i) {
+    return '<li id="pt_' + i + '" class="flex items-start gap-2 text-base md:text-lg text-slate-300">' +
+      '<span class="chk-icon text-slate-600">⬜</span><span>' + escapeHtml(p.name) + '</span></li>';
+  }).join("");
+  var avoid = isMed && t.avoid && t.avoid.length
+    ? '<p class="text-sm font-black uppercase text-rose-300 mt-4 mb-2">Y esto NO le hace falta a tu lector</p>' +
+      '<ul class="space-y-1">' + t.avoid.map(function (p, i) {
+        return '<li id="av_' + i + '" class="flex items-start gap-2 text-base text-slate-400">' +
+          '<span class="chk-icon text-slate-600">⬜</span><span>' + escapeHtml(p.name) + '</span></li>';
+      }).join("") + '</ul>'
+    : "";
+  return '<div class="bg-slate-950 border-2 border-sky-500/30 rounded-2xl p-4 md:p-5">' +
+    '<div class="flex flex-wrap items-center justify-between gap-2 mb-3">' +
+      '<p class="text-sm font-black uppercase text-sky-300"><i class="fa-solid fa-list-check mr-2"></i>Comprobación en directo</p>' +
+      '<span id="chkCount" class="text-sm font-black text-slate-400">0 / ' + (t.points || []).length + '</span>' +
+    '</div>' +
+    '<ul class="space-y-1">' + pts + '</ul>' + avoid +
+    '<p class="text-xs text-slate-500 mt-3">Se marca solo, según vas escribiendo. Si algo no se marca, no significa que esté mal: revisa si esa idea se entiende con claridad en tu texto.</p>' +
+    '</div>';
+}
+function updateChecklist() {
+  if (!currentTask) return;
+  var mod = currentMod();
+  if (mod.kind !== "write") return;
+  var area = document.getElementById("writeArea");
+  if (!area) return;
+  var text = area.value;
+  var rawLower = text.toLowerCase();
+  var padded = " " + normalize(text) + " ";
+  var done = 0;
+  (currentTask.points || []).forEach(function (p, i) {
+    var el = document.getElementById("pt_" + i);
+    if (!el) return;
+    var ok = countWords(text) > 3 && pointHit(rawLower, padded, p.any);
+    if (ok) done++;
+    el.querySelector(".chk-icon").innerHTML = ok ? '<span class="text-emerald-400">✅</span>' : '<span class="text-slate-600">⬜</span>';
+    el.className = "flex items-start gap-2 text-base md:text-lg " + (ok ? "text-emerald-200" : "text-slate-300");
+  });
+  (currentTask.avoid || []).forEach(function (p, i) {
+    var el = document.getElementById("av_" + i);
+    if (!el) return;
+    var bad = countWords(text) > 3 && p.any.some(function (k) { return hasKeyword(rawLower, padded, k); });
+    el.querySelector(".chk-icon").innerHTML = bad ? '<span class="text-rose-400">⚠️</span>' : '<span class="text-slate-600">⬜</span>';
+    el.className = "flex items-start gap-2 text-base " + (bad ? "text-rose-300" : "text-slate-400");
+  });
+  var c = document.getElementById("chkCount");
+  if (c) {
+    var total = (currentTask.points || []).length;
+    c.innerText = done + " / " + total;
+    c.className = "text-sm font-black " + (done === total ? "text-emerald-400" : "text-slate-400");
+  }
+}
+
 function bulletsHtml(list) {
   return '<ul class="list-disc list-inside space-y-1 text-base md:text-xl text-slate-200">' +
     list.map(function (b) { return '<li>' + b + '</li>'; }).join("") + '</ul>';
@@ -5625,6 +5955,7 @@ function writingTaskHtml(mod, t) {
     '<div class="bg-slate-950 border-2 border-emerald-500/30 rounded-2xl p-4 md:p-5">' +
       '<p class="text-sm uppercase font-black text-emerald-300 mb-2">In your text you must…</p>' + bulletsHtml(t.bullets) +
     '</div>' +
+    liveChecklistHtml(t, false) +
     '<details class="bg-slate-950 border border-slate-700 rounded-2xl p-4"><summary class="cursor-pointer font-black text-base text-amber-300"><i class="fa-solid fa-lightbulb mr-2"></i>Tips y vocabulario útil</summary>' +
       '<div class="mt-3 space-y-2 text-base text-slate-300">' + t.tips.map(function (x) { return '<p>• ' + x + '</p>'; }).join("") +
       '<p class="mt-3"><strong class="text-white">Topic vocabulary:</strong> ' + t.vocab.map(function (v) { return '<span class="inline-block bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 m-1 text-sm">' + escapeHtml(v) + '</span>'; }).join("") + '</p>' +
@@ -5654,6 +5985,7 @@ function mediationTaskHtml(mod, t) {
     '<div class="bg-slate-950 border-2 border-rose-500/30 rounded-2xl p-4 md:p-5">' +
       '<p class="text-sm uppercase font-black text-rose-300 mb-2">Your task · in English</p>' + bulletsHtml(t.bullets) +
     '</div>' +
+    liveChecklistHtml(t, true) +
     '<details class="bg-slate-950 border border-slate-700 rounded-2xl p-4" open><summary class="cursor-pointer font-black text-base text-amber-300"><i class="fa-solid fa-compass mr-2"></i>Estrategias de mediación</summary>' +
       '<div class="mt-3 space-y-2 text-base text-slate-300">' + t.strategy.map(function (x) { return '<p>• ' + x + '</p>'; }).join("") +
       '<p class="mt-3"><strong class="text-white">Useful vocabulary:</strong> ' + t.vocab.map(function (v) { return '<span class="inline-block bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 m-1 text-sm">' + escapeHtml(v) + '</span>'; }).join("") + '</p>' +
@@ -5673,6 +6005,7 @@ function updateWordCount() {
   else cls += "bg-emerald-500/10 border-emerald-500/40 text-emerald-300";
   el.className = cls;
   el.innerText = n + (n === 1 ? " word" : " words");
+  updateChecklist();
 }
 
 /* =====================================================================
@@ -5711,6 +6044,24 @@ function hasKeyword(rawLower, paddedNorm, kw) {
   }
   return tokenHit(paddedNorm, k);
 }
+/* Los puntos de la tarea admiten sinónimos: lo importante es que el alumno
+   trate la idea, no que use exactamente la palabra prevista. */
+function pointHit(rawLower, paddedNorm, keywords) {
+  for (var i = 0; i < keywords.length; i++) {
+    var k = (keywords[i] || "").toLowerCase().trim();
+    if (hasKeyword(rawLower, paddedNorm, k)) return true;
+    var groups = SYN_INDEX[k];
+    if (groups) {
+      for (var g = 0; g < groups.length; g++) {
+        for (var j = 0; j < groups[g].length; j++) {
+          if (hasKeyword(rawLower, paddedNorm, groups[g][j])) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 /* el vocabulario del tema se guarda como "to repair", "work-life balance"... */
 function vocabHit(rawLower, paddedNorm, entry) {
   var e = (entry || "").toLowerCase().trim().replace(/^to\s+/, "").replace(/\s*\(.*\)\s*/, "");
@@ -5876,7 +6227,7 @@ function correctText(mod, t, text) {
 
   /* --- 2 · cumplimiento / seleccion --- */
   var pts = (t.points || []).map(function (p) {
-    return { name: p.name, ok: p.any.some(function (k) { return hasKeyword(rawLower, padded, k); }) };
+    return { name: p.name, ok: pointHit(rawLower, padded, p.any) };
   });
   var missing = pts.filter(function (p) { return !p.ok; });
   cs.push(crit(isMed ? "Selección de la información" : "Cumplimiento de la tarea",
@@ -6173,6 +6524,178 @@ function backToMyText() {
   startTimer("writeTimer");
   area.focus();
   window.scrollTo(0, 0);
+}
+/* =====================================================================
+   18 · BANCO DE EXPRESIONES
+   Fórmulas por tipo de texto, para leer mientras se escribe. No se
+   pueden copiar: están para aprenderlas, no para pegarlas.
+   ===================================================================== */
+var PHRASE_BANK = {
+  email_informal: {
+    label: "Email / mensaje informal",
+    cats: {
+      "Empezar": ["Hi Sam,", "Hello Ellie,", "Hi! How are things?", "Thanks for your message / your email.", "Sorry for not writing sooner.", "It was great to hear from you."],
+      "Reaccionar a lo que te cuenta": ["I'm so glad you…", "I'm really sorry to hear that…", "That sounds amazing / awful.", "I know exactly how you feel.", "Don't worry, it happens to everybody."],
+      "Contar tus noticias": ["Guess what? …", "The big news here is that…", "Things here are the same, only louder.", "I've just started…", "By the way, …"],
+      "Aconsejar y sugerir": ["Why don't you…?", "If I were you, I'd…", "You could always…", "It might be worth…", "Have you thought about…?", "Honestly, I'd…"],
+      "Invitar y quedar": ["Why don't you come and stay?", "You're welcome any time.", "What about the weekend of the 16th?", "Let me know which dates work for you.", "We could go to…"],
+      "Cerrar": ["Write soon,", "See you soon,", "Let me know!", "Give my love to everybody.", "Take care,", "Love,"]
+    }
+  },
+  email_formal: {
+    label: "Email / carta formal",
+    cats: {
+      "Empezar": ["Dear Sir or Madam,", "Dear Mr Brown,", "Dear Ms Adams,", "To whom it may concern,"],
+      "Decir por qué escribes": ["I am writing to ask for information about…", "I am writing in connection with…", "I am writing to complain about…", "I am writing with regard to your advertisement in…", "I am writing in response to…"],
+      "Pedir información": ["I would like to know whether…", "Could you please tell me…?", "I would be grateful if you could confirm…", "I would also appreciate some information about…", "Could you let me know how much…?"],
+      "Reclamar": ["Unfortunately, the item arrived damaged.", "Despite several attempts, the problem has not been solved.", "This is not the service I would expect from…", "I have already contacted you twice about this matter."],
+      "Pedir una solución": ["I would be grateful if you could refund…", "I would like you to replace the item / send a technician.", "I trust you will look into this matter.", "I expect a reply within ten working days."],
+      "Cerrar": ["I look forward to hearing from you.", "Thank you in advance for your help.", "Yours faithfully, (sin nombre al principio)", "Yours sincerely, (si empezaste con el apellido)", "Kind regards,"]
+    }
+  },
+  letter_formal: {
+    label: "Carta al director",
+    cats: {
+      "Empezar y situar": ["Dear Editor,", "I read your article of 12 March with great interest.", "In response to the piece published last week…", "As a resident of this town, I would like to comment on…"],
+      "Presentar objeciones": ["My first objection concerns…", "There are two practical problems the article does not mention.", "The evidence, however, points in another direction.", "It is difficult to see how this measure would work in practice."],
+      "Conceder": ["Admittedly, …", "It is true that…", "Nobody denies that…", "I understand the argument, and yet…", "Of course, the problem described is real."],
+      "Proponer": ["I would therefore urge the council to…", "A more sensible solution would be to…", "I would suggest, instead, that…", "What is needed is not X but Y."],
+      "Cerrar": ["I hope the council will reconsider.", "Your readers deserve a fuller explanation.", "Yours faithfully,", "Yours sincerely,"]
+    }
+  },
+  essay: {
+    label: "Ensayo",
+    cats: {
+      "Introducción": ["Nowadays, more and more people…", "In recent years, … has become a matter of concern.", "It is often argued that…", "The question of whether … is far from settled.", "Every year, …"],
+      "Primer argumento": ["Firstly, …", "To begin with, …", "The main argument in favour is that…", "One reason for this is that…", "On the one hand, …"],
+      "Añadir argumentos": ["Secondly, …", "Furthermore, …", "Moreover, …", "In addition, …", "What is more, …", "Another point to consider is that…"],
+      "Ejemplificar": ["For example, …", "For instance, …", "A clear illustration of this is…", "This can be seen in…", "Take the case of…"],
+      "Conceder y contrastar": ["Admittedly, …, but…", "It is true that…; however, …", "Although some people argue that…, …", "Critics point out that…", "On the other hand, …", "Nevertheless, …"],
+      "Opinar con matices": ["In my view, …", "I would argue that…", "It seems to me that…", "I am not entirely convinced that…", "There is a strong case for…"],
+      "Concluir": ["In conclusion, …", "To sum up, …", "On balance, …", "All things considered, …", "Overall, the evidence suggests that…"]
+    }
+  },
+  article: {
+    label: "Artículo de opinión",
+    cats: {
+      "Título y gancho": ["Have you ever…?", "How many times have you…?", "Picture this: …", "Last summer I…", "Nobody wants to talk about it, but…"],
+      "Hablar al lector": ["You probably know the feeling.", "We all do it.", "Think about your own street.", "Ask yourself one question: …", "Does that sound reasonable to you?"],
+      "Dar tu opinión": ["In my opinion, …", "Personally, I think…", "What I find hardest to accept is…", "I am convinced that…", "To my mind, …"],
+      "Argumentar con ejemplos": ["For example, …", "In my own school / town, …", "A survey last year found that…", "Around 40 per cent of…", "Let me give you a figure."],
+      "Reconocer el otro lado": ["However, …", "Of course, there is another side.", "Admittedly, …", "Some people would say that…, and they have a point."],
+      "Cerrar": ["So what should we do?", "My proposal is simple: …", "Perhaps the real question is not… but…", "What do you think?"]
+    }
+  },
+  review: {
+    label: "Review / reseña",
+    cats: {
+      "Presentar": ["X is a Spanish comedy series of eight episodes.", "The exhibition is on at the provincial museum until 12 March.", "I saw it last Friday at my local cinema.", "The novel, written by…, was published in…"],
+      "Resumir sin destripar": ["The story takes place in…", "It follows a young woman who…", "Without revealing the ending, …", "The first episode opens with…", "The main character is…"],
+      "Elogiar": ["What I liked most was…", "The acting is outstanding, especially…", "The photography is remarkable.", "It is funny without being cruel.", "It never assumes you know anything."],
+      "Criticar": ["However, the last twenty minutes are much weaker.", "The main flaw is…", "It is slightly too long.", "The ending explains far too much.", "It becomes repetitive after…"],
+      "Recomendar": ["I would recommend it to anyone who enjoys…", "It is perfect for…", "It will appeal to viewers who…", "It is not for you if you want…", "Worth two evenings of your time."]
+    }
+  },
+  report: {
+    label: "Informe / propuesta",
+    cats: {
+      "Apartados": ["Introduction", "Findings", "Recommendations", "Conclusion", "Background", "Proposal"],
+      "Objetivo y fuente": ["The aim of this report is to…", "The purpose of this report is to present…", "The information is based on a survey completed by…", "The questionnaire was answered by 118 students."],
+      "Presentar hallazgos": ["The first finding concerns…", "It was found that…", "Seventy-one per cent of respondents said that…", "A majority reported problems with…", "Secondly, the survey identified…"],
+      "Recomendar": ["It is therefore recommended that…", "I would suggest that…", "A booking system should replace…", "In addition, the school should…", "Neither measure requires significant expenditure."],
+      "Concluir": ["Both measures address the complaints most frequently mentioned.", "A six-month trial would allow us to measure the effect.", "Together they would benefit…"]
+    }
+  },
+  story: {
+    label: "Relato / entrada de blog",
+    cats: {
+      "Situar": ["Last August, while we were…", "It all started when…", "I was fifteen and I had never…", "One Tuesday in March, …"],
+      "Avanzar": ["At first, …", "Then, without any warning, …", "After that, …", "Ten minutes later, …", "Meanwhile, …"],
+      "El giro": ["Suddenly, …", "What none of us expected was that…", "That was when I realised…", "Unfortunately, …", "It turned out that…"],
+      "Reacciones": ["I couldn't believe it.", "I felt completely lost.", "We laughed all the way home.", "My hands were shaking."],
+      "Cerrar": ["In the end, …", "Looking back, …", "Since then, I always…", "It was the best journey I have ever taken.", "I still have the photograph."]
+    }
+  },
+  mediation: {
+    label: "Mediación",
+    cats: {
+      "Contextualizar (de dónde sale)": ["I've just read the notice they put up in the building.", "The club has sent an email in Spanish, so here's the important part.", "There's an article in the local paper about…", "I've been through the official information, and…", "The council has published the rules, and this is what matters for you."],
+      "Seleccionar para tu lector": ["Here's what matters for you.", "Most of it doesn't affect you, but two things do.", "I'll skip the administrative part.", "The part you need to act on is…", "There's one detail I would not ignore."],
+      "Explicar lo que no existe allí": ["It's a kind of…", "There isn't an exact equivalent in the UK, but it's similar to…", "Here that means…", "Basically, …", "To put it simply, …"],
+      "Dar instrucciones claras": ["First, … Then, … Finally, …", "You have to … before …", "All you need is…", "If you can't …, they will…", "Make sure you take…"],
+      "Avisar": ["Be careful with…", "One important warning: …", "Don't forget that…", "Otherwise, …", "This is the bit people get wrong."],
+      "Añadir tu ayuda": ["I can come with you if it helps.", "Let me know and I'll…", "I'm going there on Saturday anyway.", "Shall I book it for both of us?", "Just ask me if you're not sure."],
+      "Cerrar": ["Let me know what you decide,", "Hope that helps!", "See you on Saturday,", "Best regards,", "Any questions, just ask."]
+    }
+  }
+};
+
+/* Referencias comunes a todos los textos */
+var LINKER_REFERENCE = {
+  "Conectores por función": [
+    "Adición: in addition · moreover · furthermore · what is more · besides",
+    "Contraste: however · although · even though · whereas · in spite of · nevertheless",
+    "Causa: because · since · as · due to · owing to",
+    "Consecuencia: therefore · as a result · consequently · that is why · thus",
+    "Secuencia: firstly · then · after that · meanwhile · finally · in the end",
+    "Ejemplo: for example · for instance · such as · in particular",
+    "Conclusión: in conclusion · to sum up · on balance · all things considered"
+  ],
+  "Estructuras que suben el nivel": [
+    "Pasiva: The decision was taken in April.",
+    "Relativo: The flat, which is above a bakery, is very noisy.",
+    "Condicional: If they had told us earlier, we would have changed the date.",
+    "Concesiva: Although it is small, it has everything we need.",
+    "Modal perfecto: They should have warned the neighbours.",
+    "Énfasis: What surprised me most was the silence.",
+    "Not only…but also: Not only is it cheaper, but it also lasts longer."
+  ],
+  "Verbos útiles (ES → EN)": [
+    "explicar = to explain", "destacar = to point out / to highlight", "advertir = to warn",
+    "exigir = to require", "solicitar = to apply for / to request", "tramitar = to process",
+    "adjuntar = to attach / to enclose", "caducar = to expire", "renovar = to renew",
+    "devolver el importe = to refund", "quejarse = to complain", "aprovechar = to make the most of",
+    "obligatorio = compulsory", "gratuito = free of charge", "con antelación = in advance",
+    "por adelantado = up front", "a partir de = from … onwards", "salvo que = unless"
+  ],
+  "Fallos que más resta": [
+    "I am agree → I agree", "people is → people are", "informations → information",
+    "the most big → the biggest", "explain me → explain to me", "depend of → depend on",
+    "in the other hand → on the other hand", "I have 18 years → I am 18",
+    "since three years → for three years", "much people → many people",
+    "Is very important → It is very important"
+  ]
+};
+
+function phraseBankHtml(mod, t) {
+  var key = mod.skill === "mediation" ? "mediation" : (t.genre || "essay");
+  var bank = PHRASE_BANK[key] || PHRASE_BANK.essay;
+  var vocab = (t.vocab || []);
+  var cat = function (title, items, open, cls) {
+    return '<details class="rounded-xl overflow-hidden mb-2 border border-slate-800"' + (open ? " open" : "") + '>' +
+      '<summary class="cursor-pointer select-none px-3 py-2 text-sm font-black ' + (cls || "text-emerald-300 bg-emerald-500/10") + '">' + title + '</summary>' +
+      '<div class="px-3 py-2 space-y-1 bg-slate-950">' +
+        items.map(function (p) { return '<p class="text-sm md:text-base text-slate-300 nocopy">' + escapeHtml(p) + '</p>'; }).join("") +
+      '</div></details>';
+  };
+  var html = '<div class="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-5 md:p-6">' +
+    '<div class="flex flex-wrap items-center justify-between gap-2 mb-3">' +
+      '<h4 class="text-lg md:text-2xl font-black text-white">💡 Expresiones y vocabulario</h4>' +
+      '<span class="text-xs font-black px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">' + escapeHtml(bank.label) + '</span>' +
+    '</div>' +
+    '<p class="text-sm text-slate-400 mb-3">Para leer mientras escribes. Están aquí para que las aprendas y las adaptes: en esta app no se pueden copiar.</p>';
+  if (vocab.length) {
+    html += cat("🎯 Vocabulario de este tema", vocab, true, "text-amber-300 bg-amber-500/10");
+  }
+  var i = 0;
+  Object.keys(bank.cats).forEach(function (c) {
+    html += cat(c, bank.cats[c], i < 2, "text-emerald-300 bg-emerald-500/10");
+    i++;
+  });
+  Object.keys(LINKER_REFERENCE).forEach(function (c) {
+    html += cat("🔗 " + c, LINKER_REFERENCE[c], false, "text-sky-300 bg-sky-500/10");
+  });
+  return html + '</div>';
 }
 /* =====================================================================
    16 · INFORME FINAL DEL ALUMNO
