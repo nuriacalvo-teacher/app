@@ -14,15 +14,33 @@ que `verbos-irregulares/`**; lo que cambia es el contenido.
 La nota mínima de cada uno se cambia en `MODULE_DEFS` (campo `pass`). El
 informe final solo sale “aprobado” si se superan los tres.
 
-## Acceso
+## Acceso: cada uno con su cuenta de Google
 
-Idéntico al de la otra app y **con los mismos códigos y el mismo PIN**: se
-configuran en el mismo bloque `C O N F I G U R A C I O N` del `index.html`.
-Si cambias un código, cámbialo en las dos apps.
+- **El alumno** pulsa *Sign in with Google*, pone su curso y el código de
+  clase. Sus resultados quedan colgados de **su cuenta**, así que los ve
+  desde el móvil, la tablet o cualquier ordenador, y **nadie más puede
+  verlos**.
+- **Tú** abres el panel con el botón ⚙️ Teacher y **tu cuenta de Google**:
+  no hay ninguna contraseña escrita en el archivo.
+- **Sin cuenta** se puede practicar en modo invitado, sin guardar nada.
 
-Los resultados se guardan en un nodo propio (`irregular_verbs_3en1`), así que
-las notas de una app no se mezclan con las de la otra. El modo invitado
-tampoco guarda nada aquí.
+### Lo que hay que configurar una vez
+
+1. En el archivo, línea `window.TEACHER_EMAIL`: **tu correo de Google**.
+2. El mismo correo en `reglas-firebase.json` (sale tres veces).
+3. En la consola de Firebase:
+   - **Authentication → Sign-in method → Google → Habilitar**.
+   - **Authentication → Settings → Dominios autorizados**: añadir
+     `nuriacalvo-teacher.github.io`.
+   - **Realtime Database → Reglas**: pegar `reglas-firebase.json`.
+
+Cómo quedan guardados los datos:
+
+    irregular_verbs / E3AB / <cuenta del alumno> / profile
+                                                 / attempts / <intento>
+
+Un intento guardado **no se puede borrar ni cambiar**, ni siquiera por el
+alumno que lo hizo.
 
 ## Correcciones que acepta
 

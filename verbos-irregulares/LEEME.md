@@ -68,12 +68,33 @@ Lo que **sí** sigue siendo error es el verbo y el tiempo: *“I break a glass
 two days ago”*, *“He broke the window”* cuando tocaba participio o *“I never
 ate sushi”*. Comprobado también que ninguna frase se puede confundir con otra.
 
-## Acceso
+## Acceso: cada uno con su cuenta de Google
 
-Igual que en el resto de tus apps: nombre, apellidos, email, grupo
-(1ESO…2BTO) y código de clase, con modo invitado para los demás profesores.
-Mismos códigos y mismo PIN, en el bloque `C O N F I G U R A C I O N` de
-`index.html`. Los resultados siguen yendo al nodo `irregular_verbs`.
+- **El alumno** pulsa *Sign in with Google*, pone su curso y el código de
+  clase. Sus resultados quedan colgados de **su cuenta**, así que los ve
+  desde el móvil, la tablet o cualquier ordenador, y **nadie más puede
+  verlos**.
+- **Tú** abres el panel con el botón ⚙️ Teacher y **tu cuenta de Google**:
+  no hay ninguna contraseña escrita en el archivo.
+- **Sin cuenta** se puede practicar en modo invitado, sin guardar nada.
+
+### Lo que hay que configurar una vez
+
+1. En el archivo, línea `window.TEACHER_EMAIL`: **tu correo de Google**.
+2. El mismo correo en `reglas-firebase.json` (sale tres veces).
+3. En la consola de Firebase:
+   - **Authentication → Sign-in method → Google → Habilitar**.
+   - **Authentication → Settings → Dominios autorizados**: añadir
+     `nuriacalvo-teacher.github.io`.
+   - **Realtime Database → Reglas**: pegar `reglas-firebase.json`.
+
+Cómo quedan guardados los datos:
+
+    irregular_verbs / E3AB / <cuenta del alumno> / profile
+                                                 / attempts / <intento>
+
+Un intento guardado **no se puede borrar ni cambiar**, ni siquiera por el
+alumno que lo hizo.
 
 ## Panel del profesor
 
