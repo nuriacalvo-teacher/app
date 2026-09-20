@@ -262,7 +262,7 @@
           <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
             <p class="font-black text-amber-400 mb-1">3 · Just the word</p>
             <code class="text-slate-300 text-xs md:text-sm">goggles</code>
-            <p class="text-slate-500 text-xs mt-2">Only works for words already in the unit: the game reuses their clue. Otherwise add “= meaning”.</p>
+            <p class="text-slate-500 text-xs mt-2">Comes up as missing vowels or listen &amp; write — no meaning needed. If it's a unit word, the game reuses its own clue.</p>
           </div>
         </div>
         <p class="text-sm md:text-base text-slate-300">One item per line. Start a line with <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-black">*</code> to make it a <strong class="text-amber-300">⭐ B2 Captain's Challenge</strong> word. Paste as many as you like — 4 or more gives the game enough options for multiple choice.</p>
@@ -303,8 +303,8 @@
           <p class="text-sm text-slate-400">Tap to switch each format on or off.</p>
         </div>
       </div>
-      <div class="grid grid-cols-3 gap-3" id="formatPicker"></div>
-      <p class="text-sm text-slate-400 leading-snug"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Gap-fill and unscramble are worth more points — they are typed or built letter by letter on the board (an on-screen keyboard appears, no physical keyboard needed).</p>
+      <div class="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3" id="formatPicker"></div>
+      <p class="text-sm text-slate-400 leading-snug"><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Everything except multiple choice is written on the board and scores <strong class="text-slate-300">+1 extra point</strong>. An on-screen keyboard appears, so no physical keyboard is needed. <strong class="text-slate-300">Listen &amp; write</strong> reads the word out loud (the music stops so the class can hear it).</p>
       <button onclick="openWordList()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-100 font-black text-base md:text-lg py-4 rounded-2xl transition flex items-center justify-center gap-3">
         <i class="fa-solid fa-list-check text-emerald-400"></i> See / print the vocabulary list
       </button>
@@ -379,8 +379,9 @@
 
     <div id="optionsGrid" class="grid md:grid-cols-2 gap-3 md:gap-4"></div>
 
-    <!-- GAP FILL -->
+    <!-- TYPED CHALLENGES: gap fill · missing vowels · listen & write -->
     <div id="gapArea" class="hidden space-y-4">
+      <div id="gapExtra" class="hidden justify-center"></div>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <div id="gapDisplay" class="min-w-[260px] text-center bg-slate-950 border-2 border-slate-700 rounded-2xl px-6 py-4 text-3xl md:text-5xl gap-word text-white"></div>
         <button onclick="checkGap()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
@@ -726,10 +727,35 @@ const LEVELS = [
   { id:"faster", name:"Faster", secs:10, emoji:"🔥" }
 ];
 const FORMATS = {
-  mcq:      { label:"Multiple choice", icon:"fa-list-ul",  bonus:0, help:"Choose A, B, C or D" },
-  gap:      { label:"Fill in the gap", icon:"fa-keyboard", bonus:1, help:"Type the missing word" },
-  scramble: { label:"Unscramble",      icon:"fa-shuffle",  bonus:1, help:"Put the letters in order" }
+  mcq:      { label:"Multiple choice", icon:"fa-list-ul",     bonus:0, help:"Choose A, B, C or D",        sub:"speed points only" },
+  gap:      { label:"Fill in the gap", icon:"fa-keyboard",    bonus:1, help:"Type the missing word",      sub:"+1 bonus point" },
+  scramble: { label:"Unscramble",      icon:"fa-shuffle",     bonus:1, help:"Put the letters in order",   sub:"+1 bonus point" },
+  vowels:   { label:"Missing vowels",  icon:"fa-spell-check", bonus:1, help:"Put the vowels back",        sub:"+1 bonus point" },
+  listen:   { label:"Listen & write",  icon:"fa-headphones",  bonus:1, help:"Listen, then write the word", sub:"+1 bonus point" }
 };
+const TYPED = ["gap", "vowels", "listen"];
+const isTyped = f => TYPED.includes(f);
+const VOWELS = "AEIOU";
+
+/* --- speech: used by the "Listen & write" challenge --- */
+let VOICE = null;
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices();
+    VOICE = vs.find(v => /^en-GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+  } catch (e) { VOICE = null; }
+  return VOICE;
+}
+function speechReady() { return typeof speechSynthesis !== "undefined" && !!(VOICE || pickVoice()); }
+function speakWord(w) {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(w);
+    if (VOICE || pickVoice()) { u.voice = VOICE; u.lang = VOICE.lang; } else u.lang = "en-GB";
+    u.rate = 0.8; u.pitch = 1;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
 /* Speed points: answer in the first third of the time = 3, middle third = 2, last third = 1 */
 const speedPoints = frac => frac > 2/3 ? 3 : frac > 1/3 ? 2 : 1;
 const speedLabel  = p => p === 3 ? "lightning fast ⚡" : p === 2 ? "quick 👍" : "just in time ⏳";
@@ -737,7 +763,7 @@ const speedLabel  = p => p === 3 ? "lightning fast ⚡" : p === 2 ? "quick 👍"
 const S = {
   teamCount: 2, rounds: 8, level: 1,
   topics: TOPICS.map(t => t.id),
-  formats: ["mcq", "gap", "scramble"],
+  formats: ["mcq", "gap", "scramble", "vowels", "listen"],
   challengeEvery: 1, challengeOffset: 0,
   teams: [], customQs: [], customHard: [], onlyCustom: false, queue: [], index: 0,
   answered: false, timer: null, deadline: 0, limitMs: 15000, lastTick: -1,
@@ -953,17 +979,22 @@ function renderChallenge() {
 function setChallenge(v) { S.challengeEvery = v; renderChallenge(); updatePool(); sfx.click(); }
 
 function renderFormats() {
-  $("formatPicker").innerHTML = Object.entries(FORMATS).map(([k, f]) => `
-    <button onclick="toggleFormat('${k}')" class="pick ${S.formats.includes(k) ? "on" : ""} py-4 px-2 text-center">
-      <div class="text-2xl md:text-3xl ${S.formats.includes(k) ? "text-emerald-400" : "text-slate-400"}"><i class="fa-solid ${f.icon}"></i></div>
-      <div class="font-black text-sm md:text-base ${S.formats.includes(k) ? "text-emerald-400" : "text-slate-200"} mt-1">${f.label}</div>
-      <div class="text-[11px] font-bold text-slate-500">${f.bonus ? "+1 bonus point" : "speed points only"}</div>
-    </button>`).join("");
+  $("formatPicker").innerHTML = Object.entries(FORMATS).map(([k, f]) => {
+    const off = k === "listen" && !speechReady();
+    const on = S.formats.includes(k) && !off;
+    return `
+    <button onclick="toggleFormat('${k}')" class="pick ${on ? "on" : ""} ${off ? "opacity-40" : ""} py-4 px-2 text-center">
+      <div class="text-2xl md:text-3xl ${on ? "text-emerald-400" : "text-slate-400"}"><i class="fa-solid ${f.icon}"></i></div>
+      <div class="font-black text-xs md:text-sm ${on ? "text-emerald-400" : "text-slate-200"} mt-1">${f.label}</div>
+      <div class="text-[10px] font-bold text-slate-500">${off ? "no English voice on this computer" : f.sub}</div>
+    </button>`;
+  }).join("");
 }
 function toggleFormat(k) {
+  if (k === "listen" && !speechReady()) return;
   const next = S.formats.includes(k) ? S.formats.filter(x => x !== k) : S.formats.concat(k);
   if (!next.length) return;
-  S.formats = next; renderFormats(); sfx.click();
+  S.formats = next; renderFormats(); parseCustomWords(); sfx.click();
 }
 
 function renderCustomMode() {
@@ -1036,9 +1067,16 @@ function parseCustomWords() {
                options:[it.word, ...others], tip: it.sentence.replace(/_{2,}/, it.word),
                only: canMCQ ? null : ["gap","scramble"], hardFlag: it.hard };
     const known = bankEntry(it.word);            // no meaning given: borrow the clue from the unit bank
-    if (!known) return null;
-    return { ...base, emoji: known.emoji, prompt: known.prompt, options: known.options,
-             tip: known.tip, only: null, hardFlag: it.hard };
+    if (known) return { ...base, emoji: known.emoji, prompt: known.prompt, options: known.options,
+                        tip: known.tip, only: null, hardFlag: it.hard };
+    // still no clue: only the challenges that can be solved without knowing the meaning
+    const can = formatsFor(it.word);
+    const only = ["vowels", "listen"].filter(f => can[f]);
+    if (!only.length) return null;
+    return { ...base, emoji:"🔤", prompt: only.includes("listen") && !only.includes("vowels")
+               ? "🔊 Listen and write the word from your list"
+               : "Complete the word from your list ✍️",
+             options:[it.word, ...others], tip:`The word is: ${it.word}`, only, hardFlag: it.hard };
   };
 
   const built = [], noClue = [];
@@ -1056,7 +1094,9 @@ function parseCustomWords() {
   if (!items.length) { st.textContent = "Nothing pasted yet."; st.className = "text-sm font-bold text-slate-400"; }
   else {
     const notes = [];
-    if (noClue.length) notes.push(`⚠️ ${noClue.length} line(s) ignored (${esc(noClue.slice(0, 3).join(", "))}${noClue.length > 3 ? "…" : ""}): a word on its own gives the students no clue at all. Write it as <strong>word = meaning</strong>, or as a sentence with a gap.`);
+    if (noClue.length) notes.push(`⚠️ ${noClue.length} line(s) ignored (${esc(noClue.slice(0, 3).join(", "))}${noClue.length > 3 ? "…" : ""}): too long or with no vowels, so they don't work without a meaning. Write them as <strong>word = meaning</strong> and they play in every format.`);
+    const bare = built.filter(q => q.only && q.only.length).length;
+    if (bare) notes.push(`ℹ️ ${bare} word(s) have no meaning attached, so they only come up as <strong>Missing vowels</strong> or <strong>Listen &amp; write</strong>. Add “= meaning” to use them for multiple choice and gap-fill too.`);
     if (scrambleOnly && !S.formats.includes("scramble")) notes.push(`⚠️ ${scrambleOnly} of them need the Unscramble format — switch it on above.`);
     st.innerHTML = `✅ ${built.length} question${built.length === 1 ? "" : "s"} created from your list` +
       (S.customHard.length ? ` (${S.customHard.length} marked ⭐ B2)` : "") + "." +
@@ -1126,18 +1166,27 @@ function openWordList() {
 function closeWordList() { $("wordListModal").classList.remove("open"); }
 
 /* ============================================================ GAME FLOW */
+/* which challenges a given answer can be turned into */
+function formatsFor(word) {
+  const one = /^[a-zA-Z][a-zA-Z-]*$/.test(word), n = word.length;
+  return {
+    mcq: true,
+    gap:      one && n >= 3 && n <= 12,
+    scramble: one && n >= 3 && n <= 9,                       // longer anagrams don't fit in 10 seconds
+    vowels:   one && n >= 3 && n <= 12 && /[aeiou]/i.test(word),
+    listen:   one && n >= 3 && n <= 12 && speechReady()
+  };
+}
+
 function prepareQuestion(q, isHard) {
   const correct = q.options[0];
   const opts = shuffle(q.options);
-  const canGap      = /^[a-zA-Z][a-zA-Z-]{2,11}$/.test(correct);   // one word, up to 12 letters
-  const canScramble = /^[a-zA-Z][a-zA-Z-]{2,8}$/.test(correct);    // one word, up to 9 letters: it has to fit in 10 seconds
+  const can = formatsFor(correct);
   const limited = q.only && q.only.length ? q.only : null;
-  let allowed = (limited || ["mcq", "gap", "scramble"])
-    .filter(f => S.formats.includes(f))
-    .filter(f => f === "mcq" || (f === "gap" ? canGap : canScramble));
-  if (!allowed.length) allowed = (limited && !limited.includes("mcq")) ? [] : ["mcq"];
+  let allowed = (limited || Object.keys(FORMATS)).filter(f => S.formats.includes(f) && can[f]);
+  if (!allowed.length) allowed = (limited || []).filter(f => can[f]);
   if (!allowed.length) allowed = ["mcq"];
-  const weights = { mcq: isHard ? 3 : 5, gap: isHard ? 4 : 3, scramble: 3 };
+  const weights = { mcq: isHard ? 4 : 5, gap: 3, scramble: 3, vowels: 3, listen: 2 };
   const bag = [];
   allowed.forEach(f => { for (let i = 0; i < weights[f]; i++) bag.push(f); });
   const format = bag[Math.floor(Math.random() * bag.length)];
@@ -1251,12 +1300,12 @@ function beginQuestion() {
 
   ["optionsGrid", "gapArea", "scrambleArea"].forEach(id => $(id).classList.add("hidden"));
   if (q.format === "mcq") renderMCQ(q, team);
-  else if (q.format === "gap") renderGap(q, team);
+  else if (isTyped(q.format)) renderTyping(q, team);
   else renderScramble(q, team);
 
   showScreen("screenQuestion");
   startTimer(LEVELS[S.level].secs * 1000);
-  startMusic();
+  if (q.format !== "listen") startMusic();          // silence, so the class can hear the word
 }
 
 /* ------------------------------------------------- format: MULTIPLE CHOICE */
@@ -1281,13 +1330,32 @@ function answerMCQ(i) {
   resolve(q.opts[i] === q.correct);
 }
 
-/* ------------------------------------------------------- format: GAP FILL */
+/* ------------------ formats: GAP FILL · MISSING VOWELS · LISTEN & WRITE ----- */
 const KB_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-function renderGap(q, team) {
+function maskVowels(w) {
+  return w.toUpperCase().split("").map(c => VOWELS.includes(c) ? "_" : c).join(" ");
+}
+function renderTyping(q, team) {
   $("gapArea").classList.remove("hidden");
   $("gapDisplay").className = "min-w-[260px] text-center bg-slate-950 border-2 border-slate-700 rounded-2xl px-6 py-4 text-3xl md:text-5xl gap-word text-white";
-  const w = q.correct;
-  $("gapHint").innerHTML = `The word has <strong class="text-white">${w.replace(/[^a-zA-Z-]/g, "").length}</strong> letters and starts with <strong class="text-white">${w[0].toUpperCase()}</strong>.`;
+  const w = q.correct, len = w.replace(/[^a-zA-Z-]/g, "").length;
+  const extra = $("gapExtra");
+
+  if (q.format === "vowels") {
+    extra.classList.add("hidden");
+    $("gapHint").innerHTML = `<span class="text-2xl md:text-4xl font-black text-emerald-300 tracking-[.25em]">${maskVowels(w)}</span>
+      <span class="block mt-2">Put the vowels back and write the whole word.</span>`;
+  } else if (q.format === "listen") {
+    extra.classList.remove("hidden"); extra.className = "flex justify-center";
+    extra.innerHTML = `<button onclick="speakWord(S.queue[S.index].correct)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-3xl px-8 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center gap-4">
+        <i class="fa-solid fa-volume-high"></i> Play the word again</button>`;
+    $("gapHint").innerHTML = `The word has <strong class="text-white">${len}</strong> letters. Listen as many times as you need — the clock is running! 🔊`;
+    setTimeout(() => speakWord(w), 350);
+  } else {
+    extra.classList.add("hidden");
+    $("gapHint").innerHTML = `The word has <strong class="text-white">${len}</strong> letters and starts with <strong class="text-white">${w[0].toUpperCase()}</strong>.`;
+  }
+
   $("keyboard").innerHTML = KB_ROWS.map(row => `<div class="flex gap-1 md:gap-2 justify-center flex-wrap">${
     row.split("").map(c => `<button class="kb" style="--team:${team.color}" onclick="gapType('${c}')">${c}</button>`).join("")
   }</div>`).join("") +
@@ -1403,7 +1471,7 @@ function tickTimer() {
   if (left <= 0) { timeUp(); return; }
   S.timer = requestAnimationFrame(tickTimer);
 }
-function stopTimer() { cancelAnimationFrame(S.timer); tense = false; stopMusic(); }
+function stopTimer() { cancelAnimationFrame(S.timer); tense = false; stopMusic(); try { speechSynthesis.cancel(); } catch (e) {} }
 
 /* ============================================================== SCORING */
 function resolve(ok) {
@@ -1602,7 +1670,7 @@ document.addEventListener("keydown", e => {
       if (i < q.opts.length) { e.preventDefault(); answerMCQ(i); }
       return;
     }
-    if (q.format === "gap") {
+    if (isTyped(q.format)) {
       if (/^[a-zA-Z-]$/.test(e.key)) { e.preventDefault(); gapType(e.key.toUpperCase()); return; }
       if (e.key === "Backspace") { e.preventDefault(); gapBack(); return; }
       if (e.key === "Enter") { e.preventDefault(); checkGap(); return; }
@@ -1631,6 +1699,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* ================================================================== INIT */
+try { speechSynthesis.onvoiceschanged = () => { pickVoice(); renderFormats(); }; pickVoice(); } catch (e) {}
 buildTeams();
 renderTeamCount();
 renderTeamNames();
