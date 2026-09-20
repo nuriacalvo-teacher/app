@@ -236,6 +236,9 @@
     </div>
 
     <div class="flex flex-wrap gap-2" id="topicPicker"></div>
+    <p id="topicsOffNote" class="hidden text-sm md:text-base font-bold text-amber-300 bg-amber-950/30 border border-amber-500/40 rounded-2xl px-4 py-3">
+      🔒 The book topics are switched off — this game uses <strong>only your own vocabulary list</strong>.
+    </p>
 
     <!-- CUSTOM WORDS -->
     <div class="border-t border-slate-800 pt-5 space-y-3">
@@ -244,6 +247,7 @@
         <i id="customChevron" class="fa-solid fa-chevron-down text-slate-400"></i>
       </button>
       <div id="customBox" class="hidden space-y-3">
+        <div class="grid grid-cols-2 gap-3" id="customModePicker"></div>
         <div class="grid md:grid-cols-3 gap-3 text-sm md:text-base">
           <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
             <p class="font-black text-emerald-400 mb-1">1 · Word + meaning</p>
@@ -389,6 +393,7 @@
 
     <!-- UNSCRAMBLE -->
     <div id="scrambleArea" class="hidden space-y-5">
+      <p id="scrambleHint" class="hidden text-center text-base md:text-xl font-bold text-slate-400"></p>
       <div id="scrambleSlots" class="flex flex-wrap justify-center gap-2 md:gap-3"></div>
       <div id="scrambleTiles" class="flex flex-wrap justify-center gap-2 md:gap-3"></div>
       <div class="flex justify-center gap-3">
@@ -735,7 +740,7 @@ const S = {
   topics: TOPICS.map(t => t.id),
   formats: ["mcq", "gap", "scramble"],
   challengeEvery: 1, challengeOffset: 0,
-  teams: [], customQs: [], customHard: [], queue: [], index: 0,
+  teams: [], customQs: [], customHard: [], onlyCustom: false, queue: [], index: 0,
   answered: false, timer: null, deadline: 0, limitMs: 15000, lastTick: -1,
   musicOn: true, sfxOn: true, countdownTimer: null,
   gapTyped: "", scrambleSlots: [], scrambleUsed: []
@@ -962,6 +967,23 @@ function toggleFormat(k) {
   S.formats = next; renderFormats(); sfx.click();
 }
 
+function renderCustomMode() {
+  const opts = [
+    { v:false, icon:"📚", title:"My list + the book", sub:"questions from both" },
+    { v:true,  icon:"🔒", title:"Only my list",       sub:"ignore the book topics" }
+  ];
+  $("customModePicker").innerHTML = opts.map(o => `
+    <button onclick="setCustomMode(${o.v})" class="pick ${S.onlyCustom === o.v ? "on" : ""} py-3 px-2 text-center">
+      <div class="text-2xl">${o.icon}</div>
+      <div class="font-black text-sm md:text-base ${S.onlyCustom === o.v ? "text-emerald-400" : "text-slate-200"} mt-1">${o.title}</div>
+      <div class="text-[11px] font-bold text-slate-500">${o.sub}</div>
+    </button>`).join("");
+  $("topicsOffNote").classList.toggle("hidden", !S.onlyCustom);
+  $("topicPicker").style.opacity = S.onlyCustom ? ".35" : "1";
+  $("topicPicker").style.pointerEvents = S.onlyCustom ? "none" : "auto";
+}
+function setCustomMode(v) { S.onlyCustom = v; renderCustomMode(); updatePool(); sfx.click(); }
+
 function toggleCustomBox() {
   const open = $("customBox").classList.toggle("hidden");
   $("customChevron").className = "fa-solid fa-chevron-" + (open ? "down" : "up") + " text-slate-400";
@@ -975,9 +997,17 @@ function parseCustomWords() {
     const parts = l.split(/\s*=\s*/);
     if (parts.length >= 2 && parts[0] && parts.slice(1).join("=").trim()) {
       const left = parts[0].trim(), right = parts.slice(1).join(" = ").trim();
-      const isSentence = /_{2,}/.test(left) || left.split(/\s+/).length > 3;
-      return isSentence ? { kind:"sentence", sentence:left, word:right, hard }
-                        : { kind:"defn", word:left, def:right, hard };
+      // "your own sentence" = the left side carries a gap, or it reads like a sentence
+      // whose answer is a single word ("She sprained her ankle. = sprained")
+      const hasGap = /_{2,}/.test(left);
+      const isSentence = hasGap || (left.split(/\s+/).length > 3 && right.split(/\s+/).length <= 2);
+      if (!isSentence) return { kind:"defn", word:left, def:right, hard };
+      let sentence = left;
+      if (!hasGap) {                                   // hide the answer inside the sentence
+        const re = new RegExp("\\b" + right.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+        sentence = re.test(left) ? left.replace(re, "______") : left + " ______";
+      }
+      return { kind:"sentence", sentence, word:right, hard };
     }
     return l ? { kind:"word", word:l, hard } : null;
   }).filter(Boolean);
@@ -991,37 +1021,48 @@ function parseCustomWords() {
       return { ...base, prompt:`Which word means “${it.def}”?`, options:[it.word, ...others],
                tip:`${it.word} = ${it.def}`, only: canMCQ ? null : ["gap","scramble"], hardFlag: it.hard };
     if (it.kind === "sentence")
-      return { ...base, prompt: /_{2,}/.test(it.sentence) ? it.sentence : it.sentence + " ______",
+      return { ...base, prompt: it.sentence,
                options:[it.word, ...others], tip: it.sentence.replace(/_{2,}/, it.word),
                only: canMCQ ? null : ["gap","scramble"], hardFlag: it.hard };
-    return { ...base, prompt:"Put the letters in the right order — it's a word from your list! 🔤",
+    return { ...base, prompt:"🔤 Unscramble the word", noClue:true,
              options:[it.word, ...others], tip:`The word is: ${it.word}`, only:["scramble"], hardFlag: it.hard };
   };
 
-  const built = items.map(make).filter(q => /^[a-zA-Z][a-zA-Z' -]*$/.test(q.options[0]) || q.only === null);
+  const built = [], skipped = [];
+  items.forEach(it => {
+    const q = make(it);
+    // a bare word can only become an unscramble question, so it has to be short and single
+    if (it.kind === "word" && !/^[a-zA-Z][a-zA-Z-]{2,8}$/.test(it.word)) { skipped.push(it.word); return; }
+    built.push(q);
+  });
+
+  const scrambleOnly = built.filter(q => q.only && q.only.length === 1 && q.only[0] === "scramble").length;
   S.customQs   = built.filter(q => !q.hardFlag);
   S.customHard = built.filter(q =>  q.hardFlag);
 
-  const scrambleOnly = built.filter(q => q.only && q.only.length === 1 && q.only[0] === "scramble").length;
   const st = $("customStatus");
   if (!items.length) { st.textContent = "Nothing pasted yet."; st.className = "text-sm font-bold text-slate-400"; }
   else {
-    const warn = (scrambleOnly && !S.formats.includes("scramble"))
-      ? ` ⚠️ ${scrambleOnly} of them only work with the Unscramble format — switch it on above.` : "";
+    const notes = [];
+    if (skipped.length) notes.push(`⚠️ ${skipped.length} line(s) ignored (${esc(skipped.slice(0, 3).join(", "))}${skipped.length > 3 ? "…" : ""}): on their own they only work as Unscramble, so they must be a single word of 3–9 letters. Add “= meaning” and they work in every format.`);
+    if (scrambleOnly && !S.formats.includes("scramble")) notes.push(`⚠️ ${scrambleOnly} of them need the Unscramble format — switch it on above.`);
     st.innerHTML = `✅ ${built.length} question${built.length === 1 ? "" : "s"} created from your list` +
-      (S.customHard.length ? ` (${S.customHard.length} marked ⭐ B2)` : "") + `.` + warn;
-    st.className = "text-sm font-bold " + (warn ? "text-amber-400" : "text-emerald-400");
+      (S.customHard.length ? ` (${S.customHard.length} marked ⭐ B2)` : "") + "." +
+      (notes.length ? "<br>" + notes.join("<br>") : "");
+    st.className = "text-sm font-bold " + (notes.length ? "text-amber-400" : "text-emerald-400");
   }
   updatePool();
 }
 
 const pick = list => TOPICS.filter(t => S.topics.includes(t.id));
 function corePool() {
+  if (S.onlyCustom) return S.customQs.slice();
   const pool = [];
   pick().forEach(t => t.qs.forEach(q => pool.push({ topic:t.name, emoji:q[2] || t.emoji, color:t.color, prompt:q[0], options:q[1], tip:q[3] })));
   return pool.concat(S.customQs);
 }
 function hardPool() {
+  if (S.onlyCustom) return S.customHard.slice();
   const pool = [];
   pick().forEach(t => t.hard.forEach(q => pool.push({ topic:t.name + " · B2", emoji:q[2] || t.emoji, color:t.color, prompt:q[0], options:q[1], tip:q[3] })));
   return pool.concat(S.customHard);
@@ -1041,7 +1082,9 @@ function updatePool() {
     $("startBtn").disabled = false; $("startBtn").classList.remove("opacity-40", "pointer-events-none");
   } else {
     box.className = "rounded-2xl px-5 py-4 text-base md:text-lg font-bold border-2 border-rose-500/40 bg-rose-950/40 text-rose-300";
-    box.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> This game needs ${need} questions but only ${core + hard} are available. Add more topics, add your own word list, or play fewer rounds.`;
+    box.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> This game needs ${need} questions but only ${core + hard} are available. ` +
+      (S.onlyCustom ? "Paste more words, play fewer rounds, or switch back to “My list + the book”."
+                    : "Switch on more topics, paste your own word list, or play fewer rounds.");
     $("startBtn").disabled = true; $("startBtn").classList.add("opacity-40", "pointer-events-none");
   }
 }
@@ -1050,8 +1093,8 @@ function updatePool() {
 function openWordList() {
   sfx.click();
   const body = $("wordListBody");
-  const sel = pick();
-  body.innerHTML = (sel.length ? sel : TOPICS).map(t => {
+  const sel = S.onlyCustom ? [] : pick();
+  body.innerHTML = (sel.length ? sel : (S.onlyCustom ? [] : TOPICS)).map(t => {
     const core = [...new Set(t.qs.map(q => q[1][0]))];
     const hard = [...new Set(t.hard.map(q => q[1][0]))];
     return `<div class="space-y-2">
@@ -1074,12 +1117,14 @@ function closeWordList() { $("wordListModal").classList.remove("open"); }
 function prepareQuestion(q, isHard) {
   const correct = q.options[0];
   const opts = shuffle(q.options);
-  const single = /^[a-zA-Z][a-zA-Z-]{2,13}$/.test(correct);
+  const canGap      = /^[a-zA-Z][a-zA-Z-]{2,11}$/.test(correct);   // one word, up to 12 letters
+  const canScramble = /^[a-zA-Z][a-zA-Z-]{2,8}$/.test(correct);    // one word, up to 9 letters: it has to fit in 10 seconds
   const limited = q.only && q.only.length ? q.only : null;
   let allowed = (limited || ["mcq", "gap", "scramble"])
     .filter(f => S.formats.includes(f))
-    .filter(f => f === "mcq" || single);
-  if (!allowed.length) allowed = limited ? [limited[0]] : ["mcq"];
+    .filter(f => f === "mcq" || (f === "gap" ? canGap : canScramble));
+  if (!allowed.length) allowed = (limited && !limited.includes("mcq")) ? [] : ["mcq"];
+  if (!allowed.length) allowed = ["mcq"];
   const weights = { mcq: isHard ? 3 : 5, gap: isHard ? 4 : 3, scramble: 3 };
   const bag = [];
   allowed.forEach(f => { for (let i = 0; i < weights[f]; i++) bag.push(f); });
@@ -1261,6 +1306,9 @@ function checkGap() {
 /* ----------------------------------------------------- format: UNSCRAMBLE */
 function renderScramble(q, team) {
   $("scrambleArea").classList.remove("hidden");
+  const hint = $("scrambleHint");
+  hint.classList.toggle("hidden", !q.noClue);
+  if (q.noClue) hint.innerHTML = `<strong class="text-white">${q.correct.length}</strong> letters · it starts with <strong class="text-white">${q.correct[0].toUpperCase()}</strong>`;
   const letters = q.correct.toUpperCase().split("");
   let mixed = shuffle(letters);
   if (mixed.join("") === letters.join("") && letters.length > 2) mixed = shuffle(letters);
@@ -1581,6 +1629,7 @@ renderDifficulty();
 renderTopics();
 renderFormats();
 renderChallenge();
+renderCustomMode();
 setRounds(8);
 updatePool();
 </script>
