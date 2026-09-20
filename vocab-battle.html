@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VOCAB CLASH | Team Quiz Arena · 2–4 teams · English vocabulary</title>
+<title>VOCAB BATTLE | Team Quiz Arena · 2–4 teams · English vocabulary</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -132,7 +132,7 @@
         ⚔️
       </div>
       <div>
-        <h1 class="font-black text-xl md:text-3xl text-white tracking-wider leading-none">VOCAB<span class="text-emerald-400">CLASH</span></h1>
+        <h1 class="font-black text-xl md:text-3xl text-white tracking-wider leading-none">VOCAB<span class="text-emerald-400">BATTLE</span></h1>
         <p class="text-[11px] md:text-sm font-semibold text-slate-400">Team quiz arena · 2–4 teams · English vocabulary</p>
       </div>
     </div>
@@ -158,7 +158,7 @@
 
   <div class="text-center space-y-3 py-2">
     <span class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full text-xs md:text-sm font-extrabold uppercase tracking-widest border border-emerald-500/30">Classroom battle mode · no phones needed</span>
-    <h2 class="text-4xl md:text-6xl font-black text-white leading-tight">Ready to <span class="text-emerald-400">clash</span>? ⚔️</h2>
+    <h2 class="text-4xl md:text-6xl font-black text-white leading-tight">Ready to <span class="text-emerald-400">battle</span>? ⚔️</h2>
     <p class="text-slate-300 text-base md:text-xl max-w-3xl mx-auto">One player from each team comes to the board and answers a question. Teams take turns, round after round. The faster the answer, the more points (3 · 2 · 1) — and only three teams make it to the podium.</p>
   </div>
 
@@ -219,58 +219,53 @@
     </div>
   </div>
 
-  <!-- TOPICS -->
-  <div class="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl">
+  <!-- THE TEACHER'S VOCABULARY (the only source of questions) -->
+  <div class="bg-slate-900/90 border-2 border-emerald-500/40 rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <span class="w-11 h-11 rounded-2xl bg-fuchsia-500/15 border border-fuchsia-500/30 flex items-center justify-center text-fuchsia-400 text-xl"><i class="fa-solid fa-book-open"></i></span>
+        <span class="w-11 h-11 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl"><i class="fa-solid fa-pen-to-square"></i></span>
         <div>
-          <h3 class="text-xl md:text-2xl font-black text-white">4 · Vocabulary topics</h3>
-          <p class="text-sm text-slate-400">Tap to switch topics on and off.</p>
+          <h3 class="text-xl md:text-2xl font-black text-white">4 · Your vocabulary <span class="text-rose-400">*required</span></h3>
+          <p class="text-sm text-slate-400">The game only ever asks what you type here — so every lesson can be different.</p>
         </div>
       </div>
-      <div class="flex gap-2">
-        <button onclick="selectAllTopics(true)" class="chip"><i class="fa-solid fa-check-double mr-1"></i> All</button>
-        <button onclick="selectAllTopics(false)" class="chip"><i class="fa-solid fa-xmark mr-1"></i> None</button>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="loadExampleList()" class="chip" title="Fill the box with the Introduction unit as an editable example"><i class="fa-solid fa-book mr-1"></i> Example list</button>
+        <button onclick="downloadList()" class="chip"><i class="fa-solid fa-download mr-1"></i> Save file</button>
+        <label class="chip cursor-pointer"><i class="fa-solid fa-folder-open mr-1"></i> Open file
+          <input type="file" accept=".txt,.csv,text/plain" class="hidden" onchange="openListFile(this)">
+        </label>
+        <button onclick="clearList()" class="chip"><i class="fa-solid fa-eraser mr-1"></i> Clear</button>
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-2" id="topicPicker"></div>
-    <p id="topicsOffNote" class="hidden text-sm md:text-base font-bold text-amber-300 bg-amber-950/30 border border-amber-500/40 rounded-2xl px-4 py-3">
-      🔒 The book topics are switched off — this game uses <strong>only your own vocabulary list</strong>.
-    </p>
-
-    <!-- CUSTOM WORDS -->
-    <div class="border-t border-slate-800 pt-5 space-y-3">
-      <button onclick="toggleCustomBox()" class="w-full flex items-center justify-between bg-slate-950/70 border-2 border-slate-800 hover:border-slate-700 rounded-2xl px-5 py-4 transition">
-        <span class="font-black text-white text-base md:text-lg"><i class="fa-solid fa-wand-magic-sparkles text-amber-400 mr-2"></i> Add your own vocabulary list</span>
-        <i id="customChevron" class="fa-solid fa-chevron-down text-slate-400"></i>
-      </button>
-      <div id="customBox" class="hidden space-y-3">
-        <div class="grid grid-cols-2 gap-3" id="customModePicker"></div>
-        <div class="grid md:grid-cols-3 gap-3 text-sm md:text-base">
-          <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-            <p class="font-black text-emerald-400 mb-1">1 · Word + meaning</p>
-            <code class="text-slate-300 text-xs md:text-sm">stubborn = never changes their mind</code>
-            <p class="text-slate-500 text-xs mt-2">Becomes a multiple-choice, gap-fill or unscramble question.</p>
-          </div>
-          <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-            <p class="font-black text-sky-400 mb-1">2 · Your own sentence</p>
-            <code class="text-slate-300 text-xs md:text-sm">She ______ her ankle skiing. = sprained</code>
-            <p class="text-slate-500 text-xs mt-2">Your sentence appears on the board with the gap.</p>
-          </div>
-          <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
-            <p class="font-black text-amber-400 mb-1">3 · Just the word</p>
-            <code class="text-slate-300 text-xs md:text-sm">goggles</code>
-            <p class="text-slate-500 text-xs mt-2">Comes up as missing vowels or listen &amp; write — no meaning needed. If it's a unit word, the game reuses its own clue.</p>
-          </div>
-        </div>
-        <p class="text-sm md:text-base text-slate-300">One item per line. Start a line with <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-black">*</code> to make it a <strong class="text-amber-300">⭐ B2 Captain's Challenge</strong> word. Paste as many as you like — 4 or more gives the game enough options for multiple choice.</p>
-        <textarea id="customInput" rows="7" spellcheck="false" oninput="parseCustomWords()"
-          placeholder="stubborn = never changes their mind&#10;to commute = to travel to work or school every day&#10;She ______ her ankle skiing. = sprained&#10;intestines&#10;* meticulous = careful about every small detail"
-          class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-base md:text-lg text-white focus:outline-none focus:border-emerald-500 transition font-mono"></textarea>
-        <p id="customStatus" class="text-sm font-bold text-slate-400"></p>
+    <div class="grid md:grid-cols-3 gap-3 text-sm md:text-base">
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
+        <p class="font-black text-emerald-400 mb-1">1 · Word + meaning</p>
+        <code class="text-slate-300 text-xs md:text-sm">stubborn = never changes their mind</code>
+        <p class="text-slate-500 text-xs mt-2">Plays in all five formats. A meaning that is a question works too: <em>boots = What do you wear in the snow?</em></p>
       </div>
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
+        <p class="font-black text-sky-400 mb-1">2 · Your own sentence</p>
+        <code class="text-slate-300 text-xs md:text-sm">She ______ her ankle skiing. = sprained</code>
+        <p class="text-slate-500 text-xs mt-2">Your sentence appears on the board with the gap.</p>
+      </div>
+      <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
+        <p class="font-black text-amber-400 mb-1">3 · Just the word</p>
+        <code class="text-slate-300 text-xs md:text-sm">goggles</code>
+        <p class="text-slate-500 text-xs mt-2">No meaning: it can only come up as missing vowels or listen &amp; write.</p>
+      </div>
+    </div>
+
+    <p class="text-sm md:text-base text-slate-300">One item per line. Start a line with <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-black">*</code> for a <strong class="text-amber-300">⭐ B2 Captain's Challenge</strong> word, or with <code class="bg-slate-950 px-2 py-0.5 rounded text-slate-400 font-black">#</code> for a heading the game ignores.</p>
+
+    <textarea id="customInput" rows="10" spellcheck="false" oninput="parseCustomWords()"
+      placeholder="# Unit 3 — Feelings&#10;stubborn = never changes their mind&#10;ashamed = feeling bad about something you did&#10;She ______ her ankle skiing. = sprained&#10;* meticulous = careful about every small detail"
+      class="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-base md:text-lg text-white focus:outline-none focus:border-emerald-500 transition font-mono"></textarea>
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <p id="customStatus" class="text-sm font-bold text-slate-400"></p>
+      <p class="text-xs text-slate-500 flex-none"><i class="fa-solid fa-floppy-disk mr-1"></i> Saved in this browser automatically.</p>
     </div>
 
     <div id="poolStatus" class="rounded-2xl px-5 py-4 text-base md:text-lg font-bold border-2"></div>
@@ -284,11 +279,11 @@
         <span class="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl"><i class="fa-solid fa-star"></i></span>
         <div>
           <h3 class="text-xl md:text-2xl font-black text-white">5 · Captain's Challenge ⭐</h3>
-          <p class="text-sm text-slate-400">Extra B2 vocabulary for your strongest players.</p>
+          <p class="text-sm text-slate-400">Your starred words, for your strongest players.</p>
         </div>
       </div>
       <p class="text-sm md:text-base text-slate-300 bg-slate-950/70 border border-slate-800 rounded-2xl px-4 py-3 leading-snug">
-        One question per round uses <strong class="text-amber-300">harder B2 words that are not in the book</strong>. The screen announces it <strong>before</strong> the player comes to the board, so each team can send their captain — and every team gets the same number of challenges.
+        One question per round uses the <strong class="text-amber-300">harder words you mark with * in your list</strong>. The screen announces it <strong>before</strong> the player comes to the board, so each team can send their captain — and every team gets the same number of challenges.
       </p>
       <div class="grid grid-cols-3 gap-3" id="challengePicker"></div>
       <p id="challengeInfo" class="text-sm font-bold text-amber-300"></p>
@@ -493,7 +488,7 @@
 </main>
 
 <footer class="relative z-10 border-t border-slate-800 bg-slate-900/60 py-5 text-center text-xs md:text-sm text-slate-500">
-  VOCAB CLASH · Classroom team quiz · Built for the interactive whiteboard — no phones, no accounts, no internet data saved.
+  VOCAB BATTLE · Classroom team quiz · Built for the interactive whiteboard — no phones, no accounts, no internet data saved.
 </footer>
 
 
@@ -723,7 +718,7 @@ const TOPICS = [
 
 <script>
 /* =====================================================================
-   VOCAB CLASH · game engine
+   VOCAB BATTLE · game engine
    ===================================================================== */
 
 const TEAM_PRESETS = [
@@ -794,10 +789,9 @@ function speakWord(w, plain) {
 
 const S = {
   teamCount: 2, rounds: 8, level: 1,
-  topics: TOPICS.map(t => t.id),
   formats: ["mcq", "gap", "scramble", "vowels", "listen"],
   challengeEvery: 1, challengeOffset: 0,
-  teams: [], customQs: [], customHard: [], onlyCustom: false, queue: [], index: 0,
+  teams: [], customQs: [], customHard: [], queue: [], index: 0,
   answered: false, timer: null, deadline: 0, limitMs: 15000, lastTick: -1,
   musicOn: true, sfxOn: true, voiceName: "", countdownTimer: null,
   gapTyped: "", scrambleSlots: [], scrambleUsed: []
@@ -1051,18 +1045,6 @@ function renderDifficulty() {
 }
 function setLevel(i) { S.level = i; renderDifficulty(); sfx.click(); }
 
-function renderTopics() {
-  $("topicPicker").innerHTML = TOPICS.map(t => `
-    <button onclick="toggleTopic('${t.id}')" class="chip ${S.topics.includes(t.id) ? "on" : ""}">
-      <span class="mr-1">${t.emoji}</span>${esc(t.name)}
-    </button>`).join("");
-}
-function toggleTopic(id) {
-  S.topics = S.topics.includes(id) ? S.topics.filter(x => x !== id) : S.topics.concat(id);
-  renderTopics(); updatePool(); sfx.click();
-}
-function selectAllTopics(all) { S.topics = all ? TOPICS.map(t => t.id) : []; renderTopics(); updatePool(); sfx.click(); }
-
 function challengeRounds() {
   const every = S.challengeEvery, rs = [];
   if (every) for (let r = 0; r < S.rounds; r++) if (r % every === 0) rs.push(r);
@@ -1076,7 +1058,7 @@ function renderChallenge() {
   const opts = [
     { v:1, icon:"⭐", title:"Every round",   sub:"1 per round" },
     { v:2, icon:"✨", title:"Every 2 rounds", sub:"fewer, but still B2" },
-    { v:0, icon:"🚫", title:"Off",            sub:"book words only" }
+    { v:0, icon:"🚫", title:"Off",            sub:"no extra words" }
   ];
   $("challengePicker").innerHTML = opts.map(o => `
     <button onclick="setChallenge(${o.v})" class="pick ${S.challengeEvery === o.v ? "on" : ""} py-4 px-2 text-center">
@@ -1084,10 +1066,12 @@ function renderChallenge() {
       <div class="font-black text-sm md:text-base ${S.challengeEvery === o.v ? "text-emerald-400" : "text-slate-200"} mt-1">${o.title}</div>
       <div class="text-[11px] font-bold text-slate-500">${o.sub}</div>
     </button>`).join("");
-  const n = challengeRounds().length;
-  $("challengeInfo").innerHTML = n
-    ? `⭐ ${n} challenge question${n > 1 ? "s" : ""} this game (double points), shared out by rotation so every team gets its turn — and the screen always warns you one round in advance.`
-    : "All the questions come from the book vocabulary.";
+  const n = challengeRounds().length, have = S.customHard.length;
+  $("challengeInfo").innerHTML = !n
+    ? "Every question comes from your ordinary list."
+    : !have
+      ? `⚠️ No ⭐ words yet: start a line with <strong>*</strong> in your list to mark the harder ones. Until then the challenge rounds use your ordinary words.`
+      : `⭐ ${n} challenge question${n > 1 ? "s" : ""} this game (double points) out of your ${have} starred word${have > 1 ? "s" : ""}, shared out by rotation — and the screen always warns you one round in advance.`;
 }
 function setChallenge(v) { S.challengeEvery = v; renderChallenge(); updatePool(); sfx.click(); }
 
@@ -1124,32 +1108,53 @@ function toggleFormat(k) {
   S.formats = next; renderFormats(); renderVoicePicker(); parseCustomWords(); sfx.click();
 }
 
-function renderCustomMode() {
-  const opts = [
-    { v:false, icon:"📚", title:"My list + the book", sub:"questions from both" },
-    { v:true,  icon:"🔒", title:"Only my list",       sub:"ignore the book topics" }
-  ];
-  $("customModePicker").innerHTML = opts.map(o => `
-    <button onclick="setCustomMode(${o.v})" class="pick ${S.onlyCustom === o.v ? "on" : ""} py-3 px-2 text-center">
-      <div class="text-2xl">${o.icon}</div>
-      <div class="font-black text-sm md:text-base ${S.onlyCustom === o.v ? "text-emerald-400" : "text-slate-200"} mt-1">${o.title}</div>
-      <div class="text-[11px] font-bold text-slate-500">${o.sub}</div>
-    </button>`).join("");
-  $("topicsOffNote").classList.toggle("hidden", !S.onlyCustom);
-  $("topicPicker").style.opacity = S.onlyCustom ? ".35" : "1";
-  $("topicPicker").style.pointerEvents = S.onlyCustom ? "none" : "auto";
+/* ------------------------------------------ the teacher's list is the game */
+const LIST_KEY = "vocabbattle.list";
+function saveList() { try { localStorage.setItem(LIST_KEY, $("customInput").value); } catch (e) {} }
+function restoreList() {
+  try { const t = localStorage.getItem(LIST_KEY); if (t) $("customInput").value = t; } catch (e) {}
 }
-function setCustomMode(v) { S.onlyCustom = v; renderCustomMode(); updatePool(); sfx.click(); }
+function clearList() {
+  if ($("customInput").value.trim() && !confirm("Delete the whole list?")) return;
+  $("customInput").value = ""; parseCustomWords(); saveList(); sfx.click();
+}
+function downloadList() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([$("customInput").value], { type:"text/plain;charset=utf-8" }));
+  a.download = "vocab-battle-list.txt";
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); sfx.click();
+}
+function openListFile(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { $("customInput").value = r.result; parseCustomWords(); saveList(); };
+  r.readAsText(f);
+  input.value = "";
+}
+/* the old unit bank is kept only as an editable starting point */
+function questionToLine(q) {
+  const answer = q[1][0], prompt = q[0];
+  if (/_{2,}/.test(prompt)) return `${prompt} = ${answer}`;               // sentence with a gap
+  const m = prompt.match(/^Which word means “(.+)”\?$/);
+  return m ? `${answer} = ${m[1]}` : `${answer} = ${prompt}`;             // a question works as a meaning too
+}
+function loadExampleList() {
+  if ($("customInput").value.trim() && !confirm("Replace what is in the box with the example list?")) return;
+  const lines = [];
+  TOPICS.forEach(t => {
+    lines.push(`# ${t.name}`);
+    t.qs.forEach(q => lines.push(questionToLine(q)));
+    t.hard.forEach(q => lines.push("* " + questionToLine(q)));
+    lines.push("");
+  });
+  $("customInput").value = lines.join("\n").trim();
+  parseCustomWords(); saveList(); sfx.click();
+  $("customInput").scrollIntoView({ behavior:"smooth", block:"center" });
+}
 
-function toggleCustomBox() {
-  const open = $("customBox").classList.toggle("hidden");
-  $("customChevron").className = "fa-solid fa-chevron-" + (open ? "down" : "up") + " text-slate-400";
-  sfx.click();
-}
-/* A word pasted on its own has no meaning attached. Rather than asking students to
-   unscramble letters with no clue at all, look the word up in the built-in bank: if it
-   is one of the unit's words we already have a real question, its distractors and its
-   example sentence. If it isn't there, the line is skipped and the teacher is told. */
+/* If a word is typed with no meaning, see whether the example unit list happens
+   to have a real question for it, so it still reaches the board with a clue. */
 function bankEntry(word) {
   const w = word.toLowerCase().trim();
   for (const t of TOPICS)
@@ -1159,7 +1164,8 @@ function bankEntry(word) {
 }
 
 function parseCustomWords() {
-  const raw = $("customInput").value.split("\n").map(l => l.trim()).filter(Boolean);
+  const raw = $("customInput").value.split("\n").map(l => l.trim())
+    .filter(l => l && !/^(#|\/\/)/.test(l));          // # and // lines are headings for the teacher
   const items = raw.map(line => {
     let hard = false, l = line;
     if (/^\*/.test(l)) { hard = true; l = l.replace(/^\*+\s*/, ""); }
@@ -1187,7 +1193,8 @@ function parseCustomWords() {
     const canMCQ = others.length === 3;
     const base = { topic:"My word list" + (it.hard ? " · B2" : ""), emoji: it.hard ? "⭐" : "✏️", color: it.hard ? "#fbbf24" : "#34d399" };
     if (it.kind === "defn")
-      return { ...base, prompt:`Which word means “${it.def}”?`, options:[it.word, ...others],
+      return { ...base, prompt: /\?\s*$/.test(it.def) ? it.def : `Which word means “${it.def}”?`,
+               options:[it.word, ...others],
                tip:`${it.word} = ${it.def}`, only: canMCQ ? null : ["gap","scramble"], hardFlag: it.hard };
     if (it.kind === "sentence")
       return { ...base, prompt: it.sentence,
@@ -1230,40 +1237,31 @@ function parseCustomWords() {
       (notes.length ? "<br>" + notes.join("<br>") : "");
     st.className = "text-sm font-bold " + (notes.length ? "text-amber-400" : "text-emerald-400");
   }
+  saveList();
   updatePool();
 }
 
-const pick = list => TOPICS.filter(t => S.topics.includes(t.id));
-function corePool() {
-  if (S.onlyCustom) return S.customQs.slice();
-  const pool = [];
-  pick().forEach(t => t.qs.forEach(q => pool.push({ topic:t.name, emoji:q[2] || t.emoji, color:t.color, prompt:q[0], options:q[1], tip:q[3] })));
-  return pool.concat(S.customQs);
-}
-function hardPool() {
-  if (S.onlyCustom) return S.customHard.slice();
-  const pool = [];
-  pick().forEach(t => t.hard.forEach(q => pool.push({ topic:t.name + " · B2", emoji:q[2] || t.emoji, color:t.color, prompt:q[0], options:q[1], tip:q[3] })));
-  return pool.concat(S.customHard);
-}
+function corePool() { return S.customQs.slice(); }
+function hardPool() { return S.customHard.slice(); }
 
 function updatePool() {
   renderChallenge();
   const need = S.rounds * S.teamCount;
   const core = corePool().length, hard = hardPool().length;
-  const nHard = Math.min(challengeRounds().length, hard);
-  const ok = core + hard >= need && core >= need - nHard;
   const box = $("poolStatus");
   $("totalQCount").textContent = need;
+  const ok = core + hard >= need;
   if (ok) {
     box.className = "rounded-2xl px-5 py-4 text-base md:text-lg font-bold border-2 border-emerald-500/40 bg-emerald-950/40 text-emerald-300";
-    box.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${core} core questions + ${hard} ⭐B2 challenge questions available · ${need} needed. No question is ever repeated and the order is reshuffled every game.`;
+    box.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${core} question${core === 1 ? "" : "s"}` +
+      (hard ? ` + ${hard} ⭐B2 challenge question${hard === 1 ? "" : "s"}` : "") +
+      ` from your list · ${need} needed for this game. Nothing is ever repeated and the order is reshuffled every game.`;
     $("startBtn").disabled = false; $("startBtn").classList.remove("opacity-40", "pointer-events-none");
   } else {
     box.className = "rounded-2xl px-5 py-4 text-base md:text-lg font-bold border-2 border-rose-500/40 bg-rose-950/40 text-rose-300";
-    box.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> This game needs ${need} questions but only ${core + hard} are available. ` +
-      (S.onlyCustom ? "Paste more words, play fewer rounds, or switch back to “My list + the book”."
-                    : "Switch on more topics, paste your own word list, or play fewer rounds.");
+    box.innerHTML = core + hard === 0
+      ? `<i class="fa-solid fa-arrow-up mr-2"></i> Type or paste your vocabulary above to start. This game needs ${need} items (${S.rounds} rounds × ${S.teamCount} teams) — or play fewer rounds.`
+      : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> Your list gives ${core + hard} question(s), but this game needs ${need}. Add more words, play fewer rounds, or use fewer teams.`;
     $("startBtn").disabled = true; $("startBtn").classList.add("opacity-40", "pointer-events-none");
   }
 }
@@ -1271,23 +1269,15 @@ function updatePool() {
 /* ---------------------------------------------------------- word list */
 function openWordList() {
   sfx.click();
-  const body = $("wordListBody");
-  const sel = S.onlyCustom ? [] : pick();
-  body.innerHTML = (sel.length ? sel : (S.onlyCustom ? [] : TOPICS)).map(t => {
-    const core = [...new Set(t.qs.map(q => q[1][0]))];
-    const hard = [...new Set(t.hard.map(q => q[1][0]))];
-    return `<div class="space-y-2">
-      <h4 class="text-lg md:text-2xl font-black text-white border-b border-slate-700 pb-1">${t.emoji} ${esc(t.name)}</h4>
+  const core = [...new Set(S.customQs.map(q => q.options[0]))];
+  const hard = [...new Set(S.customHard.map(q => q.options[0]))];
+  $("wordListBody").innerHTML = (core.length || hard.length) ? `
+    <div class="space-y-2">
+      <h4 class="text-lg md:text-2xl font-black text-white border-b border-slate-700 pb-1">✏️ This game's vocabulary</h4>
       <div class="flex flex-wrap gap-2">${core.map(w => `<span class="chip on">${esc(w)}</span>`).join("")}</div>
-      <p class="text-sm font-black text-amber-300 uppercase tracking-widest pt-2">⭐ B2 extra (Captain's Challenge)</p>
-      <div class="flex flex-wrap gap-2">${hard.map(w => `<span class="chip" style="border-color:#f59e0b66;color:#fcd34d">${esc(w)}</span>`).join("")}</div>
-    </div>`;
-  }).join("") + (S.customQs.length + S.customHard.length ? `<div class="space-y-2">
-      <h4 class="text-lg md:text-2xl font-black text-white border-b border-slate-700 pb-1">✏️ My word list</h4>
-      <div class="flex flex-wrap gap-2">${[...new Set(S.customQs.map(q => q.options[0]))].map(w => `<span class="chip on">${esc(w)}</span>`).join("")}</div>
-      ${S.customHard.length ? `<p class="text-sm font-black text-amber-300 uppercase tracking-widest pt-2">⭐ B2 extra (Captain's Challenge)</p>
-      <div class="flex flex-wrap gap-2">${[...new Set(S.customHard.map(q => q.options[0]))].map(w => `<span class="chip" style="border-color:#f59e0b66;color:#fcd34d">${esc(w)}</span>`).join("")}</div>` : ""}
-    </div>` : "");
+      ${hard.length ? `<p class="text-sm font-black text-amber-300 uppercase tracking-widest pt-3">⭐ B2 extra (Captain's Challenge)</p>
+      <div class="flex flex-wrap gap-2">${hard.map(w => `<span class="chip" style="border-color:#f59e0b66;color:#fcd34d">${esc(w)}</span>`).join("")}</div>` : ""}
+    </div>` : `<p class="text-lg text-slate-400">Your list is empty — type your vocabulary in the box first.</p>`;
   $("wordListModal").classList.add("open");
 }
 function closeWordList() { $("wordListModal").classList.remove("open"); }
@@ -1831,13 +1821,12 @@ buildTeams();
 renderTeamCount();
 renderTeamNames();
 renderDifficulty();
-renderTopics();
 renderFormats();
 renderVoicePicker();
 renderChallenge();
-renderCustomMode();
+restoreList();
+parseCustomWords();
 setRounds(8);
-updatePool();
 </script>
 </body>
 </html>
