@@ -3,17 +3,17 @@
     ".read": false,
     ".write": false,
     "irregular_verbs": {
+      ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
       "$codigo": {
-        ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
         "$uid": {
-          ".read": "auth != null && ($uid === auth.uid || (auth.token.email === 'nuria.calvo@iesgoya.es'))",
+          ".read": "auth != null && $uid === auth.uid",
           "profile": {
-            ".write": "auth != null && $uid === auth.uid && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+            ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
             ".validate": "newData.hasChildren(['firstName','lastName','grade'])"
           },
           "attempts": {
             "$intento": {
-              ".write": "auth != null && $uid === auth.uid && !data.exists() && newData.exists() && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+              ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/) && !data.exists() && newData.exists()",
               ".validate": "newData.hasChildren(['firstName','lastName','grade','moduleId','score'])"
             }
           }
@@ -21,17 +21,17 @@
       }
     },
     "irregular_verbs_3en1": {
+      ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
       "$codigo": {
-        ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
         "$uid": {
-          ".read": "auth != null && ($uid === auth.uid || (auth.token.email === 'nuria.calvo@iesgoya.es'))",
+          ".read": "auth != null && $uid === auth.uid",
           "profile": {
-            ".write": "auth != null && $uid === auth.uid && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+            ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
             ".validate": "newData.hasChildren(['firstName','lastName','grade'])"
           },
           "attempts": {
             "$intento": {
-              ".write": "auth != null && $uid === auth.uid && !data.exists() && newData.exists() && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+              ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/) && !data.exists() && newData.exists()",
               ".validate": "newData.hasChildren(['firstName','lastName','grade','moduleId','score'])"
             }
           }
@@ -39,17 +39,17 @@
       }
     },
     "present_tenses_v2": {
+      ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
       "$codigo": {
-        ".read": "auth != null && (auth.token.email === 'nuria.calvo@iesgoya.es')",
         "$uid": {
-          ".read": "auth != null && ($uid === auth.uid || (auth.token.email === 'nuria.calvo@iesgoya.es'))",
+          ".read": "auth != null && $uid === auth.uid",
           "profile": {
-            ".write": "auth != null && $uid === auth.uid && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+            ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
             ".validate": "newData.hasChildren(['firstName','lastName','grade'])"
           },
           "attempts": {
             "$intento": {
-              ".write": "auth != null && $uid === auth.uid && !data.exists() && newData.exists() && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB|3ESO-BC|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/)",
+              ".write": "auth != null && $uid === auth.uid && auth.token.email.endsWith('@iesgoya.es') && $codigo.matches(/^(1ESO-PWDJ|2ESO-XH9J|3ESO-AB-7HML|3ESO-BC-UAVE|4ESO-XAXD|1BTO-976F|2BTO-KMJR)$/) && !data.exists() && newData.exists()",
               ".validate": "newData.hasChildren(['firstName','lastName','grade','moduleId','score'])"
             }
           }

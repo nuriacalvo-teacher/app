@@ -68,17 +68,46 @@ Lo que **sí** sigue siendo error es el verbo y el tiempo: *“I break a glass
 two days ago”*, *“He broke the window”* cuando tocaba participio o *“I never
 ate sushi”*. Comprobado también que ninguna frase se puede confundir con otra.
 
-## Acceso: cada uno con su cuenta de Google
+## Quién puede entrar
 
-- **El alumno** pulsa *Sign in with Google*, pone su curso y el código de
-  clase. Sus resultados quedan colgados de **su cuenta**, así que los ve
-  desde el móvil, la tablet o cualquier ordenador, y **nadie más puede
-  verlos**.
-- **Tú** abres el panel con el botón ⚙️ Teacher y **tu cuenta de Google**:
-  no hay ninguna contraseña escrita en el archivo.
-- **Sin cuenta** se puede practicar en modo invitado, sin guardar nada.
+Hacen falta **las dos cosas**:
 
-### Lo que hay que configurar una vez
+1. Una cuenta de Google **@iesgoya.es** (lo comprueba la página y también
+   Firebase, por su cuenta).
+2. El **código de clase** que tú le hayas dado.
+
+Los códigos **ya no están dentro del archivo**: viven solo en las reglas de
+Firebase, que nadie puede leer. Por eso, un alumno de otro profesor —aunque
+sea del instituto y mire el código fuente— no encuentra ningún código y no
+puede registrarse. Puede usar la app como **invitado**: hace todo, ve su
+nota, pero no se guarda nada.
+
+### Tus códigos (guárdalos tú, no están en ningún sitio público)
+
+| Grupo | Código |
+|---|---|
+| 1º ESO | `1ESO-PWDJ` |
+| 2º ESO | `2ESO-XH9J` |
+| 3º ESO A/B | `3ESO-AB-7HML` |
+| 3º ESO B/C | `3ESO-BC-UAVE` |
+| 4º ESO | `4ESO-XAXD` |
+| 1º BTO | `1BTO-976F` |
+| 2º BTO | `2BTO-KMJR` |
+
+Para cambiarlos o añadir uno, se editan en `reglas-firebase.json` y se vuelve
+a publicar en la consola. La página no hay que tocarla.
+
+### Quién ve qué
+
+| | Puede |
+|---|---|
+| Alumno | Solo sus propios resultados, desde cualquier dispositivo |
+| Tú (nuria.calvo@iesgoya.es) | Todos los grupos, en el panel ⚙️ Teacher |
+| Cualquier otro | Nada |
+
+Un intento guardado no se puede borrar ni cambiar, ni siquiera por quien lo hizo.
+
+## Lo que hay que configurar una vez
 
 1. En el archivo, línea `window.TEACHER_EMAIL`: **tu correo de Google**.
 2. El mismo correo en `reglas-firebase.json` (sale tres veces).

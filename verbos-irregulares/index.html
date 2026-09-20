@@ -79,48 +79,33 @@
   window.TEACHER_NAME  = "Nuria Calvo";
   window.TEACHER_EMAIL = "nuria.calvo@iesgoya.es";
 
-  // (2) LOS CODIGOS QUE REPARTES A TUS ALUMNOS: uno por grupo.
-  //     Borra las lineas de los grupos que no des este curso.
-  //     Si cambias un codigo, ese grupo empieza de cero (los resultados
-  //     viejos siguen guardados bajo el codigo antiguo).
-  //     Un mismo grupo puede tener varios codigos (por ejemplo dos clases
-  //     de 3 ESO): el alumno elige su curso en el desplegable y escribe el
-  //     codigo que le corresponda. La web no dice cual es cual.
-  window.CLASS_CODES = [
-    "1ESO-PWDJ",
-    "2ESO-XH9J",
-    "3ESO-AB",
-    "3ESO-BC",
-    "4ESO-XAXD",
-    "1BTO-976F",
-    "2BTO-KMJR"
-  ];
+  // (2) LOS CODIGOS DE CLASE YA NO ESTAN EN ESTE ARCHIVO.
+  //     Viven en las reglas de Firebase, que son privadas: asi nadie puede
+  //     leerlos mirando el codigo fuente de la pagina. Para cambiarlos o
+  //     anadir uno, se editan alli (reglas-firebase.json) y ya esta.
 
-  //     Texto que veran los alumnos debajo de la casilla del codigo.
-  //     Vacio ("") = no aparece nada, que es lo normal: el codigo se lo
-  //     das tu en clase y la web no da ninguna pista.
-  window.CODE_HINT = "";
+  // (3) SOLO ENTRAN LAS CUENTAS DE ESTE DOMINIO. Deja "" para no filtrar.
+  //     Firebase lo comprueba tambien por su cuenta, no solo la pagina.
+  window.SCHOOL_DOMAIN = "iesgoya.es";
 
-  // (3) MODO INVITADO: quien no tenga codigo (otros profesores y sus
-  //     alumnos) puede hacer los ejercicios, ver su nota e imprimirla,
-  //     pero NO se guarda nada en la nube: cero gasto de tu Firebase.
-  //     Ponlo en false si quieres que sin codigo no se pueda entrar.
+  // (4) MODO INVITADO: quien no tenga codigo (o no sea de tus grupos) puede
+  //     hacer los ejercicios y ver su nota, pero NO se guarda nada.
   window.ALLOW_GUEST_MODE = true;
 
-  // (4) AVANZADO (normalmente se deja vacio): si un companero quiere que
-  //     SUS resultados se guarden en TU base de datos, anade aqui su codigo
-  //     y su cuenta de Google. Solo vera lo suyo y tu solo veras lo tuyo.
+  //     Texto que veran los alumnos debajo de la casilla del codigo ("" = nada).
+  window.CODE_HINT = "";
+
+  // (5) AVANZADO: otros profesores que compartan esta base de datos.
   //     Su correo hay que anadirlo tambien en reglas-firebase.json.
   window.EXTRA_TEACHERS = [
-    // { code: "MARTA26", teacher: "Marta", email: "marta@gmail.com" }
+    // { teacher: "Marta", email: "marta@iesgoya.es" }
   ];
 
   // ---- a partir de aqui no hace falta tocar nada ----
   // Nodo propio de esta app (no se mezcla con las demas apps).
   const RESULTS_NODE = "irregular_verbs";
 
-  window.CLASSES = window.CLASS_CODES
-    .map(c => ({ code: c, teacher: window.TEACHER_NAME, email: window.TEACHER_EMAIL }))
+  window.TEACHERS = [{ teacher: window.TEACHER_NAME, email: window.TEACHER_EMAIL }]
     .concat(window.EXTRA_TEACHERS || []);
 </script>
 </head>
@@ -1683,14 +1668,15 @@
 
     /* ---------- class codes ---------- */
     function normalizeCode(c) { return (c || "").toString().trim().toUpperCase().replace(/\s+/g, ""); }
-    function findClassByCode(c) {
-      const n = normalizeCode(c);
-      return (window.CLASSES || []).find(x => normalizeCode(x.code) === n) || null;
+    function isSchoolAccount(mail) {
+      const dom = (window.SCHOOL_DOMAIN || "").toString().trim().toLowerCase();
+      if (!dom) return true;
+      return (mail || "").toString().trim().toLowerCase().endsWith("@" + dom);
     }
-    function findClassesByEmail(mail) {
+    function findTeacher(mail) {
       const m = (mail || "").toString().trim().toLowerCase();
-      if (!m) return [];
-      return (window.CLASSES || []).filter(x => (x.email || "").toString().trim().toLowerCase() === m);
+      if (!m) return null;
+      return (window.TEACHERS || []).find(t => (t.email || "").toString().trim().toLowerCase() === m) || null;
     }
     function userScopeKey() {
       if (!currentUser) return "";
@@ -1703,12 +1689,13 @@
     function myStudentRef() { return studentRef(currentUser.classCode, currentUser.uid); }
     function myAttemptsRef() { return myStudentRef().child("attempts"); }
 
-    function saveMyProfile() {
+    function saveMyProfile(propagarError) {
       if (!currentUser || currentUser.guest || !currentUser.uid) return Promise.resolve();
-      return myStudentRef().child("profile").set({
+      const p = myStudentRef().child("profile").set({
         firstName: currentUser.firstName, lastName: currentUser.lastName,
         grade: currentUser.grade, email: currentUser.email, updated: Date.now()
-      }).catch(err => console.error("No se pudo guardar el perfil:", err));
+      });
+      return propagarError ? p : p.catch(err => console.error("No se pudo guardar el perfil:", err));
     }
 
     /* ---------- local copy of the results (guest mode / no connection) ---------- */
@@ -1956,7 +1943,7 @@
           updateUserHeader(); showView("viewDashboard"); renderModules();
           return;
         }
-        if (user && prof && prof.uid === user.uid && findClassByCode(prof.classCode)) {
+        if (user && prof && prof.uid === user.uid && prof.classCode) {
           currentUser = prof;                            // vuelve el alumno de siempre
           currentUser.email = user.email || prof.email;
           updateUserHeader(); showView("viewDashboard"); renderModules();
@@ -1999,21 +1986,39 @@
     function handleRegistration(e) {
       e.preventDefault();
       if (!currentAuthUser) { showAuthError("\u26a0\ufe0f Sign in with Google first."); return; }
-      const typed = document.getElementById("regClassCode").value;
-      const cls = findClassByCode(typed);
-      if (!cls) {
-        showCodeError("⚠️ Wrong class code. Ask your own teacher for it" +
-          (window.ALLOW_GUEST_MODE ? ", or use the button below to practise without saving." : "."));
-        document.getElementById("regClassCode").focus();
+      if (!isSchoolAccount(currentAuthUser.email)) {
+        showCodeError("\u26a0\ufe0f This app only saves the work of @" + window.SCHOOL_DOMAIN +
+                      " accounts. You can still practise with the button below.");
         return;
       }
+      const code = normalizeCode(document.getElementById("regClassCode").value);
+      if (!code) { showCodeError("\u26a0\ufe0f Write your class code."); return; }
+
       const user = readRegistrationForm();
       user.guest = false;
-      user.classCode = normalizeCode(cls.code);
-      startSession(user);
-      saveMyProfile();
-      // si ya habia trabajado antes con esta cuenta, sus notas vuelven solas
-      fetchMyRecords(() => renderModules());
+      user.classCode = code;
+
+      const btn = e.target.querySelector("button[type=submit]");
+      if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Checking...`; }
+      showCodeError("");
+
+      // Solo Firebase sabe que codigos valen: si el codigo es bueno, el perfil
+      // se guarda; si no, la propia base de datos rechaza la escritura.
+      currentUser = user;
+      saveMyProfile(true).then(() => {
+        if (btn) { btn.disabled = false; btn.innerHTML = `Enter the Academy <i class="fa-solid fa-arrow-right"></i>`; }
+        startSession(user);
+        fetchMyRecords(() => renderModules());
+      }).catch(err => {
+        currentUser = null;
+        if (btn) { btn.disabled = false; btn.innerHTML = `Enter the Academy <i class="fa-solid fa-arrow-right"></i>`; }
+        const permiso = err && (err.code === "PERMISSION_DENIED" || /permission/i.test(err.message || ""));
+        showCodeError(permiso
+          ? "\u26a0\ufe0f Wrong class code. Ask your own teacher for it" +
+            (window.ALLOW_GUEST_MODE ? ", or use the button below to practise without saving." : ".")
+          : "\u26a0\ufe0f Could not connect (" + ((err && err.message) || "error") + "). Check your connection.");
+        document.getElementById("regClassCode").focus();
+      });
     }
 
     function enterGuestMode() {
@@ -2592,10 +2597,6 @@
        solo ve los resultados guardados bajo SU codigo de clase.
        ============================================================ */
 
-    // true = ademas de tu codigo, muestra los intentos antiguos que se
-    // guardaron antes de existir los codigos (solo los que no tienen codigo).
-    const INCLUDE_LEGACY_RECORDS = true;
-
     let teacherAllRecords = [];
     let teacherSearchTerm = "";
     let teacherRefs = [];
@@ -2606,15 +2607,15 @@
     const TEACHER_COLSPAN = 7 + LEVELS.length;
 
     function openTeacherPanelFor(user) {
-      const mine = findClassesByEmail(user && user.email);
-      if (!mine.length) {
+      const mine = findTeacher(user && user.email);
+      if (!mine) {
         alert("Esta cuenta (" + ((user && user.email) || "?") + ") no es la del profesor.\n\n" +
               "Si eres tu: pon tu correo de Google en TEACHER_EMAIL, dentro del archivo, " +
               "y en reglas-firebase.json.");
         return false;
       }
-      currentTeacherScope = mine;
-      currentTeacherLoggedIn = mine[0].teacher || "Teacher";
+      currentTeacherScope = [mine];
+      currentTeacherLoggedIn = mine.teacher || "Teacher";
       if (quizTimerInterval) clearInterval(quizTimerInterval);
       renderTeacherDashboard();
       showView("viewTeacher");
@@ -2622,7 +2623,7 @@
     }
 
     function showTeacherLogin() {
-      if (currentAuthUser && findClassesByEmail(currentAuthUser.email).length) {
+      if (currentAuthUser && findTeacher(currentAuthUser.email)) {
         openTeacherPanelFor(currentAuthUser);
         return;
       }
@@ -2638,7 +2639,7 @@
       });
     }
 
-    function teacherCodes() { return currentTeacherScope.map(c => normalizeCode(c.code)); }
+    function teacherCodes() { return Object.keys(teacherRecordsByCode).sort(); }
 
     function isRecord(v) {
       return v && typeof v === "object" && (v.moduleId || v.studentName || v.score !== undefined);
@@ -2674,23 +2675,8 @@
       return out;
     }
 
-    function loadLegacyRecords() {
-      if (!INCLUDE_LEGACY_RECORDS) return Promise.resolve([]);
-      return db.ref(RESULTS_NODE).once("value").then(snapshot => {
-        const out = [];
-        snapshot.forEach(childSnap => {
-          const v = childSnap.val();                  // los hijos que son carpetas de codigo no son registros
-          if (isRecord(v) && !normalizeCode(v.classCode)) out.push(Object.assign({}, v, { classCode: "\u2014" }));
-        });
-        return out;
-      }).catch(() => []);
-    }
-
     function renderTeacherDashboard() {
-      const codes = teacherCodes();
       document.getElementById("teacherTitle").innerText = currentTeacherLoggedIn;
-      const sub = document.getElementById("teacherSubtitle");
-      if (sub) sub.innerHTML = `Class code${codes.length > 1 ? "s" : ""}: <span class="text-amber-300 font-bold">${escapeHtml(codes.join(" \u00b7 "))}</span><br>One row per student \u00b7 click a student to see every attempt and every answer they wrote.`;
       renderTeacherTableHead();
       teacherSearchTerm = "";
       teacherRecordsByCode = {};
@@ -2701,40 +2687,43 @@
       tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-slate-400 font-bold">Loading data from the cloud...</td></tr>`;
 
       detachTeacherRefs();
-      loadLegacyRecords().then(list => {
-        teacherLegacyRecords = list;
-        mergeTeacherRecords();
+      const ref = db.ref(RESULTS_NODE);
+      teacherRefs.push(ref);
+      ref.on("value", (snapshot) => {
+        absorbTeacherSnapshot(snapshot);
         paintTeacherTable();
+        updateTeacherLastRefreshed();
+      }, (err) => {
+        console.error("Error reading Firebase results:", err);
+        tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-rose-400 font-bold">\u26a0\ufe0f Could not load the data (${escapeHtml(err.message)}). Check your connection.</td></tr>`;
       });
+    }
 
-      codes.forEach(code => {
-        const ref = db.ref(RESULTS_NODE + "/" + code);
-        teacherRefs.push(ref);
-        ref.on("value", (snapshot) => {
-          teacherRecordsByCode[code] = readBranch(snapshot, code);
-          mergeTeacherRecords();
-          paintTeacherTable();
-          updateTeacherLastRefreshed();
-        }, (err) => {
-          console.error("Error reading Firebase results:", err);
-          tbody.innerHTML = `<tr><td colspan="${TEACHER_COLSPAN}" class="p-6 text-center text-rose-400 font-bold">\u26a0\ufe0f Could not load the data (${escapeHtml(err.message)}). Check your connection.</td></tr>`;
-        });
+    /* El nodo tiene una carpeta por codigo de clase; los codigos se descubren
+       leyendo, no hay ninguna lista en esta pagina. */
+    function absorbTeacherSnapshot(snapshot) {
+      teacherRecordsByCode = {};
+      teacherLegacyRecords = [];
+      snapshot.forEach(codeSnap => {
+        const v = codeSnap.val();
+        if (!v || typeof v !== "object") return;
+        if (isRecord(v)) { teacherLegacyRecords.push(Object.assign({}, v, { classCode: "\u2014" })); return; }
+        teacherRecordsByCode[codeSnap.key] = readBranch(codeSnap, codeSnap.key);
       });
+      mergeTeacherRecords();
+      const sub = document.getElementById("teacherSubtitle");
+      const codes = teacherCodes();
+      if (sub) sub.innerHTML = `Class code${codes.length === 1 ? "" : "s"}: <span class="text-amber-300 font-bold">${escapeHtml(codes.join(" \u00b7 ")) || "\u2014"}</span><br>One row per student \u00b7 click a student to see every attempt and every answer they wrote.`;
     }
 
     function refreshTeacherDashboardNow() {
       const btn = document.getElementById("teacherRefreshBtn");
       if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...`; }
-      const jobs = teacherCodes().map(code =>
-        db.ref(RESULTS_NODE + "/" + code).once("value").then(snapshot => {
-          teacherRecordsByCode[code] = readBranch(snapshot, code);
-        }));
-      jobs.push(loadLegacyRecords().then(list => { teacherLegacyRecords = list; }));
-      Promise.all(jobs).then(() => {
-        mergeTeacherRecords();
+      db.ref(RESULTS_NODE).once("value").then(snapshot => {
+        absorbTeacherSnapshot(snapshot);
         paintTeacherTable();
         updateTeacherLastRefreshed();
-      }).catch((err) => {
+      }).catch(err => {
         alert("Could not refresh: " + err.message);
       }).then(() => {
         if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Refresh`; }
