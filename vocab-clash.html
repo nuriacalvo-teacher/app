@@ -261,8 +261,8 @@
           </div>
           <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
             <p class="font-black text-amber-400 mb-1">3 · Just the word</p>
-            <code class="text-slate-300 text-xs md:text-sm">intestines</code>
-            <p class="text-slate-500 text-xs mt-2">Becomes an unscramble-the-letters question.</p>
+            <code class="text-slate-300 text-xs md:text-sm">goggles</code>
+            <p class="text-slate-500 text-xs mt-2">Only works for words already in the unit: the game reuses their clue. Otherwise add “= meaning”.</p>
           </div>
         </div>
         <p class="text-sm md:text-base text-slate-300">One item per line. Start a line with <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-black">*</code> to make it a <strong class="text-amber-300">⭐ B2 Captain's Challenge</strong> word. Paste as many as you like — 4 or more gives the game enough options for multiple choice.</p>
@@ -393,7 +393,6 @@
 
     <!-- UNSCRAMBLE -->
     <div id="scrambleArea" class="hidden space-y-5">
-      <p id="scrambleHint" class="hidden text-center text-base md:text-xl font-bold text-slate-400"></p>
       <div id="scrambleSlots" class="flex flex-wrap justify-center gap-2 md:gap-3"></div>
       <div id="scrambleTiles" class="flex flex-wrap justify-center gap-2 md:gap-3"></div>
       <div class="flex justify-center gap-3">
@@ -989,6 +988,18 @@ function toggleCustomBox() {
   $("customChevron").className = "fa-solid fa-chevron-" + (open ? "down" : "up") + " text-slate-400";
   sfx.click();
 }
+/* A word pasted on its own has no meaning attached. Rather than asking students to
+   unscramble letters with no clue at all, look the word up in the built-in bank: if it
+   is one of the unit's words we already have a real question, its distractors and its
+   example sentence. If it isn't there, the line is skipped and the teacher is told. */
+function bankEntry(word) {
+  const w = word.toLowerCase().trim();
+  for (const t of TOPICS)
+    for (const q of [...t.qs, ...t.hard])
+      if (q[1][0].toLowerCase() === w) return { prompt:q[0], options:q[1], emoji:q[2] || t.emoji, tip:q[3] };
+  return null;
+}
+
 function parseCustomWords() {
   const raw = $("customInput").value.split("\n").map(l => l.trim()).filter(Boolean);
   const items = raw.map(line => {
@@ -1024,15 +1035,16 @@ function parseCustomWords() {
       return { ...base, prompt: it.sentence,
                options:[it.word, ...others], tip: it.sentence.replace(/_{2,}/, it.word),
                only: canMCQ ? null : ["gap","scramble"], hardFlag: it.hard };
-    return { ...base, prompt:"🔤 Unscramble the word", noClue:true,
-             options:[it.word, ...others], tip:`The word is: ${it.word}`, only:["scramble"], hardFlag: it.hard };
+    const known = bankEntry(it.word);            // no meaning given: borrow the clue from the unit bank
+    if (!known) return null;
+    return { ...base, emoji: known.emoji, prompt: known.prompt, options: known.options,
+             tip: known.tip, only: null, hardFlag: it.hard };
   };
 
-  const built = [], skipped = [];
+  const built = [], noClue = [];
   items.forEach(it => {
     const q = make(it);
-    // a bare word can only become an unscramble question, so it has to be short and single
-    if (it.kind === "word" && !/^[a-zA-Z][a-zA-Z-]{2,8}$/.test(it.word)) { skipped.push(it.word); return; }
+    if (!q) { noClue.push(it.word); return; }   // a word on its own that we cannot give a clue for
     built.push(q);
   });
 
@@ -1044,7 +1056,7 @@ function parseCustomWords() {
   if (!items.length) { st.textContent = "Nothing pasted yet."; st.className = "text-sm font-bold text-slate-400"; }
   else {
     const notes = [];
-    if (skipped.length) notes.push(`⚠️ ${skipped.length} line(s) ignored (${esc(skipped.slice(0, 3).join(", "))}${skipped.length > 3 ? "…" : ""}): on their own they only work as Unscramble, so they must be a single word of 3–9 letters. Add “= meaning” and they work in every format.`);
+    if (noClue.length) notes.push(`⚠️ ${noClue.length} line(s) ignored (${esc(noClue.slice(0, 3).join(", "))}${noClue.length > 3 ? "…" : ""}): a word on its own gives the students no clue at all. Write it as <strong>word = meaning</strong>, or as a sentence with a gap.`);
     if (scrambleOnly && !S.formats.includes("scramble")) notes.push(`⚠️ ${scrambleOnly} of them need the Unscramble format — switch it on above.`);
     st.innerHTML = `✅ ${built.length} question${built.length === 1 ? "" : "s"} created from your list` +
       (S.customHard.length ? ` (${S.customHard.length} marked ⭐ B2)` : "") + "." +
@@ -1306,9 +1318,6 @@ function checkGap() {
 /* ----------------------------------------------------- format: UNSCRAMBLE */
 function renderScramble(q, team) {
   $("scrambleArea").classList.remove("hidden");
-  const hint = $("scrambleHint");
-  hint.classList.toggle("hidden", !q.noClue);
-  if (q.noClue) hint.innerHTML = `<strong class="text-white">${q.correct.length}</strong> letters · it starts with <strong class="text-white">${q.correct[0].toUpperCase()}</strong>`;
   const letters = q.correct.toUpperCase().split("");
   let mixed = shuffle(letters);
   if (mixed.join("") === letters.join("") && letters.length > 2) mixed = shuffle(letters);
