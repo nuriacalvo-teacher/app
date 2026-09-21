@@ -333,8 +333,10 @@
       class="w-full bg-slate-950 border-4 border-slate-700 focus:border-amber-400 rounded-2xl px-6 py-5 display text-3xl md:text-5xl font-black text-center text-amber-300 uppercase tracking-[.3em] outline-none">
     <div class="flex flex-wrap gap-3 justify-center">
       <button onclick="submitLock()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 display font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition"><i class="fa-solid fa-unlock"></i> Unlock</button>
+      <button id="lockClueBtn" onclick="askClue()" class="bg-slate-800 hover:bg-slate-700 text-sky-300 font-black px-6 py-4 rounded-2xl transition"><i class="fa-solid fa-comment-dots mr-2"></i>Ask the Guardian <span class="text-rose-300 text-sm">(−20s)</span></button>
       <button id="lockHintBtn" onclick="lockHint()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 font-black px-6 py-4 rounded-2xl transition"><i class="fa-solid fa-lightbulb mr-2"></i>Reveal a letter <span class="text-rose-300 text-sm">(−30s)</span></button>
     </div>
+    <p id="lockClueText" class="hidden text-center text-base md:text-xl font-bold text-sky-200 bg-sky-500/10 border border-sky-400/40 rounded-2xl px-5 py-3"></p>
     <p id="lockFeedback" class="text-center text-lg md:text-2xl font-black min-h-[2rem]"></p>
   </div>
 </section>
@@ -1223,19 +1225,24 @@ const LEVEL_NOTE = [
 const ROOMS = [
   { id:"verb",  name:"The Vault of Verbs",  emoji:"⚡", color:"#f5b53f", skill:"Irregular verbs",
     story:"Three forms carved in stone. Say them right and the stone lets you pass.",
-    keystone:"WROTE",  clue:"The past simple of <em>write</em>." },
+    keystone:"WROTE",  riddle:"Five runes. A verb frozen in the past — the door only opens for what is already done.",
+    clue:"It is the past simple of <em>write</em>." },
   { id:"tense", name:"The Time Lab",        emoji:"⏳", color:"#38bdf8", skill:"Present tenses",
     story:"Clocks running at four different speeds: simple, continuous, perfect and perfect continuous.",
-    keystone:"OFTEN",  clue:"The adverb of frequency between <em>usually</em> and <em>sometimes</em>." },
+    keystone:"OFTEN",  riddle:"Five runes. The clocks ask how many times — not always, not never.",
+    clue:"An adverb of frequency: it sits between <em>usually</em> and <em>sometimes</em>." },
   { id:"vocab", name:"The Word Library",    emoji:"📚", color:"#34d399", skill:"Vocabulary",
     story:"Shelves of words about the body, health, food, travel, sport and people.",
-    keystone:"RIBS",   clue:"The bones around your chest that protect your heart and lungs." },
+    keystone:"RIBS",   riddle:"Four runes of bone. The library keeps them in a cage around something that beats.",
+    clue:"They are the bones around your chest that protect your heart and lungs." },
   { id:"order", name:"The Sentence Forge",  emoji:"🧱", color:"#a78bfa", skill:"Word order",
     story:"Words fly around the anvil. Put them in the only order English accepts.",
-    keystone:"DOES",   clue:"The auxiliary for a question with <em>he / she / it</em> in the present simple." },
+    keystone:"DOES",   riddle:"Four runes. A small helper that carries no meaning of its own — it only opens questions.",
+    clue:"The auxiliary you need for a question with <em>he / she / it</em> in the present simple." },
   { id:"habit", name:"The Habit Chamber",   emoji:"🔁", color:"#fb7185", skill:"Habits · used to",
     story:"A room that repeats itself: what you used to do, what you usually do, what you are used to.",
-    keystone:"SELDOM", clue:"A formal adverb that means <em>almost never</em>." }
+    keystone:"SELDOM", riddle:"Six runes. This chamber repeats and repeats — this word almost never does.",
+    clue:"A formal adverb that means <em>almost never</em>." }
 ];
 
 const CLASSES = [
@@ -1434,16 +1441,42 @@ function toggleSfx() {
    Four bars of C–G–Am–F at 120 bpm (140 in the boss fight), all built
    live with oscillators, so the offline file needs no audio files.
    ===================================================================== */
-const MUSIC = {
-  on: false, timer: null, step: 0, nextTime: 0, tempo: 120, mode: "game",
-  bus: null, duck: 1,
-  chords: [ [60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60] ],  /* C G Am F */
-  bass:   [ 36, 31, 33, 29 ],
-  lead:   [ 72, null, 76, null, 79, null, 76, null, 72, null, 79, null, 84, null, 79, null,
-            74, null, 79, null, 83, null, 79, null, 74, null, 71, null, 67, null, 71, null,
-            72, null, 76, 79, 81, null, 79, 76, 72, null, 69, null, 72, null, 76, null,
-            77, null, 81, null, 84, null, 81, 77, 76, null, 72, null, 69, null, 67, null ]
+const MOTIFS = [
+  /* each bar is 16 sixteenths; the numbers are steps above the chord root */
+  [[0,null,4,null,7,null,4,null,0,null,7,null,12,null,7,null],
+   [0,null,3,null,7,null,3,null,10,null,7,null,3,null,0,null],
+   [7,null,4,null,0,null,4,null,7,null,12,null,7,null,4,null],
+   [0,null,7,null,4,null,7,null,12,null,7,null,4,null,0,null]],
+  [[12,null,null,7,null,4,null,7,0,null,null,4,null,7,null,12],
+   [10,null,null,7,null,3,null,7,0,null,null,3,null,7,null,10],
+   [7,null,12,null,null,9,null,7,4,null,7,null,null,0,null,4],
+   [12,null,9,null,7,null,4,null,7,null,4,null,0,null,null,null]],
+  [[0,null,null,null,7,null,null,null,4,null,null,null,12,null,null,null],
+   [3,null,null,null,7,null,null,null,10,null,null,null,7,null,null,null],
+   [12,null,null,7,null,null,4,null,7,null,null,12,null,null,7,null],
+   [0,null,null,4,null,null,7,null,12,null,null,7,null,null,4,null]],
+  [[0,0,null,7,null,7,null,4,0,0,null,7,null,12,null,7],
+   [3,3,null,7,null,7,null,10,3,3,null,7,null,10,null,7],
+   [7,7,null,12,null,9,null,7,4,4,null,7,null,12,null,9],
+   [12,null,7,null,4,null,7,null,0,null,4,null,7,null,12,null]]
+];
+/* one theme per chamber, so the loop changes every time a door opens */
+const THEMES = {
+  verb:  { name:"Vault",     tempo:122, wave:"square",   motif:0, oct:12,
+           chords:[[60,64,67],[55,59,62],[57,60,64],[53,57,60]], bass:[36,31,33,29] },
+  tense: { name:"Clockwork", tempo:127, wave:"triangle", motif:1, oct:12,
+           chords:[[57,60,64],[53,57,60],[60,64,67],[55,59,62]], bass:[33,29,36,31] },
+  vocab: { name:"Library",   tempo:112, wave:"triangle", motif:2, oct:12,
+           chords:[[53,57,60],[60,64,67],[50,53,57],[58,62,65]], bass:[29,36,26,34] },
+  order: { name:"Forge",     tempo:129, wave:"square",   motif:3, oct:12,
+           chords:[[50,53,57],[58,62,65],[53,57,60],[60,64,67]], bass:[26,34,29,36] },
+  habit: { name:"Loop",      tempo:118, wave:"square",   motif:0, oct:7,
+           chords:[[55,59,62],[52,55,59],[60,64,67],[57,61,64]], bass:[31,28,36,33] },
+  boss:  { name:"Guardian",  tempo:142, wave:"sawtooth", motif:1, oct:0,
+           chords:[[57,60,64],[53,57,60],[55,59,62],[52,56,59]], bass:[33,29,31,28] }
 };
+const MUSIC = { on:false, timer:null, step:0, nextTime:0, mode:"game", theme:THEMES.verb, bus:null };
+
 function musicBus() {
   if (!MUSIC.bus) {
     const c = ac();
@@ -1453,38 +1486,73 @@ function musicBus() {
   }
   return MUSIC.bus;
 }
+function currentTempo() {
+  const t = MUSIC.theme.tempo;
+  return MUSIC.mode === "focus" ? t - 14 : MUSIC.mode === "calm" ? t - 8 : t;
+}
+/* game  = full groove between questions · focus = quiet thinking music while a
+   team answers · calm = the map · boss = the fight */
 function scheduleStep(step, t) {
-  const bus = musicBus(), bar = Math.floor(step / 16) % 4, s = step % 16;
-  const chord = MUSIC.chords[bar], root = MUSIC.bass[bar];
-  const boss = MUSIC.mode === "boss";
-  /* drums — four on the floor, clap on 2 and 4, hats on every eighth */
-  if (s % 4 === 0) { tone(160, t, .16, "sine", .95, bus, 42); noise(t, .05, .3, 90, 1, bus); }
-  if (s === 4 || s === 12) { noise(t, .16, .55, 1700, .6, bus); noise(t, .06, .3, 3200, .8, bus); }
-  if (s % 2 === 0) noise(t, .045, s % 4 === 2 ? .2 : .11, 9000, 1, bus);
-  if (boss && s % 2 === 1) noise(t, .03, .08, 11000, 1, bus);
+  const bus = musicBus(), th = MUSIC.theme;
+  const cycle = Math.floor(step / 16) % 8, bar = cycle % 4, second = cycle >= 4, s = step % 16;
+  const chord = th.chords[bar], root = th.bass[bar];
+  const mode = MUSIC.mode, boss = mode === "boss", focus = mode === "focus", calm = mode === "calm";
+  const full = mode === "game" || boss;
+
+  /* drums */
+  if (full) {
+    if (s % 4 === 0) { tone(160, t, .16, "sine", .95, bus, 42); noise(t, .05, .3, 90, 1, bus); }
+    if (s === 4 || s === 12) { noise(t, .16, .55, 1700, .6, bus); noise(t, .06, .3, 3200, .8, bus); }
+    if (s % 2 === 0) noise(t, .045, s % 4 === 2 ? .2 : .11, 9000, 1, bus);
+    if (boss && s % 2 === 1) noise(t, .03, .08, 11000, 1, bus);
+    /* a short fill closes every eight bars */
+    if (second && bar === 3 && s >= 12) noise(t, .07, .35, 2200 + (s - 12) * 500, .7, bus);
+  } else if (calm) {
+    if (s === 0) tone(150, t, .18, "sine", .5, bus, 45);
+    if (s % 4 === 2) noise(t, .04, .07, 9000, 1, bus);
+  } else if (focus) {
+    if (s === 0) tone(140, t, .22, "sine", .32, bus, 48);
+    if (s === 8) noise(t, .05, .05, 7000, 1, bus);
+  }
+
   /* bass */
-  if (s % 2 === 0) {
-    const n = (s === 6 || s === 14) ? root + 7 : root;
-    bassVoice(midi(n), t, .21, .5, bus);
-  }
-  /* chord stabs on the off-beat */
-  if (s === 2 || s === 6 || s === 10 || s === 14) {
+  if (full && s % 2 === 0) bassVoice(midi((s === 6 || s === 14) ? root + 7 : root), t, .21, .5, bus);
+  else if (calm && s % 4 === 0) bassVoice(midi(root), t, .38, .32, bus);
+  else if (focus && s === 0) bassVoice(midi(root), t, .9, .22, bus);
+
+  /* chords: stabs when the game moves, a long pad while the team thinks */
+  if (full && (s === 2 || s === 6 || s === 10 || s === 14))
     chord.forEach(n => leadVoice(midi(n + (boss ? 0 : 12)), t, .2, .13, bus, "square"));
+  if (calm && s === 0)
+    chord.forEach(n => leadVoice(midi(n + 12), t, .9, .07, bus, "triangle"));
+  if (focus && (s === 0 || s === 8))
+    chord.forEach(n => leadVoice(midi(n + 12), t, 1.1, .055, bus, "sine"));
+
+  /* arpeggio */
+  if (full && s % 2 === 1) leadVoice(midi(chord[(s >> 1) % chord.length] + 12), t, .12, .07, bus, "triangle");
+  if (calm && s % 4 === 1) leadVoice(midi(chord[(s >> 2) % chord.length] + 12), t, .2, .05, bus, "triangle");
+  if (focus && s % 8 === 4) leadVoice(midi(chord[(step >> 3) % chord.length] + 24), t, .5, .035, bus, "sine");
+
+  /* melody — silent while the team is thinking */
+  if (!focus) {
+    const motif = MOTIFS[th.motif][bar];
+    let off = motif[s];
+    if (off != null) {
+      if (second) off = (s % 4 === 0) ? off + 5 : null;   /* second half answers the first */
+      if (off != null) {
+        const vol = boss ? .2 : calm ? .09 : .17;
+        leadVoice(midi(chord[0] + th.oct + off), t, calm ? .3 : .26, vol, bus, calm ? "triangle" : th.wave);
+      }
+    }
   }
-  /* arpeggio layer keeps it moving */
-  if (s % 2 === 1) leadVoice(midi(chord[(s >> 1) % chord.length] + 12), t, .12, .07, bus, "triangle");
-  /* lead melody */
-  const note = MUSIC.lead[step % MUSIC.lead.length];
-  if (note) leadVoice(midi(note), t, .26, boss ? .2 : .17, bus, boss ? "sawtooth" : "square");
-  /* boss growl */
   if (boss && s === 0) bassVoice(midi(root - 12), t, .55, .4, bus);
 }
 function musicLoop() {
-  const c = ac(), spb = 60 / MUSIC.tempo / 4;
+  const c = ac(), spb = 60 / currentTempo() / 4;
   while (MUSIC.nextTime < c.currentTime + .12) {
     scheduleStep(MUSIC.step, MUSIC.nextTime);
     MUSIC.nextTime += spb;
-    MUSIC.step = (MUSIC.step + 1) % 64;
+    MUSIC.step = (MUSIC.step + 1) % 128;
   }
 }
 function startMusic(mode) {
@@ -1504,9 +1572,12 @@ function stopMusic() {
   if (MUSIC.bus) try { MUSIC.bus.gain.setTargetAtTime(0.0001, ac().currentTime, .1); } catch (e) {}
   paintMusicButton();
 }
-function setMusicMode(mode) {
-  MUSIC.mode = mode;
-  MUSIC.tempo = mode === "boss" ? 140 : mode === "calm" ? 104 : 120;
+function setMusicMode(mode) { MUSIC.mode = mode; }
+function setMusicTheme(id) {
+  const th = THEMES[id];
+  if (!th || th === MUSIC.theme) return;
+  MUSIC.theme = th;
+  MUSIC.step = 0;                       /* a new chamber starts its loop clean */
 }
 function duckMusic(on) {
   if (!MUSIC.bus) return;
@@ -1765,6 +1836,7 @@ function activeTeam() { return S.reboundTeam || S.teams[S.turn % S.teams.length]
 
 function renderMap(intro) {
   screenTo("screenMap");
+  setMusicMode("calm");
   const doneAll = S.solvedRooms.length === S.rooms.length;
   $("mapSubtitle").innerHTML = doneAll
     ? "Every keystone is yours. <strong class='text-amber-300'>The Guardian is waiting.</strong>"
@@ -1815,6 +1887,7 @@ function continueFromMap() {
 function enterRoom(roomId) {
   S.currentRoomId = roomId || nextRoomId();
   const room = currentRoom();
+  setMusicTheme(room.id); setMusicMode("game");
   const L = LENGTHS.find(x => x.id === S.length);
   S.queue = buildQueue(room.id, L.per * S.teams.length);
   S.qIndex = 0; S.mode = "room";
@@ -1828,6 +1901,7 @@ function nextTurn() {
   const room = currentRoom();
   const cls = CLASSES.find(c => c.id === t.cls);
   screenTo("screenTurn");
+  setMusicMode("game");
   sfx.turn();
   $("turnRoundLabel").textContent = room.name + " · question " + (S.qIndex + 1) + " of " + S.queue.length;
   $("turnBanner").classList.add("hidden");
@@ -1902,6 +1976,7 @@ function askQuestion(item) {
   renderPowers(g("powerRow"), q);
   renderScoreStrip($("liveScoreStrip"), false);
   if (S.mode === "boss") renderBossBar(); else clearBossBar();
+  setMusicMode(S.mode === "boss" ? "boss" : "focus");
   startQuestionTimer(g);
   if (q.t === "listen") setTimeout(() => say(q.w), 450);
 }
@@ -2282,10 +2357,13 @@ function openChamberLock() {
   S.mode = "lock";
   const room = currentRoom();
   lockHintsUsed = 0;
+  setMusicMode("focus");
   screenTo("screenLock");
   $("lockTitle").textContent = room.emoji + " " + room.name;
-  $("lockClue").innerHTML = "Type the keystone to open the door. Clue: <strong class='text-amber-300'>" + room.clue + "</strong>";
+  $("lockClue").innerHTML = "Carve the keystone to open the door. <span class='text-amber-300'>" + room.riddle + "</span>";
   $("lockInput").value = ""; $("lockFeedback").textContent = "";
+  $("lockClueText").classList.add("hidden");
+  $("lockClueBtn").classList.remove("hidden");
   $("lockHintBtn").classList.toggle("hidden", !S.rules.clock);
   paintRunes(room.keystone, S.revealed[room.id] || 0);
   setTimeout(() => $("lockInput").focus(), 200);
@@ -2308,7 +2386,7 @@ function submitLock() {
     $("lockInput").classList.add("shake"); setTimeout(() => $("lockInput").classList.remove("shake"), 500);
     sfx.bad(); return;
   }
-  sfx.unlock(); confetti(70);
+  sfx.unlock(); confetti(70); setMusicMode("game");
   fb.className = "text-center text-lg md:text-2xl font-black text-emerald-300";
   if (S.mode === "master") { fb.textContent = "The vault door opens!"; S.escaped = true; setTimeout(() => endGame("escape"), 1200); return; }
   fb.textContent = "The door opens — keystone " + room.keystone + " is yours!";
@@ -2323,6 +2401,16 @@ function submitLock() {
     renderMap(false);
     showLoot(best, null);
   }, 1400);
+}
+function askClue() {
+  const room = S.mode === "master" ? null : currentRoom();
+  const box = $("lockClueText");
+  box.innerHTML = "<i class='fa-solid fa-comment-dots mr-2'></i>" + (room ? room.clue
+    : "The door wants the keystones themselves, written one after the other in the order the chambers gave them.");
+  box.classList.remove("hidden");
+  $("lockClueBtn").classList.add("hidden");
+  if (S.rules.clock) { S.clockLeft = Math.max(5, S.clockLeft - 20); updateClock(); }
+  sfx.tick();
 }
 function lockHint() {
   const room = S.mode === "master" ? null : currentRoom();
@@ -2341,10 +2429,16 @@ function masterCode() {
 }
 function openMasterLock() {
   S.mode = "master";
+  setMusicMode("focus");
   screenTo("screenLock");
+  const initials = S.rooms.length >= 3;
   $("lockTitle").textContent = "🚪 The Vault Door";
-  $("lockClue").innerHTML = "Type the <strong class='text-amber-300'>master code</strong>: the first letter of every keystone you collected, in order.";
+  $("lockClue").innerHTML = initials
+    ? "Carve the <strong class='text-amber-300'>master code</strong>: the <strong>first rune</strong> of every keystone, in the order the chambers gave them."
+    : "Carve the <strong class='text-amber-300'>master code</strong>: <strong>write all the keystones</strong>, one after the other, in the order the chambers gave them.";
   $("lockInput").value = ""; $("lockFeedback").textContent = "";
+  $("lockClueText").classList.add("hidden");
+  $("lockClueBtn").classList.remove("hidden");
   S.revealed.master = S.revealed.master || 0;
   paintRunes(masterCode(), S.revealed.master);
   const host = $("lockRunes");
@@ -2389,7 +2483,7 @@ function startBoss() {
   S.boss.maxHp = S.teams.length * (30 + L.per * 12);
   S.boss.hp = S.boss.maxHp; S.boss.turns = 0; S.boss.alive = true;
   S.bossQueue = shuffle(S.rooms.flatMap(id => poolFor(id, S.level))).slice(0, S.teams.length * 8);
-  setMusicMode("boss");
+  setMusicTheme("boss"); setMusicMode("boss");
   screenTo("screenBoss");
   $("bossQuestionMount").innerHTML =
     "<div class='text-center'><button onclick='bossNext()' class='glow bg-rose-500 hover:bg-rose-400 text-white display font-black text-2xl md:text-3xl px-10 py-5 rounded-2xl transition'>" +

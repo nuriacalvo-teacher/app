@@ -24,8 +24,12 @@ sale a la pizarra por turnos.
    cuál jugar (modo *Free roam*).
 2. Cada acierto **revela una letra de la piedra clave** de la cámara. Al terminar las
    preguntas, cualquier equipo puede escribirla para abrir la puerta (+15 puntos).
-3. La primera letra de cada piedra clave forma el **código maestro** (con las cinco cámaras:
-   `WORDS`).
+   El candado solo da un **acertijo** («Five runes. A verb frozen in the past…»); la
+   definición hay que pedirla con *Ask the Guardian* y cuesta 20 segundos de reloj,
+   igual que *Reveal a letter* cuesta 30.
+3. Con **tres cámaras o más**, el código maestro son las **iniciales** de las piedras clave
+   (con las cinco: `WORDS`); con una o dos, la puerta pide **las piedras clave enteras**,
+   seguidas. El texto de la puerta lo dice según la partida.
 4. **Capa de rol:** cada equipo elige una clase con un poder por cámara (escudo, revelar
    opciones, congelar el reloj, +15 segundos, segunda oportunidad), tiene corazones, gana XP
    y sube de nivel. Los fallos se pueden **robar** (rebote) y las rachas multiplican los puntos.
@@ -36,10 +40,13 @@ sale a la pizarra por turnos.
 
 **Teclado:** `1–4` o `A–D` responder · `Enter` enviar · `Espacio` continuar · `H` usar el poder.
 
-**Sonido:** la música es un loop de batería, bajo, acordes y melodía generado por el
-propio navegador (120 pulsaciones por minuto, 140 en el combate final); se enciende
-al entrar en la bóveda y baja de volumen sola en los dictados. Los botones ♪ y 🔊 de
-la cabecera apagan música y efectos por separado.
+**Sonido:** la música la genera el propio navegador, y **cada cámara tiene su tema**
+(acordes, melodía y tempo distintos: 112 a 129 pulsaciones por minuto), así que cambia
+cada vez que se abre una puerta. Mientras un equipo piensa la respuesta baja a una
+**música de espera** más lenta y sin melodía, para no agobiar; vuelve el ritmo completo
+entre pregunta y pregunta, y el Guardián trae su propio tema a 142. También baja de
+volumen sola en los dictados. Los botones ♪ y 🔊 de la cabecera apagan música y efectos
+por separado.
 
 ---
 
