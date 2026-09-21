@@ -36,13 +36,49 @@ sale a la pizarra por turnos.
 
 **Teclado:** `1–4` o `A–D` responder · `Enter` enviar · `Espacio` continuar · `H` usar el poder.
 
+**Sonido:** la música es un loop de batería, bajo, acordes y melodía generado por el
+propio navegador (120 pulsaciones por minuto, 140 en el combate final); se enciende
+al entrar en la bóveda y baja de volumen sola en los dictados. Los botones ♪ y 🔊 de
+la cabecera apagan música y efectos por separado.
+
 ---
 
 ## Añadir contenido nuevo (sin tocar código)
 
-Hay tres formas, de la más rápida a la más permanente:
+Hay cuatro formas, de la más automática a la más manual:
 
-### 1 · Pegar palabras en clase (30 segundos)
+### 1 · Las chambers se alimentan solas del portal ⭐
+Cada vez que se abre el juego **lee `apps.json` del portal** y, de las apps que
+tienes publicadas ahí (las que están *visibles*), entra en su página, busca sus
+ejercicios y los reparte en la cámara que les toca: verbos, tiempos, vocabulario,
+orden de la frase o hábitos.
+
+- Publicas una app nueva en la web → **a la siguiente partida ya hay preguntas suyas**.
+- En el apartado *6 · New content* se ve qué apps ha leído y cuántas preguntas ha
+  sacado de cada una. El botón **Scan the portal now** fuerza la lectura completa;
+  si no, lee unas pocas apps por sesión para no cargar la página.
+- Lo leído se guarda en el navegador, así que la segunda vez es instantáneo.
+  *Clear what was read* borra esa memoria.
+
+Qué sabe leer y qué no:
+
+| Sí | No |
+|---|---|
+| Tests con opciones (`q` + `options`, con o sin índice de respuesta) | Preguntas de comprensión que dependen de un texto (se descartan) |
+| Huecos con `___` y lista de respuestas | Ejercicios generados al vuelo por la propia app |
+| Bancos de frases con el modelo en inglés → orden de palabras | Apps que no guardan los datos en el código (solo HTML suelto) |
+| Listas de vocabulario `término + definición en inglés` | |
+| Glosarios `inglés + traducción`: se tira la traducción y la palabra inglesa pasa a anagrama, vocales o dictado | |
+
+Dos reglas para mantener el juego **en inglés** y con sentido:
+las explicaciones escritas en español no se copian (se enseña solo la respuesta
+correcta), y de las apps de *exámenes, reading, listening y speaking* solo se coge
+vocabulario, nunca las preguntas sobre un texto que el juego no muestra.
+
+> Solo se leen las apps marcadas como **visibles** en `apps.json`. Ahora mismo lo
+> están cinco; las que tengas ocultas no entran hasta que las publiques.
+
+### 2 · Pegar palabras en clase (30 segundos)
 En la pantalla de inicio, apartado **6 · New content**, caja *Our own words*:
 una palabra por línea, con la pista detrás de una barra vertical.
 
@@ -54,7 +90,7 @@ stomach | food goes here after you swallow
 
 El `*` marca la palabra como **B2** (solo sale en niveles altos). Se guarda en ese ordenador.
 
-### 2 · Subir preguntas a `content.json` (para todo el alumnado)
+### 3 · Subir preguntas a `content.json` (para todo el alumnado)
 El juego lee `content.json` **cada vez que se abre**. Edita el fichero en GitHub
 (lápiz ✏️ → *Commit changes*) y añade objetos a la lista `items`:
 
@@ -90,7 +126,7 @@ El juego lee `content.json` **cada vez que se abre**. Edita el fichero en GitHub
 
 Al abrir el juego aparece **“N extra questions loaded”** en el apartado 6.
 
-### 3 · Cargar preguntas desde otra dirección
+### 4 · Cargar preguntas desde otra dirección
 En el mismo apartado, *Question file from an address*: pega la URL de cualquier JSON con esa
 misma estructura (por ejemplo, un `content.json` de otro repositorio) y pulsa **Add**.
 Se recuerda solo en ese ordenador; *Forget sources* lo borra.

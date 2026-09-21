@@ -214,6 +214,15 @@
       <p class="text-sm text-slate-400">The vault reads <code class="text-amber-300">content.json</code> next to this page every time it opens: upload a new file to GitHub and the questions are here.</p></div>
     </div>
     <p id="extraStatus" class="text-sm md:text-base font-bold"></p>
+    <div class="rounded-2xl border-2 border-sky-500/40 bg-slate-950/70 p-4 space-y-2">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="font-black text-white"><i class="fa-solid fa-tower-broadcast text-sky-300 mr-2"></i>Chambers fed by the website</span>
+        <button onclick="scanPortal(true)" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black px-4 py-2 rounded-xl transition text-sm"><i class="fa-solid fa-rotate mr-1"></i>Scan the portal now</button>
+        <button onclick="forgetPortalCache()" class="text-xs underline text-rose-300 font-bold">Clear what was read</button>
+      </div>
+      <p id="portalStatus" class="text-sm font-bold text-slate-400">Not scanned yet.</p>
+      <p class="text-xs text-slate-500 font-bold">Every app published on the portal is read and its exercises go into the chamber that fits it — verbs, tenses, vocabulary, word order or habits. New app on the website, more questions in the vault.</p>
+    </div>
     <div class="grid md:grid-cols-2 gap-4">
       <div class="space-y-2">
         <label class="text-sm font-black uppercase tracking-widest text-slate-400">Our own words <span class="text-slate-500 normal-case font-bold">— one per line, <code class="text-amber-300">word | clue</code>, <code class="text-amber-300">*</code> for B2</span></label>
@@ -511,7 +520,7 @@ const BANK = [
 {"r":"verb","t":"forms","q":"go","a":[["went"],["gone"]],"em":"🔱","tip":"Go – went – gone","lv":[1,4],"sub":"Base · Past · Participle","w":"went"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “grow”?","o":["grew","growed","grown","drove"],"em":"⚡","tip":"Grow – grew – grown","lv":[1,4],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"grow","a":[["grew"],["grown"]],"em":"🔱","tip":"Grow – grew – grown","lv":[1,4],"sub":"Base · Past · Participle","w":"grew"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “hang”?","o":["hung","hanged","hangt","ate"],"em":"⚡","tip":"Hang – hung / hanged – hung / hanged","lv":[1,4],"sub":"Irregular verbs"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “hang”?","o":["hung","hanged up","hangen","hunged"],"em":"⚡","tip":"Hang – hung / hanged – hung / hanged","lv":[1,4],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"hang","a":[["hung","hanged"],["hung","hanged"]],"em":"🔱","tip":"Hang – hung / hanged – hung / hanged","lv":[1,4],"sub":"Base · Past · Participle","w":"hung"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “have”?","o":["had","haveed","havet","fell"],"em":"⚡","tip":"Have – had – had","lv":[1,4],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"have","a":[["had"],["had"]],"em":"🔱","tip":"Have – had – had","lv":[1,4],"sub":"Base · Past · Participle","w":"had"},
@@ -580,10 +589,10 @@ const BANK = [
 {"r":"verb","t":"forms","q":"lend","a":[["lent"],["lent"]],"em":"🔱","tip":"Lend – lent – lent","lv":[2,5],"sub":"Base · Past · Participle","w":"lent"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “let”?","o":["let","leted","lett","met"],"em":"⚡","tip":"Let – let – let","lv":[2,5],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"let","a":[["let"],["let"]],"em":"🔱","tip":"Let – let – let","lv":[2,5],"sub":"Base · Past · Participle","w":"let"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “lie_rest”?","o":["lay","lie_rested","lain","overcame"],"em":"⚡","tip":"Lie_rest – lay – lain","lv":[2,5],"sub":"Irregular verbs"},
-{"r":"verb","t":"forms","q":"lie_rest","a":[["lay"],["lain"]],"em":"🔱","tip":"Lie_rest – lay – lain","lv":[2,5],"sub":"Base · Past · Participle","w":"lay"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “lie_untrue”?","o":["lied","lie_untrueed","lie_untruet","paid"],"em":"⚡","tip":"Lie_untrue – lied – lied","lv":[2,5],"sub":"Irregular verbs"},
-{"r":"verb","t":"forms","q":"lie_untrue","a":[["lied"],["lied"]],"em":"🔱","tip":"Lie_untrue – lied – lied","lv":[2,5],"sub":"Base · Past · Participle","w":"lied"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “lie (rest)”?","o":["lay","lied","lain","laid"],"em":"⚡","tip":"Lie (rest) – lay – lain","lv":[2,5],"sub":"Irregular verbs"},
+{"r":"verb","t":"forms","q":"lie (rest)","a":[["lay"],["lain"]],"em":"🔱","tip":"Lie (rest) – lay – lain","lv":[2,5],"sub":"Base · Past · Participle","w":"lay"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “lie (not tell the truth)”?","o":["lied","lay","lain","laid"],"em":"⚡","tip":"Lie (not tell the truth) – lied – lied","lv":[2,5],"sub":"Irregular verbs"},
+{"r":"verb","t":"forms","q":"lie (not tell the truth)","a":[["lied"],["lied"]],"em":"🔱","tip":"Lie (not tell the truth) – lied – lied","lv":[2,5],"sub":"Base · Past · Participle","w":"lied"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “light”?","o":["lit","lighted","lightt","hid"],"em":"⚡","tip":"Light – lit – lit","lv":[2,5],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"light","a":[["lit"],["lit"]],"em":"🔱","tip":"Light – lit – lit","lv":[2,5],"sub":"Base · Past · Participle","w":"lit"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “lose”?","o":["lost","loseed","loset","hit"],"em":"⚡","tip":"Lose – lost – lost","lv":[2,5],"sub":"Irregular verbs"},
@@ -617,9 +626,9 @@ const BANK = [
 {"r":"verb","t":"gap","q":"I have ___ my dictionary to Sara.","a":["lent"],"hint":"lend","em":"✅","tip":"Past participle of “lend”: lent","lv":[2,5],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"My parents ___ me go to the concert last night.","a":["let"],"hint":"let","em":"🕰️","tip":"Past simple of “let”: let","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"The teacher has ___ us leave early today.","a":["let"],"hint":"let","em":"✅","tip":"Past participle of “let”: let","lv":[2,5],"sub":"Present perfect"},
-{"r":"verb","t":"gap","q":"That old book has ___ on the shelf for years.","a":["lain"],"hint":"lie_rest","em":"✅","tip":"Past participle of “lie_rest”: lain","lv":[2,5],"sub":"Present perfect"},
-{"r":"verb","t":"gap","q":"He ___ to his mum about his exam results.","a":["lied"],"hint":"lie_untrue","em":"🕰️","tip":"Past simple of “lie_untrue”: lied","lv":[2,5],"sub":"Past simple"},
-{"r":"verb","t":"gap","q":"I'm sorry, I have ___ to you.","a":["lied"],"hint":"lie_untrue","em":"✅","tip":"Past participle of “lie_untrue”: lied","lv":[2,5],"sub":"Present perfect"},
+{"r":"verb","t":"gap","q":"That old book has ___ on the shelf for years.","a":["lain"],"hint":"lie (rest)","em":"✅","tip":"Past participle of “lie (rest)”: lain","lv":[2,5],"sub":"Present perfect"},
+{"r":"verb","t":"gap","q":"He ___ to his mum about his exam results.","a":["lied"],"hint":"lie (not tell the truth)","em":"🕰️","tip":"Past simple of “lie (not tell the truth)”: lied","lv":[2,5],"sub":"Past simple"},
+{"r":"verb","t":"gap","q":"I'm sorry, I have ___ to you.","a":["lied"],"hint":"lie (not tell the truth)","em":"✅","tip":"Past participle of “lie (not tell the truth)”: lied","lv":[2,5],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"Dad ___ the fire because it was very cold.","a":["lit"],"hint":"light","em":"🕰️","tip":"Past simple of “light”: lit","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"Our team ___ the match on Sunday.","a":["lost"],"hint":"lose","em":"🕰️","tip":"Past simple of “lose”: lost","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"I can't find my wallet. I think I have ___ it.","a":["lost"],"hint":"lose","em":"✅","tip":"Past participle of “lose”: lost","lv":[2,5],"sub":"Present perfect"},
@@ -631,10 +640,10 @@ const BANK = [
 {"r":"verb","t":"gap","q":"She ___ her fear of water and learnt to swim.","a":["overcame"],"hint":"overcome","em":"🕰️","tip":"Past simple of “overcome”: overcame","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"We ___ twenty euros for the tickets.","a":["paid"],"hint":"pay","em":"🕰️","tip":"Past simple of “pay”: paid","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"Don't worry, I have already ___ for lunch.","a":["paid"],"hint":"pay","em":"✅","tip":"Past participle of “pay”: paid","lv":[2,5],"sub":"Present perfect"},
-{"r":"verb","t":"gap","q":"The cat ___ in the sun all afternoon.","a":["lay"],"hint":"lie_rest","em":"🕰️","tip":"Past simple of “lie_rest”: lay","lv":[2,5],"sub":"Past simple"},
+{"r":"verb","t":"gap","q":"The cat ___ in the sun all afternoon.","a":["lay"],"hint":"lie (rest)","em":"🕰️","tip":"Past simple of “lie (rest)”: lay","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"My mother ___ French at school.","a":["learnt","learned"],"hint":"learn","em":"🕰️","tip":"Past simple of “learn”: learnt / learned","lv":[2,5],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"We ___ a snowman in the park last winter.","a":["made"],"hint":"make","em":"🕰️","tip":"Past simple of “make”: made","lv":[2,5],"sub":"Past simple"},
-{"r":"verb","t":"gap","q":"She has ___ about her age again!","a":["lied"],"hint":"lie_untrue","em":"✅","tip":"Past participle of “lie_untrue”: lied","lv":[2,5],"sub":"Present perfect"},
+{"r":"verb","t":"gap","q":"She has ___ about her age again!","a":["lied"],"hint":"lie (not tell the truth)","em":"✅","tip":"Past participle of “lie (not tell the truth)”: lied","lv":[2,5],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"I have ___ Emma for six years.","a":["known"],"hint":"know","em":"✅","tip":"Past participle of “know”: known","lv":[2,5],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"Hurry up! The train has just ___.","a":["left"],"hint":"leave","em":"✅","tip":"Past participle of “leave”: left","lv":[2,5],"sub":"Present perfect"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “put”?","o":["put","puted","putt","said"],"em":"⚡","tip":"Put – put – put","lv":[3,6],"sub":"Irregular verbs"},
@@ -718,11 +727,11 @@ const BANK = [
 {"r":"verb","t":"gap","q":"I have ___ the milk in the fridge.","a":["put"],"hint":"put","em":"✅","tip":"Past participle of “put”: put","lv":[3,6],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"She has ___ her bike to school every day this week.","a":["ridden"],"hint":"ride","em":"✅","tip":"Past participle of “ride”: ridden","lv":[3,6],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"Your phone has ___ three times!","a":["rung"],"hint":"ring","em":"✅","tip":"Past participle of “ring”: rung","lv":[3,6],"sub":"Present perfect"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “smell”?","o":["smelt","smelled","smellt","stung"],"em":"⚡","tip":"Smell – smelt / smelled – smelt / smelled","lv":[3,6],"sub":"Irregular verbs"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “smell”?","o":["smelt","smellen","smelled up","smolt"],"em":"⚡","tip":"Smell – smelt / smelled – smelt / smelled","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"smell","a":[["smelt","smelled"],["smelt","smelled"]],"em":"🔱","tip":"Smell – smelt / smelled – smelt / smelled","lv":[3,6],"sub":"Base · Past · Participle","w":"smelt"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “speak”?","o":["spoke","speaked","spoken","swept"],"em":"⚡","tip":"Speak – spoke – spoken","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"speak","a":[["spoke"],["spoken"]],"em":"🔱","tip":"Speak – spoke – spoken","lv":[3,6],"sub":"Base · Past · Participle","w":"spoke"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “spell”?","o":["spelt","spelled","spellt","swam"],"em":"⚡","tip":"Spell – spelt / spelled – spelt / spelled","lv":[3,6],"sub":"Irregular verbs"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “spell”?","o":["spelt","spellen","spold","spelten"],"em":"⚡","tip":"Spell – spelt / spelled – spelt / spelled","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"spell","a":[["spelt","spelled"],["spelt","spelled"]],"em":"🔱","tip":"Spell – spelt / spelled – spelt / spelled","lv":[3,6],"sub":"Base · Past · Participle","w":"spelt"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “spend”?","o":["spent","spended","spendt","took"],"em":"⚡","tip":"Spend – spent – spent","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"spend","a":[["spent"],["spent"]],"em":"🔱","tip":"Spend – spent – spent","lv":[3,6],"sub":"Base · Past · Participle","w":"spent"},
@@ -752,8 +761,8 @@ const BANK = [
 {"r":"verb","t":"forms","q":"throw","a":[["threw"],["thrown"]],"em":"🔱","tip":"Throw – threw – thrown","lv":[3,6],"sub":"Base · Past · Participle","w":"threw"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “understand”?","o":["understood","understanded","understandt","spelt"],"em":"⚡","tip":"Understand – understood – understood","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"understand","a":[["understood"],["understood"]],"em":"🔱","tip":"Understand – understood – understood","lv":[3,6],"sub":"Base · Past · Participle","w":"understood"},
-{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “wake_up”?","o":["woke up","wake_uped","woken up","spent"],"em":"⚡","tip":"Wake_up – woke up – woken up","lv":[3,6],"sub":"Irregular verbs"},
-{"r":"verb","t":"forms","q":"wake_up","a":[["woke up"],["woken up"]],"em":"🔱","tip":"Wake_up – woke up – woken up","lv":[3,6],"sub":"Base · Past · Participle","w":"woke up"},
+{"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “wake up”?","o":["woke up","waked up","woken up","wakened up"],"em":"⚡","tip":"Wake up – woke up – woken up","lv":[3,6],"sub":"Irregular verbs"},
+{"r":"verb","t":"forms","q":"wake up","a":[["woke up"],["woken up"]],"em":"🔱","tip":"Wake up – woke up – woken up","lv":[3,6],"sub":"Base · Past · Participle","w":"woke up"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “wear”?","o":["wore","weared","worn","stood"],"em":"⚡","tip":"Wear – wore – worn","lv":[3,6],"sub":"Irregular verbs"},
 {"r":"verb","t":"forms","q":"wear","a":[["wore"],["worn"]],"em":"🔱","tip":"Wear – wore – worn","lv":[3,6],"sub":"Base · Past · Participle","w":"wore"},
 {"r":"verb","t":"mcq","q":"What is the PAST SIMPLE of “win”?","o":["won","wined","wint","stole"],"em":"⚡","tip":"Win – won – won","lv":[3,6],"sub":"Irregular verbs"},
@@ -788,7 +797,7 @@ const BANK = [
 {"r":"verb","t":"gap","q":"Someone has ___ rubbish on the floor.","a":["thrown"],"hint":"throw","em":"✅","tip":"Past participle of “throw”: thrown","lv":[3,6],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"I ___ everything the teacher said in class today.","a":["understood"],"hint":"understand","em":"🕰️","tip":"Past simple of “understand”: understood","lv":[3,6],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"Now I have ___ the rule. It's easy!","a":["understood"],"hint":"understand","em":"✅","tip":"Past participle of “understand”: understood","lv":[3,6],"sub":"Present perfect"},
-{"r":"verb","t":"gap","q":"Shh! The baby has just ___.","a":["woken up"],"hint":"wake_up","em":"✅","tip":"Past participle of “wake_up”: woken up","lv":[3,6],"sub":"Present perfect"},
+{"r":"verb","t":"gap","q":"Shh! The baby has just ___.","a":["woken up"],"hint":"wake up","em":"✅","tip":"Past participle of “wake up”: woken up","lv":[3,6],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"She ___ a beautiful dress to the wedding last Saturday.","a":["wore"],"hint":"wear","em":"🕰️","tip":"Past simple of “wear”: wore","lv":[3,6],"sub":"Past simple"},
 {"r":"verb","t":"gap","q":"I have ___ these shoes only twice.","a":["worn"],"hint":"wear","em":"✅","tip":"Past participle of “wear”: worn","lv":[3,6],"sub":"Present perfect"},
 {"r":"verb","t":"gap","q":"Our class ___ the football tournament last year.","a":["won"],"hint":"win","em":"🕰️","tip":"Past simple of “win”: won","lv":[3,6],"sub":"Past simple"},
@@ -1298,53 +1307,220 @@ function screenTo(id) {
 /* =====================================================================
    AUDIO
    ===================================================================== */
-let AC = null, sfxOn = true, musicOn = false, musicNodes = null;
-const ac = () => (AC = AC || new (window.AudioContext || window.webkitAudioContext)());
-function beep(freq, dur, type, vol) {
-  if (!sfxOn) return;
-  try {
-    const c = ac(), o = c.createOscillator(), g = c.createGain();
-    o.type = type || "sine"; o.frequency.value = freq;
-    g.gain.setValueAtTime(vol || .12, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + (dur || .18));
-    o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + (dur || .18));
-  } catch (e) {}
+let AC = null, sfxOn = true, musicOn = true;
+const ac = () => {
+  AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === "suspended") AC.resume();
+  return AC;
+};
+
+/* ---------- small synth kit ---------- */
+function env(node, t0, a, d, peak, hold) {
+  const h = hold == null ? d * .45 : hold;
+  node.gain.setValueAtTime(0.0001, t0);
+  node.gain.exponentialRampToValueAtTime(peak, t0 + a);
+  node.gain.setValueAtTime(peak, t0 + a + h);
+  node.gain.exponentialRampToValueAtTime(0.0001, t0 + a + h + d);
 }
+function tone(freq, t0, dur, type, vol, dest, glideTo) {
+  const c = ac(), o = c.createOscillator(), g = c.createGain();
+  o.type = type || "triangle";
+  o.frequency.setValueAtTime(freq, t0);
+  if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, t0 + dur);
+  env(g, t0, Math.min(.02, dur * .3), dur, vol);
+  o.connect(g); g.connect(dest || c.destination);
+  o.start(t0); o.stop(t0 + dur + .06);
+  return o;
+}
+let NOISE_BUF = null;
+function noiseBuffer() {
+  const c = ac();
+  if (!NOISE_BUF) {
+    NOISE_BUF = c.createBuffer(1, c.sampleRate * 1, c.sampleRate);
+    const d = NOISE_BUF.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return NOISE_BUF;
+}
+function noise(t0, dur, vol, hz, q, dest) {
+  const c = ac(), src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+  src.buffer = noiseBuffer();
+  f.type = hz > 2000 ? "highpass" : "bandpass";
+  f.frequency.value = hz; f.Q.value = q || 1;
+  env(g, t0, .004, dur, vol);
+  src.connect(f); f.connect(g); g.connect(dest || ac().destination);
+  src.start(t0); src.stop(t0 + dur + .05);
+}
+const midi = n => 440 * Math.pow(2, (n - 69) / 12);
+function bassVoice(freq, t0, dur, vol, dest) {
+  const c = ac(), o = c.createOscillator(), o2 = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+  o.type = "sawtooth"; o.frequency.value = freq;
+  o2.type = "square"; o2.frequency.value = freq / 2;
+  f.type = "lowpass"; f.frequency.setValueAtTime(1600, t0); f.frequency.exponentialRampToValueAtTime(420, t0 + dur);
+  env(g, t0, .008, dur * .5, vol, dur * .5);
+  o.connect(f); o2.connect(f); f.connect(g); g.connect(dest);
+  o.start(t0); o2.start(t0); o.stop(t0 + dur + .1); o2.stop(t0 + dur + .1);
+}
+function leadVoice(freq, t0, dur, vol, dest, type) {
+  const c = ac(), o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain();
+  o.type = type || "square"; o.frequency.value = freq;
+  o2.type = "triangle"; o2.frequency.value = freq * 1.005;
+  env(g, t0, .012, dur * .45, vol, dur * .55);
+  o.connect(g); o2.connect(g); g.connect(dest);
+  o.start(t0); o2.start(t0); o.stop(t0 + dur + .1); o2.stop(t0 + dur + .1);
+}
+
+/* ---------- sound effects ---------- */
+function fx(fn) { if (!sfxOn) return; try { fn(ac().currentTime); } catch (e) {} }
 const sfx = {
-  good:  () => { beep(660,.12,"triangle",.14); setTimeout(()=>beep(990,.18,"triangle",.12),90); },
-  bad:   () => { beep(180,.28,"sawtooth",.10); },
-  tick:  () => beep(1200,.04,"square",.05),
-  unlock:() => { [523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.22,"triangle",.12),i*110)); },
-  hit:   () => { beep(120,.18,"square",.12); setTimeout(()=>beep(90,.22,"sawtooth",.1),80); },
-  power: () => { beep(880,.1,"sine",.1); setTimeout(()=>beep(1320,.16,"sine",.09),80); },
-  win:   () => { [523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,.3,"triangle",.13),i*130)); },
-  turn:  () => beep(440,.12,"sine",.09)
+  /* bright rising arpeggio — unmistakably a win */
+  good: () => fx(t => {
+    [0, 4, 7, 12].forEach((n, i) => tone(midi(72 + n), t + i * .055, .16, "triangle", .22, null));
+    tone(midi(84), t + .22, .3, "sine", .12);
+  }),
+  /* three-note fanfare for a streak */
+  streak: () => fx(t => {
+    [0, 5, 9, 12, 16].forEach((n, i) => tone(midi(72 + n), t + i * .06, .2, "square", .12));
+  }),
+  /* soft descending buzz — clearly "no", never harsh */
+  bad: () => fx(t => {
+    tone(midi(58), t, .16, "square", .13, null, midi(53));
+    tone(midi(53), t + .14, .26, "sawtooth", .08, null, midi(46));
+  }),
+  tick: () => fx(t => noise(t, .03, .06, 6000, 1)),
+  count: () => fx(t => tone(midi(84), t, .09, "square", .1)),
+  /* boss damage: impact + rising fifth, reads as a hit you landed */
+  hit: () => fx(t => {
+    noise(t, .12, .3, 1400, .8);
+    tone(midi(45), t, .18, "square", .18, null, midi(64));
+  }),
+  crit: () => fx(t => {
+    noise(t, .2, .38, 900, .7);
+    tone(midi(40), t, .28, "sawtooth", .2, null, midi(76));
+    [0, 7, 12, 19].forEach((n, i) => tone(midi(72 + n), t + .1 + i * .05, .22, "triangle", .16));
+  }),
+  power: () => fx(t => {
+    tone(midi(69), t, .5, "sine", .12, null, midi(93));
+    noise(t, .3, .07, 5000, 1);
+  }),
+  unlock: () => fx(t => {
+    [60, 64, 67, 72, 76].forEach((n, i) => tone(midi(n), t + i * .085, .32, "triangle", .2));
+    noise(t, .5, .05, 3500, .6);
+  }),
+  turn: () => fx(t => { noise(t, .28, .09, 1200, .6); tone(midi(69), t, .22, "sine", .09, null, midi(83)); }),
+  loot: () => fx(t => {
+    [72, 76, 79, 84, 88].forEach((n, i) => tone(midi(n), t + i * .07, .3, "sine", .16));
+  }),
+  win: () => fx(t => {
+    [[72, 0], [76, .12], [79, .24], [84, .36], [88, .52], [84, .7], [91, .84]].forEach(([n, d]) => {
+      tone(midi(n), t + d, .45, "triangle", .2); tone(midi(n - 12), t + d, .45, "square", .08);
+    });
+    noise(t + .84, .6, .08, 4000, .5);
+  }),
+  lose: () => fx(t => {
+    [72, 68, 64, 59].forEach((n, i) => tone(midi(n), t + i * .16, .4, "triangle", .16));
+  })
 };
 function toggleSfx() {
   sfxOn = !sfxOn;
   $("btnSfx").innerHTML = '<i class="fa-solid fa-volume-' + (sfxOn ? "high" : "xmark") + '"></i>';
   $("btnSfx").classList.toggle("text-slate-600", !sfxOn);
   $("btnSfx").classList.toggle("text-amber-400", sfxOn);
-  if (sfxOn) sfx.tick();
+  if (sfxOn) sfx.good();
+}
+
+/* =====================================================================
+   MUSIC · a small step sequencer: drums, bass, chord stabs and a lead.
+   Four bars of C–G–Am–F at 120 bpm (140 in the boss fight), all built
+   live with oscillators, so the offline file needs no audio files.
+   ===================================================================== */
+const MUSIC = {
+  on: false, timer: null, step: 0, nextTime: 0, tempo: 120, mode: "game",
+  bus: null, duck: 1,
+  chords: [ [60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60] ],  /* C G Am F */
+  bass:   [ 36, 31, 33, 29 ],
+  lead:   [ 72, null, 76, null, 79, null, 76, null, 72, null, 79, null, 84, null, 79, null,
+            74, null, 79, null, 83, null, 79, null, 74, null, 71, null, 67, null, 71, null,
+            72, null, 76, 79, 81, null, 79, 76, 72, null, 69, null, 72, null, 76, null,
+            77, null, 81, null, 84, null, 81, 77, 76, null, 72, null, 69, null, 67, null ]
+};
+function musicBus() {
+  if (!MUSIC.bus) {
+    const c = ac();
+    MUSIC.bus = c.createGain(); MUSIC.bus.gain.value = .34;
+    const comp = c.createDynamicsCompressor();
+    MUSIC.bus.connect(comp); comp.connect(c.destination);
+  }
+  return MUSIC.bus;
+}
+function scheduleStep(step, t) {
+  const bus = musicBus(), bar = Math.floor(step / 16) % 4, s = step % 16;
+  const chord = MUSIC.chords[bar], root = MUSIC.bass[bar];
+  const boss = MUSIC.mode === "boss";
+  /* drums — four on the floor, clap on 2 and 4, hats on every eighth */
+  if (s % 4 === 0) { tone(160, t, .16, "sine", .95, bus, 42); noise(t, .05, .3, 90, 1, bus); }
+  if (s === 4 || s === 12) { noise(t, .16, .55, 1700, .6, bus); noise(t, .06, .3, 3200, .8, bus); }
+  if (s % 2 === 0) noise(t, .045, s % 4 === 2 ? .2 : .11, 9000, 1, bus);
+  if (boss && s % 2 === 1) noise(t, .03, .08, 11000, 1, bus);
+  /* bass */
+  if (s % 2 === 0) {
+    const n = (s === 6 || s === 14) ? root + 7 : root;
+    bassVoice(midi(n), t, .21, .5, bus);
+  }
+  /* chord stabs on the off-beat */
+  if (s === 2 || s === 6 || s === 10 || s === 14) {
+    chord.forEach(n => leadVoice(midi(n + (boss ? 0 : 12)), t, .2, .13, bus, "square"));
+  }
+  /* arpeggio layer keeps it moving */
+  if (s % 2 === 1) leadVoice(midi(chord[(s >> 1) % chord.length] + 12), t, .12, .07, bus, "triangle");
+  /* lead melody */
+  const note = MUSIC.lead[step % MUSIC.lead.length];
+  if (note) leadVoice(midi(note), t, .26, boss ? .2 : .17, bus, boss ? "sawtooth" : "square");
+  /* boss growl */
+  if (boss && s === 0) bassVoice(midi(root - 12), t, .55, .4, bus);
+}
+function musicLoop() {
+  const c = ac(), spb = 60 / MUSIC.tempo / 4;
+  while (MUSIC.nextTime < c.currentTime + .12) {
+    scheduleStep(MUSIC.step, MUSIC.nextTime);
+    MUSIC.nextTime += spb;
+    MUSIC.step = (MUSIC.step + 1) % 64;
+  }
+}
+function startMusic(mode) {
+  if (mode) setMusicMode(mode);
+  if (MUSIC.on) return;
+  try {
+    const c = ac();
+    MUSIC.on = true; musicOn = true;
+    MUSIC.step = 0; MUSIC.nextTime = c.currentTime + .06;
+    musicBus().gain.setTargetAtTime(.34, c.currentTime, .3);
+    MUSIC.timer = setInterval(musicLoop, 25);
+    paintMusicButton();
+  } catch (e) { MUSIC.on = false; }
+}
+function stopMusic() {
+  clearInterval(MUSIC.timer); MUSIC.timer = null; MUSIC.on = false;
+  if (MUSIC.bus) try { MUSIC.bus.gain.setTargetAtTime(0.0001, ac().currentTime, .1); } catch (e) {}
+  paintMusicButton();
+}
+function setMusicMode(mode) {
+  MUSIC.mode = mode;
+  MUSIC.tempo = mode === "boss" ? 140 : mode === "calm" ? 104 : 120;
+}
+function duckMusic(on) {
+  if (!MUSIC.bus) return;
+  try { MUSIC.bus.gain.setTargetAtTime(on ? .07 : .34, ac().currentTime, .12); } catch (e) {}
+}
+function paintMusicButton() {
+  const b = $("btnMusic"); if (!b) return;
+  b.classList.toggle("text-slate-600", !MUSIC.on);
+  b.classList.toggle("text-amber-400", MUSIC.on);
 }
 function toggleMusic() {
-  musicOn = !musicOn;
-  $("btnMusic").classList.toggle("text-slate-600", !musicOn);
-  $("btnMusic").classList.toggle("text-amber-400", musicOn);
-  if (musicOn) startMusic(); else stopMusic();
+  if (MUSIC.on) { musicOn = false; stopMusic(); }
+  else { musicOn = true; startMusic(); }
 }
-function startMusic() {
-  try {
-    const c = ac(); stopMusic();
-    const g = c.createGain(); g.gain.value = .05; g.connect(c.destination);
-    const o1 = c.createOscillator(), o2 = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain();
-    o1.type = "sine"; o1.frequency.value = 110; o2.type = "sine"; o2.frequency.value = 164.81;
-    lfo.frequency.value = .08; lg.gain.value = 18; lfo.connect(lg); lg.connect(o2.frequency);
-    o1.connect(g); o2.connect(g); o1.start(); o2.start(); lfo.start();
-    musicNodes = [o1, o2, lfo, g];
-  } catch (e) {}
-}
-function stopMusic() { if (musicNodes) { try { musicNodes.forEach(n => n.stop && n.stop()); } catch(e){} musicNodes = null; } }
 function say(text) {
   try {
     speechSynthesis.cancel();
@@ -1352,8 +1528,12 @@ function say(text) {
     const v = speechSynthesis.getVoices().find(v => /en-GB/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^en/i.test(v.lang));
     if (v) u.voice = v;
     u.rate = .9; u.lang = v ? v.lang : "en-GB";
+    duckMusic(true);
+    u.onend = () => duckMusic(false);
+    u.onerror = () => duckMusic(false);
     speechSynthesis.speak(u);
-  } catch (e) {}
+    setTimeout(() => duckMusic(false), 4000);
+  } catch (e) { duckMusic(false); }
 }
 
 /* =====================================================================
@@ -1558,6 +1738,7 @@ function startGame() {
   S.clockLeft = L.clock * 60;
   startClock();
   sfx.unlock();
+  if (musicOn) startMusic("game"); else setMusicMode("game");
   renderMap(true);
 }
 function startClock() {
@@ -1660,7 +1841,7 @@ function nextTurn() {
   const iv = setInterval(() => {
     n--;
     if (n <= 0) { clearInterval(iv); askQuestion(); }
-    else { $("turnCountdown").textContent = n; $("turnCountdown").classList.remove("pop-in"); void $("turnCountdown").offsetWidth; $("turnCountdown").classList.add("pop-in"); sfx.tick(); }
+    else { $("turnCountdown").textContent = n; $("turnCountdown").classList.remove("pop-in"); void $("turnCountdown").offsetWidth; $("turnCountdown").classList.add("pop-in"); sfx.count(); }
   }, 700);
 }
 
@@ -2016,7 +2197,7 @@ function judge(ok, given, q, host, timeout) {
     pts = (10 + Math.round(5 * speed) + (FORMAT_BONUS[q.t] || 0)) * mult;
     if (S.rebound) pts = Math.max(4, Math.round(pts / 2));
     t.points += pts; t.xp++;
-    if (mult > 1) toast("🔥 " + t.name + " on fire — points ×" + mult);
+    if (mult > 1) { toast("🔥 " + t.name + " on fire — points ×" + mult); setTimeout(() => sfx.streak(), 260); }
     if (t.xp % 4 === 0) { t.hero++; toast("⬆️ " + t.name + " reached hero level " + t.hero); }
     sfx.good();
     if (S.mode !== "boss") {
@@ -2186,7 +2367,7 @@ const LOOT = [
 function showLoot(winner, done) {
   const loot = LOOT[Math.floor(Math.random() * LOOT.length)];
   loot.fx(winner);
-  sfx.power(); confetti(40);
+  sfx.loot(); confetti(40);
   const n = el("div", "fixed inset-0 z-[85] bg-black/80 backdrop-blur-sm grid place-items-center p-6");
   n.innerHTML =
     "<div class='pop-in bg-slate-900 border-4 border-amber-400 rounded-[2rem] px-8 py-10 text-center max-w-lg glow'>" +
@@ -2208,6 +2389,7 @@ function startBoss() {
   S.boss.maxHp = S.teams.length * (30 + L.per * 12);
   S.boss.hp = S.boss.maxHp; S.boss.turns = 0; S.boss.alive = true;
   S.bossQueue = shuffle(S.rooms.flatMap(id => poolFor(id, S.level))).slice(0, S.teams.length * 8);
+  setMusicMode("boss");
   screenTo("screenBoss");
   $("bossQuestionMount").innerHTML =
     "<div class='text-center'><button onclick='bossNext()' class='glow bg-rose-500 hover:bg-rose-400 text-white display font-black text-2xl md:text-3xl px-10 py-5 rounded-2xl transition'>" +
@@ -2241,7 +2423,7 @@ function bossResolve(ok, pts) {
     const crit = speed > .7;
     if (crit) dmg *= 2;
     S.boss.hp -= dmg;
-    sfx.hit();
+    crit ? sfx.crit() : sfx.hit();
     bar.classList.add("hit"); setTimeout(() => bar.classList.remove("hit"), 420);
     floatPoints($("screenQuestion"), (crit ? "CRIT −" : "−") + dmg, "#fb7185");
     toast(crit ? "💥 CRITICAL HIT — the Guardian loses " + dmg : "⚔️ The Guardian loses " + dmg + " hit points");
@@ -2283,6 +2465,7 @@ function bossSurvives() {
    ===================================================================== */
 function endGame(reason) {
   clearInterval(S.clockTimer); clearInterval(S.qTimer); clearBossBar();
+  stopMusic();
   S.mode = "end";
   screenTo("screenEnd");
   const ranked = S.teams.slice().sort((a, b) => b.points - a.points || b.correct - a.correct);
@@ -2294,7 +2477,7 @@ function endGame(reason) {
     ? "Escaped in <strong class='text-amber-300'>" + fmtTime(used) + "</strong> with " + S.solvedRooms.length + " keystones" +
       (S.rules.boss ? (S.boss.alive ? " — and the Guardian still breathing." : " — and the Guardian defeated.") : ".")
     : "The Guardian keeps the vault… this time. You cleared <strong class='text-amber-300'>" + S.solvedRooms.length + "</strong> of " + S.rooms.length + " chambers.";
-  if (escaped) { sfx.win(); confetti(260); }
+  if (escaped) { sfx.win(); confetti(260); } else sfx.lose();
 
   /* podium */
   const pod = $("podium"); pod.innerHTML = "";
@@ -2355,22 +2538,35 @@ function rematch() {
 }
 function quitToSetup() {
   clearInterval(S.clockTimer); clearInterval(S.qTimer);
+  setMusicMode("calm");
   S.mode = "setup"; renderSetup(); screenTo("screenSetup");
 }
 
 /* =====================================================================
-   EXTRA CONTENT · content.json, custom words, external URL
+   EXTRA CONTENT
    ---------------------------------------------------------------------
-   The vault reads an optional content.json sitting next to this file.
-   Upload a new content.json to the repository and the game shows the new
-   questions the next time it is opened — no code changes needed.
+   Three ways in, all of them without touching this file:
+     1 · content.json next to this page (upload it to GitHub, done)
+     2 · a scan of the teacher's portal: every app published there is read
+         and its exercises are added to the matching chamber
+     3 · a word list pasted in the setup screen
    ===================================================================== */
-let EXTRA_COUNT = 0, EXTRA_SOURCES = [], EXTRA_FILE_FOUND = false;
 const ROOM_IDS = ROOMS.map(r => r.id);
+const BUILT_IN_APPS = ["irregular-verbs", "present-tenses", "battles", "sentence-formation", "habits"];
+const SKIP_APPS = ["app", "prueba", "prueba-basica", "pasarlista", "control", "patrimonio_IES_Goya"];
+let EXTRA_ITEMS = [], CUSTOM_ITEMS = [], EXTRA_COUNT = 0, EXTRA_SOURCES = [], EXTRA_FILE_FOUND = false;
+let PORTAL_APPS = [], PORTAL_BUSY = false;
+
+function rebuildBank() {
+  BANK.length = BANK_BASE_LENGTH;
+  EXTRA_ITEMS.forEach(i => BANK.push(i));
+  CUSTOM_ITEMS.forEach(i => BANK.push(i));
+  EXTRA_COUNT = EXTRA_ITEMS.length;
+}
 function normalizeItem(raw) {
   if (!raw || typeof raw !== "object") return null;
   const r = String(raw.r || raw.room || raw.chamber || "vocab").toLowerCase();
-  if (!ROOM_IDS.includes(r)) return null;
+  if (ROOM_IDS.indexOf(r) < 0) return null;
   let o = raw.o || raw.options || null;
   let a = raw.a || raw.answers || raw.answer || null;
   if (typeof a === "string") a = [a];
@@ -2390,9 +2586,17 @@ function normalizeItem(raw) {
   };
 }
 function mergeItems(list, label) {
-  let n = 0;
-  (list || []).forEach(raw => { const it = normalizeItem(raw); if (it) { BANK.push(it); n++; } });
-  if (n) { EXTRA_COUNT += n; EXTRA_SOURCES.push(label + " (" + n + ")"); }
+  const before = EXTRA_ITEMS.length;
+  const key = i => i.r + "|" + i.q + "|" + (i.w || (i.a && i.a[0]) || (i.o && i.o[0]) || "");
+  const seen = {};
+  EXTRA_ITEMS.forEach(i => seen[key(i)] = 1);
+  (list || []).forEach(raw => {
+    const it = normalizeItem(raw);
+    if (it && !seen[key(it)]) { seen[key(it)] = 1; EXTRA_ITEMS.push(it); }
+  });
+  const n = EXTRA_ITEMS.length - before;
+  if (n) EXTRA_SOURCES.push(label + " (" + n + ")");
+  rebuildBank();
   return n;
 }
 async function loadExtraContent() {
@@ -2407,7 +2611,225 @@ async function loadExtraContent() {
     } catch (e) { /* offline or file:// — the built-in bank is enough */ }
   }
   paintExtraStatus();
-  if (EXTRA_COUNT) renderSetup();
+  renderSetup();
+}
+
+/* =====================================================================
+   PORTAL SCAN · reads nuriacalvo-teacher.github.io and harvests the
+   exercises of every app published there into the chambers.
+   ===================================================================== */
+function grabConst(html, name, open) {
+  const decl = new RegExp("\\b(?:const|let|var)\\s+" + name.replace(/[$]/g, "\\$&") + "\\s*=");
+  const mm = decl.exec(html);
+  const i = mm ? mm.index : -1;
+  if (i < 0) return null;
+  const start = html.indexOf(open, i);
+  if (start < 0) return null;
+  const close = open === "[" ? "]" : "}";
+  let d = 0, end = -1, inStr = null, prev = "";
+  for (let k = start; k < html.length; k++) {
+    const c = html[k];
+    if (inStr) { if (c === inStr && prev !== "\\") inStr = null; }
+    else if (c === '"' || c === "'" || c === "`") inStr = c;
+    else if (c === open) d++;
+    else if (c === close) { d--; if (d === 0) { end = k; break; } }
+    prev = (prev === "\\" && c === "\\") ? "" : c;
+  }
+  if (end < 0) return null;
+  try { return (new Function("return (" + html.slice(start, end + 1) + ")"))(); } catch (e) { return null; }
+}
+const LEVEL_INDEX = { "1º eso":1, "2º eso":2, "3º eso":3, "4º eso":4, "1º bach":5, "2º bach":6, "b1":4, "b2":6 };
+function levelsOf(app) {
+  const ls = (app.levels || []).map(l => LEVEL_INDEX[String(l).toLowerCase().trim()]).filter(Boolean);
+  if (!ls.length) return [2, 6];
+  return [Math.min.apply(null, ls), Math.max.apply(null, ls)];
+}
+function chamberFor(app) {
+  const txt = [app.id, app.title, app.subtitle, app.description, (app.tags || []).join(" "), app.category].join(" ").toLowerCase();
+  if (/habit|used to|routine|frequency|rutina/.test(txt)) return "habit";
+  if (/word order|sentence formation|sentence building|orden de (las )?palabras/.test(txt)) return "order";
+  if (/irregular/.test(txt)) return "verb";
+  if (/tense|present|past|perfect|conditional|reported|passive|relative|clause|modal|grammar|gramática/.test(txt)) return "tense";
+  if (/vocab|word|lexis|vocabulario/.test(txt)) return "vocab";
+  return "tense";
+}
+/* her explanations are written in Spanish; the game is in English, so a
+   Spanish tip is dropped and only the correct answer is shown */
+const SPANISH = /[áéíóúñ¿¡]|\b(el|la|los|las|de|que|con|para|pero|cuando|porque|verbo|sujeto|frase|siempre|nunca)\b/i;
+const cleanTip = t => (t && !SPANISH.test(String(t).replace(/<[^>]*>/g, "")) ? String(t).replace(/<[^>]*>/g, "").slice(0, 160) : "");
+/* A question can hide in any shape: every app on the portal is written
+   differently, so we read every top-level const and walk it looking for
+   things that behave like exercises. Anything unrecognised is skipped. */
+function walkValue(node, depth, ctx) {
+  if (node == null || depth > 7 || ctx.out.length >= ctx.max) return;
+  if (Array.isArray(node)) {
+    harvestArray(node, ctx);
+    for (let i = 0; i < node.length && ctx.out.length < ctx.max; i++) walkValue(node[i], depth + 1, ctx);
+  } else if (typeof node === "object") {
+    harvestObject(node, ctx);
+    const keys = Object.keys(node);
+    for (let i = 0; i < keys.length && ctx.out.length < ctx.max; i++) walkValue(node[keys[i]], depth + 1, ctx);
+  }
+}
+const isEnglish = s => typeof s === "string" && s.length > 1 && !SPANISH.test(s);
+const strList = a => Array.isArray(a) && a.length >= 3 && a.every(x => typeof x === "string" && x && x.length < 90);
+function addItem(ctx, it) {
+  if (!it || !it.q) return;
+  const key = it.q + "|" + (it.w || (it.a && it.a[0]) || (it.o && it.o[0]) || "");
+  if (ctx.seen[key]) return;
+  ctx.seen[key] = 1; it.extra = 1; ctx.out.push(it);
+}
+function harvestObject(o, ctx) {
+  const qtext = o.q || o.question || o.prompt || o.text || o.sentence;
+  const opts = o.options || o.choices || o.o || o.answers;
+  /* multiple choice */
+  if (!ctx.vocabOnly && isEnglish(qtext) && strList(opts) && qtext.length < 220 && !PASSAGE.test(qtext)) {
+    const i = typeof o.correct === "number" ? o.correct
+            : typeof o.answer === "number" ? o.answer
+            : typeof o.correctIndex === "number" ? o.correctIndex : 0;
+    const correct = opts[i] || opts[0];
+    addItem(ctx, { r: ctx.room, t: "mcq", q: qtext, o: [correct].concat(opts.filter(x => x !== correct)).slice(0, 4),
+                   tip: cleanTip(o.x || o.explanation || o.tip || o.feedback), sub: o.cat || ctx.sub, em: "✨", lv: ctx.lv });
+    return;
+  }
+  /* gap fill: a sentence with ___ and a list of accepted answers */
+  if (!ctx.vocabOnly && isEnglish(qtext) && /_{2,}/.test(qtext) && Array.isArray(o.answers) && o.answers.length && typeof o.answers[0] === "string") {
+    addItem(ctx, { r: ctx.room, t: "gap", q: qtext, a: o.answers.slice(0, 6), hint: o.hint || o.verb || undefined,
+                   tip: cleanTip(o.x || o.explanation), sub: ctx.sub, em: "🧪", lv: ctx.lv });
+    return;
+  }
+  /* an English model sentence (translation banks) → word order */
+  const model = o.m || o.en || o.english || o.model;
+  if (isEnglish(model) && !/_{2,}/.test(model)) {
+    const w = model.split(/\s+/);
+    if (w.length >= 4 && w.length <= 12)
+      addItem(ctx, { r: "order", t: "order", q: model, a: [model], tip: cleanTip(o.use || o.x), sub: ctx.sub, em: "🧱", lv: ctx.lv });
+  }
+}
+const PASSAGE = /\b(the text|the passage|the article|the review|the email|the letter|the writer|the author|the speaker|the recording|according to|paragraph|in the audio|the story)\b/i;
+function harvestArray(arr, ctx) {
+  if (arr.length < 4) return;
+  /* tuples: battles uses [question, [options], emoji, tip], other apps use
+     ["m", question, correctIndex, [options], explanation] — take the first
+     long string as the question, the first list of strings as the options */
+  const tuples = arr.filter(x => Array.isArray(x) && x.some(y => typeof y === "string" && y.length > 6) && x.some(strList));
+  if (tuples.length >= 3 && !ctx.vocabOnly) {
+    tuples.forEach(x => {
+      const q = x.find(y => typeof y === "string" && y.length > 6);
+      const opts = x.find(strList);
+      const idx = x.find(y => typeof y === "number");
+      if (!isEnglish(q) || PASSAGE.test(q) || q.length > 220) return;
+      const correct = opts[typeof idx === "number" ? idx : 0] || opts[0];
+      const emoji = x.find(y => typeof y === "string" && y.length <= 3 && /\p{Emoji}/u.test(y));
+      addItem(ctx, { r: ctx.room === "verb" ? "verb" : (ctx.room || "vocab"), t: "mcq", q: q,
+                     o: [correct].concat(opts.filter(o => o !== correct)).slice(0, 4),
+                     em: emoji || "✨", tip: cleanTip(x[x.length - 1]), sub: ctx.sub, lv: ctx.lv });
+    });
+    return;
+  }
+  /* word lists: {term, meaning} in English → multiple choice */
+  const terms = arr.map(x => {
+    if (!x || typeof x !== "object") return null;
+    const w = x.term || x.word || x.en || x.english || x.name || x.w;
+    const clue = x.meaning || x.definition || x.clue || x.desc || x.description || x.d;
+    return (isEnglish(w) && isEnglish(clue) && w.length < 40 && clue.length < 140) ? { w: w, clue: clue.replace(/^Meaning:\s*/i, "") } : null;
+  }).filter(Boolean);
+  if (terms.length >= 4) {
+    terms.forEach(t => {
+      const wrong = shuffle(terms.filter(x => x.w !== t.w)).slice(0, 3).map(x => x.w);
+      if (wrong.length < 3) return;
+      addItem(ctx, { r: "vocab", t: "mcq", q: "Which word means “" + t.clue + "”?", o: [t.w].concat(wrong),
+                     tip: t.w + " — " + t.clue, sub: ctx.sub, em: "📖", w: t.w, lv: ctx.lv });
+    });
+    return;
+  }
+  /* glossaries written as [english, spanish]: the Spanish side is dropped and
+     the English word becomes a spelling or listening task */
+  const pairs = arr.filter(x => Array.isArray(x) && x.length >= 2 && typeof x[0] === "string" && typeof x[1] === "string"
+                             && isEnglish(x[0]) && /^[a-zA-Z][a-zA-Z'-]{3,15}$/.test(x[0]));
+  if (pairs.length >= 4) {
+    pairs.forEach((x, i) => {
+      const w = x[0].toLowerCase();
+      const kind = ["scramble", "vowels", "listen"][i % 3];
+      addItem(ctx, { r: "vocab", t: kind, q: kind === "scramble" ? "Rebuild the word" : kind === "vowels" ? "Put the vowels back" : "Listen and write the word",
+                     a: [w], w: w, sub: ctx.sub, em: "🔤", tip: w, lv: ctx.lv });
+    });
+  }
+}
+function harvestFromHtml(html, app) {
+  const skillApp = ["exams", "reading", "speaking", "listening"].indexOf(app.category) >= 0;
+  const ctx = { out: [], seen: {}, max: 90, lv: levelsOf(app), room: chamberFor(app),
+                sub: app.title || app.id, vocabOnly: skillApp };
+  const names = [], rx = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([\[{])/g;
+  let m;
+  while ((m = rx.exec(html)) && names.length < 60) names.push([m[1], m[2]]);
+  for (const pair of names) {
+    if (ctx.out.length >= ctx.max) break;
+    let value = null;
+    try { value = grabConst(html, pair[0], pair[1]); } catch (e) { value = null; }
+    if (value) walkValue(value, 0, ctx);
+  }
+  return ctx.out;
+}
+function portalCache() { try { return JSON.parse(localStorage.getItem("wordvault_portal") || "{}"); } catch (e) { return {}; } }
+function savePortalCache(c) { try { localStorage.setItem("wordvault_portal", JSON.stringify(c)); } catch (e) {} }
+async function scanPortal(manual) {
+  if (PORTAL_BUSY) return;
+  PORTAL_BUSY = true;
+  const say = msg => { const n = $("portalStatus"); if (n) n.innerHTML = msg; };
+  const cache = portalCache();
+  try {
+    const res = await fetch("/apps.json?v=" + Date.now());
+    if (!res.ok) throw 0;
+    const portal = await res.json();
+    const apps = (portal.apps || []).filter(a =>
+      a.visible !== false && a.status !== "soon" && a.url &&
+      BUILT_IN_APPS.indexOf(a.id) < 0 && SKIP_APPS.indexOf(a.id) < 0 &&
+      ["tools"].indexOf(a.category) < 0);
+    PORTAL_APPS = apps;
+    let added = 0, scanned = 0;
+    const budget = manual ? apps.length : 4;
+    for (const app of apps) {
+      const hit = cache[app.id];
+      if (hit && hit.updated === (app.updated || "") && hit.items) {
+        added += mergeItems(hit.items, app.title || app.id); scanned++;
+        continue;
+      }
+      if (scanned >= budget) continue;
+      say("<span class='text-amber-300'><i class='fa-solid fa-satellite-dish mr-1'></i>Reading <strong>" + esc(app.title || app.id) + "</strong>…</span>");
+      try {
+        let path;
+        try { path = new URL(app.url, location.href).pathname; } catch (e) { path = app.url; }
+        if (path.slice(-1) === "/") path += "index.html";
+        const page = await fetch(path);
+        if (!page.ok) continue;
+        const html = await page.text();
+        const items = harvestFromHtml(html, app).slice(0, 90);
+        cache[app.id] = { updated: app.updated || "", title: app.title, count: items.length, items: items };
+        savePortalCache(cache);
+        added += mergeItems(items, app.title || app.id);
+        scanned++;
+      } catch (e) { /* an app that cannot be read is simply skipped */ }
+    }
+    cache._scannedAt = new Date().toISOString();
+    savePortalCache(cache);
+    const names = Object.keys(cache).filter(k => k[0] !== "_" && cache[k].count);
+    const total = names.reduce((n, k) => n + cache[k].count, 0);
+    say(names.length
+      ? "<span class='text-emerald-300'><i class='fa-solid fa-circle-check mr-1'></i>Portal read: " + names.length +
+        " app" + (names.length > 1 ? "s" : "") + " · " + total + " questions in the chambers</span> — " +
+        names.map(k => esc(cache[k].title || k) + " (" + cache[k].count + ")").join(" · ") +
+        (scanned < apps.length ? " · <span class='text-slate-400'>" + (apps.length - scanned) + " more will be read next time, or press the button</span>" : "")
+      : "<span class='text-slate-500'>Portal read, but none of those apps store their exercises in a readable way.</span>");
+    paintExtraStatus(); renderSetup();
+  } catch (e) {
+    say("<span class='text-slate-500'>The portal could not be read from here (it only works when the game is opened from the website).</span>");
+  }
+  PORTAL_BUSY = false;
+}
+function forgetPortalCache() {
+  localStorage.removeItem("wordvault_portal");
+  toast("Portal cache cleared — reload the page");
 }
 function paintExtraStatus() {
   const n = $("extraStatus"); if (!n) return;
@@ -2439,27 +2861,31 @@ function parseCustomWords() {
   const box = $("customWords"); if (!box) return;
   const lines = box.value.split("\n").map(s => s.trim()).filter(Boolean);
   const words = lines.map(l => {
-    const hard = l.startsWith("*"); const body = hard ? l.slice(1).trim() : l;
-    const [w, clue] = body.split("|").map(s => (s || "").trim());
-    return w ? { w, clue: clue || "", hard } : null;
+    const hard = l.charAt(0) === "*"; const body = hard ? l.slice(1).trim() : l;
+    const parts = body.split("|");
+    const w = (parts[0] || "").trim(), clue = (parts[1] || "").trim();
+    return w ? { w: w, clue: clue, hard: hard } : null;
   }).filter(Boolean);
   const st = $("customStatus");
-  BANK.length = BANK_BASE_LENGTH + EXTRA_COUNT;   /* drop previous custom items */
+  CUSTOM_ITEMS = [];
   if (words.length < 4) {
+    rebuildBank();
     st.innerHTML = words.length ? "<span class='text-amber-300'>" + words.length + " words — 4 or more are needed for multiple choice.</span>" : "";
     localStorage.setItem("wordvault_custom", box.value); return;
   }
   words.forEach(item => {
     const distractors = shuffle(words.filter(x => x.w !== item.w)).slice(0, 3).map(x => x.w);
-    BANK.push({
+    CUSTOM_ITEMS.push({
       r: "vocab", t: "mcq", q: item.clue || ("Which word is this? " + item.w.charAt(0) + "…"),
       o: [item.w].concat(distractors), a: [item.w], w: item.w, em: "🗝️",
       tip: item.w + (item.clue ? " — " + item.clue : ""), sub: "Our own words",
       lv: item.hard ? [4, 6] : [1, 6], extra: 1
     });
   });
+  rebuildBank();
   st.innerHTML = "<span class='text-emerald-300'>" + words.length + " of your own words are in the vault.</span>";
   localStorage.setItem("wordvault_custom", box.value);
+  renderSetup();
 }
 
 /* =====================================================================
@@ -2521,8 +2947,10 @@ function init() {
   loadSetup(); syncTeams(); renderSetup();
   try { const c = localStorage.getItem("wordvault_custom"); if (c && $("customWords")) { $("customWords").value = c; parseCustomWords(); } } catch (e) {}
   loadExtraContent();
+  if (location.protocol.indexOf("http") === 0) setTimeout(() => scanPortal(false), 900);
+  else { const n = $("portalStatus"); if (n) n.innerHTML = "<span class='text-slate-500'>Offline file: the portal scan needs the game to be opened from the website.</span>"; }
   if (window.speechSynthesis) speechSynthesis.getVoices();
-  $("btnMusic").classList.add("text-slate-600"); $("btnMusic").classList.remove("text-amber-400");
+  paintMusicButton();
 }
 init();
 </script>
