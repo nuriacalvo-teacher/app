@@ -20,6 +20,13 @@
  *    Ajustes     → opciones generales.
  */
 
+/**
+ * Identificador de la hoja de cálculo. Sólo hace falta si este proyecto NO se creó desde la propia
+ * hoja (Extensiones > Apps Script). Está en la dirección de la hoja, entre «/d/» y «/edit»:
+ *   https://docs.google.com/spreadsheets/d/ESTO_ES_EL_ID/edit
+ */
+const ID_HOJA = '';
+
 const HOJA = {
   ALUMNOS: 'Alumnos',
   CAMPOS: 'Campos',
@@ -261,12 +268,21 @@ function arranque_(d, u) {
 function ss_() {
   if (MEMO.ss) return MEMO.ss;
   let ss = null;
-  try { ss = SpreadsheetApp.getActive(); } catch (e) { /* nada */ }
-  if (!ss) {
-    const id = PropertiesService.getScriptProperties().getProperty('SS_ID');
-    if (id) ss = SpreadsheetApp.openById(id);
+  const id = String(ID_HOJA || '').trim();
+  if (id) {
+    try { ss = SpreadsheetApp.openById(id); } catch (e) {
+      throw new Error('No se puede abrir la hoja con el ID_HOJA indicado («' + id + '»). Revisa que esté bien copiado.');
+    }
   }
-  if (!ss) throw new Error('No se encuentra la hoja de cálculo. Ejecuta «instalar» desde el editor de Apps Script.');
+  if (!ss) { try { ss = SpreadsheetApp.getActive(); } catch (e) { /* nada */ } }
+  if (!ss) {
+    const guardado = PropertiesService.getScriptProperties().getProperty('SS_ID');
+    if (guardado) ss = SpreadsheetApp.openById(guardado);
+  }
+  if (!ss) {
+    throw new Error('Este proyecto no está unido a ninguna hoja de cálculo. Copia el identificador de tu hoja ' +
+      '(en su dirección, entre «/d/» y «/edit») y pégalo entre las comillas de ID_HOJA, al principio del código.');
+  }
   MEMO.ss = ss;
   return ss;
 }
