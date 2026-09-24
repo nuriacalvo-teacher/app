@@ -62,7 +62,12 @@ Si algún día se quedara corto, la solución es separar el archivo por siglos (
 
 1. **Crea la hoja de cálculo.** Entra en [sheets.new](https://sheets.new) y ponle nombre, por ejemplo *Archivo histórico IES Goya – Alumnos*.
 2. **Abre el editor de código:** menú *Extensiones → Apps Script*.
-3. **Pega los archivos** de la carpeta `apps-script/`:
+3. **Pega los archivos.** La forma más fácil es usar la carpeta **`para-copiar/`**, que tiene sólo dos archivos:
+   - En `Código.gs`, borra todo y pega el contenido de **`para-copiar/Codigo.gs`**.
+   - Pulsa **＋ → HTML**, llama al archivo **`Index`** (sin `.html`) y pega el contenido de **`para-copiar/Index.html`**.
+   - Guarda (💾) y pasa al paso 4.
+
+   *Alternativa (para quien vaya a tocar el código): pegar los archivos separados de la carpeta `apps-script/`:*
    - Borra lo que haya en `Código.gs` y pega el contenido de **`Codigo.gs`**.
    - Crea con **＋ → HTML** estos cuatro archivos, **con estos nombres exactos y sin `.html`**: `Index`, `Estilos`, `Cliente` y `Datos`. En cada uno, pega el contenido del archivo correspondiente.
    - Opcional: en *Configuración del proyecto* (⚙) activa «Mostrar el archivo de manifiesto appsscript.json» y pega `appsscript.json`. Así se fija la zona horaria de Madrid.
@@ -127,9 +132,11 @@ apps-script/        ← lo que se pega en Apps Script
   Cliente.html      lógica de la interfaz
   Datos.html        países, provincias y municipios (INE) para las sugerencias
   appsscript.json   manifiesto (zona horaria, V8)
+para-copiar/        ← instalación fácil: sólo 2 archivos (generados)
 demo.html           demostración autónoma (generada)
 herramientas/
   generar_datos.py  regenera Datos.html a partir del listado de municipios del INE
   construir_demo.py regenera demo.html
+  empaquetar.py     regenera para-copiar/ (Codigo.gs + Index.html con todo dentro)
   gas-simulado.js   simulación de Apps Script usada por la demo
 ```
