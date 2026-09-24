@@ -145,7 +145,7 @@ const ACCIONES = {
   logout:              { rol: 'NINGUNO', fn: logout_ },
   inicio:              { rol: 'LECTOR',  fn: inicio_ },
   consultar:           { rol: 'LECTOR',  fn: consultar_ },
-  exportar:            { rol: 'LECTOR',  fn: exportar_ },
+  exportar:            { rol: 'ADMIN',   fn: exportar_ },  // descargar la base entera: sólo coordinación
   obtener:             { rol: 'LECTOR',  fn: obtener_ },
   comprobarDuplicados: { rol: 'LECTOR',  fn: comprobarDuplicados_ },
   localidadesUsadas:   { rol: 'LECTOR',  fn: localidadesUsadas_ },

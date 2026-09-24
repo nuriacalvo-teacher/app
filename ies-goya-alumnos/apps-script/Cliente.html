@@ -748,7 +748,7 @@ function opcionesFiltro(c) {
 async function vistaBuscar() {
   const B = S.busqueda;
   $('#vista').innerHTML = cabecera('Buscar expedientes', 'Busca por apellidos, nombre, localidad, identificador… y combina filtros.',
-    `<button class="btn btn-light" id="btn-exportar"><i class="bi bi-download me-1"></i> Exportar CSV</button>`) + `
+    puede('ADMIN') ? `<button class="btn btn-light" id="btn-exportar"><i class="bi bi-download me-1"></i> Exportar CSV</button>` : '') + `
     <div class="panel mb-3"><div class="panel-cuerpo">
       <div class="input-group input-group-lg mb-3">
         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -774,7 +774,7 @@ async function vistaBuscar() {
   $('#solo-mios').addEventListener('change', (e) => { B.soloMios = e.target.checked; B.pagina = 1; buscar(); });
   $('#papelera') && $('#papelera').addEventListener('change', (e) => { B.papelera = e.target.checked; B.pagina = 1; buscar(); });
   $('#limpiar').addEventListener('click', () => { S.busqueda = { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false }; vistaBuscar(); });
-  $('#btn-exportar').addEventListener('click', exportarCsv);
+  $('#btn-exportar') && $('#btn-exportar').addEventListener('click', exportarCsv);
   $('#q').focus();
   await buscar();
 }

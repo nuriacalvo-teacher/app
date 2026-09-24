@@ -15,11 +15,29 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
 | **Carpetas** | Cada carpeta tiene número, primer y último apellido, estado (pendiente / en curso / terminada) y quién la trabaja. La app **sugiere la carpeta** a partir de los apellidos y tiene un buscador «¿en qué carpeta está este apellido?». Con **«Asignar»** se elige en un desplegable qué profesor/a (con permiso de edición) trabaja cada carpeta, para no trabajar dos en la misma. Puedes crear carpetas de una en una o de golpe (p. ej. de la 41 a la 80). |
 | **Lugar de nacimiento** | País (España por defecto; incluye Cuba, Puerto Rico, Filipinas, Francia…). Si el país es España, la provincia se elige en un desplegable. La localidad siempre se escribe a mano, con sugerencias de los municipios actuales del INE y de las localidades que ya ha escrito el equipo. Si el país no es España, no se pide provincia y la ciudad se escribe a mano. |
 | **Índice alfabético** | Todos los alumnos por orden alfabético del primer apellido (la Ñ va detrás de la N), con barra de letras, recuentos y opción de imprimir. |
-| **Búsqueda** | Por apellidos, nombre, localidad o número, con filtros por carpeta, profesor, estado, país, provincia, ilustre y digitalizado. Cada fila muestra el número, el lugar de nacimiento (localidad, provincia y, si nació fuera, el país destacado en azul), el curso, la carpeta, si es ilustre (★), si está digitalizado y el estado. Se puede exportar el resultado a CSV (se abre en Excel). |
+| **Búsqueda** | Por apellidos, nombre, localidad o número, con filtros por carpeta, profesor, estado, país, provincia, ilustre y digitalizado. Cada fila muestra el número, el lugar de nacimiento (localidad, provincia y, si nació fuera, el país destacado en azul), el curso, la carpeta, si es ilustre (★), si está digitalizado y el estado. La coordinación puede exportar el resultado a CSV (se abre en Excel). |
 | **Permisos por correo** | Tres roles: **Coordinación** (todo), **Editor/a** (crear y modificar) y **Sólo consulta**. Sólo entra quien tú des de alta. |
 | **Historial** | Cada alta, cambio, borrado y ajuste queda anotado con su autor, la fecha y qué ha cambiado (valor anterior → valor nuevo). |
 | **Papelera** | Nada se borra del todo: los expedientes borrados van a una papelera y se pueden recuperar. |
 | **Copias de seguridad** | Copia manual con un clic y copia automática semanal en Google Drive. |
+
+## Dónde está la app y quién puede ver los datos
+
+- **La app vive en Google, no en GitHub.** Al implementarla, Google le da una dirección del tipo `https://script.google.com/macros/s/…/exec`. Esa es la app «online» que se abre desde cualquier ordenador o móvil. Se puede poner como enlace o incrustar en la web del centro (Google Sites).
+- **GitHub sólo guarda el código**, que no contiene datos, contraseñas ni correos reales. Da igual que el repositorio sea público: con el código nadie puede entrar en tu hoja. No publiques la app en GitHub Pages: se perdería la identificación con Google.
+- **Los datos sólo están en tu hoja de cálculo**, en tu Google Drive, y no se comparten con nadie. La app los lee y escribe «como tú», y antes comprueba en el servidor de Google quién es cada persona y qué rol tiene. No hay forma de saltarse esa comprobación desde el navegador.
+- **Quién entra:**
+  - Sólo las personas dadas de alta en *Profesores y permisos*. Si alguien no está en la lista, ve «No tienes acceso».
+  - Las personas con código de acceso tienen 5 intentos; después, la entrada queda bloqueada 15 minutos.
+  - Si quitas a alguien, deja de entrar al momento.
+- **Qué puede hacer cada rol:**
+  - **Sólo consulta:** ver.
+  - **Editor/a:** crear y modificar.
+  - **Coordinación:** además, borrar (a la papelera), exportar la base completa, cambiar campos y permisos, y ver el historial.
+- **Nada se pierde:**
+  - Cada cambio queda en el historial con el valor anterior.
+  - Los borrados van a la papelera.
+  - Google guarda el historial de versiones de la hoja (*Archivo → Historial de versiones*), y puedes activar la copia semanal en Drive.
 
 ## Capacidad: ¿cabe todo el archivo?
 
