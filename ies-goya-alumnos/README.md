@@ -11,16 +11,32 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
 | **Formulario de expediente** | Se genera a partir de la hoja *Campos*: la coordinación añade, renombra, ordena o desactiva campos desde la propia app, sin tocar código. |
 | **Sin duplicados** | Mientras escribes, un panel comprueba si el alumno ya existe: nombre idéntico (sin tener en cuenta tildes, «Y», «DE»…), grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…) y alumnos con los mismos apellidos. Al guardar se vuelve a comprobar en el servidor con bloqueo, así que dos personas no pueden crear el mismo alumno a la vez. Un homónimo sólo se guarda si alguien confirma que es otra persona, y queda anotado. |
 | **Edición simultánea** | Si dos personas abren el mismo expediente, la app avisa. Si las dos guardan, sólo vale el primer cambio: el segundo recibe un aviso y no borra el trabajo del primero. |
-| **Carpetas** | Cada carpeta tiene número, primer y último apellido, estado (pendiente / en curso / terminada) y quién la trabaja. La app **sugiere la carpeta** a partir de los apellidos y tiene un buscador «¿en qué carpeta está este apellido?». Los profesores se asignan carpetas para no trabajar dos en la misma. Puedes crear carpetas de una en una o de golpe (p. ej. de la 41 a la 80). |
+| **Número de orden alfabético** | Cada alumno tiene un número **GOYA000001, GOYA000002…** que sigue el orden alfabético de apellidos y nombre: GOYA000001 es el primero. Si se registra un alumno que va delante, los siguientes corren un puesto. La app muestra siempre el número del momento. La hoja de cálculo se reordena y renumera sola cada noche (o al momento con el botón de *Ajustes*). Además, cada expediente tiene un **nº de registro permanente** (R000001…), que es el que usa el historial y no cambia nunca. |
+| **Carpetas** | Cada carpeta tiene número, primer y último apellido, estado (pendiente / en curso / terminada) y quién la trabaja. La app **sugiere la carpeta** a partir de los apellidos y tiene un buscador «¿en qué carpeta está este apellido?». Con **«Asignar»** se elige en un desplegable qué profesor/a (con permiso de edición) trabaja cada carpeta, para no trabajar dos en la misma. Puedes crear carpetas de una en una o de golpe (p. ej. de la 41 a la 80). |
 | **Lugar de nacimiento** | País (España por defecto; incluye Cuba, Puerto Rico, Filipinas, Francia…). Si el país es España, la provincia se elige en un desplegable. La localidad siempre se escribe a mano, con sugerencias de los municipios actuales del INE y de las localidades que ya ha escrito el equipo. Si el país no es España, no se pide provincia y la ciudad se escribe a mano. |
 | **Índice alfabético** | Todos los alumnos por orden alfabético del primer apellido (la Ñ va detrás de la N), con barra de letras, recuentos y opción de imprimir. |
-| **Búsqueda** | Por apellidos, nombre, localidad o identificador, con filtros por carpeta, profesor, estado, ilustre, digitalizado… Se puede exportar el resultado a CSV (se abre en Excel). |
+| **Búsqueda** | Por apellidos, nombre, localidad o número, con filtros por carpeta, profesor, estado, país, provincia, ilustre y digitalizado. Cada fila muestra el número, el lugar de nacimiento (localidad, provincia y, si nació fuera, el país destacado en azul), el curso, la carpeta, si es ilustre (★), si está digitalizado y el estado. Se puede exportar el resultado a CSV (se abre en Excel). |
 | **Permisos por correo** | Tres roles: **Coordinación** (todo), **Editor/a** (crear y modificar) y **Sólo consulta**. Sólo entra quien tú des de alta. |
 | **Historial** | Cada alta, cambio, borrado y ajuste queda anotado con su autor, la fecha y qué ha cambiado (valor anterior → valor nuevo). |
 | **Papelera** | Nada se borra del todo: los expedientes borrados van a una papelera y se pueden recuperar. |
 | **Copias de seguridad** | Copia manual con un clic y copia automática semanal en Google Drive. |
 
-**Capacidad.** Una hoja de Google admite 10 millones de celdas. Con unos 25 campos por expediente caben **más de 300 000 expedientes**. Las búsquedas y el índice se calculan en el servidor y se muestran por páginas, de modo que la app sigue yendo rápida aunque haya decenas de miles de alumnos.
+## Capacidad: ¿cabe todo el archivo?
+
+Unos 1000 alumnos al año desde 1845 dan unos **181 000 expedientes** hasta hoy.
+
+- Google Sheets admite **10 millones de celdas por archivo**. Cada expediente ocupa una fila de unas 25 columnas: 13 campos más los datos de control.
+- **181 000 expedientes × 25 columnas ≈ 4,5 millones de celdas**, así que cabe con holgura. Quedaría sitio para unos 200 000 expedientes más, o para unos 25 campos nuevos.
+- El **historial** de cambios va en **un archivo de Google aparte**, que se crea solo al instalar y tiene su propio límite. Así no le quita espacio a los alumnos.
+- La instalación elimina las columnas vacías sobrantes, porque también cuentan para el límite.
+- En *Ajustes y copias* verás un indicador con las celdas usadas y cuántos expedientes caben todavía.
+
+**Velocidad.** Con decenas de miles de filas, Google Sheets tarda **unos segundos** en cada búsqueda. Para ahorrar tiempo:
+- La clave de orden de cada alumno se guarda al grabarlo y no se recalcula en cada búsqueda.
+- El historial se lee sólo por páginas.
+- La reordenación física de la hoja (lo más pesado) se hace de noche.
+
+Si algún día se quedara corto, la solución es separar el archivo por siglos (una copia de la app para el XIX y otra para el XX). No hay que cambiar nada del código.
 
 ## Instalación (unos 10 minutos, una sola vez)
 
@@ -33,7 +49,7 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
    - Crea con **＋ → HTML** estos cuatro archivos, **con estos nombres exactos y sin `.html`**: `Index`, `Estilos`, `Cliente` y `Datos`. En cada uno, pega el contenido del archivo correspondiente.
    - Opcional: en *Configuración del proyecto* (⚙) activa «Mostrar el archivo de manifiesto appsscript.json» y pega `appsscript.json`. Así se fija la zona horaria de Madrid.
    - Guarda (💾).
-4. **Instala la estructura:** en la barra superior elige la función **`instalar`** y pulsa **▶ Ejecutar**. Google te pedirá permisos: *Revisar permisos → tu cuenta → Configuración avanzada → Ir a (proyecto) → Permitir*. Así se crean las hojas *Alumnos, Campos, Profesores, Carpetas, Historial y Ajustes*, las carpetas de la 1 a la 40 (la 1 ya con ABADÍA Y CORTINA – ABEIJÓN Y FUERTES) y tu usuario como coordinación.
+4. **Instala la estructura:** en la barra superior elige la función **`instalar`** y pulsa **▶ Ejecutar**. Google te pedirá permisos: *Revisar permisos → tu cuenta → Configuración avanzada → Ir a (proyecto) → Permitir*. Así se crean las hojas *Alumnos, Campos, Profesores, Carpetas y Ajustes*, el archivo aparte del *Historial*, el formato de colores, las carpetas de la 1 a la 40 (la 1 ya con ABADÍA Y CORTINA – ABEIJÓN Y FUERTES) y tu usuario como coordinación.
 5. **Publica la aplicación:** *Implementar → Nueva implementación → ⚙ Tipo: Aplicación web*.
    - **Ejecutar como:** *Yo*.
    - **Quién tiene acceso:**
@@ -46,13 +62,40 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
 
 - **No compartas la hoja de cálculo** con el profesorado. Todos deben trabajar desde la app, que es la que controla permisos, duplicados e historial. La hoja sólo la deben abrir la coordinación y los administradores.
 - **Cuando cambies el código** (una versión nueva de estos archivos), ve a *Implementar → Gestionar implementaciones → ✏ → Versión: Nueva versión → Implementar*. La URL no cambia.
-- En la hoja aparece el menú **«Archivo IES Goya»**, con opciones para reinstalar o reparar la estructura, hacer una copia de seguridad y ver el enlace de la app.
+- En la hoja aparece el menú **«Archivo IES Goya»**, con opciones para reinstalar o reparar la estructura, ordenar y renumerar, dar formato, hacer una copia de seguridad y ver el enlace de la app.
+- Al instalar se crean dos tareas automáticas: la **ordenación nocturna** (2:00) y, si la activas en *Ajustes*, la **copia semanal**. Puedes verlas en Apps Script, en *Activadores* (icono del reloj).
 - Las columnas de la hoja *Alumnos* están en formato texto a propósito, para que Google no convierta las fechas antiguas ni los números. La fila 1 contiene las claves internas de los campos: no la cambies.
+
+## Cómo se ve la hoja de cálculo en Google Sheets
+
+No hay que pasar nada a mano: **la app escribe directamente en la hoja de Google**, y `instalar` le da formato para que se lea bien también desde Google Sheets.
+
+- **Pestañas por colores:** *Alumnos* en granate, *Carpetas* en dorado y la configuración (*Campos, Profesores, Ajustes*) en azul oscuro. El historial está en su propio archivo, en la misma carpeta de Drive.
+- **Alumnos:**
+  - La primera fila es una cabecera azul oscuro que se queda fija. Cada columna lleva una nota con su nombre completo y su ayuda: pasa el ratón por la cabecera para verla.
+  - Las columnas **Nº, APELLIDOS y NOMBRE** van primero y se quedan fijas al desplazarte a la derecha. Los apellidos van en negrita.
+  - Las filas alternan blanco y crema, y están **ordenadas alfabéticamente** (se reordenan cada noche).
+  - Colores automáticos:
+    - **Estado:** TERMINADO en verde, EN PROCESO en ámbar y PENDIENTE DE REVISIÓN en rosa.
+    - **Ilustre:** SÍ en dorado.
+    - **Digitalizado:** SÍ en verde; HAY QUE BUSCAR en ámbar.
+    - **País:** los nacidos fuera de España, en azul.
+    - **Papelera:** los expedientes borrados salen en gris tachado.
+  - El **filtro** está activado en la cabecera, para filtrar u ordenar desde la propia hoja.
+  - Las columnas técnicas (claves de duplicados, nº de registro, orden, versión) están ocultas.
+- **Carpetas:** en verde las terminadas y en ámbar las que están en curso. En rosa salen las que aún no tienen definido el primer o el último apellido.
+- **Profesores:** la coordinación en rosa y los editores en azul. Las personas inactivas salen tachadas.
+
+Si alguna vez se descoloca algo (por ejemplo, tras añadir campos o pegar datos a mano), usa el menú de la hoja **Archivo IES Goya → Dar formato a las hojas**.
+
+**¿Tienes ya datos en otra hoja o en Excel?**
+1. Pégalos en la hoja *Alumnos*, debajo de la cabecera y respetando las columnas: APELLIDOS, NOMBRE, CARPETA, etc.
+2. Usa **Archivo IES Goya → Ordenar alfabéticamente y renumerar**. Se completan los números, las claves de duplicados y el orden.
 
 ## Organización del trabajo (recomendada)
 
 1. La coordinación define el primer y el último apellido de cada carpeta a medida que se abren (*Carpetas → ✏*).
-2. Cada profesor se asigna una carpeta, registra sus expedientes («Guardar y siguiente» mantiene su nombre y la carpeta) y la marca como terminada.
+2. Cada profesor se asigna una carpeta (*Carpetas → Asignar* y elige su nombre), registra sus expedientes («Guardar y siguiente» mantiene su nombre y la carpeta) y la marca como terminada.
 3. Antes de crear un expediente, hay que mirar el panel **Comprobación de duplicados**. Si el alumno ya existe, se completa el expediente existente.
 4. La coordinación revisa de vez en cuando el *Historial* y la *Papelera*, y activa la copia semanal en *Ajustes y copias*.
 

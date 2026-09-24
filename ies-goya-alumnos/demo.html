@@ -124,14 +124,18 @@
   .tabla tbody tr.clic { cursor: pointer; }
   .tabla tbody tr.clic:hover td { background: #fbf9f4; }
   .ap { font-weight: 700; color: var(--tinta); }
+  .tabla td.ap, .tabla td.id-exp { white-space: nowrap; }
   .id-exp { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--suave); }
-  .separador-letra td { background: var(--papel-2) !important; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; color: var(--granate); font-size: 16px; padding: 4px 12px; }
 
   .etiqueta { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; background: var(--papel-2); color: #555; }
   .e-TERMINADO, .e-TERMINADA { background: #e3f1e8; color: #1f5a37; }
   .e-EN-PROCESO, .e-EN-CURSO { background: #fff1d6; color: #7a5212; }
   .e-PENDIENTE-DE-REVISION { background: #f6e3e6; color: var(--granate); }
   .e-PENDIENTE { background: var(--papel-2); color: #555; }
+  .e-SI { background: #e3f1e8; color: #1f5a37; }
+  .e-NO { background: transparent; color: #8a8f98; font-weight: 500; }
+  .e-ILUSTRE { background: #f3e7c9; color: #6b4e16; }
+  .e-EXTRANJERO { background: #e3ecf6; color: #1d4f8c; }
 
   .letras { display: flex; flex-wrap: wrap; gap: 4px; }
   .letras button { min-width: 38px; border: 1px solid var(--borde); background: #fff; border-radius: 8px; padding: 5px 0 3px; font-weight: 700; color: var(--tinta); line-height: 1.1; }
@@ -342,6 +346,8 @@
     getMaxColumns: function () { return this.d.maxC; },
     insertRowsAfter: function (r, n) { this.d.maxF = this.getMaxRows() + n; guardar(); },
     insertColumnsAfter: function (c, n) { this.d.maxC += n; guardar(); },
+    deleteColumns: function (c, n) { this.d.maxC = Math.max(c - 1, this.d.maxC - n); guardar(); },
+    getParent: function () { return libro; },
     deleteRow: function (r) { this.d.filas.splice(r - 1, 1); guardar(); },
     appendRow: function (v) { var r = this.getLastRow() + 1; this.getRange(r, 1, 1, v.length).setValues([v]); return this; },
     getRange: function (r, c, nr, nc) {
@@ -352,7 +358,7 @@
     },
     getDataRange: function () { return this.getRange(1, 1, Math.max(1, this.getLastRow()), Math.max(1, this.getLastColumn())); }
   };
-  ['setFrozenRows', 'setFrozenColumns', 'setColumnWidth'].forEach(function (m) { Hoja.prototype[m] = function () { return this; }; });
+  ['setFrozenRows', 'setFrozenColumns', 'setColumnWidth', 'hideColumns', 'setRowHeight', 'setTabColor', 'setConditionalFormatRules'].forEach(function (m) { Hoja.prototype[m] = function () { return this; }; });
 
   function Rango(h, r, c, nr, nc) { this.h = h; this.r = r; this.c = c; this.nr = nr; this.nc = nc; }
   Rango.prototype = {
@@ -381,20 +387,25 @@
       return this;
     },
     setValue: function (x) { return this.setValues([[x]]); },
-    getValue: function () { return this.getValues()[0][0]; }
+    getValue: function () { return this.getValues()[0][0]; },
+    sort: function (o) {
+      var j = o.column - this.c, v = this.getValues();
+      v.sort(function (a, b) { var x = String(a[j]), y = String(b[j]); if (x === '' || y === '') return x === y ? 0 : x === '' ? 1 : -1; return x < y ? -1 : x > y ? 1 : 0; });
+      return this.setValues(v);
+    }
   };
 
   var libro = {
     getId: function () { return 'demo'; },
     getName: function () { return 'Archivo IES Goya (demo)'; },
     getUrl: function () { return '#'; },
-    getSheetByName: function (n) { return db.hojas[n] ? new Hoja(n) : null; },
-    getSheets: function () { return db.orden.map(function (n) { return new Hoja(n); }); },
+    getSheetByName: function (n) { return db.hojas[n] ? encadenable(new Hoja(n)) : null; },
+    getSheets: function () { return db.orden.map(function (n) { return encadenable(new Hoja(n)); }); },
     insertSheet: function (n, pos) {
       db.hojas[n] = { filas: [], maxF: 1000, maxC: 26 };
       if (pos === 0) db.orden.unshift(n); else db.orden.push(n);
       guardar();
-      return new Hoja(n);
+      return encadenable(new Hoja(n));
     },
     deleteSheet: function (h) { delete db.hojas[h.nombre]; db.orden = db.orden.filter(function (x) { return x !== h.nombre; }); guardar(); }
   };
@@ -404,8 +415,11 @@
   window.SpreadsheetApp = {
     getActive: function () { return libro; },
     openById: function () { return libro; },
+    create: function () { throw new Error('En la demo el historial va en la propia hoja'); },
     getUi: function () { throw new Error('Sin interfaz'); },
-    newDataValidation: function () { return encadenable({}); }
+    newDataValidation: function () { return encadenable({}); },
+    newConditionalFormatRule: function () { return encadenable({}); },
+    BandingTheme: { LIGHT_GREY: 'LIGHT_GREY' }
   };
   window.Session = {
     getActiveUser: function () { return { getEmail: function () { return email; } }; },
@@ -533,14 +547,23 @@ const HOJA = {
   AJUSTES: 'Ajustes'
 };
 
-/** Columnas internas de la hoja Alumnos (las claves de campos nunca empiezan por «_»). */
-const META = ['ID', '_CLAVE', '_FONETICA', '_CREADO_EN', '_CREADO_POR', '_MODIFICADO_EN', '_MODIFICADO_POR', '_VERSION', '_BORRADO'];
+/**
+ * Columnas internas de la hoja Alumnos (las claves de campos nunca empiezan por «_»).
+ *  ID    → número de orden alfabético visible (GOYA000001 = primer alumno por apellidos).
+ *          Se recalcula al añadir alumnos: si se intercala uno, los siguientes corren un puesto.
+ *  _UID  → identificador interno permanente (R000001, por orden de entrada). Nunca cambia;
+ *          es el que usan el historial y la aplicación para localizar cada expediente.
+ *  _ORDEN → posición alfabética (sirve para ordenar físicamente las filas de la hoja).
+ */
+const META = ['ID', '_BORRADO', '_CREADO_EN', '_CREADO_POR', '_MODIFICADO_EN', '_MODIFICADO_POR', '_VERSION', '_UID', '_ORDEN', '_CLAVE', '_FONETICA'];
+/** Columnas técnicas que se ocultan en la hoja de cálculo. */
+const META_OCULTAS = ['_UID', '_ORDEN', '_CLAVE', '_FONETICA', '_VERSION'];
 
 const CABECERAS = {
   Campos: ['CLAVE', 'ETIQUETA', 'TIPO', 'OPCIONES', 'OBLIGATORIO', 'SECCION', 'ORDEN', 'AYUDA', 'EN_LISTADOS', 'ACTIVO', 'SISTEMA'],
   Profesores: ['NOMBRE', 'EMAIL', 'ROL', 'ACTIVO', 'CODIGO_ACCESO', 'NOTAS'],
   Carpetas: ['NUMERO', 'DESDE', 'HASTA', 'ESTADO', 'ASIGNADA_A', 'NOTAS'],
-  Historial: ['FECHA', 'EMAIL', 'USUARIO', 'ACCION', 'ID', 'DETALLE'],
+  Historial: ['FECHA', 'EMAIL', 'USUARIO', 'ACCION', 'REGISTRO', 'DETALLE'],
   Ajustes: ['CLAVE', 'VALOR', 'DESCRIPCION']
 };
 
@@ -555,13 +578,13 @@ const CAMPOS_INICIALES = [
   ['CARPETA', 'Carpeta del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la carpeta según los apellidos.', true, true],
   ['APELLIDOS', 'Apellidos', 'texto', '', true, 'Identificación del alumno', 'Tal como aparecen en el expediente. Ej.: ABADÍA Y CORTINA', true, true],
   ['NOMBRE', 'Nombre de pila', 'texto', '', true, 'Identificación del alumno', 'Ej.: Juan Manuel', true, true],
-  ['PAIS', 'País de nacimiento', 'pais', '', false, 'Lugar y fecha de nacimiento', '', false, true],
-  ['PROVINCIA', 'Provincia', 'provincia', '', false, 'Lugar y fecha de nacimiento', '', false, true],
+  ['PAIS', 'País de nacimiento', 'pais', '', false, 'Lugar y fecha de nacimiento', '', true, true],
+  ['PROVINCIA', 'Provincia', 'provincia', '', false, 'Lugar y fecha de nacimiento', '', true, true],
   ['LOCALIDAD', 'Localidad', 'localidad', '', false, 'Lugar y fecha de nacimiento', 'Elígela de la lista o escríbela si no aparece (nombres antiguos, pedanías…).', true, true],
   ['FECHA_NACIMIENTO', 'Fecha de nacimiento', 'fecha', '', false, 'Lugar y fecha de nacimiento', 'dd/mm/aaaa. Si sólo consta el año, escribe el año.', false, false],
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
-  ['ILUSTRE', 'Alumno ilustre o destacado', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', false, false],
-  ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', false, false],
+  ['ILUSTRE', 'Alumno ilustre o destacado', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
+  ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
   ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
 ];
 
@@ -570,7 +593,7 @@ const AJUSTES_INICIALES = [
   ['SUBTITULO', 'Expedientes de alumnos · Siglo XIX (desde 1845)', 'Subtítulo de la cabecera.'],
   ['LECTURA_ABIERTA', 'NO', 'SÍ: cualquier persona identificada que no esté en Profesores puede consultar (sin editar).'],
   ['EDITORES_SOLO_PROPIOS', 'NO', 'SÍ: los editores sólo pueden modificar los expedientes que crearon ellos.'],
-  ['PREFIJO_ID', 'GOYA', 'Prefijo de los identificadores de expediente (GOYA-000001).'],
+  ['PREFIJO_ID', 'GOYA', 'Prefijo del número de orden alfabético (GOYA000001 = primer alumno por apellidos).'],
   ['PAIS_DEFECTO', 'España', 'País que aparece por defecto en el formulario.'],
   ['PROVINCIA_DEFECTO', 'Zaragoza', 'Provincia que aparece por defecto en el formulario.'],
   ['COPIA_AUTOMATICA', 'NO', 'SÍ: copia de seguridad semanal automática en Google Drive (domingo de madrugada).'],
@@ -579,6 +602,9 @@ const AJUSTES_INICIALES = [
 
 /** Memoria de la ejecución en curso (Apps Script la reinicia en cada petición). */
 const MEMO = {};
+
+/** Hasta este nº de filas la hoja se reordena al guardar; por encima, sólo de noche o con el botón. */
+const LIMITE_ORDEN_INMEDIATO = 3000;
 
 // ---------------------------------------------------------------------
 //  Web app
@@ -598,6 +624,8 @@ function include(nombre) {
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Archivo IES Goya')
     .addItem('Instalar / reparar estructura', 'instalar')
+    .addItem('Ordenar alfabéticamente y renumerar', 'ordenarYNumerar')
+    .addItem('Dar formato a las hojas', 'darFormato')
     .addItem('Crear copia de seguridad ahora', 'copiaSeguridadManual')
     .addItem('Ver enlace de la aplicación', 'mostrarEnlace')
     .addToUi();
@@ -655,7 +683,9 @@ const ACCIONES = {
   crearCarpetas:       { rol: 'ADMIN',   fn: crearCarpetas_ },
   borrarCarpeta:       { rol: 'ADMIN',   fn: borrarCarpeta_ },
   guardarAjustes:      { rol: 'ADMIN',   fn: guardarAjustes_ },
-  copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } }
+  copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } },
+  ordenarAhora:        { rol: 'ADMIN',   fn: ordenarAhora_ },
+  capacidad:           { rol: 'ADMIN',   fn: capacidad_ }
 };
 
 // ---------------------------------------------------------------------
@@ -734,7 +764,7 @@ function arranque_(d, u) {
   r.carpetas = carpetasLista_();
   const profes = profesores_();
   r.profesores = u.rol === 'ADMIN' ? profes : profes.filter(function (p) { return si_(p.ACTIVO); })
-    .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO }; });
+    .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO, ROL: p.ROL }; });
   if (u.rol === 'ADMIN') {
     r.urlHoja = ss_().getUrl();
     try { r.urlApp = ScriptApp.getService().getUrl(); } catch (e) { r.urlApp = ''; }
@@ -856,7 +886,8 @@ function mapaColumnas_(h) {
 /** Garantiza que existen las columnas internas y las de todos los campos definidos. */
 function asegurarColumnas_(h) {
   const mapa = mapaColumnas_(h);
-  const necesarias = ['ID'].concat(campos_().map(function (c) { return c.clave; }), META.slice(1));
+  const necesarias = ['ID', 'APELLIDOS', 'NOMBRE'].concat(campos_().map(function (c) { return c.clave; }), META.slice(1))
+    .filter(function (k, i, a) { return a.indexOf(k) === i; });
   const faltan = necesarias.filter(function (k) { return !mapa[k]; });
   if (faltan.length) {
     let col = h.getLastColumn();
@@ -865,6 +896,7 @@ function asegurarColumnas_(h) {
     h.getRange(1, col + 1, h.getMaxRows(), faltan.length).setNumberFormat('@');
     h.getRange(1, col + 1, 1, faltan.length).setValues([faltan]).setFontWeight('bold').setBackground('#1f2a44').setFontColor('#ffffff');
     delete MEMO.mapa;
+    MEMO.formatoPendiente = true;
     return mapaColumnas_(h);
   }
   return mapa;
@@ -913,6 +945,7 @@ function escribirFila_(h, fila, obj) {
     const nuevas = 500;
     h.insertRowsAfter(h.getMaxRows(), nuevas);
     h.getRange(h.getMaxRows() - nuevas + 1, 1, nuevas, h.getMaxColumns()).setNumberFormat('@');
+    MEMO.formatoPendiente = true;
   }
   const fila1 = cab.map(function (c) {
     let v = obj[c] === undefined || obj[c] === null ? '' : String(obj[c]);
@@ -922,16 +955,31 @@ function escribirFila_(h, fila, obj) {
   h.getRange(fila, 1, 1, cab.length).setValues([fila1]);
 }
 
-function filaDeId_(h, mapa, id) {
-  const ids = leerColumnas_(h, mapa, ['ID']).ID;
-  const i = ids.indexOf(String(id));
+/** Fila de un expediente a partir de su identificador interno permanente (_UID). */
+function filaDeId_(h, mapa, uid) {
+  const ids = leerColumnas_(h, mapa, ['_UID'])._UID;
+  const i = ids.indexOf(String(uid));
   if (i < 0) throw new Error('No se encuentra el expediente ' + id + '.');
   return i + 2;
 }
 
+/**
+ * El historial va en un archivo de Google aparte (se crea al instalar) para no gastar la capacidad
+ * de la hoja de alumnos. Si no existe, se usa la pestaña «Historial» de la hoja principal.
+ */
+function hojaHistorial_() {
+  if (MEMO.historial) return MEMO.historial;
+  let h = null;
+  const id = PropertiesService.getScriptProperties().getProperty('HISTORIAL_ID');
+  if (id) { try { h = SpreadsheetApp.openById(id).getSheetByName(HOJA.HISTORIAL); } catch (e) { h = null; } }
+  if (!h) h = hoja_(HOJA.HISTORIAL);
+  MEMO.historial = h;
+  return h;
+}
+
 function registrar_(u, accion, id, detalle) {
   try {
-    hoja_(HOJA.HISTORIAL).appendRow([ahora_(), u.email, u.nombre, accion, id || '', String(detalle || '').slice(0, 45000)]);
+    hojaHistorial_().appendRow([ahora_(), u.email, u.nombre, accion, id || '', String(detalle || '').slice(0, 45000)]);
   } catch (e) { console.error('Historial', e); }
 }
 
@@ -992,6 +1040,37 @@ function ordenNatural_(a, b) {
   return String(a).localeCompare(String(b), 'es');
 }
 
+function cero_(x, k) { return ('0000000000' + x).slice(-k); }
+
+function prefijo_() { return String(ajustes_().PREFIJO_ID || 'GOYA').trim().toUpperCase(); }
+
+/** Clave con la que se ordena cada alumno (se guarda en la columna _ORDEN para no recalcularla). */
+function claveOrdenFila_(apellidos, nombre, uid) {
+  return claveOrden_(apellidos) + '  ' + claveOrden_(nombre) + '  ' + (uid || '');
+}
+
+/**
+ * Numeración alfabética en vivo: pone en c.ID el número que corresponde ahora mismo a cada alumno
+ * (GOYA000001 = primero por apellidos; la papelera no tiene número). Así la app siempre muestra el
+ * número correcto aunque la hoja todavía no se haya reordenado (se hace cada noche).
+ * Necesita en c: _UID, _BORRADO, _ORDEN, APELLIDOS, NOMBRE. Devuelve los índices vivos ya ordenados.
+ */
+function numerar_(c) {
+  const pref = prefijo_();
+  const lista = [];
+  for (let i = 0; i < c._n; i++) {
+    if (!c._UID[i] || si_(c._BORRADO[i])) continue;
+    if (!c._ORDEN[i]) c._ORDEN[i] = claveOrdenFila_(c.APELLIDOS[i], c.NOMBRE[i], c._UID[i]);
+    lista.push(i);
+  }
+  lista.sort(function (a, b) { return c._ORDEN[a] < c._ORDEN[b] ? -1 : c._ORDEN[a] > c._ORDEN[b] ? 1 : 0; });
+  c.ID = vacio_(c._n);
+  lista.forEach(function (i, p) { c.ID[i] = pref + cero_(p + 1, 6); });
+  return lista;
+}
+
+const COLS_NUMERACION = ['_UID', '_BORRADO', '_ORDEN', 'APELLIDOS', 'NOMBRE'];
+
 // ---------------------------------------------------------------------
 //  Panel de inicio
 // ---------------------------------------------------------------------
@@ -999,11 +1078,11 @@ function ordenNatural_(a, b) {
 function inicio_(d, u) {
   const h = hoja_(HOJA.ALUMNOS);
   const mapa = mapaColumnas_(h);
-  const c = leerColumnas_(h, mapa, ['ID', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE', 'PROFESOR', '_BORRADO', '_CREADO_POR', '_CREADO_EN']);
+  const c = leerColumnas_(h, mapa, ['_UID', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE', 'PROFESOR', '_BORRADO', '_CREADO_POR', '_CREADO_EN']);
   const r = { total: 0, terminados: 0, digitalizados: 0, ilustres: 0, mios: 0, hoy: 0, porEstado: {}, porProfesor: {} };
   const hoy = ahora_().slice(0, 10);
   for (let i = 0; i < c._n; i++) {
-    if (!c.ID[i] || si_(c._BORRADO[i])) continue;
+    if (!c._UID[i] || si_(c._BORRADO[i])) continue;
     r.total++;
     const est = c.ESTADO[i] || '(sin estado)';
     r.porEstado[est] = (r.porEstado[est] || 0) + 1;
@@ -1024,7 +1103,7 @@ function inicio_(d, u) {
       .map(function (x) { return x.NUMERO; })
   };
   // Últimos movimientos
-  const hh = hoja_(HOJA.HISTORIAL);
+  const hh = hojaHistorial_();
   const n = hh.getLastRow() - 1;
   r.ultimos = [];
   if (n > 0) {
@@ -1048,40 +1127,46 @@ function filtrar_(d, u, clavesExtra) {
   Object.keys(d.filtros || {}).forEach(function (k) {
     if (activos.indexOf(k) >= 0 && d.filtros[k] !== '' && d.filtros[k] !== null) filtros[k] = String(d.filtros[k]);
   });
-  const claves = ['ID', 'APELLIDOS', 'NOMBRE', '_BORRADO', '_MODIFICADO_EN', '_CREADO_POR']
-    .concat(listado, Object.keys(filtros), d.q ? ['LOCALIDAD', 'PROVINCIA', 'OBSERVACIONES'] : [], clavesExtra || []);
+  const claves = COLS_NUMERACION.concat(['_MODIFICADO_EN', '_CREADO_POR'], listado, Object.keys(filtros),
+    d.q ? ['LOCALIDAD', 'PROVINCIA', 'PAIS', 'OBSERVACIONES'] : [], clavesExtra || []);
   const c = leerColumnas_(h, mapa, claves);
-  const q = d.q ? normBusqueda_(d.q).split(' ').filter(String) : [];
+  const vivos = numerar_(c);
   const papelera = !!d.papelera && u.rol === 'ADMIN';
-  const soloMios = !!d.soloMios;
+  let candidatos = vivos;
+  if (papelera) {
+    candidatos = [];
+    for (let i = 0; i < c._n; i++) {
+      if (!c._UID[i] || !si_(c._BORRADO[i])) continue;
+      if (!c._ORDEN[i]) c._ORDEN[i] = claveOrdenFila_(c.APELLIDOS[i], c.NOMBRE[i], c._UID[i]);
+      candidatos.push(i);
+    }
+    candidatos.sort(function (a, b) { return c._ORDEN[a] < c._ORDEN[b] ? -1 : 1; });
+  }
+  const q = d.q ? normBusqueda_(d.q).split(' ').filter(String) : [];
+  const textoClaves = claves.filter(function (k) { return k.charAt(0) !== '_'; }).concat(['ID']);
   const letras = {};
   const idx = [];
-  const orden = {};
-  for (let i = 0; i < c._n; i++) {
-    if (!c.ID[i] || si_(c._BORRADO[i]) !== papelera) continue;
-    if (soloMios && c._CREADO_POR[i] !== u.email) continue;
-    let ok = true;
-    for (const k in filtros) { if (String(c[k][i]) !== filtros[k]) { ok = false; break; } }
-    if (!ok) continue;
+  candidatos.forEach(function (i) {
+    if (d.soloMios && c._CREADO_POR[i] !== u.email) return;
+    for (const k in filtros) { if (String(c[k][i]) !== filtros[k]) return; }
     if (q.length) {
-      const texto = ' ' + normBusqueda_(claves.map(function (k) { return c[k] ? c[k][i] : ''; }).join(' ')) + ' ';
-      if (!q.every(function (t) { return texto.indexOf(t) >= 0; })) continue;
+      const texto = ' ' + normBusqueda_(textoClaves.map(function (k) { return c[k] ? c[k][i] : ''; }).join(' ')) + ' ';
+      if (!q.every(function (t) { return texto.indexOf(t) >= 0; })) return;
     }
-    const ko = claveOrden_(c.APELLIDOS[i]) + '  ' + claveOrden_(c.NOMBRE[i]);
-    const letra = letraIndice_(ko);
+    const letra = letraIndice_(c._ORDEN[i]);
     letras[letra] = (letras[letra] || 0) + 1;
-    if (d.letra && letra !== d.letra) continue;
-    orden[i] = ko;
+    if (d.letra && letra !== d.letra) return;
     idx.push(i);
-  }
-  const o = d.orden || 'apellidos';
-  idx.sort(function (a, b) {
-    let r = 0;
-    if (o === 'carpeta') r = ordenNatural_(c.CARPETA ? c.CARPETA[a] : '', c.CARPETA ? c.CARPETA[b] : '');
-    else if (o === 'curso') r = ordenNatural_(c.CURSO ? c.CURSO[a] : '', c.CURSO ? c.CURSO[b] : '');
-    else if (o === 'reciente') r = String(c._MODIFICADO_EN[b]).localeCompare(String(c._MODIFICADO_EN[a]));
-    return r || (orden[a] < orden[b] ? -1 : orden[a] > orden[b] ? 1 : 0);
   });
+  // Ya están en orden alfabético; el resto de órdenes respetan ese orden en caso de empate.
+  const o = d.orden || 'apellidos';
+  if (o !== 'apellidos') {
+    idx.sort(function (a, b) {
+      if (o === 'carpeta') return ordenNatural_(c.CARPETA ? c.CARPETA[a] : '', c.CARPETA ? c.CARPETA[b] : '');
+      if (o === 'curso') return ordenNatural_(c.CURSO ? c.CURSO[a] : '', c.CURSO ? c.CURSO[b] : '');
+      return String(c._MODIFICADO_EN[b]).localeCompare(String(c._MODIFICADO_EN[a]));
+    });
+  }
   return { c: c, idx: idx, letras: letras, listado: listado };
 }
 
@@ -1091,7 +1176,7 @@ function consultar_(d, u) {
   const tam = Math.min(Math.max(parseInt(d.tam, 10) || 50, 10), 500);
   const paginas = Math.max(1, Math.ceil(f.idx.length / tam));
   const pagina = Math.min(Math.max(parseInt(d.pagina, 10) || 1, 1), paginas);
-  const claves = ['ID', 'APELLIDOS', 'NOMBRE'].concat(f.listado);
+  const claves = ['_UID', 'ID', 'APELLIDOS', 'NOMBRE'].concat(f.listado);
   const filas = f.idx.slice((pagina - 1) * tam, pagina * tam).map(function (i) {
     const o = {};
     claves.forEach(function (k) { o[k] = f.c[k] ? f.c[k][i] : ''; });
@@ -1117,11 +1202,16 @@ function exportar_(d, u) {
 function obtener_(d, u) {
   const h = hoja_(HOJA.ALUMNOS);
   const mapa = mapaColumnas_(h);
-  const reg = leerFila_(h, filaDeId_(h, mapa, d.id));
+  const c = leerColumnas_(h, mapa, COLS_NUMERACION);
+  const i = c._UID.indexOf(String(d.id));
+  if (i < 0) throw new Error('No se encuentra el expediente. Puede que se haya borrado.');
+  numerar_(c);
+  const reg = leerFila_(h, i + 2);
   delete reg._fila;
+  reg.ID = c.ID[i];
   let bloqueo = null;
   try {
-    const b = CacheService.getScriptCache().get('edit_' + reg.ID);
+    const b = CacheService.getScriptCache().get('edit_' + reg._UID);
     if (b) { bloqueo = JSON.parse(b); if (bloqueo.email === u.email) bloqueo = null; }
   } catch (e) { bloqueo = null; }
   return { registro: reg, puedeEditar: puedeEditar_(u, reg), bloqueo: bloqueo };
@@ -1136,7 +1226,7 @@ function puedeEditar_(u, reg) {
 
 function resumen_(c, i) {
   const o = {};
-  ['ID', 'APELLIDOS', 'NOMBRE', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PROFESOR', 'ESTADO'].forEach(function (k) {
+  ['_UID', 'ID', 'APELLIDOS', 'NOMBRE', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PAIS', 'PROFESOR', 'ESTADO'].forEach(function (k) {
     o[k] = c[k] ? c[k][i] : '';
   });
   return o;
@@ -1154,21 +1244,25 @@ function comprobarDuplicados_(d, u) {
   if (normNombre_(ap).length < 2) return vacio;
   const h = hoja_(HOJA.ALUMNOS);
   const mapa = mapaColumnas_(h);
-  const c = leerColumnas_(h, mapa, ['ID', '_CLAVE', '_FONETICA', '_BORRADO', 'APELLIDOS', 'NOMBRE', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PROFESOR', 'ESTADO']);
+  const c = leerColumnas_(h, mapa, COLS_NUMERACION.concat(['_CLAVE', '_FONETICA', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PAIS', 'PROFESOR', 'ESTADO']));
   const clave = claveDuplicado_(ap, no), fonAp = fonetica_(ap), fon = fonAp + '|' + fonetica_(no);
   const conNombre = normNombre_(no).length > 0;
+  const ex = [], pa = [], mi = [];
   for (let i = 0; i < c._n; i++) {
-    if (!c.ID[i] || c.ID[i] === d.id || si_(c._BORRADO[i])) continue;
+    if (!c._UID[i] || c._UID[i] === d.id || si_(c._BORRADO[i])) continue;
     // Si la fila se escribió a mano en la hoja, calculamos las claves al vuelo.
     const k = c._CLAVE[i] || claveDuplicado_(c.APELLIDOS[i], c.NOMBRE[i]);
     const f = c._FONETICA[i] || claveFonetica_(c.APELLIDOS[i], c.NOMBRE[i]);
-    if (conNombre && k === clave) vacio.exactos.push(resumen_(c, i));
-    else if (conNombre && f === fon) vacio.parecidos.push(resumen_(c, i));
-    else if (f.split('|')[0] === fonAp) {
-      vacio.totalMismos++;
-      if (vacio.mismosApellidos.length < 25) vacio.mismosApellidos.push(resumen_(c, i));
-    }
+    if (conNombre && k === clave) ex.push(i);
+    else if (conNombre && f === fon) pa.push(i);
+    else if (f.split('|')[0] === fonAp) mi.push(i);
   }
+  if (ex.length || pa.length || mi.length) numerar_(c); // sólo se numera si hay algo que enseñar
+  const r = function (i) { return resumen_(c, i); };
+  vacio.exactos = ex.map(r);
+  vacio.parecidos = pa.map(r);
+  vacio.totalMismos = mi.length;
+  vacio.mismosApellidos = mi.sort(function (a, b) { return c._ORDEN[a] < c._ORDEN[b] ? -1 : 1; }).slice(0, 25).map(r);
   return vacio;
 }
 
@@ -1224,10 +1318,10 @@ function guardar_(d, u) {
   try {
     const h = hoja_(HOJA.ALUMNOS);
     const mapa = asegurarColumnas_(h);
-    const idx = leerColumnas_(h, mapa, ['ID', '_CLAVE', '_FONETICA', '_BORRADO', 'APELLIDOS', 'NOMBRE', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PROFESOR', 'ESTADO']);
+    const idx = leerColumnas_(h, mapa, COLS_NUMERACION.concat(['_CLAVE', '_FONETICA', 'CARPETA', 'CURSO', 'LOCALIDAD', 'PROVINCIA', 'PAIS', 'PROFESOR', 'ESTADO']));
     let fila = 0, anterior = null;
     if (d.id) {
-      const i = idx.ID.indexOf(String(d.id));
+      const i = idx._UID.indexOf(String(d.id));
       if (i < 0) throw new Error('No se encuentra el expediente ' + d.id + '.');
       fila = i + 2;
       anterior = leerFila_(h, fila);
@@ -1241,14 +1335,15 @@ function guardar_(d, u) {
     // Control de duplicados (dentro del bloqueo: dos personas no pueden crear el mismo a la vez)
     const coincidencias = [];
     for (let i = 0; i < idx._n; i++) {
-      if (!idx.ID[i] || idx.ID[i] === d.id || si_(idx._BORRADO[i])) continue;
+      if (!idx._UID[i] || idx._UID[i] === d.id || si_(idx._BORRADO[i])) continue;
       const k = idx._CLAVE[i] || claveDuplicado_(idx.APELLIDOS[i], idx.NOMBRE[i]);
       const f = idx._FONETICA[i] || claveFonetica_(idx.APELLIDOS[i], idx.NOMBRE[i]);
-      if (k === clave || f === fon) coincidencias.push(resumen_(idx, i));
+      if (k === clave || f === fon) { const x = resumen_(idx, i); x._i = i; coincidencias.push(x); }
     }
     const cambiaNombre = !anterior || claveDuplicado_(anterior.APELLIDOS, anterior.NOMBRE) !== clave;
     if (coincidencias.length && cambiaNombre && !d.confirmarHomonimo) {
-      return { duplicado: true, coincidencias: coincidencias.slice(0, 10) };
+      numerar_(idx);
+      return { duplicado: true, coincidencias: coincidencias.slice(0, 10).map(function (x) { x.ID = idx.ID[x._i]; return x; }) };
     }
 
     const t = ahora_();
@@ -1258,8 +1353,10 @@ function guardar_(d, u) {
       nuevo._VERSION = (parseInt(anterior._VERSION, 10) || 0) + 1;
       detalle = campos.filter(function (c) { return String(anterior[c.clave] || '') !== reg[c.clave]; })
         .map(function (c) { return c.clave + ': «' + (anterior[c.clave] || '') + '» → «' + reg[c.clave] + '»'; }).join(' | ') || 'Sin cambios';
+      detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + ' | ' + detalle;
     } else {
-      nuevo.ID = nuevoId_(idx.ID);
+      nuevo._UID = nuevoUid_(idx._UID);
+      nuevo.ID = '';
       nuevo._CREADO_EN = t;
       nuevo._CREADO_POR = u.email;
       nuevo._VERSION = 1;
@@ -1268,26 +1365,147 @@ function guardar_(d, u) {
       detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + (reg.CARPETA ? ' · carpeta ' + reg.CARPETA : '');
     }
     if (coincidencias.length && cambiaNombre) {
-      detalle += ' | HOMÓNIMO CONFIRMADO frente a ' + coincidencias.map(function (x) { return x.ID; }).join(', ');
+      detalle += ' | HOMÓNIMO CONFIRMADO frente a ' + coincidencias.map(function (x) { return x.APELLIDOS + ', ' + x.NOMBRE + ' (' + x._UID + ')'; }).join('; ');
     }
+    nuevo._ORDEN = claveOrdenFila_(reg.APELLIDOS, reg.NOMBRE, nuevo._UID);
     escribirFila_(h, fila, nuevo);
-    registrar_(u, anterior ? 'MODIFICAR' : 'CREAR', nuevo.ID, detalle);
-    CacheService.getScriptCache().remove('edit_' + nuevo.ID);
-    return { id: nuevo.ID, version: String(nuevo._VERSION), creado: !anterior };
+    // Número de orden alfabético actual: cuántos alumnos vivos van delante + 1.
+    let delante = 0;
+    for (let i = 0; i < idx._n; i++) {
+      if (!idx._UID[i] || idx._UID[i] === nuevo._UID || si_(idx._BORRADO[i])) continue;
+      const k = idx._ORDEN[i] || claveOrdenFila_(idx.APELLIDOS[i], idx.NOMBRE[i], idx._UID[i]);
+      if (k < nuevo._ORDEN) delante++;
+    }
+    const numero = prefijo_() + cero_(delante + 1, 6);
+    // Con pocos datos la hoja se reordena al momento; con muchos, cada noche (o con el botón de Ajustes).
+    if (cambiaNombre && idx._n <= LIMITE_ORDEN_INMEDIATO) ordenar_(h);
+    registrar_(u, anterior ? 'MODIFICAR' : 'CREAR', nuevo._UID, detalle + ' · Nº ' + numero);
+    CacheService.getScriptCache().remove('edit_' + nuevo._UID);
+    formatoSiHaceFalta_();
+    return { id: nuevo._UID, numero: numero, version: String(nuevo._VERSION), creado: !anterior };
   } finally {
     lock.releaseLock();
   }
 }
 
-function nuevoId_(ids) {
+/** Identificador interno permanente: R + número de entrada (R000001, R000002…). */
+function nuevoUid_(uids) {
   const props = PropertiesService.getScriptProperties();
   let n = parseInt(props.getProperty('ULTIMO_NUM') || '0', 10);
-  let max = 0;
-  ids.forEach(function (id) { const m = /(\d+)$/.exec(id); if (m) max = Math.max(max, parseInt(m[1], 10)); });
-  n = Math.max(n, max) + 1;
+  uids.forEach(function (id) { const m = /^R(\d+)$/.exec(id); if (m) n = Math.max(n, parseInt(m[1], 10)); });
+  n++;
   props.setProperty('ULTIMO_NUM', String(n));
-  const pref = String(ajustes_().PREFIJO_ID || 'EXP').trim().toUpperCase();
-  return pref + '-' + ('000000' + n).slice(-6);
+  return 'R' + ('000000' + n).slice(-6);
+}
+
+/**
+ * Numera y ordena físicamente la hoja Alumnos por apellidos y nombre (lo hace cada noche un
+ * activador, el botón de Ajustes y el menú de la hoja):
+ *  - ID = PREFIJO + posición alfabética (GOYA000001…); los de la papelera se quedan sin número y al final.
+ *  - Recalcula las claves internas (también de filas pegadas o corregidas a mano en la hoja).
+ * Devuelve el nº de expedientes numerados.
+ */
+function ordenar_(h) {
+  const mapa = asegurarColumnas_(h);
+  const c = leerColumnas_(h, mapa, ['ID', '_UID', 'APELLIDOS', 'NOMBRE', '_BORRADO', '_ORDEN', '_CLAVE', '_FONETICA']);
+  const n = c._n;
+  if (!n) return 0;
+  const pref = prefijo_();
+  const filas = [];
+  const tocadas = {};
+  let sinUid = 0;
+  for (let i = 0; i < n; i++) {
+    if (!c._UID[i] && !String(c.APELLIDOS[i]).trim() && !String(c.NOMBRE[i]).trim()) continue; // fila vacía
+    if (!c._UID[i]) {
+      // Filas pegadas a mano: se les da identificador interno de una vez (sin recorrer la hoja por cada una).
+      if (!sinUid) sinUid = parseInt(nuevoUid_(c._UID).slice(1), 10); else sinUid++;
+      c._UID[i] = 'R' + cero_(sinUid, 6);
+      tocadas._UID = true;
+    }
+    const valores = {
+      _CLAVE: claveDuplicado_(c.APELLIDOS[i], c.NOMBRE[i]),
+      _FONETICA: claveFonetica_(c.APELLIDOS[i], c.NOMBRE[i]),
+      _ORDEN: claveOrdenFila_(c.APELLIDOS[i], c.NOMBRE[i], c._UID[i])
+    };
+    Object.keys(valores).forEach(function (k) { if (c[k][i] !== valores[k]) { c[k][i] = valores[k]; tocadas[k] = true; } });
+    filas.push({ i: i, b: si_(c._BORRADO[i]) ? 1 : 0, k: valores._ORDEN });
+  }
+  if (sinUid) PropertiesService.getScriptProperties().setProperty('ULTIMO_NUM', String(sinUid));
+  filas.sort(function (a, b) { return a.b - b.b || (a.k < b.k ? -1 : a.k > b.k ? 1 : 0); });
+  let num = 0;
+  filas.forEach(function (x) {
+    const id = x.b ? '' : pref + cero_(++num, 6);
+    if (c.ID[x.i] !== id) { c.ID[x.i] = id; tocadas.ID = true; }
+  });
+  Object.keys(tocadas).forEach(function (k) {
+    h.getRange(2, mapa[k], n, 1).setValues(c[k].map(function (v) { return [v]; }));
+  });
+  // ¿Están ya las filas en su sitio? Si no, se ordena la hoja por el ID (los de la papelera, sin ID, al final).
+  let enOrden = true;
+  for (let j = 0; j < filas.length; j++) { if (filas[j].i !== j) { enOrden = false; break; } }
+  if (!enOrden) {
+    const rango = h.getRange(2, 1, n, h.getLastColumn());
+    try {
+      rango.sort({ column: mapa.ID, ascending: true });
+    } catch (e) {
+      // Si Sheets no deja ordenar (p. ej. por un filtro activo), se reescriben las filas ya ordenadas.
+      const pos = {};
+      filas.forEach(function (x, p) { pos[x.i] = p; });
+      const v = rango.getValues().map(function (r, i) { return { r: r, p: pos[i] === undefined ? 1e9 + i : pos[i] }; });
+      v.sort(function (a, b) { return a.p - b.p; });
+      rango.setValues(v.map(function (x) { return x.r; }));
+    }
+  }
+  return num;
+}
+
+/** Activador nocturno: ordena la hoja y renumera. */
+function ordenarNocturno() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(60000);
+  try { ordenar_(hoja_(HOJA.ALUMNOS)); } finally { lock.releaseLock(); }
+}
+
+function ordenarAhora_(d, u) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(60000);
+  let n;
+  try { n = ordenar_(hoja_(HOJA.ALUMNOS)); } finally { lock.releaseLock(); }
+  registrar_(u, 'ORDENAR', '', 'Hoja ordenada y numerada: ' + n + ' expedientes');
+  return { total: n };
+}
+
+function configurarOrdenNocturno_() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'ordenarNocturno') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('ordenarNocturno').timeBased().everyDays(1).atHour(2).create();
+}
+
+/** Celdas ocupadas en los dos archivos (el límite de Google es de 10 millones por archivo). */
+function capacidad_(d, u) {
+  const celdas = function (libro) {
+    return libro.getSheets().reduce(function (s, h) { return s + h.getMaxRows() * h.getMaxColumns(); }, 0);
+  };
+  const h = hoja_(HOJA.ALUMNOS);
+  const n = Math.max(h.getLastRow() - 1, 0);
+  const usadas = celdas(ss_());
+  const porExpediente = h.getMaxColumns();
+  const r = { expedientes: n, celdas: usadas, limite: 10000000, columnas: porExpediente,
+    caben: Math.floor((10000000 - usadas) / porExpediente) + Math.max(h.getMaxRows() - 1 - n, 0) };
+  const hh = hojaHistorial_();
+  r.historialAparte = hh.getParent().getId() !== ss_().getId();
+  r.historialFilas = Math.max(hh.getLastRow() - 1, 0);
+  r.celdasHistorial = r.historialAparte ? celdas(hh.getParent()) : 0;
+  return r;
+}
+
+/** Menú de la hoja: ordenar y renumerar (útil tras pegar datos a mano en la hoja Alumnos). */
+function ordenarYNumerar() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try { ordenar_(hoja_(HOJA.ALUMNOS)); } finally { lock.releaseLock(); }
+  try { SpreadsheetApp.getUi().alert('Hoja ordenada alfabéticamente y numerada.'); } catch (e) { /* sin interfaz */ }
 }
 
 /** Marca un expediente como «en edición» durante 10 minutos (se renueva mientras sigue abierto). */
@@ -1332,7 +1550,8 @@ function marcarBorrado_(d, u, borrar) {
     reg._MODIFICADO_POR = u.email;
     reg._VERSION = (parseInt(reg._VERSION, 10) || 0) + 1;
     escribirFila_(h, fila, reg);
-    registrar_(u, borrar ? 'BORRAR' : 'RESTAURAR', d.id, (reg.APELLIDOS + ', ' + reg.NOMBRE) + (d.motivo ? ' · Motivo: ' + d.motivo : ''));
+    if (h.getLastRow() - 1 <= LIMITE_ORDEN_INMEDIATO) ordenar_(h);
+    registrar_(u, borrar ? 'BORRAR' : 'RESTAURAR', d.id, (reg.APELLIDOS + ', ' + reg.NOMBRE) + (reg.ID ? ' · era ' + reg.ID : '') + (d.motivo ? ' · Motivo: ' + d.motivo : ''));
     return true;
   } finally {
     lock.releaseLock();
@@ -1354,10 +1573,10 @@ function carpetasLista_() {
 
 function carpetasConRecuento_(d, u) {
   const h = hoja_(HOJA.ALUMNOS);
-  const c = leerColumnas_(h, mapaColumnas_(h), ['ID', 'CARPETA', 'ESTADO', '_BORRADO']);
+  const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', 'CARPETA', 'ESTADO', '_BORRADO']);
   const n = {}, t = {};
   for (let i = 0; i < c._n; i++) {
-    if (!c.ID[i] || si_(c._BORRADO[i])) continue;
+    if (!c._UID[i] || si_(c._BORRADO[i])) continue;
     const k = String(c.CARPETA[i]).trim();
     n[k] = (n[k] || 0) + 1;
     if (c.ESTADO[i] === 'TERMINADO') t[k] = (t[k] || 0) + 1;
@@ -1385,8 +1604,12 @@ function tomarCarpeta_(d, u) {
     const esMia = c.ASIGNADA_A === u.nombre;
     const admin = u.rol === 'ADMIN';
     if (d.accion === 'asignar') {
-      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA') throw new Error('La carpeta ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
-      c.ASIGNADA_A = u.nombre; c.ESTADO = 'EN CURSO';
+      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA' && !admin) throw new Error('La carpeta ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
+      // Se asigna a quien se elija en el desplegable (sólo profesorado activo con permiso de edición).
+      const nombre = String(d.profesor || u.nombre).trim();
+      const p = profesores_().find(function (x) { return x.NOMBRE === nombre && si_(x.ACTIVO) && (x.ROL === 'EDITOR' || x.ROL === 'ADMIN'); });
+      if (!p && nombre !== u.nombre) throw new Error(nombre + ' no está activo/a como editor/a.');
+      c.ASIGNADA_A = nombre; c.ESTADO = 'EN CURSO';
     } else if (d.accion === 'liberar') {
       if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la carpeta (o la coordinación) puede liberarla.');
       c.ASIGNADA_A = ''; c.ESTADO = 'PENDIENTE';
@@ -1497,6 +1720,7 @@ function guardarCampo_(d, u) {
       orden, String(d.ayuda || '').trim(), d.enListados ? 'SÍ' : 'NO', 'SÍ', 'NO']);
     delete MEMO.campos;
     asegurarColumnas_(hoja_(HOJA.ALUMNOS));
+    formatoSiHaceFalta_();
     registrar_(u, 'CAMPO', '', 'Nuevo campo ' + clave + ' («' + etiqueta + '», ' + tipo + ')');
   }
   delete MEMO.campos;
@@ -1576,12 +1800,30 @@ function guardarAjustes_(d, u) {
 
 function historial_(d, u) {
   if (!d.id && u.rol !== 'ADMIN') throw new Error('Sólo la coordinación puede ver el historial completo.');
-  const h = hoja_(HOJA.HISTORIAL);
+  const h = hojaHistorial_();
   const n = h.getLastRow() - 1;
-  if (n < 1) return { filas: [], total: 0, pagina: 1, paginas: 1 };
-  let filas = h.getRange(2, 1, n, 6).getDisplayValues().reverse()
-    .map(function (r) { return { FECHA: r[0], EMAIL: r[1], USUARIO: r[2], ACCION: r[3], ID: r[4], DETALLE: r[5] }; });
-  if (d.id) filas = filas.filter(function (f) { return f.ID === d.id; });
+  const tam = 100;
+  const vacio = { filas: [], total: 0, pagina: 1, paginas: 1 };
+  if (n < 1) return vacio;
+  const aObj = function (r) { return { FECHA: r[0], EMAIL: r[1], USUARIO: r[2], ACCION: r[3], ID: r[4], DETALLE: r[5] }; };
+  if (!d.id && !d.q) {
+    // Sin filtros: sólo se lee la página pedida (el historial puede tener cientos de miles de filas).
+    const paginas = Math.max(1, Math.ceil(n / tam));
+    const pagina = Math.min(Math.max(parseInt(d.pagina, 10) || 1, 1), paginas);
+    const hasta = n + 1 - (pagina - 1) * tam, desde = Math.max(2, hasta - tam + 1);
+    return { filas: h.getRange(desde, 1, hasta - desde + 1, 6).getDisplayValues().reverse().map(aObj), total: n, pagina: pagina, paginas: paginas };
+  }
+  let filas;
+  if (d.id) {
+    // Un expediente: se lee sólo la columna de registro y después sus filas.
+    const ids = h.getRange(2, 5, n, 1).getDisplayValues();
+    filas = [];
+    for (let i = ids.length - 1; i >= 0 && filas.length < 300; i--) {
+      if (ids[i][0] === d.id) filas.push(aObj(h.getRange(i + 2, 1, 1, 6).getDisplayValues()[0]));
+    }
+  } else {
+    filas = h.getRange(2, 1, n, 6).getDisplayValues().reverse().map(aObj);
+  }
   if (d.q) {
     const q = normBusqueda_(d.q).split(' ').filter(String);
     filas = filas.filter(function (f) {
@@ -1589,7 +1831,6 @@ function historial_(d, u) {
       return q.every(function (x) { return t.indexOf(x) >= 0; });
     });
   }
-  const tam = 100;
   const paginas = Math.max(1, Math.ceil(filas.length / tam));
   const pagina = Math.min(Math.max(parseInt(d.pagina, 10) || 1, 1), paginas);
   return { filas: filas.slice((pagina - 1) * tam, pagina * tam), total: filas.length, pagina: pagina, paginas: paginas };
@@ -1622,13 +1863,19 @@ function crearCopia_(automatica) {
   const carpeta = carpetaCopias_();
   const nombre = (automatica ? '[auto] ' : '') + ss.getName() + ' · ' + ahora_().replace(/:/g, '.');
   const copia = DriveApp.getFileById(ss.getId()).makeCopy(nombre, carpeta);
+  const hist = hojaHistorial_().getParent();
+  if (hist.getId() !== ss.getId()) DriveApp.getFileById(hist.getId()).makeCopy(nombre + ' · Historial', carpeta);
   if (automatica) {
     const conservar = parseInt(ajustes_().COPIAS_A_CONSERVAR, 10) || 12;
     const autos = [];
     const it = carpeta.getFiles();
-    while (it.hasNext()) { const f = it.next(); if (f.getName().indexOf('[auto] ') === 0) autos.push(f); }
+    while (it.hasNext()) { const f = it.next(); if (f.getName().indexOf('[auto] ') === 0 && f.getName().indexOf(' · Historial') < 0) autos.push(f); }
     autos.sort(function (a, b) { return b.getDateCreated() - a.getDateCreated(); });
-    autos.slice(conservar).forEach(function (f) { f.setTrashed(true); });
+    autos.slice(conservar).forEach(function (f) {
+      f.setTrashed(true);
+      const h = carpeta.getFilesByName(f.getName() + ' · Historial');
+      while (h.hasNext()) h.next().setTrashed(true);
+    });
   }
   registrar_({ email: automatica ? 'sistema' : (usuarioActual_().email || 'sistema'), nombre: automatica ? 'Copia automática' : usuarioActual_().nombre },
     'COPIA', '', nombre);
@@ -1691,9 +1938,36 @@ function instalar() {
   }
   validarLista_(hCp, 4, ESTADOS_CARPETA);
 
-  // Historial
-  const hHi = crearHoja_(ss, HOJA.HISTORIAL, CABECERAS.Historial);
-  hHi.setColumnWidth(1, 150); hHi.setColumnWidth(6, 700);
+  // Historial: en un archivo aparte, junto a la hoja principal, para no gastar su capacidad
+  const props = PropertiesService.getScriptProperties();
+  delete MEMO.historial;
+  let historialAparte = false;
+  try { historialAparte = hojaHistorial_().getParent().getId() !== ss.getId(); } catch (e) { historialAparte = false; }
+  if (!historialAparte) {
+    try {
+      const libro = SpreadsheetApp.create(ss.getName() + ' · Historial');
+      const hh = libro.getSheets()[0].setName(HOJA.HISTORIAL);
+      hh.getRange(1, 1, 1, CABECERAS.Historial.length).setValues([CABECERAS.Historial]);
+      hh.getRange(1, 1, hh.getMaxRows(), CABECERAS.Historial.length).setNumberFormat('@');
+      if (hh.getMaxColumns() > 6) hh.deleteColumns(7, hh.getMaxColumns() - 6);
+      try {
+        const destino = DriveApp.getFileById(ss.getId()).getParents();
+        if (destino.hasNext()) DriveApp.getFileById(libro.getId()).moveTo(destino.next());
+      } catch (e) { /* se queda en «Mi unidad» */ }
+      // Si ya había movimientos en la pestaña local, se trasladan.
+      const local = ss.getSheetByName(HOJA.HISTORIAL);
+      if (local && local.getLastRow() > 1) {
+        const v = local.getRange(2, 1, local.getLastRow() - 1, 6).getDisplayValues();
+        if (v.length > hh.getMaxRows() - 1) hh.insertRowsAfter(hh.getMaxRows(), v.length);
+        hh.getRange(2, 1, v.length, 6).setValues(v);
+      }
+      if (local) ss.deleteSheet(local);
+      props.setProperty('HISTORIAL_ID', libro.getId());
+      delete MEMO.historial;
+    } catch (e) {
+      crearHoja_(ss, HOJA.HISTORIAL, CABECERAS.Historial); // sin permiso para crear archivos: pestaña local
+    }
+  }
 
   // Alumnos (todo en formato texto: las fechas antiguas y los números no se transforman)
   let hAl = ss.getSheetByName(HOJA.ALUMNOS);
@@ -1703,8 +1977,6 @@ function instalar() {
   }
   delete MEMO.mapa;
   asegurarColumnas_(hAl);
-  hAl.setFrozenRows(1);
-  hAl.setFrozenColumns(1);
 
   // Hoja vacía por defecto
   ['Hoja 1', 'Hoja1', 'Sheet1'].forEach(function (n) {
@@ -1712,12 +1984,14 @@ function instalar() {
     if (h && h.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(h);
   });
 
-  // Contador de identificadores
-  const ids = leerColumnas_(hAl, mapaColumnas_(hAl), ['ID']).ID;
-  let max = 0;
-  ids.forEach(function (id) { const m = /(\d+)$/.exec(id); if (m) max = Math.max(max, parseInt(m[1], 10)); });
-  const props = PropertiesService.getScriptProperties();
-  props.setProperty('ULTIMO_NUM', String(Math.max(max, parseInt(props.getProperty('ULTIMO_NUM') || '0', 10))));
+  // Numeración alfabética (también completa filas pegadas a mano) y formato de todas las hojas
+  ordenar_(hAl);
+  // Las celdas vacías también cuentan para el límite de Google: se quitan las columnas sobrantes.
+  [[hAl, hAl.getLastColumn()], [hAj, 3], [hCa, 11], [hPr, 6], [hCp, 6]].forEach(function (x) {
+    if (x[0].getMaxColumns() > x[1]) x[0].deleteColumns(x[1] + 1, x[0].getMaxColumns() - x[1]);
+  });
+  darFormato_();
+  try { configurarOrdenNocturno_(); } catch (e) { console.error('Activador nocturno', e); }
 
   try {
     SpreadsheetApp.getUi().alert('Instalación completada.\n\nAhora ve a Implementar > Nueva implementación > Aplicación web.');
@@ -1740,6 +2014,177 @@ function crearHoja_(ss, nombre, cabecera) {
 function validarLista_(h, col, valores) {
   const regla = SpreadsheetApp.newDataValidation().requireValueInList(valores, true).setAllowInvalid(false).build();
   h.getRange(2, col, h.getMaxRows() - 1, 1).setDataValidation(regla);
+}
+
+// ---------------------------------------------------------------------
+//  Formato de la hoja de cálculo (para que se lea bien también desde Google Sheets)
+// ---------------------------------------------------------------------
+
+const COLOR = {
+  tinta: '#1f2a44', gris: '#5b6475', papel: '#f6f4ef', blanco: '#ffffff', granate: '#8c2332',
+  verde: '#e3f1e8', verdeT: '#1f5a37', ambar: '#fff1d6', ambarT: '#7a5212', rosa: '#f6e3e6',
+  oro: '#f3e7c9', oroT: '#6b4e16', azul: '#e3ecf6', azulT: '#1d4f8c', borrado: '#eeeeee', borradoT: '#9aa0a6'
+};
+
+/** Menú de la hoja. */
+function darFormato() {
+  darFormato_();
+  try { SpreadsheetApp.getUi().alert('Formato aplicado.'); } catch (e) { /* sin interfaz */ }
+}
+
+function formatoSiHaceFalta_() {
+  if (!MEMO.formatoPendiente) return;
+  MEMO.formatoPendiente = false;
+  try { formatoAlumnos_(hoja_(HOJA.ALUMNOS)); } catch (e) { console.error('Formato', e); }
+}
+
+function letraColumna_(n) {
+  let s = '';
+  while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+  return s;
+}
+
+function darFormato_() {
+  formatoAlumnos_(hoja_(HOJA.ALUMNOS));
+  formatoCarpetas_();
+  formatoConfig_();
+}
+
+function reglaTexto_(texto, rango, fondo, color, negrita) {
+  const b = SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(texto).setBackground(fondo).setFontColor(color).setRanges([rango]);
+  if (negrita) b.setBold(true);
+  return b.build();
+}
+
+function reglaFormula_(formula, rango, fondo, color, tachado) {
+  const b = SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(formula).setRanges([rango]);
+  if (fondo) b.setBackground(fondo);
+  if (color) b.setFontColor(color);
+  if (tachado) b.setStrikethrough(true);
+  return b.build();
+}
+
+/**
+ * Hoja Alumnos: cabecera fija y oscura, filas alternas, apellidos en negrita, colores por estado,
+ * ilustres y digitalizados, nacidos fuera de España en azul, papelera en gris tachado,
+ * columnas técnicas ocultas y filtro activado.
+ */
+function formatoAlumnos_(h) {
+  const mapa = asegurarColumnas_(h);
+  const campos = campos_();
+  const nc = h.getLastColumn(), nf = h.getMaxRows();
+  const cuerpo = h.getRange(2, 1, nf - 1, nc);
+  const col = function (k) { return mapa[k] ? h.getRange(2, mapa[k], nf - 1, 1) : null; };
+
+  // Cabecera: clave del campo + nota con su nombre completo y ayuda
+  h.getRange(1, 1, 1, nc).setFontWeight('bold').setFontColor(COLOR.blanco).setBackground(COLOR.tinta)
+    .setVerticalAlignment('middle').setHorizontalAlignment('center').setWrap(true).setFontSize(10);
+  h.setRowHeight(1, 40);
+  campos.forEach(function (c) {
+    if (mapa[c.clave]) h.getRange(1, mapa[c.clave]).setNote(c.etiqueta + (c.ayuda ? '\n\n' + c.ayuda : '') + (c.activo ? '' : '\n\n(Campo desactivado)'));
+  });
+  META.forEach(function (k) { if (mapa[k] && k !== 'ID') h.getRange(1, mapa[k]).setBackground(COLOR.gris); });
+  if (mapa.ID) h.getRange(1, mapa.ID).setNote('Número de orden alfabético (GOYA000001 = primer alumno por apellidos). Se recalcula solo: no lo escribas a mano.');
+
+  // Cuerpo
+  cuerpo.setFontFamily('Arial').setFontSize(10).setVerticalAlignment('middle').setWrap(false);
+  if (col('ID')) col('ID').setFontFamily('Roboto Mono').setFontColor(COLOR.gris).setHorizontalAlignment('center');
+  if (col('APELLIDOS')) col('APELLIDOS').setFontWeight('bold').setFontColor(COLOR.tinta);
+  campos.forEach(function (c) {
+    const r = col(c.clave);
+    if (!r) return;
+    if (c.tipo === 'texto_largo') r.setWrap(true);
+    if (['seleccion', 'si_no', 'carpeta', 'numero', 'fecha'].indexOf(c.tipo) >= 0) r.setHorizontalAlignment('center');
+  });
+
+  // Anchos
+  const anchos = { ID: 110, APELLIDOS: 240, NOMBRE: 170, PROFESOR: 190, ESTADO: 150, CARPETA: 80, PAIS: 110, PROVINCIA: 120, LOCALIDAD: 160, CURSO: 80, ILUSTRE: 110, DIGITALIZADO: 120 };
+  campos.forEach(function (c) { if (mapa[c.clave]) h.setColumnWidth(mapa[c.clave], anchos[c.clave] || (c.tipo === 'texto_largo' ? 340 : 140)); });
+  ['_CREADO_EN', '_MODIFICADO_EN'].forEach(function (k) { if (mapa[k]) h.setColumnWidth(mapa[k], 140); });
+  ['_CREADO_POR', '_MODIFICADO_POR'].forEach(function (k) { if (mapa[k]) h.setColumnWidth(mapa[k], 200); });
+  if (mapa._BORRADO) h.setColumnWidth(mapa._BORRADO, 90);
+  META_OCULTAS.forEach(function (k) { if (mapa[k]) h.hideColumns(mapa[k]); });
+
+  // Filas alternas
+  h.getBandings().forEach(function (b) { b.remove(); });
+  h.getRange(1, 1, nf, nc).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false)
+    .setHeaderRowColor(COLOR.tinta).setFirstRowColor(COLOR.blanco).setSecondRowColor(COLOR.papel);
+
+  // Colores condicionales (el orden importa: la papelera manda sobre todo lo demás)
+  const reglas = [];
+  if (mapa._BORRADO) reglas.push(reglaFormula_('=$' + letraColumna_(mapa._BORRADO) + '2="SÍ"', cuerpo, COLOR.borrado, COLOR.borradoT, true));
+  if (col('ESTADO')) {
+    reglas.push(reglaTexto_('TERMINADO', col('ESTADO'), COLOR.verde, COLOR.verdeT, true));
+    reglas.push(reglaTexto_('EN PROCESO', col('ESTADO'), COLOR.ambar, COLOR.ambarT, true));
+    reglas.push(reglaTexto_('PENDIENTE DE REVISIÓN', col('ESTADO'), COLOR.rosa, COLOR.granate, true));
+  }
+  if (col('ILUSTRE')) {
+    reglas.push(reglaTexto_('SÍ', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
+    reglas.push(reglaTexto_('HAY QUE BUSCAR', col('ILUSTRE'), COLOR.ambar, COLOR.ambarT, false));
+  }
+  if (col('DIGITALIZADO')) {
+    reglas.push(reglaTexto_('SÍ', col('DIGITALIZADO'), COLOR.verde, COLOR.verdeT, true));
+    reglas.push(reglaTexto_('HAY QUE BUSCAR', col('DIGITALIZADO'), COLOR.ambar, COLOR.ambarT, false));
+  }
+  if (col('PAIS')) {
+    const l = letraColumna_(mapa.PAIS);
+    reglas.push(reglaFormula_('=AND($' + l + '2<>"",$' + l + '2<>"España")', col('PAIS'), COLOR.azul, COLOR.azulT, false));
+  }
+  h.setConditionalFormatRules(reglas);
+
+  // Fijar ID + apellidos + nombre y activar el filtro
+  h.setFrozenRows(1);
+  h.setFrozenColumns(mapa.ID === 1 && mapa.APELLIDOS === 2 && mapa.NOMBRE === 3 ? 3 : 1);
+  const filtro = h.getFilter();
+  if (filtro) filtro.remove();
+  h.getRange(1, 1, nf, nc).createFilter();
+  h.setTabColor(COLOR.granate);
+}
+
+function formatoCarpetas_() {
+  const h = hoja_(HOJA.CARPETAS);
+  const nf = h.getMaxRows();
+  cabeceraConfig_(h, [70, 240, 240, 120, 220, 300]);
+  h.getRange(2, 1, nf - 1, 1).setHorizontalAlignment('center').setFontWeight('bold');
+  h.getRange(2, 2, nf - 1, 2).setFontWeight('bold').setFontColor(COLOR.tinta);
+  const est = h.getRange(2, 4, nf - 1, 1);
+  h.setConditionalFormatRules([
+    reglaTexto_('TERMINADA', est, COLOR.verde, COLOR.verdeT, true),
+    reglaTexto_('EN CURSO', est, COLOR.ambar, COLOR.ambarT, true),
+    reglaFormula_('=AND($A2<>"",OR($B2="",$C2=""))', h.getRange(2, 2, nf - 1, 2), COLOR.rosa, null, false)
+  ]);
+  h.setTabColor('#b08d57');
+}
+
+function formatoConfig_() {
+  cabeceraConfig_(hoja_(HOJA.PROFESORES), [260, 260, 100, 80, 130, 300]);
+  const hp = hoja_(HOJA.PROFESORES), np = hp.getMaxRows();
+  const rol = hp.getRange(2, 3, np - 1, 1);
+  hp.setConditionalFormatRules([
+    reglaFormula_('=$D2="NO"', hp.getRange(2, 1, np - 1, 6), COLOR.borrado, COLOR.borradoT, true),
+    reglaTexto_('ADMIN', rol, COLOR.rosa, COLOR.granate, true),
+    reglaTexto_('EDITOR', rol, COLOR.azul, COLOR.azulT, true)
+  ]);
+  cabeceraConfig_(hoja_(HOJA.CAMPOS), [170, 260, 110, 200, 100, 200, 70, 320, 110, 80, 80]);
+  hoja_(HOJA.CAMPOS).getRange(2, 4, hoja_(HOJA.CAMPOS).getMaxRows() - 1, 1).setWrap(true);
+  const hh = hojaHistorial_();
+  cabeceraConfig_(hh, [150, 220, 200, 110, 90, 700]);
+  hh.getRange(2, 6, hh.getMaxRows() - 1, 1).setWrap(true);
+  hh.setTabColor(COLOR.tinta);
+  cabeceraConfig_(hoja_(HOJA.AJUSTES), [200, 260, 560]);
+  [HOJA.CAMPOS, HOJA.PROFESORES, HOJA.AJUSTES].forEach(function (n) { hoja_(n).setTabColor(COLOR.tinta); });
+}
+
+function cabeceraConfig_(h, anchos) {
+  const nc = anchos.length, nf = h.getMaxRows();
+  h.getRange(1, 1, 1, nc).setFontWeight('bold').setFontColor(COLOR.blanco).setBackground(COLOR.tinta).setVerticalAlignment('middle');
+  h.setRowHeight(1, 32);
+  h.getRange(2, 1, nf - 1, nc).setFontFamily('Arial').setFontSize(10).setVerticalAlignment('top');
+  anchos.forEach(function (a, i) { h.setColumnWidth(i + 1, a); });
+  h.getBandings().forEach(function (b) { b.remove(); });
+  h.getRange(1, 1, nf, nc).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false)
+    .setHeaderRowColor(COLOR.tinta).setFirstRowColor(COLOR.blanco).setSecondRowColor(COLOR.papel);
+  h.setFrozenRows(1);
 }
 
 Object.assign(window, { __api: api, instalar, guardar_, guardarProfesor_, guardarCarpeta_, MEMO });
@@ -2057,7 +2502,7 @@ async function vistaInicio() {
         <div class="panel h-100"><div class="panel-cab"><h2>Últimos movimientos</h2>${puede('ADMIN') ? '<a href="#" data-ir="historial" class="small">Ver todo</a>' : ''}</div>
           ${r.ultimos.length ? `<div class="table-responsive"><table class="table tabla"><tbody>${r.ultimos.map((m) => `
             <tr${m.ID ? ` class="clic" data-ficha="${esc(m.ID)}"` : ''}><td class="text-nowrap small text-suave">${esc(m.FECHA.slice(0, 16))}</td>
-            <td class="small"><strong>${esc(m.USUARIO)}</strong> · ${esc(m.ACCION.toLowerCase())} ${m.ID ? `<span class="id-exp">${esc(m.ID)}</span>` : ''}<div class="text-suave text-truncate" style="max-width:420px">${esc(m.DETALLE)}</div></td></tr>`).join('')}
+            <td class="small"><strong>${esc(m.USUARIO)}</strong> · ${esc(m.ACCION.toLowerCase())} <div class="text-suave text-truncate" style="max-width:420px">${esc(m.DETALLE)}</div></td></tr>`).join('')}
           </tbody></table></div>` : '<div class="vacio"><i class="bi bi-inbox"></i>Todavía no hay movimientos.</div>'}
         </div>
       </div>
@@ -2186,7 +2631,7 @@ async function vistaFormulario(id) {
   const ancho = (c) => (c.tipo === 'texto_largo' ? 'col-12' : ['pais', 'provincia', 'localidad'].includes(c.tipo) ? 'col-md-4' : 'col-md-6');
 
   $('#vista').innerHTML = cabecera(reg ? 'Modificar expediente' : 'Nuevo expediente',
-    reg ? `<span class="id-exp">${esc(reg.ID)}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
+    reg ? `<span class="id-exp">${esc(reg.ID || 'En papelera')}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
     reg ? `<button class="btn btn-light" id="btn-ver-ficha"><i class="bi bi-eye me-1"></i> Ver ficha</button>` : '') + `
     ${bloqueo ? `<div class="aviso-edicion"><i class="bi bi-person-lock me-2"></i><strong>${esc(bloqueo.nombre || bloqueo.email)}</strong> tiene abierto este expediente para editarlo desde las ${esc(String(bloqueo.desde).slice(11, 16))}. Si guardáis los dos, sólo se aceptará el primero.</div>` : ''}
     <div class="row g-4">
@@ -2230,7 +2675,7 @@ async function vistaFormulario(id) {
   if (ap) ap.addEventListener('input', revisarCarpeta);
   if (ca) ca.addEventListener('change', revisarCarpeta);
   if (reg) { comprobarDuplicadosForm(); revisarCarpeta(); }
-  $('#btn-ver-ficha') && $('#btn-ver-ficha').addEventListener('click', () => verFicha(reg.ID));
+  $('#btn-ver-ficha') && $('#btn-ver-ficha').addEventListener('click', () => verFicha(reg._UID));
   $('#btn-cancelar').addEventListener('click', async () => {
     if (S.sucio && !(await confirmar('Descartar cambios', '<p>Se perderá lo que has escrito.</p>', 'Descartar', true))) return;
     S.sucio = false;
@@ -2257,7 +2702,7 @@ async function comprobarDuplicadosForm() {
     if (($('#f_APELLIDOS') || {}).value !== ap || ($('#f_NOMBRE') || {}).value !== no) return; // ya ha cambiado
     const fila = (x) => `<div class="coincidencia"><div><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)}
       <div class="text-suave small">${[x.CARPETA && 'Carpeta ' + x.CARPETA, x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></div>
-      <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x.ID)}">Ver</button></div>`;
+      <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x._UID)}">Ver</button></div>`;
     let h = '';
     if (r.exactos.length) h += `<div class="estado-dup mal mb-2"><i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Este alumno ya está registrado.</strong> Revísalo antes de crear otro expediente.</div>${r.exactos.map(fila).join('')}`;
     if (r.parecidos.length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-exclamation-triangle-fill me-1"></i><strong>Nombre muy parecido</strong> (grafía antigua: X/J, V/B, Y/I…). ¿Es la misma persona?</div>${r.parecidos.map(fila).join('')}`;
@@ -2336,7 +2781,7 @@ async function guardarExpediente(boton) {
     S.sucio = false;
     if (S.latido) { clearInterval(S.latido); S.latido = null; }
     S.edicion = null;
-    aviso(r.creado ? `Expediente ${r.id} guardado.` : `Cambios guardados en ${r.id}.`);
+    aviso(r.creado ? `Expediente ${r.numero} guardado (nº de orden alfabético).` : `Cambios guardados en ${r.numero}.`);
     if (r.creado) {
       // Se conservan profesor/a y carpeta para agilizar el vaciado de la misma carpeta.
       S.pegajosos = {};
@@ -2383,8 +2828,8 @@ async function verFicha(id) {
         `<div class="${c.tipo === 'texto_largo' ? 'col-12' : 'col-sm-6'}"><dt>${esc(c.etiqueta)}</dt><dd>${valor(c)}</dd></div>`).join('')}</dl>`).join('')}
       <h3>Control del registro</h3>
       <dl class="row mb-0 small">
-        <div class="col-sm-6"><dt>Identificador</dt><dd class="id-exp">${esc(reg.ID)}</dd></div>
-        <div class="col-sm-6"><dt>Versión</dt><dd>${esc(reg._VERSION)}</dd></div>
+        <div class="col-sm-6"><dt>Nº de orden alfabético</dt><dd class="id-exp">${esc(reg.ID || '—')}</dd></div>
+        <div class="col-sm-6"><dt>Nº de registro (permanente) · versión</dt><dd><span class="id-exp">${esc(reg._UID)}</span> · v${esc(reg._VERSION)}</dd></div>
         <div class="col-sm-6"><dt>Creado</dt><dd>${esc(reg._CREADO_EN)}<br><span class="text-suave">${esc(reg._CREADO_POR)}</span></dd></div>
         <div class="col-sm-6"><dt>Última modificación</dt><dd>${esc(reg._MODIFICADO_EN)}<br><span class="text-suave">${esc(reg._MODIFICADO_POR)}</span></dd></div>
       </dl>
@@ -2394,7 +2839,7 @@ async function verFicha(id) {
         : '<button class="btn btn-outline-danger me-auto" id="btn-borrar"><i class="bi bi-trash me-1"></i>Enviar a la papelera</button>') : ''}
       <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
       ${r.puedeEditar ? '<button class="btn btn-primary" id="btn-editar"><i class="bi bi-pencil me-1"></i>Modificar</button>' : ''}`;
-    abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)}`, cuerpo, pie);
+    abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)} <span class="id-exp ms-2">${esc(reg.ID)}</span>`, cuerpo, pie);
     $('#btn-editar') && $('#btn-editar').addEventListener('click', () => { cerrarModal(); ir('editar', id); });
     $('#btn-hist-ficha').addEventListener('click', async () => {
       $('#ficha-historial').innerHTML = '<div class="cargando py-2"><div class="spinner-border spinner-border-sm"></div></div>';
@@ -2428,27 +2873,55 @@ function refrescarVista() {
 
 /* ---------- Tablas de resultados ---------- */
 
-function celda(k, v) {
-  if (k === 'ESTADO') return etiquetaEstado(v);
-  if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
+const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
+
+function etiquetaSiNo(v) {
+  const t = sinAcentos(v);
+  if (t === 'SI') return '<span class="etiqueta e-SI"><i class="bi bi-check-lg"></i> Sí</span>';
+  if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+  if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO">Hay que buscar</span>';
   return esc(v);
 }
 
-function tablaResultados(r, conSeparadores) {
+function lugar(f) {
+  const partes = [];
+  if (f.LOCALIDAD) partes.push(`<strong class="fw-semibold">${esc(f.LOCALIDAD)}</strong>`);
+  if (f.PROVINCIA) partes.push(f.LOCALIDAD ? `<span class="text-suave">(${esc(f.PROVINCIA)})</span>` : esc(f.PROVINCIA));
+  if (f.PAIS && f.PAIS !== 'España') partes.push(`<span class="etiqueta e-EXTRANJERO"><i class="bi bi-globe2"></i> ${esc(f.PAIS)}</span>`);
+  return partes.join(' ') || '<span class="text-suave">—</span>';
+}
+
+function celda(k, v, f) {
+  if (k === 'LUGAR') return lugar(f);
+  if (k === 'ESTADO') return etiquetaEstado(v);
+  if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
+  if (k === 'ILUSTRE' && sinAcentos(v) === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Sí</span>';
+  const c = campoPorClave(k);
+  if (c && ['seleccion', 'si_no'].includes(c.tipo) && /^(SÍ|SI|NO|HAY QUE BUSCAR)$/i.test(v || '')) return etiquetaSiNo(v);
+  return esc(v);
+}
+
+/** Columnas de los listados: país, provincia y localidad se juntan en «Lugar de nacimiento». */
+function columnasVisibles(cols) {
+  const out = [];
+  cols.forEach((k) => {
+    const x = GEO_CLAVES.includes(k) ? 'LUGAR' : k;
+    if (!out.includes(x)) out.push(x);
+  });
+  const pos = (k) => (ORDEN_COLUMNAS.indexOf(k) < 0 ? 99 : ORDEN_COLUMNAS.indexOf(k));
+  return out.sort((a, b) => pos(a) - pos(b));
+}
+
+function tablaResultados(r) {
   if (!r.filas.length) return '<div class="vacio"><i class="bi bi-search"></i>No hay expedientes que coincidan.</div>';
-  const cols = r.columnas;
-  let letra = null;
+  const cols = columnasVisibles(r.columnas);
   return `<div class="table-responsive"><table class="table tabla table-hover">
-    <thead><tr><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(etiquetaDe(k))}</th>`).join('')}<th class="text-end">Id.</th></tr></thead>
-    <tbody>${r.filas.map((f) => {
-      let sep = '';
-      if (conSeparadores) {
-        const k = claveOrden(f.APELLIDOS).split(' ')[0];
-        if (k !== letra) { letra = k; sep = `<tr class="separador-letra"><td colspan="${cols.length + 3}">${esc(String(f.APELLIDOS).split(/\s+Y\s+|\s+/)[0])}</td></tr>`; }
-      }
-      return sep + `<tr class="clic" data-ficha="${esc(f.ID)}"><td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
-        ${cols.map((k) => `<td>${celda(k, f[k])}</td>`).join('')}<td class="text-end id-exp">${esc(f.ID)}</td></tr>`;
-    }).join('')}</tbody></table></div>`;
+    <thead><tr><th>Nº</th><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${r.filas.map((f) => `<tr class="clic" data-ficha="${esc(f._UID)}"><td class="id-exp text-nowrap">${esc(f.ID || '—')}</td>
+      <td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
+      ${cols.map((k) => `<td>${celda(k, f[k], f)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function enlazarFichas(el) {
@@ -2458,13 +2931,14 @@ function enlazarFichas(el) {
 /* ---------- Buscar ---------- */
 
 function camposFiltro() {
-  return camposActivos().filter((c) => ['seleccion', 'si_no', 'profesor', 'carpeta', 'provincia', 'pais'].includes(c.tipo) && c.tipo !== 'pais');
+  return camposActivos().filter((c) => ['seleccion', 'si_no', 'profesor', 'carpeta', 'provincia', 'pais'].includes(c.tipo));
 }
 
 function opcionesFiltro(c) {
   if (c.tipo === 'profesor') return S.profesores.map((p) => p.NOMBRE);
   if (c.tipo === 'carpeta') return S.carpetas.map((x) => ({ v: x.NUMERO, t: 'Carpeta ' + x.NUMERO }));
   if (c.tipo === 'provincia') return GEO.provincias;
+  if (c.tipo === 'pais') return GEO.paises;
   if (c.tipo === 'si_no') return ['SÍ', 'NO'];
   return c.opciones;
 }
@@ -2482,7 +2956,7 @@ async function vistaBuscar() {
         ${camposFiltro().map((c) => `<div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">${esc(c.etiqueta)}</label>
           <select class="form-select form-select-sm" data-filtro="${esc(c.clave)}">${opcionesHtml(opcionesFiltro(c), B.filtros[c.clave] || '', 'Todos')}</select></div>`).join('')}
         <div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">Ordenar por</label>
-          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
+          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
         <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
           <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
           ${puede('ADMIN') ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="papelera" ${B.papelera ? 'checked' : ''}><label class="form-check-label small" for="papelera">Papelera</label></div>` : ''}
@@ -2513,7 +2987,7 @@ async function buscar() {
   try {
     const r = await api('consultar', { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios });
     if (n !== numBusqueda || !$('#resultados')) return;
-    cont.innerHTML = tablaResultados(r, false) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
+    cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
@@ -2558,7 +3032,7 @@ async function cargarIndice() {
     $('#letras').innerHTML = LETRAS.map((l) => `<button data-letra="${l}" class="${l === I.letra ? 'activa' : ''}" ${r.letras[l] ? '' : 'disabled'}>${l}<small>${r.letras[l] ? numero(r.letras[l]) : '·'}</small></button>`).join('');
     $$('#letras [data-letra]').forEach((b) => b.addEventListener('click', () => { I.letra = b.dataset.letra; I.pagina = 1; cargarIndice(); }));
     cont.innerHTML = `<div class="panel-cab"><h2 class="serif fs-3">${esc(I.letra)}</h2><span class="small text-suave">${numero(r.total)} alumnos</span></div>` +
-      tablaResultados(r, true) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
+      tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
@@ -2608,7 +3082,7 @@ function pintarCarpetas(lista) {
         <tbody>${visibles.map((c) => {
           const mia = c.ASIGNADA_A && c.ASIGNADA_A === yo;
           const acciones = [];
-          if (editor && c.ESTADO !== 'TERMINADA' && !c.ASIGNADA_A) acciones.push(`<button class="btn btn-sm btn-outline-primary" data-tc="asignar" data-n="${esc(c.NUMERO)}">Me la asigno</button>`);
+          if (editor && c.ESTADO !== 'TERMINADA' && !c.ASIGNADA_A) acciones.push(`<button class="btn btn-sm btn-outline-primary" data-asignar="${esc(c.NUMERO)}"><i class="bi bi-person-plus"></i> Asignar</button>`);
           if ((mia || admin) && c.ESTADO === 'EN CURSO') acciones.push(`<button class="btn btn-sm btn-outline-success" data-tc="terminar" data-n="${esc(c.NUMERO)}">Terminada</button>`);
           if ((mia || admin) && c.ASIGNADA_A && c.ESTADO !== 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="liberar" data-n="${esc(c.NUMERO)}">Liberar</button>`);
           if ((mia || admin) && c.ESTADO === 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="reabrir" data-n="${esc(c.NUMERO)}">Reabrir</button>`);
@@ -2629,6 +3103,7 @@ function pintarCarpetas(lista) {
     $('#localizar-res').innerHTML = !v ? '' : s ? `<i class="bi bi-arrow-right-circle-fill text-success me-1"></i><strong>Carpeta ${esc(s.NUMERO)}</strong> · ${esc(s.DESDE)} – ${esc(s.HASTA)}`
       : '<span class="text-suave">Ninguna carpeta con rango definido incluye ese apellido.</span>';
   });
+  $$('[data-asignar]').forEach((b) => b.addEventListener('click', () => asignarCarpeta(lista.find((c) => c.NUMERO === b.dataset.asignar))));
   $$('[data-tc]').forEach((b) => b.addEventListener('click', async () => {
     ocupado(b, true, '');
     try { await api('tomarCarpeta', { numero: b.dataset.n, accion: b.dataset.tc }); aviso('Carpeta ' + b.dataset.n + ' actualizada.'); vistaCarpetas(); }
@@ -2643,6 +3118,31 @@ function pintarCarpetas(lista) {
   $('#btn-crear-varias') && $('#btn-crear-varias').addEventListener('click', () => crearVariasCarpetas(lista));
 }
 
+/** Profesorado que puede trabajar carpetas (activo y con permiso de edición). */
+function profesoresEditores() {
+  return S.profesores.filter((p) => p.ACTIVO !== 'NO' && ['EDITOR', 'ADMIN'].includes(p.ROL)).map((p) => p.NOMBRE);
+}
+
+function asignarCarpeta(c) {
+  const nombres = profesoresEditores();
+  const yo = nombres.includes(S.usuario.nombre) ? S.usuario.nombre : '';
+  abrirModal(`Asignar la carpeta ${esc(c.NUMERO)}`, `
+    ${c.DESDE || c.HASTA ? `<p class="text-suave">De <strong>${esc(c.DESDE || '…')}</strong> a <strong>${esc(c.HASTA || '…')}</strong></p>` : ''}
+    <label class="form-label" for="asig-prof">¿Quién va a trabajar esta carpeta?</label>
+    <select class="form-select" id="asig-prof">${opcionesHtml(nombres, yo, '— Elegir profesor/a —')}</select>
+    <div class="form-text">Sólo aparece el profesorado activo con permiso de edición. La carpeta pasará a «EN CURSO».</div>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-asignar">Asignar</button>', '');
+  $('#btn-asignar').addEventListener('click', async (ev) => {
+    const prof = $('#asig-prof').value;
+    if (!prof) { $('#asig-prof').classList.add('is-invalid'); return; }
+    ocupado(ev.currentTarget, true, 'Asignando…');
+    try {
+      await api('tomarCarpeta', { numero: c.NUMERO, accion: 'asignar', profesor: prof });
+      cerrarModal(); aviso(`Carpeta ${c.NUMERO} asignada a ${prof}.`); vistaCarpetas();
+    } catch (e) { error(e); ocupado($('#btn-asignar'), false); }
+  });
+}
+
 function editarCarpeta(c, lista) {
   const siguiente = lista ? String(lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1) : '';
   const v = c || { NUMERO: siguiente, DESDE: '', HASTA: '', ESTADO: 'PENDIENTE', ASIGNADA_A: '', NOTAS: '' };
@@ -2652,7 +3152,7 @@ function editarCarpeta(c, lista) {
       <div class="col-sm-8"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml(['PENDIENTE', 'EN CURSO', 'TERMINADA'], v.ESTADO)}</select></div>
       <div class="col-sm-6"><label class="form-label">Primer apellido de la carpeta</label><input class="form-control" name="DESDE" data-mayus value="${esc(v.DESDE)}" placeholder="ABADÍA Y CORTINA"></div>
       <div class="col-sm-6"><label class="form-label">Último apellido de la carpeta</label><input class="form-control" name="HASTA" data-mayus value="${esc(v.HASTA)}" placeholder="ABEIJÓN Y FUERTES"></div>
-      <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(S.profesores.map((p) => p.NOMBRE), v.ASIGNADA_A, '— Nadie —')}</select></div>
+      <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(profesoresEditores(), v.ASIGNADA_A, '— Nadie —')}</select></div>
       <div class="col-sm-6"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}"></div>
       <div class="col-12 form-text">Con el primer y el último apellido, la aplicación sugiere automáticamente la carpeta al registrar un alumno.</div>
     </form>`,
@@ -2834,7 +3334,7 @@ async function cargarHistorial() {
   cont.innerHTML = r.filas.length ? `<div class="table-responsive"><table class="table tabla">
     <thead><tr><th>Fecha</th><th>Persona</th><th>Acción</th><th>Expediente</th><th>Detalle</th></tr></thead>
     <tbody>${r.filas.map((f) => `<tr><td class="small text-nowrap">${esc(f.FECHA)}</td><td class="small">${esc(f.USUARIO)}<div class="text-suave">${esc(f.EMAIL)}</div></td>
-      <td><span class="etiqueta">${esc(f.ACCION)}</span></td><td>${f.ID ? `<a href="#" data-ficha="${esc(f.ID)}" class="id-exp">${esc(f.ID)}</a>` : ''}</td>
+      <td><span class="etiqueta">${esc(f.ACCION)}</span></td><td>${f.ID ? `<a href="#" data-ficha="${esc(f.ID)}" class="small">Ver ficha</a>` : ''}</td>
       <td class="small" style="white-space:pre-wrap;max-width:560px">${esc(f.DETALLE.replace(/ \| /g, '\n'))}</td></tr>`).join('')}</tbody></table></div>`
     + paginacion(r.pagina, r.paginas, r.total, (p) => { histEstado.pagina = p; cargarHistorial(); })
     : '<div class="vacio"><i class="bi bi-clock-history"></i>Sin movimientos.</div>';
@@ -2870,6 +3370,11 @@ function vistaAjustes() {
           <button class="btn btn-tinta" id="btn-copia"><i class="bi bi-cloud-arrow-up me-1"></i> Hacer una copia ahora</button>
           <div class="small mt-2" id="copia-res"></div>
         </div></div>
+        <div class="panel"><div class="panel-cab"><h2>Capacidad y orden</h2></div><div class="panel-cuerpo small">
+          <div id="capacidad" class="mb-3 text-suave">Calculando…</div>
+          <p class="text-suave mb-2">La hoja se ordena por apellidos y se renumera sola cada noche. La aplicación siempre muestra el número correcto.</p>
+          <button class="btn btn-light btn-sm" id="btn-ordenar"><i class="bi bi-sort-alpha-down me-1"></i> Ordenar y renumerar la hoja ahora</button>
+        </div></div>
         <div class="panel"><div class="panel-cab"><h2>Enlaces</h2></div><div class="panel-cuerpo small">
           ${S.urlApp ? `<div class="mb-2"><div class="text-suave">Enlace para el profesorado</div><div class="input-group input-group-sm"><input class="form-control" readonly value="${esc(S.urlApp)}" id="url-app"><button class="btn btn-outline-secondary" id="copiar-url">Copiar</button></div></div>` : ''}
           ${S.urlHoja ? `<a href="${esc(S.urlHoja)}" target="_blank" rel="noopener"><i class="bi bi-table me-1"></i>Abrir la hoja de cálculo</a>
@@ -2896,6 +3401,18 @@ function vistaAjustes() {
     try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver carpeta</a>`; }
     catch (e) { error(e); } finally { ocupado(b, false); }
   });
+  api('capacidad').then((c) => {
+    const pct = Math.round((c.celdas / c.limite) * 1000) / 10;
+    $('#capacidad').innerHTML = `<div class="d-flex justify-content-between"><span>Hoja de alumnos: <strong>${numero(c.celdas)}</strong> de ${numero(c.limite)} celdas</span><strong>${pct} %</strong></div>
+      <div class="barra-prog my-2"><div style="width:${Math.max(pct, 1)}%;background:${pct > 80 ? 'var(--peligro)' : 'var(--ok)'}"></div></div>
+      <div>${numero(c.expedientes)} expedientes registrados · caben unos <strong>${numero(c.caben)}</strong> más con ${c.columnas} columnas por expediente.</div>
+      <div>${c.historialAparte ? `Historial en un archivo aparte (${numero(c.historialFilas)} movimientos).` : `Historial en esta misma hoja (${numero(c.historialFilas)} movimientos).`}</div>`;
+  }).catch((e) => { $('#capacidad').textContent = e.message; });
+  $('#btn-ordenar').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Ordenando…');
+    try { const r = await api('ordenarAhora'); aviso(`Hoja ordenada: ${numero(r.total)} expedientes numerados.`); } catch (e) { error(e); } finally { ocupado(b, false); }
+  });
   $('#copiar-url') && $('#copiar-url').addEventListener('click', () => { $('#url-app').select(); navigator.clipboard && navigator.clipboard.writeText($('#url-app').value); aviso('Enlace copiado.'); });
 }
 
@@ -2906,7 +3423,7 @@ function vistaAyuda() {
     <div class="row g-3">
       <div class="col-lg-7"><div class="panel"><div class="panel-cuerpo">
         <ol class="pasos">
-          <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Me la asigno»). Así nadie más trabajará en ella a la vez.</li>
+          <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
           <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la carpeta.</li>
           <li><strong>Mira el panel «Comprobación de duplicados»</strong> mientras escribes: avisa si el alumno ya existe, incluso con grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…).</li>
           <li><strong>Si el expediente ya existe</strong>, ábrelo y complétalo en vez de crear otro. Sólo si es otra persona con el mismo nombre, confirma que es un homónimo.</li>

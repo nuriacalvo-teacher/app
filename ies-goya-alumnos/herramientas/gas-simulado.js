@@ -40,6 +40,8 @@
     getMaxColumns: function () { return this.d.maxC; },
     insertRowsAfter: function (r, n) { this.d.maxF = this.getMaxRows() + n; guardar(); },
     insertColumnsAfter: function (c, n) { this.d.maxC += n; guardar(); },
+    deleteColumns: function (c, n) { this.d.maxC = Math.max(c - 1, this.d.maxC - n); guardar(); },
+    getParent: function () { return libro; },
     deleteRow: function (r) { this.d.filas.splice(r - 1, 1); guardar(); },
     appendRow: function (v) { var r = this.getLastRow() + 1; this.getRange(r, 1, 1, v.length).setValues([v]); return this; },
     getRange: function (r, c, nr, nc) {
@@ -50,7 +52,7 @@
     },
     getDataRange: function () { return this.getRange(1, 1, Math.max(1, this.getLastRow()), Math.max(1, this.getLastColumn())); }
   };
-  ['setFrozenRows', 'setFrozenColumns', 'setColumnWidth'].forEach(function (m) { Hoja.prototype[m] = function () { return this; }; });
+  ['setFrozenRows', 'setFrozenColumns', 'setColumnWidth', 'hideColumns', 'setRowHeight', 'setTabColor', 'setConditionalFormatRules'].forEach(function (m) { Hoja.prototype[m] = function () { return this; }; });
 
   function Rango(h, r, c, nr, nc) { this.h = h; this.r = r; this.c = c; this.nr = nr; this.nc = nc; }
   Rango.prototype = {
@@ -79,20 +81,25 @@
       return this;
     },
     setValue: function (x) { return this.setValues([[x]]); },
-    getValue: function () { return this.getValues()[0][0]; }
+    getValue: function () { return this.getValues()[0][0]; },
+    sort: function (o) {
+      var j = o.column - this.c, v = this.getValues();
+      v.sort(function (a, b) { var x = String(a[j]), y = String(b[j]); if (x === '' || y === '') return x === y ? 0 : x === '' ? 1 : -1; return x < y ? -1 : x > y ? 1 : 0; });
+      return this.setValues(v);
+    }
   };
 
   var libro = {
     getId: function () { return 'demo'; },
     getName: function () { return 'Archivo IES Goya (demo)'; },
     getUrl: function () { return '#'; },
-    getSheetByName: function (n) { return db.hojas[n] ? new Hoja(n) : null; },
-    getSheets: function () { return db.orden.map(function (n) { return new Hoja(n); }); },
+    getSheetByName: function (n) { return db.hojas[n] ? encadenable(new Hoja(n)) : null; },
+    getSheets: function () { return db.orden.map(function (n) { return encadenable(new Hoja(n)); }); },
     insertSheet: function (n, pos) {
       db.hojas[n] = { filas: [], maxF: 1000, maxC: 26 };
       if (pos === 0) db.orden.unshift(n); else db.orden.push(n);
       guardar();
-      return new Hoja(n);
+      return encadenable(new Hoja(n));
     },
     deleteSheet: function (h) { delete db.hojas[h.nombre]; db.orden = db.orden.filter(function (x) { return x !== h.nombre; }); guardar(); }
   };
@@ -102,8 +109,11 @@
   window.SpreadsheetApp = {
     getActive: function () { return libro; },
     openById: function () { return libro; },
+    create: function () { throw new Error('En la demo el historial va en la propia hoja'); },
     getUi: function () { throw new Error('Sin interfaz'); },
-    newDataValidation: function () { return encadenable({}); }
+    newDataValidation: function () { return encadenable({}); },
+    newConditionalFormatRule: function () { return encadenable({}); },
+    BandingTheme: { LIGHT_GREY: 'LIGHT_GREY' }
   };
   window.Session = {
     getActiveUser: function () { return { getEmail: function () { return email; } }; },

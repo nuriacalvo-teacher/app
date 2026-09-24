@@ -304,7 +304,7 @@ async function vistaInicio() {
         <div class="panel h-100"><div class="panel-cab"><h2>Últimos movimientos</h2>${puede('ADMIN') ? '<a href="#" data-ir="historial" class="small">Ver todo</a>' : ''}</div>
           ${r.ultimos.length ? `<div class="table-responsive"><table class="table tabla"><tbody>${r.ultimos.map((m) => `
             <tr${m.ID ? ` class="clic" data-ficha="${esc(m.ID)}"` : ''}><td class="text-nowrap small text-suave">${esc(m.FECHA.slice(0, 16))}</td>
-            <td class="small"><strong>${esc(m.USUARIO)}</strong> · ${esc(m.ACCION.toLowerCase())} ${m.ID ? `<span class="id-exp">${esc(m.ID)}</span>` : ''}<div class="text-suave text-truncate" style="max-width:420px">${esc(m.DETALLE)}</div></td></tr>`).join('')}
+            <td class="small"><strong>${esc(m.USUARIO)}</strong> · ${esc(m.ACCION.toLowerCase())} <div class="text-suave text-truncate" style="max-width:420px">${esc(m.DETALLE)}</div></td></tr>`).join('')}
           </tbody></table></div>` : '<div class="vacio"><i class="bi bi-inbox"></i>Todavía no hay movimientos.</div>'}
         </div>
       </div>
@@ -433,7 +433,7 @@ async function vistaFormulario(id) {
   const ancho = (c) => (c.tipo === 'texto_largo' ? 'col-12' : ['pais', 'provincia', 'localidad'].includes(c.tipo) ? 'col-md-4' : 'col-md-6');
 
   $('#vista').innerHTML = cabecera(reg ? 'Modificar expediente' : 'Nuevo expediente',
-    reg ? `<span class="id-exp">${esc(reg.ID)}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
+    reg ? `<span class="id-exp">${esc(reg.ID || 'En papelera')}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
     reg ? `<button class="btn btn-light" id="btn-ver-ficha"><i class="bi bi-eye me-1"></i> Ver ficha</button>` : '') + `
     ${bloqueo ? `<div class="aviso-edicion"><i class="bi bi-person-lock me-2"></i><strong>${esc(bloqueo.nombre || bloqueo.email)}</strong> tiene abierto este expediente para editarlo desde las ${esc(String(bloqueo.desde).slice(11, 16))}. Si guardáis los dos, sólo se aceptará el primero.</div>` : ''}
     <div class="row g-4">
@@ -477,7 +477,7 @@ async function vistaFormulario(id) {
   if (ap) ap.addEventListener('input', revisarCarpeta);
   if (ca) ca.addEventListener('change', revisarCarpeta);
   if (reg) { comprobarDuplicadosForm(); revisarCarpeta(); }
-  $('#btn-ver-ficha') && $('#btn-ver-ficha').addEventListener('click', () => verFicha(reg.ID));
+  $('#btn-ver-ficha') && $('#btn-ver-ficha').addEventListener('click', () => verFicha(reg._UID));
   $('#btn-cancelar').addEventListener('click', async () => {
     if (S.sucio && !(await confirmar('Descartar cambios', '<p>Se perderá lo que has escrito.</p>', 'Descartar', true))) return;
     S.sucio = false;
@@ -504,7 +504,7 @@ async function comprobarDuplicadosForm() {
     if (($('#f_APELLIDOS') || {}).value !== ap || ($('#f_NOMBRE') || {}).value !== no) return; // ya ha cambiado
     const fila = (x) => `<div class="coincidencia"><div><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)}
       <div class="text-suave small">${[x.CARPETA && 'Carpeta ' + x.CARPETA, x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></div>
-      <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x.ID)}">Ver</button></div>`;
+      <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x._UID)}">Ver</button></div>`;
     let h = '';
     if (r.exactos.length) h += `<div class="estado-dup mal mb-2"><i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Este alumno ya está registrado.</strong> Revísalo antes de crear otro expediente.</div>${r.exactos.map(fila).join('')}`;
     if (r.parecidos.length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-exclamation-triangle-fill me-1"></i><strong>Nombre muy parecido</strong> (grafía antigua: X/J, V/B, Y/I…). ¿Es la misma persona?</div>${r.parecidos.map(fila).join('')}`;
@@ -583,7 +583,7 @@ async function guardarExpediente(boton) {
     S.sucio = false;
     if (S.latido) { clearInterval(S.latido); S.latido = null; }
     S.edicion = null;
-    aviso(r.creado ? `Expediente ${r.id} guardado.` : `Cambios guardados en ${r.id}.`);
+    aviso(r.creado ? `Expediente ${r.numero} guardado (nº de orden alfabético).` : `Cambios guardados en ${r.numero}.`);
     if (r.creado) {
       // Se conservan profesor/a y carpeta para agilizar el vaciado de la misma carpeta.
       S.pegajosos = {};
@@ -630,8 +630,8 @@ async function verFicha(id) {
         `<div class="${c.tipo === 'texto_largo' ? 'col-12' : 'col-sm-6'}"><dt>${esc(c.etiqueta)}</dt><dd>${valor(c)}</dd></div>`).join('')}</dl>`).join('')}
       <h3>Control del registro</h3>
       <dl class="row mb-0 small">
-        <div class="col-sm-6"><dt>Identificador</dt><dd class="id-exp">${esc(reg.ID)}</dd></div>
-        <div class="col-sm-6"><dt>Versión</dt><dd>${esc(reg._VERSION)}</dd></div>
+        <div class="col-sm-6"><dt>Nº de orden alfabético</dt><dd class="id-exp">${esc(reg.ID || '—')}</dd></div>
+        <div class="col-sm-6"><dt>Nº de registro (permanente) · versión</dt><dd><span class="id-exp">${esc(reg._UID)}</span> · v${esc(reg._VERSION)}</dd></div>
         <div class="col-sm-6"><dt>Creado</dt><dd>${esc(reg._CREADO_EN)}<br><span class="text-suave">${esc(reg._CREADO_POR)}</span></dd></div>
         <div class="col-sm-6"><dt>Última modificación</dt><dd>${esc(reg._MODIFICADO_EN)}<br><span class="text-suave">${esc(reg._MODIFICADO_POR)}</span></dd></div>
       </dl>
@@ -641,7 +641,7 @@ async function verFicha(id) {
         : '<button class="btn btn-outline-danger me-auto" id="btn-borrar"><i class="bi bi-trash me-1"></i>Enviar a la papelera</button>') : ''}
       <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
       ${r.puedeEditar ? '<button class="btn btn-primary" id="btn-editar"><i class="bi bi-pencil me-1"></i>Modificar</button>' : ''}`;
-    abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)}`, cuerpo, pie);
+    abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)} <span class="id-exp ms-2">${esc(reg.ID)}</span>`, cuerpo, pie);
     $('#btn-editar') && $('#btn-editar').addEventListener('click', () => { cerrarModal(); ir('editar', id); });
     $('#btn-hist-ficha').addEventListener('click', async () => {
       $('#ficha-historial').innerHTML = '<div class="cargando py-2"><div class="spinner-border spinner-border-sm"></div></div>';
@@ -675,27 +675,55 @@ function refrescarVista() {
 
 /* ---------- Tablas de resultados ---------- */
 
-function celda(k, v) {
-  if (k === 'ESTADO') return etiquetaEstado(v);
-  if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
+const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
+
+function etiquetaSiNo(v) {
+  const t = sinAcentos(v);
+  if (t === 'SI') return '<span class="etiqueta e-SI"><i class="bi bi-check-lg"></i> Sí</span>';
+  if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+  if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO">Hay que buscar</span>';
   return esc(v);
 }
 
-function tablaResultados(r, conSeparadores) {
+function lugar(f) {
+  const partes = [];
+  if (f.LOCALIDAD) partes.push(`<strong class="fw-semibold">${esc(f.LOCALIDAD)}</strong>`);
+  if (f.PROVINCIA) partes.push(f.LOCALIDAD ? `<span class="text-suave">(${esc(f.PROVINCIA)})</span>` : esc(f.PROVINCIA));
+  if (f.PAIS && f.PAIS !== 'España') partes.push(`<span class="etiqueta e-EXTRANJERO"><i class="bi bi-globe2"></i> ${esc(f.PAIS)}</span>`);
+  return partes.join(' ') || '<span class="text-suave">—</span>';
+}
+
+function celda(k, v, f) {
+  if (k === 'LUGAR') return lugar(f);
+  if (k === 'ESTADO') return etiquetaEstado(v);
+  if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
+  if (k === 'ILUSTRE' && sinAcentos(v) === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Sí</span>';
+  const c = campoPorClave(k);
+  if (c && ['seleccion', 'si_no'].includes(c.tipo) && /^(SÍ|SI|NO|HAY QUE BUSCAR)$/i.test(v || '')) return etiquetaSiNo(v);
+  return esc(v);
+}
+
+/** Columnas de los listados: país, provincia y localidad se juntan en «Lugar de nacimiento». */
+function columnasVisibles(cols) {
+  const out = [];
+  cols.forEach((k) => {
+    const x = GEO_CLAVES.includes(k) ? 'LUGAR' : k;
+    if (!out.includes(x)) out.push(x);
+  });
+  const pos = (k) => (ORDEN_COLUMNAS.indexOf(k) < 0 ? 99 : ORDEN_COLUMNAS.indexOf(k));
+  return out.sort((a, b) => pos(a) - pos(b));
+}
+
+function tablaResultados(r) {
   if (!r.filas.length) return '<div class="vacio"><i class="bi bi-search"></i>No hay expedientes que coincidan.</div>';
-  const cols = r.columnas;
-  let letra = null;
+  const cols = columnasVisibles(r.columnas);
   return `<div class="table-responsive"><table class="table tabla table-hover">
-    <thead><tr><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(etiquetaDe(k))}</th>`).join('')}<th class="text-end">Id.</th></tr></thead>
-    <tbody>${r.filas.map((f) => {
-      let sep = '';
-      if (conSeparadores) {
-        const k = claveOrden(f.APELLIDOS).split(' ')[0];
-        if (k !== letra) { letra = k; sep = `<tr class="separador-letra"><td colspan="${cols.length + 3}">${esc(String(f.APELLIDOS).split(/\s+Y\s+|\s+/)[0])}</td></tr>`; }
-      }
-      return sep + `<tr class="clic" data-ficha="${esc(f.ID)}"><td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
-        ${cols.map((k) => `<td>${celda(k, f[k])}</td>`).join('')}<td class="text-end id-exp">${esc(f.ID)}</td></tr>`;
-    }).join('')}</tbody></table></div>`;
+    <thead><tr><th>Nº</th><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${r.filas.map((f) => `<tr class="clic" data-ficha="${esc(f._UID)}"><td class="id-exp text-nowrap">${esc(f.ID || '—')}</td>
+      <td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
+      ${cols.map((k) => `<td>${celda(k, f[k], f)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function enlazarFichas(el) {
@@ -705,13 +733,14 @@ function enlazarFichas(el) {
 /* ---------- Buscar ---------- */
 
 function camposFiltro() {
-  return camposActivos().filter((c) => ['seleccion', 'si_no', 'profesor', 'carpeta', 'provincia', 'pais'].includes(c.tipo) && c.tipo !== 'pais');
+  return camposActivos().filter((c) => ['seleccion', 'si_no', 'profesor', 'carpeta', 'provincia', 'pais'].includes(c.tipo));
 }
 
 function opcionesFiltro(c) {
   if (c.tipo === 'profesor') return S.profesores.map((p) => p.NOMBRE);
   if (c.tipo === 'carpeta') return S.carpetas.map((x) => ({ v: x.NUMERO, t: 'Carpeta ' + x.NUMERO }));
   if (c.tipo === 'provincia') return GEO.provincias;
+  if (c.tipo === 'pais') return GEO.paises;
   if (c.tipo === 'si_no') return ['SÍ', 'NO'];
   return c.opciones;
 }
@@ -729,7 +758,7 @@ async function vistaBuscar() {
         ${camposFiltro().map((c) => `<div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">${esc(c.etiqueta)}</label>
           <select class="form-select form-select-sm" data-filtro="${esc(c.clave)}">${opcionesHtml(opcionesFiltro(c), B.filtros[c.clave] || '', 'Todos')}</select></div>`).join('')}
         <div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">Ordenar por</label>
-          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
+          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
         <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
           <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
           ${puede('ADMIN') ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="papelera" ${B.papelera ? 'checked' : ''}><label class="form-check-label small" for="papelera">Papelera</label></div>` : ''}
@@ -760,7 +789,7 @@ async function buscar() {
   try {
     const r = await api('consultar', { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios });
     if (n !== numBusqueda || !$('#resultados')) return;
-    cont.innerHTML = tablaResultados(r, false) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
+    cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
@@ -805,7 +834,7 @@ async function cargarIndice() {
     $('#letras').innerHTML = LETRAS.map((l) => `<button data-letra="${l}" class="${l === I.letra ? 'activa' : ''}" ${r.letras[l] ? '' : 'disabled'}>${l}<small>${r.letras[l] ? numero(r.letras[l]) : '·'}</small></button>`).join('');
     $$('#letras [data-letra]').forEach((b) => b.addEventListener('click', () => { I.letra = b.dataset.letra; I.pagina = 1; cargarIndice(); }));
     cont.innerHTML = `<div class="panel-cab"><h2 class="serif fs-3">${esc(I.letra)}</h2><span class="small text-suave">${numero(r.total)} alumnos</span></div>` +
-      tablaResultados(r, true) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
+      tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
@@ -855,7 +884,7 @@ function pintarCarpetas(lista) {
         <tbody>${visibles.map((c) => {
           const mia = c.ASIGNADA_A && c.ASIGNADA_A === yo;
           const acciones = [];
-          if (editor && c.ESTADO !== 'TERMINADA' && !c.ASIGNADA_A) acciones.push(`<button class="btn btn-sm btn-outline-primary" data-tc="asignar" data-n="${esc(c.NUMERO)}">Me la asigno</button>`);
+          if (editor && c.ESTADO !== 'TERMINADA' && !c.ASIGNADA_A) acciones.push(`<button class="btn btn-sm btn-outline-primary" data-asignar="${esc(c.NUMERO)}"><i class="bi bi-person-plus"></i> Asignar</button>`);
           if ((mia || admin) && c.ESTADO === 'EN CURSO') acciones.push(`<button class="btn btn-sm btn-outline-success" data-tc="terminar" data-n="${esc(c.NUMERO)}">Terminada</button>`);
           if ((mia || admin) && c.ASIGNADA_A && c.ESTADO !== 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="liberar" data-n="${esc(c.NUMERO)}">Liberar</button>`);
           if ((mia || admin) && c.ESTADO === 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="reabrir" data-n="${esc(c.NUMERO)}">Reabrir</button>`);
@@ -876,6 +905,7 @@ function pintarCarpetas(lista) {
     $('#localizar-res').innerHTML = !v ? '' : s ? `<i class="bi bi-arrow-right-circle-fill text-success me-1"></i><strong>Carpeta ${esc(s.NUMERO)}</strong> · ${esc(s.DESDE)} – ${esc(s.HASTA)}`
       : '<span class="text-suave">Ninguna carpeta con rango definido incluye ese apellido.</span>';
   });
+  $$('[data-asignar]').forEach((b) => b.addEventListener('click', () => asignarCarpeta(lista.find((c) => c.NUMERO === b.dataset.asignar))));
   $$('[data-tc]').forEach((b) => b.addEventListener('click', async () => {
     ocupado(b, true, '');
     try { await api('tomarCarpeta', { numero: b.dataset.n, accion: b.dataset.tc }); aviso('Carpeta ' + b.dataset.n + ' actualizada.'); vistaCarpetas(); }
@@ -890,6 +920,31 @@ function pintarCarpetas(lista) {
   $('#btn-crear-varias') && $('#btn-crear-varias').addEventListener('click', () => crearVariasCarpetas(lista));
 }
 
+/** Profesorado que puede trabajar carpetas (activo y con permiso de edición). */
+function profesoresEditores() {
+  return S.profesores.filter((p) => p.ACTIVO !== 'NO' && ['EDITOR', 'ADMIN'].includes(p.ROL)).map((p) => p.NOMBRE);
+}
+
+function asignarCarpeta(c) {
+  const nombres = profesoresEditores();
+  const yo = nombres.includes(S.usuario.nombre) ? S.usuario.nombre : '';
+  abrirModal(`Asignar la carpeta ${esc(c.NUMERO)}`, `
+    ${c.DESDE || c.HASTA ? `<p class="text-suave">De <strong>${esc(c.DESDE || '…')}</strong> a <strong>${esc(c.HASTA || '…')}</strong></p>` : ''}
+    <label class="form-label" for="asig-prof">¿Quién va a trabajar esta carpeta?</label>
+    <select class="form-select" id="asig-prof">${opcionesHtml(nombres, yo, '— Elegir profesor/a —')}</select>
+    <div class="form-text">Sólo aparece el profesorado activo con permiso de edición. La carpeta pasará a «EN CURSO».</div>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-asignar">Asignar</button>', '');
+  $('#btn-asignar').addEventListener('click', async (ev) => {
+    const prof = $('#asig-prof').value;
+    if (!prof) { $('#asig-prof').classList.add('is-invalid'); return; }
+    ocupado(ev.currentTarget, true, 'Asignando…');
+    try {
+      await api('tomarCarpeta', { numero: c.NUMERO, accion: 'asignar', profesor: prof });
+      cerrarModal(); aviso(`Carpeta ${c.NUMERO} asignada a ${prof}.`); vistaCarpetas();
+    } catch (e) { error(e); ocupado($('#btn-asignar'), false); }
+  });
+}
+
 function editarCarpeta(c, lista) {
   const siguiente = lista ? String(lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1) : '';
   const v = c || { NUMERO: siguiente, DESDE: '', HASTA: '', ESTADO: 'PENDIENTE', ASIGNADA_A: '', NOTAS: '' };
@@ -899,7 +954,7 @@ function editarCarpeta(c, lista) {
       <div class="col-sm-8"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml(['PENDIENTE', 'EN CURSO', 'TERMINADA'], v.ESTADO)}</select></div>
       <div class="col-sm-6"><label class="form-label">Primer apellido de la carpeta</label><input class="form-control" name="DESDE" data-mayus value="${esc(v.DESDE)}" placeholder="ABADÍA Y CORTINA"></div>
       <div class="col-sm-6"><label class="form-label">Último apellido de la carpeta</label><input class="form-control" name="HASTA" data-mayus value="${esc(v.HASTA)}" placeholder="ABEIJÓN Y FUERTES"></div>
-      <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(S.profesores.map((p) => p.NOMBRE), v.ASIGNADA_A, '— Nadie —')}</select></div>
+      <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(profesoresEditores(), v.ASIGNADA_A, '— Nadie —')}</select></div>
       <div class="col-sm-6"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}"></div>
       <div class="col-12 form-text">Con el primer y el último apellido, la aplicación sugiere automáticamente la carpeta al registrar un alumno.</div>
     </form>`,
@@ -1081,7 +1136,7 @@ async function cargarHistorial() {
   cont.innerHTML = r.filas.length ? `<div class="table-responsive"><table class="table tabla">
     <thead><tr><th>Fecha</th><th>Persona</th><th>Acción</th><th>Expediente</th><th>Detalle</th></tr></thead>
     <tbody>${r.filas.map((f) => `<tr><td class="small text-nowrap">${esc(f.FECHA)}</td><td class="small">${esc(f.USUARIO)}<div class="text-suave">${esc(f.EMAIL)}</div></td>
-      <td><span class="etiqueta">${esc(f.ACCION)}</span></td><td>${f.ID ? `<a href="#" data-ficha="${esc(f.ID)}" class="id-exp">${esc(f.ID)}</a>` : ''}</td>
+      <td><span class="etiqueta">${esc(f.ACCION)}</span></td><td>${f.ID ? `<a href="#" data-ficha="${esc(f.ID)}" class="small">Ver ficha</a>` : ''}</td>
       <td class="small" style="white-space:pre-wrap;max-width:560px">${esc(f.DETALLE.replace(/ \| /g, '\n'))}</td></tr>`).join('')}</tbody></table></div>`
     + paginacion(r.pagina, r.paginas, r.total, (p) => { histEstado.pagina = p; cargarHistorial(); })
     : '<div class="vacio"><i class="bi bi-clock-history"></i>Sin movimientos.</div>';
@@ -1117,6 +1172,11 @@ function vistaAjustes() {
           <button class="btn btn-tinta" id="btn-copia"><i class="bi bi-cloud-arrow-up me-1"></i> Hacer una copia ahora</button>
           <div class="small mt-2" id="copia-res"></div>
         </div></div>
+        <div class="panel"><div class="panel-cab"><h2>Capacidad y orden</h2></div><div class="panel-cuerpo small">
+          <div id="capacidad" class="mb-3 text-suave">Calculando…</div>
+          <p class="text-suave mb-2">La hoja se ordena por apellidos y se renumera sola cada noche. La aplicación siempre muestra el número correcto.</p>
+          <button class="btn btn-light btn-sm" id="btn-ordenar"><i class="bi bi-sort-alpha-down me-1"></i> Ordenar y renumerar la hoja ahora</button>
+        </div></div>
         <div class="panel"><div class="panel-cab"><h2>Enlaces</h2></div><div class="panel-cuerpo small">
           ${S.urlApp ? `<div class="mb-2"><div class="text-suave">Enlace para el profesorado</div><div class="input-group input-group-sm"><input class="form-control" readonly value="${esc(S.urlApp)}" id="url-app"><button class="btn btn-outline-secondary" id="copiar-url">Copiar</button></div></div>` : ''}
           ${S.urlHoja ? `<a href="${esc(S.urlHoja)}" target="_blank" rel="noopener"><i class="bi bi-table me-1"></i>Abrir la hoja de cálculo</a>
@@ -1143,6 +1203,18 @@ function vistaAjustes() {
     try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver carpeta</a>`; }
     catch (e) { error(e); } finally { ocupado(b, false); }
   });
+  api('capacidad').then((c) => {
+    const pct = Math.round((c.celdas / c.limite) * 1000) / 10;
+    $('#capacidad').innerHTML = `<div class="d-flex justify-content-between"><span>Hoja de alumnos: <strong>${numero(c.celdas)}</strong> de ${numero(c.limite)} celdas</span><strong>${pct} %</strong></div>
+      <div class="barra-prog my-2"><div style="width:${Math.max(pct, 1)}%;background:${pct > 80 ? 'var(--peligro)' : 'var(--ok)'}"></div></div>
+      <div>${numero(c.expedientes)} expedientes registrados · caben unos <strong>${numero(c.caben)}</strong> más con ${c.columnas} columnas por expediente.</div>
+      <div>${c.historialAparte ? `Historial en un archivo aparte (${numero(c.historialFilas)} movimientos).` : `Historial en esta misma hoja (${numero(c.historialFilas)} movimientos).`}</div>`;
+  }).catch((e) => { $('#capacidad').textContent = e.message; });
+  $('#btn-ordenar').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Ordenando…');
+    try { const r = await api('ordenarAhora'); aviso(`Hoja ordenada: ${numero(r.total)} expedientes numerados.`); } catch (e) { error(e); } finally { ocupado(b, false); }
+  });
   $('#copiar-url') && $('#copiar-url').addEventListener('click', () => { $('#url-app').select(); navigator.clipboard && navigator.clipboard.writeText($('#url-app').value); aviso('Enlace copiado.'); });
 }
 
@@ -1153,7 +1225,7 @@ function vistaAyuda() {
     <div class="row g-3">
       <div class="col-lg-7"><div class="panel"><div class="panel-cuerpo">
         <ol class="pasos">
-          <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Me la asigno»). Así nadie más trabajará en ella a la vez.</li>
+          <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
           <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la carpeta.</li>
           <li><strong>Mira el panel «Comprobación de duplicados»</strong> mientras escribes: avisa si el alumno ya existe, incluso con grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…).</li>
           <li><strong>Si el expediente ya existe</strong>, ábrelo y complétalo en vez de crear otro. Sólo si es otra persona con el mismo nombre, confirma que es un homónimo.</li>
