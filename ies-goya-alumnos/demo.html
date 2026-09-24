@@ -638,6 +638,33 @@ function onOpen() {
     .addToUi();
 }
 
+/**
+ * Ejecútala desde el editor (desplegable → diagnostico → Run) si «instalar» falla.
+ * Escribe en el registro de ejecución con qué cuenta se ejecuta y si puede abrir la hoja.
+ */
+function diagnostico() {
+  const linea = function (t) { console.log(t); };
+  let efectiva = '', activa = '';
+  try { efectiva = Session.getEffectiveUser().getEmail(); } catch (e) { efectiva = 'ERROR: ' + e.message; }
+  try { activa = Session.getActiveUser().getEmail(); } catch (e) { activa = 'ERROR: ' + e.message; }
+  linea('1) Cuenta con la que se ejecuta el código: ' + (efectiva || '(Google no la facilita)'));
+  linea('2) Cuenta activa: ' + (activa || '(Google no la facilita)'));
+  try {
+    const a = SpreadsheetApp.getActive();
+    linea('3) Hoja vinculada al proyecto: ' + (a ? a.getName() + ' (' + a.getId() + ')' : 'NINGUNA (proyecto independiente)'));
+  } catch (e) { linea('3) Hoja vinculada: ERROR ' + e.message); }
+  const id = String(ID_HOJA || '').trim();
+  if (!id) { linea('4) ID_HOJA está vacío.'); return; }
+  linea('4) ID_HOJA: «' + id + '» (' + id.length + ' caracteres)');
+  try {
+    const f = DriveApp.getFileById(id);
+    linea('5) Drive encuentra el archivo: «' + f.getName() + '» · propietario: ' + (f.getOwner() ? f.getOwner().getEmail() : '¿?') + ' · tipo: ' + f.getMimeType());
+  } catch (e) { linea('5) Drive NO encuentra el archivo con esa cuenta: ' + e.message); }
+  try {
+    linea('6) SpreadsheetApp la abre: «' + SpreadsheetApp.openById(id).getName() + '» → TODO CORRECTO, ya puedes ejecutar «instalar».');
+  } catch (e) { linea('6) SpreadsheetApp NO la abre: ' + e.message); }
+}
+
 function mostrarEnlace() {
   const url = ScriptApp.getService().getUrl();
   SpreadsheetApp.getUi().alert(url ? 'Enlace de la aplicación:\n\n' + url
@@ -789,7 +816,8 @@ function ss_() {
   const id = String(ID_HOJA || '').trim();
   if (id) {
     try { ss = SpreadsheetApp.openById(id); } catch (e) {
-      throw new Error('No se puede abrir la hoja con el ID_HOJA indicado («' + id + '»). Revisa que esté bien copiado.');
+      throw new Error('No se puede abrir la hoja con el ID_HOJA indicado («' + id + '»). ' +
+        'Motivo que da Google: ' + (e && e.message ? e.message : e) + ' · Ejecuta la función «diagnostico» para más detalles.');
     }
   }
   if (!ss) { try { ss = SpreadsheetApp.getActive(); } catch (e) { /* nada */ } }
