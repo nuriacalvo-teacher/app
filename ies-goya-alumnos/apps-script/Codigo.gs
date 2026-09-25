@@ -148,6 +148,16 @@ function diagnostico() {
   } catch (e) { linea('6) SpreadsheetApp NO la abre: ' + e.message); }
 }
 
+/**
+ * Aviso que no bloquea: se escribe en el registro de ejecución y, si la hoja está abierta, aparece
+ * unos segundos abajo a la derecha. (Un alert() dejaría la ejecución esperando a que alguien pulse
+ * «Aceptar» en la hoja, y desde el editor parece que se ha colgado.)
+ */
+function avisar_(texto) {
+  console.log(texto);
+  try { ss_().toast(texto, 'Archivo IES Goya', 8); } catch (e) { /* sin hoja abierta */ }
+}
+
 function mostrarEnlace() {
   const url = ScriptApp.getService().getUrl();
   SpreadsheetApp.getUi().alert(url ? 'Enlace de la aplicación:\n\n' + url
@@ -1032,7 +1042,7 @@ function ordenarYNumerar() {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try { ordenar_(hoja_(HOJA.ALUMNOS)); } finally { lock.releaseLock(); }
-  try { SpreadsheetApp.getUi().alert('Hoja ordenada alfabéticamente y numerada.'); } catch (e) { /* sin interfaz */ }
+  avisar_('Hoja ordenada alfabéticamente y numerada.');
 }
 
 /** Marca un expediente como «en edición» durante 10 minutos (se renueva mientras sigue abierto). */
@@ -1369,7 +1379,7 @@ function historial_(d, u) {
 
 function copiaSeguridadManual() {
   const r = crearCopia_(false);
-  try { SpreadsheetApp.getUi().alert('Copia creada: ' + r.nombre + '\n' + r.url); } catch (e) { /* sin interfaz */ }
+  avisar_('Copia creada: ' + r.nombre + ' · ' + r.url);
 }
 
 function copiaSeguridadAutomatica() {
@@ -1442,12 +1452,15 @@ function instalar() {
   let propietario = '';
   try { propietario = String(Session.getEffectiveUser().getEmail() || '').toLowerCase(); } catch (e) { /* nada */ }
 
+  console.log('Instalando en la hoja «' + ss.getName() + '»…');
+  console.log('1/7 Ajustes');
   // Ajustes
   const hAj = crearHoja_(ss, HOJA.AJUSTES, CABECERAS.Ajustes);
   const ajExist = tabla_(HOJA.AJUSTES).map(function (r) { return r.CLAVE; });
   AJUSTES_INICIALES.forEach(function (a) { if (ajExist.indexOf(a[0]) < 0) hAj.appendRow(a); });
   hAj.setColumnWidth(1, 200); hAj.setColumnWidth(2, 260); hAj.setColumnWidth(3, 560);
 
+  console.log('2/7 Campos del formulario');
   // Campos
   const hCa = crearHoja_(ss, HOJA.CAMPOS, CABECERAS.Campos);
   hCa.getRange(1, 1, hCa.getMaxRows(), CABECERAS.Campos.length).setNumberFormat('@');
@@ -1458,6 +1471,7 @@ function instalar() {
   });
   delete MEMO.campos;
 
+  console.log('3/7 Profesores');
   // Profesores
   const hPr = crearHoja_(ss, HOJA.PROFESORES, CABECERAS.Profesores);
   hPr.getRange(1, 1, hPr.getMaxRows(), 6).setNumberFormat('@');
@@ -1468,6 +1482,7 @@ function instalar() {
   validarLista_(hPr, 3, ['ADMIN', 'EDITOR', 'LECTOR']);
   validarLista_(hPr, 4, ['SÍ', 'NO']);
 
+  console.log('4/7 Carpetas');
   // Carpetas
   const hCp = crearHoja_(ss, HOJA.CARPETAS, CABECERAS.Carpetas);
   hCp.getRange(1, 1, hCp.getMaxRows(), 6).setNumberFormat('@');
@@ -1478,6 +1493,7 @@ function instalar() {
   }
   validarLista_(hCp, 4, ESTADOS_CARPETA);
 
+  console.log('5/7 Archivo del historial');
   // Historial: en un archivo aparte, junto a la hoja principal, para no gastar su capacidad
   const props = PropertiesService.getScriptProperties();
   delete MEMO.historial;
@@ -1509,6 +1525,7 @@ function instalar() {
     }
   }
 
+  console.log('6/7 Hoja de alumnos');
   // Alumnos (todo en formato texto: las fechas antiguas y los números no se transforman)
   let hAl = ss.getSheetByName(HOJA.ALUMNOS);
   if (!hAl) {
@@ -1530,12 +1547,11 @@ function instalar() {
   [[hAl, hAl.getLastColumn()], [hAj, 3], [hCa, 11], [hPr, 6], [hCp, 6]].forEach(function (x) {
     if (x[0].getMaxColumns() > x[1]) x[0].deleteColumns(x[1] + 1, x[0].getMaxColumns() - x[1]);
   });
+  console.log('7/7 Formato y colores');
   darFormato_();
   try { configurarOrdenNocturno_(); } catch (e) { console.error('Activador nocturno', e); }
 
-  try {
-    SpreadsheetApp.getUi().alert('Instalación completada.\n\nAhora ve a Implementar > Nueva implementación > Aplicación web.');
-  } catch (e) { /* ejecutado sin interfaz */ }
+  avisar_('INSTALACIÓN COMPLETADA. Siguiente paso: Implementar > Nueva implementación > Aplicación web.');
   return true;
 }
 
@@ -1569,7 +1585,7 @@ const COLOR = {
 /** Menú de la hoja. */
 function darFormato() {
   darFormato_();
-  try { SpreadsheetApp.getUi().alert('Formato aplicado.'); } catch (e) { /* sin interfaz */ }
+  avisar_('Formato aplicado.');
 }
 
 function formatoSiHaceFalta_() {

@@ -110,7 +110,7 @@
     getActive: function () { return libro; },
     openById: function () { return libro; },
     create: function () { throw new Error('En la demo el historial va en la propia hoja'); },
-    getUi: function () { throw new Error('Sin interfaz'); },
+    getUi: function () { throw new Error("Sin interfaz"); },
     newDataValidation: function () { return encadenable({}); },
     newConditionalFormatRule: function () { return encadenable({}); },
     BandingTheme: { LIGHT_GREY: 'LIGHT_GREY' }
