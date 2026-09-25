@@ -147,7 +147,9 @@
     getProjectTriggers: function () { return []; },
     newTrigger: function () { return encadenable({}); },
     deleteTrigger: function () {},
-    WeekDay: { SUNDAY: 'SUNDAY' }
+    WeekDay: { SUNDAY: 'SUNDAY' },
+    AuthMode: { FULL: 'FULL' },
+    requireAllScopes: function () {}
   };
   window.DriveApp = new Proxy({}, { get: function () { return function () { throw new Error('Las copias en Google Drive no están disponibles en la demo.'); }; } });
 

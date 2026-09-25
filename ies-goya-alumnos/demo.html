@@ -453,7 +453,9 @@
     getProjectTriggers: function () { return []; },
     newTrigger: function () { return encadenable({}); },
     deleteTrigger: function () {},
-    WeekDay: { SUNDAY: 'SUNDAY' }
+    WeekDay: { SUNDAY: 'SUNDAY' },
+    AuthMode: { FULL: 'FULL' },
+    requireAllScopes: function () {}
   };
   window.DriveApp = new Proxy({}, { get: function () { return function () { throw new Error('Las copias en Google Drive no están disponibles en la demo.'); }; } });
 
@@ -643,6 +645,7 @@ function onOpen() {
  * Escribe en el registro de ejecución con qué cuenta se ejecuta y si puede abrir la hoja.
  */
 function diagnostico() {
+  pedirPermisos_();
   const linea = function (t) { console.log(t); };
   let efectiva = '', activa = '';
   try { efectiva = Session.getEffectiveUser().getEmail(); } catch (e) { efectiva = 'ERROR: ' + e.message; }
@@ -1940,7 +1943,20 @@ function configurarCopiaAutomatica_(activar) {
 //  Instalación (ejecutar una vez desde el editor; se puede repetir sin riesgo)
 // ---------------------------------------------------------------------
 
+/**
+ * Google ahora deja desmarcar permisos en la ventana de autorización; si falta alguno, el código
+ * falla sin volver a preguntar. Esto obliga a Google a mostrar de nuevo la ventana con todos los
+ * permisos que necesita la aplicación (hojas de cálculo, Drive para las copias y activadores).
+ */
+function pedirPermisos_() {
+  try { ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL); } catch (e) {
+    if (!ScriptApp.requireAllScopes) return; // versiones antiguas de Apps Script
+    throw e;
+  }
+}
+
 function instalar() {
+  pedirPermisos_();
   const ss = ss_();
   PropertiesService.getScriptProperties().setProperty('SS_ID', ss.getId());
   let propietario = '';
