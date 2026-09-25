@@ -11,13 +11,15 @@ const S = {
   campos: [],
   profesores: [],
   carpetas: [],
+  epocas: [],
+  epoca: null,           // código de la época en la que se trabaja (XIX, 1900_1930…)
   vista: null,
   sucio: false,          // hay cambios sin guardar en el formulario
   edicion: null,         // {id, version, registro} cuando se modifica un expediente
   pegajosos: {},         // valores que se mantienen al pulsar «Guardar y nuevo»
   latido: null,          // renovación del aviso «en edición»
   localidades: {},       // localidades ya usadas, por provincia
-  busqueda: { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false },
+  busqueda: { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false },
   indice: { letra: 'A', pagina: 1 }
 };
 
@@ -68,7 +70,7 @@ function api(accion, datos) {
         reject(new Error(r.error || 'Error desconocido.'));
       })
       .withFailureHandler((e) => reject(new Error((e && e.message) || 'No se ha podido conectar con el servidor.')))
-      .api(accion, datos || {}, S.token);
+      .api(accion, Object.assign({ epoca: S.epoca }, datos || {}), S.token);
   });
 }
 
@@ -149,6 +151,27 @@ function paginacion(p, paginas, total, alCambiar) {
     </div></div>`;
 }
 
+const epocaDeUid = (uid) => { const m = /^([A-Z0-9_]+)-R\d+$/.exec(String(uid || '')); return m ? m[1] : ''; };
+const epocaPorCodigo = (c) => S.epocas.find((e) => e.CODIGO === c) || {};
+const epocaActual = () => epocaPorCodigo(S.epoca);
+const anosEpoca = (e) => (e.DESDE || e.HASTA ? `${e.DESDE || '…'}–${e.HASTA || '…'}` : '');
+/** «Siglo XIX · 1845–1900», sin repetir los años si ya están en el nombre. */
+const tituloEpoca = (e) => { const a = anosEpoca(e); return !a || String(e.NOMBRE).indexOf(a) >= 0 || /\d{4}/.test(e.NOMBRE || '') ? (e.NOMBRE || '') : `${e.NOMBRE} · ${a}`; };
+
+/** Cambia la época de trabajo: carga sus carpetas y actualiza menú y cabecera. */
+async function cambiarEpoca(codigo, navegar = true) {
+  if (!codigo || codigo === S.epoca) return;
+  S.epoca = codigo;
+  guardarLocal('goya_epoca', codigo);
+  S.busqueda.filtros = {};
+  S.busqueda.pagina = 1;
+  S.indice = { letra: 'A', pagina: 1 };
+  S.localidades = {};
+  try { S.carpetas = (await api('carpetas')).map(({ EXPEDIENTES, TERMINADOS, ...c }) => c); } catch (e) { error(e); }
+  pintarCabecera();
+  if (navegar) ir('inicio');
+}
+
 const campoPorClave = (k) => S.campos.find((c) => c.clave === k);
 const camposActivos = () => S.campos.filter((c) => c.activo);
 const etiquetaDe = (k) => (campoPorClave(k) || {}).etiqueta || k;
@@ -179,16 +202,19 @@ function mostrarPantalla(cual) {
 
 async function arrancar() {
   S.token = leerLocal('goya_token');
+  S.epoca = leerLocal('goya_epoca');
   mostrarPantalla('carga');
   try {
     const r = await api('arranque');
     S.usuario = r.usuario;
     if (!r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
     if (r.usuario.rol === 'NINGUNO') { $('#sin-acceso-email').textContent = r.usuario.email; mostrarPantalla('sin-acceso'); return; }
-    Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp });
+    Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp,
+      epocas: r.epocas, epoca: r.epoca });
+    guardarLocal('goya_epoca', r.epoca);
     pintarCabecera();
     mostrarPantalla('app');
-    ir(location.hash.replace('#', '') || 'inicio');
+    ir(location.hash.replace('#', '') || 'portada');
   } catch (e) {
     mostrarPantalla('carga');
     $('#pantalla-carga').innerHTML = `<div class="tarjeta-acceso text-center"><div class="sello grande mb-3">G</div>
@@ -200,7 +226,9 @@ async function arrancar() {
 function pintarCabecera() {
   const u = S.usuario;
   $$('[data-nombre-app]').forEach((el) => { el.textContent = S.ajustes.NOMBRE_APP || 'Archivo histórico del IES Goya'; });
-  $('#subtitulo-app').textContent = S.ajustes.SUBTITULO || '';
+  const ep = epocaActual();
+  $('#subtitulo-app').textContent = ep.NOMBRE ? tituloEpoca(ep) : (S.ajustes.SUBTITULO || '');
+  $('#sel-epoca').innerHTML = S.epocas.map((e) => `<option value="${esc(e.CODIGO)}"${e.CODIGO === S.epoca ? ' selected' : ''}>${esc(e.NOMBRE)}${e.ESTADO === 'CERRADA' ? ' · cerrada' : ''}</option>`).join('');
   document.title = S.ajustes.NOMBRE_APP || document.title;
   const iniciales = (u.nombre || u.email).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
   $('#usuario-avatar').textContent = iniciales;
@@ -237,9 +265,19 @@ $('#btn-salir').addEventListener('click', async (ev) => {
   location.reload();
 });
 
+$('#sel-epoca').addEventListener('change', async (ev) => {
+  const nueva = ev.target.value;
+  if (S.sucio && !(await confirmar('Hay cambios sin guardar', '<p>Si cambias de época perderás lo que has escrito en el formulario.</p>', 'Cambiar de época', true))) {
+    ev.target.value = S.epoca; return;
+  }
+  S.sucio = false;
+  cambiarEpoca(nueva);
+});
+
 /* ---------- Navegación ---------- */
 
 const VISTAS = {
+  portada: vistaPortada, epocas: vistaEpocas,
   inicio: vistaInicio, nuevo: () => vistaFormulario(null), editar: (id) => vistaFormulario(id), buscar: vistaBuscar,
   indice: vistaIndice, carpetas: vistaCarpetas, campos: vistaCampos, profesores: vistaProfesores,
   historial: vistaHistorial, ajustes: vistaAjustes, ayuda: vistaAyuda
@@ -249,9 +287,9 @@ async function ir(destino, arg) {
   if (S.sucio && !(await confirmar('Hay cambios sin guardar', '<p>Si sales ahora perderás lo que has escrito en el formulario.</p>', 'Salir sin guardar', true))) return;
   salirDeEdicion();
   let [vista, param] = String(destino).split('/');
-  if (!VISTAS[vista]) vista = 'inicio';
+  if (!VISTAS[vista]) vista = 'portada';
   if (vista === 'nuevo' && !puede('EDITOR')) vista = 'inicio';
-  if (['campos', 'profesores', 'historial', 'ajustes'].includes(vista) && !puede('ADMIN')) vista = 'inicio';
+  if (['campos', 'profesores', 'historial', 'ajustes', 'epocas'].includes(vista) && !puede('ADMIN')) vista = 'portada';
   S.vista = vista;
   const hash = vista + (arg || param ? '/' + (arg || param) : '');
   if (location.hash !== '#' + hash) history.replaceState(null, '', '#' + hash);
@@ -288,8 +326,9 @@ async function vistaInicio() {
     : '<span class="text-suave">Ninguna. Ve a <a href="#" data-ir="carpetas">Carpetas</a> y asígnate una antes de empezar.</span>';
   const profes = Object.entries(r.porProfesor).sort((a, b) => b[1] - a[1]);
   const maxP = profes.length ? profes[0][1] : 1;
-  $('#vista').innerHTML = cabecera(`Hola, ${esc((S.usuario.nombre || '').split(' ')[0] || '')}`,
-    'Estado del vaciado del archivo de expedientes.',
+  const ep = epocaActual();
+  $('#vista').innerHTML = cabecera(`${esc(ep.NOMBRE || 'Resumen')} <small class="fs-6 text-suave fw-normal">${esc(anosEpoca(ep))}</small>`,
+    `Hola, ${esc((S.usuario.nombre || '').split(' ')[0] || '')}. Estado del vaciado de esta época.${ep.ESTADO === 'CERRADA' ? ' <span class="etiqueta">Época cerrada</span>' : ''}`,
     puede('EDITOR') ? '<button class="btn btn-primary" data-ir="nuevo"><i class="bi bi-plus-lg me-1"></i> Nuevo expediente</button>' : '') + `
     <div class="row g-3 mb-3">
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Expedientes registrados</div><div class="num">${numero(r.total)}</div><div class="sub">${numero(r.hoy)} hoy · ${numero(r.mios)} tuyos</div></div></div>
@@ -403,6 +442,11 @@ async function actualizarGeo(cambioPais) {
 async function vistaFormulario(id) {
   if (!puede('EDITOR')) { $('#vista').innerHTML = '<div class="alert alert-warning">Tu perfil es de sólo consulta.</div>'; return; }
   let reg = null, bloqueo = null;
+  if (id && epocaDeUid(id) && epocaDeUid(id) !== S.epoca) await cambiarEpoca(epocaDeUid(id), false);
+  if (epocaActual().ESTADO === 'CERRADA' && !puede('ADMIN')) {
+    $('#vista').innerHTML = `<div class="alert alert-warning">La época «${esc(epocaActual().NOMBRE)}» está cerrada: sólo la coordinación puede añadir o modificar expedientes.</div>`;
+    return;
+  }
   if (id) {
     const r = await api('obtener', { id });
     if (!r.puedeEditar) { aviso('No puedes modificar este expediente.', 'aviso'); verFicha(id); ir('buscar'); return; }
@@ -432,7 +476,7 @@ async function vistaFormulario(id) {
   });
   const ancho = (c) => (c.tipo === 'texto_largo' ? 'col-12' : ['pais', 'provincia', 'localidad'].includes(c.tipo) ? 'col-md-4' : 'col-md-6');
 
-  $('#vista').innerHTML = cabecera(reg ? 'Modificar expediente' : 'Nuevo expediente',
+  $('#vista').innerHTML = cabecera((reg ? 'Modificar expediente' : 'Nuevo expediente') + ` <span class="etiqueta e-EPOCA align-middle">${esc(epocaActual().NOMBRE || '')}</span>`,
     reg ? `<span class="id-exp">${esc(reg.ID || 'En papelera')}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
     reg ? `<button class="btn btn-light" id="btn-ver-ficha"><i class="bi bi-eye me-1"></i> Ver ficha</button>` : '') + `
     ${bloqueo ? `<div class="aviso-edicion"><i class="bi bi-person-lock me-2"></i><strong>${esc(bloqueo.nombre || bloqueo.email)}</strong> tiene abierto este expediente para editarlo desde las ${esc(String(bloqueo.desde).slice(11, 16))}. Si guardáis los dos, sólo se aceptará el primero.</div>` : ''}
@@ -508,7 +552,8 @@ async function comprobarDuplicadosForm() {
     let h = '';
     if (r.exactos.length) h += `<div class="estado-dup mal mb-2"><i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Este alumno ya está registrado.</strong> Revísalo antes de crear otro expediente.</div>${r.exactos.map(fila).join('')}`;
     if (r.parecidos.length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-exclamation-triangle-fill me-1"></i><strong>Nombre muy parecido</strong> (grafía antigua: X/J, V/B, Y/I…). ¿Es la misma persona?</div>${r.parecidos.map(fila).join('')}`;
-    if (!r.exactos.length && !r.parecidos.length && no.trim()) h += '<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>No hay ningún expediente con este nombre.</div>';
+    if (!r.exactos.length && !r.parecidos.length && no.trim()) h += `<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>No hay ningún expediente con este nombre${S.epocas.length > 1 ? ' en esta época' : ''}.</div>`;
+    if ((r.otrasEpocas || []).length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-hourglass-split me-1"></i><strong>También aparece en otra época.</strong> Puede ser el mismo alumno si estudió en varios periodos.</div>${r.otrasEpocas.map((x) => fila(x).replace('<div class="text-suave small">', `<div class="text-suave small"><span class="etiqueta e-EPOCA">${esc(x.EPOCA)}</span> `)).join('')}`;
     if (r.mismosApellidos.length) h += `<div class="small text-suave mt-3 mb-1">Otros alumnos con los mismos apellidos (${r.totalMismos}):</div>${r.mismosApellidos.slice(0, 8).map(fila).join('')}`;
     panel.innerHTML = h || '<div class="estado-dup neutro">Escribe también el nombre.</div>';
     $$('[data-ficha]', panel).forEach((b) => b.addEventListener('click', () => verFicha(b.dataset.ficha)));
@@ -630,6 +675,7 @@ async function verFicha(id) {
         `<div class="${c.tipo === 'texto_largo' ? 'col-12' : 'col-sm-6'}"><dt>${esc(c.etiqueta)}</dt><dd>${valor(c)}</dd></div>`).join('')}</dl>`).join('')}
       <h3>Control del registro</h3>
       <dl class="row mb-0 small">
+        <div class="col-sm-6"><dt>Época</dt><dd><span class="etiqueta e-EPOCA">${esc(epocaPorCodigo(epocaDeUid(reg._UID)).NOMBRE || epocaActual().NOMBRE || '')}</span></dd></div>
         <div class="col-sm-6"><dt>Nº de orden alfabético</dt><dd class="id-exp">${esc(reg.ID || '—')}</dd></div>
         <div class="col-sm-6"><dt>Nº de registro (permanente) · versión</dt><dd><span class="id-exp">${esc(reg._UID)}</span> · v${esc(reg._VERSION)}</dd></div>
         <div class="col-sm-6"><dt>Creado</dt><dd>${esc(reg._CREADO_EN)}<br><span class="text-suave">${esc(reg._CREADO_POR)}</span></dd></div>
@@ -719,9 +765,10 @@ function columnasVisibles(cols) {
 function tablaResultados(r) {
   if (!r.filas.length) return '<div class="vacio"><i class="bi bi-search"></i>No hay expedientes que coincidan.</div>';
   const cols = columnasVisibles(r.columnas);
+  const conEpoca = !!r.todas;
   return `<div class="table-responsive"><table class="table tabla table-hover">
-    <thead><tr><th>Nº</th><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
-    <tbody>${r.filas.map((f) => `<tr class="clic" data-ficha="${esc(f._UID)}"><td class="id-exp text-nowrap">${esc(f.ID || '—')}</td>
+    <thead><tr>${conEpoca ? '<th>Época</th>' : ''}<th>Nº</th><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${r.filas.map((f) => `<tr class="clic" data-ficha="${esc(f._UID)}">${conEpoca ? `<td><span class="etiqueta e-EPOCA">${esc(f.EPOCA)}</span></td>` : ''}<td class="id-exp text-nowrap">${esc(f.ID || '—')}</td>
       <td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
       ${cols.map((k) => `<td>${celda(k, f[k], f)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
@@ -747,7 +794,7 @@ function opcionesFiltro(c) {
 
 async function vistaBuscar() {
   const B = S.busqueda;
-  $('#vista').innerHTML = cabecera('Buscar expedientes', 'Busca por apellidos, nombre, localidad, identificador… y combina filtros.',
+  $('#vista').innerHTML = cabecera('Buscar expedientes', `Busca por apellidos, nombre, localidad o número y combina filtros. Época: <strong>${esc(epocaActual().NOMBRE || '')}</strong>${S.epocas.length > 1 ? ' (o todas, con el interruptor)' : ''}.`,
     puede('ADMIN') ? `<button class="btn btn-light" id="btn-exportar"><i class="bi bi-download me-1"></i> Exportar CSV</button>` : '') + `
     <div class="panel mb-3"><div class="panel-cuerpo">
       <div class="input-group input-group-lg mb-3">
@@ -760,6 +807,7 @@ async function vistaBuscar() {
         <div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">Ordenar por</label>
           <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
         <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
+          ${S.epocas.length > 1 ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="todas" ${B.todas ? 'checked' : ''}><label class="form-check-label small fw-semibold" for="todas">Buscar en todas las épocas</label></div>` : ''}
           <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
           ${puede('ADMIN') ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="papelera" ${B.papelera ? 'checked' : ''}><label class="form-check-label small" for="papelera">Papelera</label></div>` : ''}
           <button class="btn btn-sm btn-link ms-auto" id="limpiar">Quitar filtros</button>
@@ -772,8 +820,9 @@ async function vistaBuscar() {
   $$('[data-filtro]').forEach((s) => s.addEventListener('change', () => { B.filtros[s.dataset.filtro] = s.value; B.pagina = 1; buscar(); }));
   $('#orden').addEventListener('change', () => { B.orden = $('#orden').value; buscar(); });
   $('#solo-mios').addEventListener('change', (e) => { B.soloMios = e.target.checked; B.pagina = 1; buscar(); });
+  $('#todas') && $('#todas').addEventListener('change', (e) => { B.todas = e.target.checked; B.pagina = 1; buscar(); });
   $('#papelera') && $('#papelera').addEventListener('change', (e) => { B.papelera = e.target.checked; B.pagina = 1; buscar(); });
-  $('#limpiar').addEventListener('click', () => { S.busqueda = { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false }; vistaBuscar(); });
+  $('#limpiar').addEventListener('click', () => { S.busqueda = { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false }; vistaBuscar(); });
   $('#btn-exportar') && $('#btn-exportar').addEventListener('click', exportarCsv);
   $('#q').focus();
   await buscar();
@@ -787,7 +836,7 @@ async function buscar() {
   if (!cont) return;
   cont.style.opacity = '.55';
   try {
-    const r = await api('consultar', { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios });
+    const r = await api('consultar', { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 });
     if (n !== numBusqueda || !$('#resultados')) return;
     cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
@@ -816,7 +865,7 @@ async function exportarCsv() {
 const LETRAS = 'A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z #'.split(' ');
 
 async function vistaIndice() {
-  $('#vista').innerHTML = cabecera('Índice alfabético', 'Todos los alumnos registrados, ordenados por el primer apellido.',
+  $('#vista').innerHTML = cabecera('Índice alfabético', `Alumnos de <strong>${esc(epocaActual().NOMBRE || '')}</strong>, ordenados por el primer apellido.`,
     '<button class="btn btn-light" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>') + `
     <div class="panel mb-3 no-imprimir"><div class="panel-cuerpo"><div class="letras" id="letras"></div></div></div>
     <div class="panel" id="indice"><div class="cargando"><div class="spinner-border spinner-border-sm"></div></div></div>`;
@@ -857,7 +906,7 @@ function pintarCarpetas(lista) {
   const f = filtroCarpetas;
   const visibles = lista.filter((c) => f === 'todas' || (f === 'sinrango' ? !c.DESDE || !c.HASTA : f === 'mias' ? c.ASIGNADA_A === yo : c.ESTADO === f));
   const cuenta = (e) => lista.filter((c) => c.ESTADO === e).length;
-  $('#vista').innerHTML = cabecera('Carpetas del archivo',
+  $('#vista').innerHTML = cabecera(`Carpetas · ${esc(epocaActual().NOMBRE || '')}`,
     'Cada carpeta agrupa un tramo alfabético de apellidos. Asígnate una carpeta antes de empezar para no trabajar dos personas en la misma.',
     admin ? `<button class="btn btn-light" id="btn-crear-varias"><i class="bi bi-folder-plus me-1"></i> Añadir varias</button>
       <button class="btn btn-primary" id="btn-nueva-carpeta"><i class="bi bi-plus-lg me-1"></i> Nueva carpeta</button>` : '') + `
@@ -912,7 +961,7 @@ function pintarCarpetas(lista) {
     catch (e) { error(e); ocupado(b, false); }
   }));
   $$('[data-ver]').forEach((b) => b.addEventListener('click', () => {
-    S.busqueda = { q: '', filtros: { CARPETA: b.dataset.ver }, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false };
+    S.busqueda = { q: '', filtros: { CARPETA: b.dataset.ver }, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false };
     ir('buscar');
   }));
   $$('[data-editar-c]').forEach((b) => b.addEventListener('click', () => editarCarpeta(lista.find((c) => c.NUMERO === b.dataset.editarC))));
@@ -1154,9 +1203,8 @@ function vistaAjustes() {
         <form id="form-ajustes" class="row g-3">
           <div class="col-12"><label class="form-label">Título</label><input class="form-control" name="NOMBRE_APP" value="${esc(A.NOMBRE_APP)}"></div>
           <div class="col-12"><label class="form-label">Subtítulo</label><input class="form-control" name="SUBTITULO" value="${esc(A.SUBTITULO)}"></div>
-          <div class="col-md-4"><label class="form-label">Prefijo de los identificadores</label><input class="form-control" name="PREFIJO_ID" value="${esc(A.PREFIJO_ID)}"></div>
-          <div class="col-md-4"><label class="form-label">País por defecto</label><select class="form-select" name="PAIS_DEFECTO">${opcionesHtml(GEO.paises, A.PAIS_DEFECTO)}</select></div>
-          <div class="col-md-4"><label class="form-label">Provincia por defecto</label><select class="form-select" name="PROVINCIA_DEFECTO">${opcionesHtml(GEO.provincias, A.PROVINCIA_DEFECTO, '—')}</select></div>
+          <div class="col-md-6"><label class="form-label">País por defecto</label><select class="form-select" name="PAIS_DEFECTO">${opcionesHtml(GEO.paises, A.PAIS_DEFECTO)}</select></div>
+          <div class="col-md-6"><label class="form-label">Provincia por defecto</label><select class="form-select" name="PROVINCIA_DEFECTO">${opcionesHtml(GEO.provincias, A.PROVINCIA_DEFECTO, '—')}</select></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="EDITORES_SOLO_PROPIOS" id="a-prop" ${si(A.EDITORES_SOLO_PROPIOS) ? 'checked' : ''}>
             <label class="form-check-label" for="a-prop">Los editores sólo pueden modificar los expedientes que han creado ellos</label></div></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="LECTURA_ABIERTA" id="a-lec" ${si(A.LECTURA_ABIERTA) ? 'checked' : ''}>
@@ -1187,7 +1235,7 @@ function vistaAjustes() {
   $('#form-ajustes').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const f = ev.target;
-    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PREFIJO_ID: f.PREFIJO_ID.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value,
+    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value,
       PROVINCIA_DEFECTO: f.PROVINCIA_DEFECTO.value, EDITORES_SOLO_PROPIOS: f.EDITORES_SOLO_PROPIOS.checked ? 'SÍ' : 'NO', LECTURA_ABIERTA: f.LECTURA_ABIERTA.checked ? 'SÍ' : 'NO' };
     const b = $('#btn-guardar-ajustes');
     ocupado(b, true);
@@ -1204,11 +1252,12 @@ function vistaAjustes() {
     catch (e) { error(e); } finally { ocupado(b, false); }
   });
   api('capacidad').then((c) => {
-    const pct = Math.round((c.celdas / c.limite) * 1000) / 10;
-    $('#capacidad').innerHTML = `<div class="d-flex justify-content-between"><span>Hoja de alumnos: <strong>${numero(c.celdas)}</strong> de ${numero(c.limite)} celdas</span><strong>${pct} %</strong></div>
-      <div class="barra-prog my-2"><div style="width:${Math.max(pct, 1)}%;background:${pct > 80 ? 'var(--peligro)' : 'var(--ok)'}"></div></div>
-      <div>${numero(c.expedientes)} expedientes registrados · caben unos <strong>${numero(c.caben)}</strong> más con ${c.columnas} columnas por expediente.</div>
-      <div>${c.historialAparte ? `Historial en un archivo aparte (${numero(c.historialFilas)} movimientos).` : `Historial en esta misma hoja (${numero(c.historialFilas)} movimientos).`}</div>`;
+    $('#capacidad').innerHTML = c.epocas.map((e) => {
+      const pct = Math.round((e.celdas / c.limite) * 1000) / 10;
+      return `<div class="mb-3"><div class="d-flex justify-content-between"><strong>${esc(e.nombre)}</strong><span>${pct} %</span></div>
+        <div class="barra-prog my-1"><div style="width:${Math.max(pct, 1)}%;background:${pct > 80 ? 'var(--peligro)' : 'var(--ok)'}"></div></div>
+        <div>${numero(e.expedientes)} expedientes · caben unos <strong>${numero(e.caben)}</strong> más${e.central ? ' · en la hoja central' : ' · en su propio archivo'}</div></div>`;
+    }).join('') + `<div>Cada época tiene su propio límite de ${numero(c.limite)} celdas. ${c.historialAparte ? `Historial en un archivo aparte (${numero(c.historialFilas)} movimientos).` : `Historial en la hoja central (${numero(c.historialFilas)} movimientos).`}</div>`;
   }).catch((e) => { $('#capacidad').textContent = e.message; });
   $('#btn-ordenar').addEventListener('click', async (ev) => {
     const b = ev.currentTarget;
@@ -1225,6 +1274,7 @@ function vistaAyuda() {
     <div class="row g-3">
       <div class="col-lg-7"><div class="panel"><div class="panel-cuerpo">
         <ol class="pasos">
+          <li><strong>Elige la época</strong> en la que vas a trabajar (Siglo XIX, 1900–1930…) en el selector del menú o desde la <a href="#" data-ir="portada">Portada</a>.</li>
           <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
           <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la carpeta.</li>
           <li><strong>Mira el panel «Comprobación de duplicados»</strong> mientras escribes: avisa si el alumno ya existe, incluso con grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…).</li>
@@ -1243,6 +1293,113 @@ function vistaAyuda() {
         </ul>
       </div></div></div>
     </div>`;
+}
+
+/* ---------- Portada del archivo ---------- */
+
+async function vistaPortada() {
+  const lista = await api('portada');
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const total = lista.reduce((t, e) => t + e.total, 0);
+  $('#vista').innerHTML = `
+    <div class="portada-hero">
+      <h1 class="serif">${esc(S.ajustes.NOMBRE_APP || 'Archivo histórico del IES Goya')}</h1>
+      <p>${esc(S.ajustes.SUBTITULO || '')}${S.ajustes.SUBTITULO ? ' · ' : ''}${numero(total)} expedientes registrados en ${lista.length} ${lista.length === 1 ? 'época' : 'épocas'}.</p>
+      <div class="sello d-none d-md-inline-flex">G</div>
+    </div>
+    <div class="row g-3">
+      ${lista.map((e) => `<div class="col-md-6 col-xl-4"><div class="tarjeta-epoca${e.CODIGO === S.epoca ? ' actual' : ''}">
+        <div class="anos">${esc(anosEpoca(e))}</div>
+        <h2>${esc(e.NOMBRE)} ${e.ESTADO === 'CERRADA' ? '<span class="etiqueta align-middle">Cerrada</span>' : ''}</h2>
+        ${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}
+        <div class="cifras">
+          <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
+          <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>carpetas terminadas</span></div>
+          <div><strong>${numero(e.ilustres)}</strong><span>ilustres</span></div>
+        </div>
+        <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
+        <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>
+        <div class="mt-auto d-flex gap-2">
+          <button class="btn btn-primary btn-sm" data-entrar="${esc(e.CODIGO)}"><i class="bi bi-box-arrow-in-right me-1"></i>Entrar</button>
+          <button class="btn btn-light btn-sm" data-entrar="${esc(e.CODIGO)}" data-destino="indice"><i class="bi bi-sort-alpha-down me-1"></i>Índice</button>
+        </div>
+      </div></div>`).join('')}
+      ${puede('ADMIN') ? `<div class="col-md-6 col-xl-4"><div class="tarjeta-epoca nueva" id="btn-nueva-epoca"><i class="bi bi-plus-circle mb-2"></i>
+        <strong class="text-body">Añadir una época</strong><span class="small">1900–1930, 1930–1975…<br>Cada época tiene su propio archivo y capacidad.</span></div></div>` : ''}
+    </div>
+    ${S.epocas.length > 1 ? `<div class="panel mt-3"><div class="panel-cuerpo d-flex flex-wrap align-items-center gap-2">
+      <i class="bi bi-search text-suave"></i><span class="me-2">¿Buscas a alguien y no sabes de qué época es?</span>
+      <button class="btn btn-sm btn-outline-primary" id="buscar-todas">Buscar en todo el archivo</button></div></div>` : ''}`;
+  $$('[data-entrar]').forEach((b) => b.addEventListener('click', async () => {
+    if (b.dataset.entrar !== S.epoca) await cambiarEpoca(b.dataset.entrar, false);
+    ir(b.dataset.destino || 'inicio');
+  }));
+  $('#btn-nueva-epoca') && $('#btn-nueva-epoca').addEventListener('click', () => editarEpoca(null));
+  $('#buscar-todas') && $('#buscar-todas').addEventListener('click', () => { S.busqueda.todas = true; ir('buscar'); });
+}
+
+/* ---------- Coordinación: épocas ---------- */
+
+function vistaEpocas() {
+  $('#vista').innerHTML = cabecera('Épocas del archivo',
+    'Cada época guarda sus alumnos y carpetas en su propio archivo de Google (con su propia capacidad). Profesorado, campos y ajustes son comunes a todas.',
+    '<button class="btn btn-primary" id="btn-nueva"><i class="bi bi-plus-lg me-1"></i> Nueva época</button>') + `
+    <div class="panel"><div class="table-responsive"><table class="table tabla">
+      <thead><tr><th>Código</th><th>Nombre</th><th>Años</th><th>Prefijo del nº</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${S.epocas.map((e) => `<tr><td class="id-exp">${esc(e.CODIGO)}</td><td><strong>${esc(e.NOMBRE)}</strong>${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}</td>
+        <td>${esc(anosEpoca(e))}</td><td class="id-exp">${esc(e.PREFIJO)}000001</td>
+        <td>${e.ESTADO === 'CERRADA' ? '<span class="etiqueta">Cerrada</span>' : '<span class="etiqueta e-TERMINADO">Abierta</span>'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-light" data-epoca="${esc(e.CODIGO)}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
+    </table></div></div>
+    <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
+      <strong class="text-body">Cerrar una época</strong> impide que el profesorado añada o modifique expedientes (la coordinación sí puede). Útil cuando se termina de vaciar.
+      El <strong>prefijo</strong> es el comienzo del número de orden de esa época (p. ej. GOYA000001 en el siglo XIX, GOYA1900-000001 en 1900–1930).
+    </div></div>`;
+  $('#btn-nueva').addEventListener('click', () => editarEpoca(null));
+  $$('[data-epoca]').forEach((b) => b.addEventListener('click', () => editarEpoca(epocaPorCodigo(b.dataset.epoca))));
+}
+
+const EPOCAS_SUGERIDAS = [['1900_1930', '1900–1930', '1900', '1930'], ['1930_1975', '1930–1975', '1930', '1975'], ['1975_2000', '1975–2000', '1975', '2000'], ['2000_HOY', 'Desde 2000', '2000', '']];
+
+function editarEpoca(e) {
+  const nueva = !e;
+  const sug = nueva ? (EPOCAS_SUGERIDAS.find((x) => !S.epocas.some((y) => y.CODIGO === x[0])) || ['', '', '', '']) : null;
+  const v = e || { CODIGO: sug[0], NOMBRE: sug[1], DESDE: sug[2], HASTA: sug[3], PREFIJO: sug[2] ? 'GOYA' + sug[2] + '-' : '', ESTADO: 'ABIERTA', DESCRIPCION: '' };
+  abrirModal(nueva ? 'Nueva época' : 'Época: ' + esc(e.NOMBRE), `
+    <form id="form-epoca" class="row g-3">
+      <div class="col-md-4"><label class="form-label">Código</label><input class="form-control font-monospace" name="CODIGO" value="${esc(v.CODIGO)}" ${nueva ? '' : 'disabled'} placeholder="1900_1930">
+        <div class="form-text">Letras, números y «_». No se puede cambiar después.</div></div>
+      <div class="col-md-8"><label class="form-label">Nombre</label><input class="form-control" name="NOMBRE" value="${esc(v.NOMBRE)}" placeholder="1900–1930" required></div>
+      <div class="col-6 col-md-3"><label class="form-label">Desde (año)</label><input class="form-control" name="DESDE" inputmode="numeric" value="${esc(v.DESDE)}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Hasta (año)</label><input class="form-control" name="HASTA" inputmode="numeric" value="${esc(v.HASTA)}"></div>
+      <div class="col-md-6"><label class="form-label">Prefijo del número de orden</label><input class="form-control font-monospace" name="PREFIJO" value="${esc(v.PREFIJO)}" placeholder="GOYA1900-">
+        <div class="form-text">Ejemplo de número: <span class="id-exp">${esc(v.PREFIJO || 'GOYA')}000001</span></div></div>
+      <div class="col-12"><label class="form-label">Descripción</label><input class="form-control" name="DESCRIPCION" value="${esc(v.DESCRIPCION)}" placeholder="Expedientes de los alumnos que ingresaron entre…"></div>
+      ${nueva ? `<div class="col-md-6"><label class="form-label">Crear carpetas numeradas</label><input type="number" class="form-control" name="carpetas" value="40" min="0" max="2000">
+        <div class="form-text">Se pueden añadir más después.</div></div>`
+        : `<div class="col-md-6"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml([{ v: 'ABIERTA', t: 'Abierta (se puede trabajar)' }, { v: 'CERRADA', t: 'Cerrada (sólo coordinación)' }], v.ESTADO)}</select></div>`}
+      ${nueva ? '<div class="col-12"><div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>Se creará un archivo de Google nuevo para esta época, en la misma carpeta de Drive que la hoja central, con su propia capacidad. Tarda unos segundos.</div></div>' : ''}
+    </form>`,
+    `<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-epoca">${nueva ? 'Crear época' : 'Guardar'}</button>`, '');
+  $('#btn-guardar-epoca').addEventListener('click', async (ev) => {
+    const f = $('#form-epoca');
+    const datos = Object.fromEntries(new FormData(f).entries());
+    if (!nueva) datos.CODIGO = e.CODIGO;
+    ocupado(ev.currentTarget, true, nueva ? 'Creando…' : 'Guardando…');
+    try {
+      if (nueva) {
+        const r = await api('crearEpoca', datos);
+        S.epocas = r.epocas;
+        cerrarModal();
+        aviso(`Época «${datos.NOMBRE}» creada.`);
+        await cambiarEpoca(r.codigo, false);
+        ir('portada');
+      } else {
+        S.epocas = await api('guardarEpoca', datos);
+        cerrarModal(); aviso('Época guardada.'); pintarCabecera(); ir(S.vista);
+      }
+    } catch (err) { error(err); ocupado($('#btn-guardar-epoca'), false); }
+  });
 }
 
 /* ---------- Inicio ---------- */

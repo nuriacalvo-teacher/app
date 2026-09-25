@@ -89,14 +89,20 @@
 
     <div class="layout">
       <nav class="lateral" id="lateral">
-        <div class="grupo">Trabajo</div>
-        <a href="#" data-ir="inicio"><i class="bi bi-house"></i> Inicio</a>
+        <a href="#" data-ir="portada"><i class="bi bi-bank"></i> Portada del archivo</a>
+        <div class="selector-epoca">
+          <label for="sel-epoca">Época</label>
+          <select id="sel-epoca" class="form-select form-select-sm"></select>
+        </div>
+        <div class="grupo">Trabajo en esta época</div>
+        <a href="#" data-ir="inicio"><i class="bi bi-speedometer2"></i> Resumen</a>
         <a href="#" data-ir="nuevo" data-rol="EDITOR"><i class="bi bi-plus-square"></i> Nuevo expediente</a>
         <a href="#" data-ir="buscar"><i class="bi bi-search"></i> Buscar expedientes</a>
         <a href="#" data-ir="indice"><i class="bi bi-sort-alpha-down"></i> Índice alfabético</a>
         <a href="#" data-ir="carpetas"><i class="bi bi-folder2-open"></i> Carpetas</a>
         <div data-rol="ADMIN">
           <div class="grupo">Coordinación</div>
+          <a href="#" data-ir="epocas"><i class="bi bi-hourglass-split"></i> Épocas del archivo</a>
           <a href="#" data-ir="campos"><i class="bi bi-ui-checks"></i> Campos del formulario</a>
           <a href="#" data-ir="profesores"><i class="bi bi-people"></i> Profesores y permisos</a>
           <a href="#" data-ir="historial"><i class="bi bi-clock-history"></i> Historial de cambios</a>

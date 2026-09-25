@@ -21,6 +21,19 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
 | **Papelera** | Nada se borra del todo: los expedientes borrados van a una papelera y se pueden recuperar. |
 | **Copias de seguridad** | Copia manual con un clic y copia automática semanal en Google Drive. |
 
+## Un solo archivo histórico, organizado por épocas
+
+La app es el **Archivo histórico del IES Goya**, con una **portada** que muestra todas las épocas: *Siglo XIX (1845–1900)*, *1900–1930*, *1930–1975*…
+
+- **Una sola app y un solo enlace** para todo el profesorado.
+- **Comunes a todas las épocas:** profesorado y permisos, campos del formulario, historial de cambios, ajustes y copias de seguridad.
+- **Propio de cada época:** sus alumnos, sus carpetas y su numeración. Por ejemplo, GOYA000001 en el siglo XIX y GOYA1900-000001 en 1900–1930.
+- **Cada época va en su propio archivo de Google**, y cada archivo tiene su propio límite de 10 millones de celdas. La del siglo XIX va dentro de la hoja central; las nuevas se crean solas, en la misma carpeta de Drive, desde *Épocas del archivo → Nueva época*.
+- **Búsqueda en todo el archivo:** en *Buscar*, el interruptor «Buscar en todas las épocas» junta los resultados en un único orden alfabético.
+- **Duplicados entre épocas:** al registrar un alumno, la app avisa también si aparece en otra época (por ejemplo, alguien que ingresó en 1898 y siguió en 1903).
+- **Épocas cerradas:** cuando se termine de vaciar una época, la coordinación puede **cerrarla**. A partir de ahí, sólo la coordinación puede modificarla.
+- El **nº de registro permanente** lleva delante el código de la época (XIX-R000001, 1900_1930-R000001). Así, si algún día se quiere unir todo en una única tabla, no se repite ninguno.
+
 ## Dónde está la app y quién puede ver los datos
 
 - **La app vive en Google, no en GitHub.** Al implementarla, Google le da una dirección del tipo `https://script.google.com/macros/s/…/exec`. Esa es la app «online» que se abre desde cualquier ordenador o móvil. Se puede poner como enlace o incrustar en la web del centro (Google Sites).

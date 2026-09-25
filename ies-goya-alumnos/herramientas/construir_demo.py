@@ -14,7 +14,7 @@ def main():
     simulado = (Path(__file__).parent / 'gas-simulado.js').read_text(encoding='utf-8')
     codigo = (GAS / 'Codigo.gs').read_text(encoding='utf-8')
     # Codigo.gs va aislado en una función para que sus constantes no choquen con las del cliente.
-    exporta = '__api: api, instalar, guardar_, guardarProfesor_, guardarCarpeta_, MEMO'
+    exporta = '__api: api, instalar, guardar_, guardarProfesor_, guardarCarpeta_, crearEpoca_, MEMO'
     servidor = (f'<script>\n{simulado}\n</script>\n<script>\n(function () {{\n{codigo}\n'
                 f'Object.assign(window, {{ {exporta} }});\n}})();\n__prepararDemo();\n</script>\n')
     html = html.replace("<?!= include('Datos'); ?>", servidor + "<?!= include('Datos'); ?>")

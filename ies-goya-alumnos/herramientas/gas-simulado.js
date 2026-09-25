@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  var CLAVE = 'goya_demo_v1';
+  var CLAVE = 'goya_demo_v2';
   var params = new URLSearchParams(location.search);
   var db;
   try { db = JSON.parse(localStorage.getItem(CLAVE)); } catch (e) { db = null; }
@@ -22,10 +22,10 @@
     });
   }
 
-  function Hoja(nombre) { this.nombre = nombre; }
+  function Hoja(nombre, lib) { this.nombre = nombre; this.lib = lib; }
   Hoja.prototype = {
     get d() { return db.hojas[this.nombre]; },
-    getName: function () { return this.nombre; },
+    getName: function () { return this.nombre.split('::').pop(); },
     getLastRow: function () {
       var f = this.d.filas;
       for (var i = f.length - 1; i >= 0; i--) if (f[i] && f[i].some(function (c) { return c !== '' && c != null; })) return i + 1;
@@ -41,7 +41,13 @@
     insertRowsAfter: function (r, n) { this.d.maxF = this.getMaxRows() + n; guardar(); },
     insertColumnsAfter: function (c, n) { this.d.maxC += n; guardar(); },
     deleteColumns: function (c, n) { this.d.maxC = Math.max(c - 1, this.d.maxC - n); guardar(); },
-    getParent: function () { return libro; },
+    getParent: function () { return this.lib || libro; },
+    setName: function (n) {
+      var k = this.lib.clave(n), vieja = this.nombre;
+      db.hojas[k] = db.hojas[vieja]; delete db.hojas[vieja];
+      db.orden = db.orden.map(function (x) { return x === vieja ? k : x; });
+      this.nombre = k; guardar(); return this;
+    },
     deleteRow: function (r) { this.d.filas.splice(r - 1, 1); guardar(); },
     appendRow: function (v) { var r = this.getLastRow() + 1; this.getRange(r, 1, 1, v.length).setValues([v]); return this; },
     getRange: function (r, c, nr, nc) {
@@ -89,27 +95,45 @@
     }
   };
 
-  var libro = {
-    getId: function () { return 'demo'; },
-    getName: function () { return 'Archivo IES Goya (demo)'; },
-    getUrl: function () { return '#'; },
-    getSheetByName: function (n) { return db.hojas[n] ? encadenable(new Hoja(n)) : null; },
-    getSheets: function () { return db.orden.map(function (n) { return encadenable(new Hoja(n)); }); },
-    insertSheet: function (n, pos) {
-      db.hojas[n] = { filas: [], maxF: 1000, maxC: 26 };
-      if (pos === 0) db.orden.unshift(n); else db.orden.push(n);
-      guardar();
-      return encadenable(new Hoja(n));
+  // Libros (archivos de Google): el principal ('demo') y los que se creen (historial, épocas).
+  // Sus hojas se guardan en db.hojas con el nombre «idLibro::hoja» (salvo el principal).
+  if (!db.libros) db.libros = { demo: { nombre: 'Archivo IES Goya (demo)' } };
+  function Libro(id) { this.id = id; }
+  Libro.prototype = {
+    clave: function (n) { return this.id === 'demo' ? n : this.id + '::' + n; },
+    getId: function () { return this.id; },
+    getName: function () { return db.libros[this.id].nombre; },
+    getUrl: function () { return '#' + this.id; },
+    getSheetByName: function (n) { var k = this.clave(n); return db.hojas[k] ? encadenable(new Hoja(k, this)) : null; },
+    getSheets: function () {
+      var self = this, pref = this.id === 'demo' ? null : this.id + '::';
+      return db.orden.filter(function (k) { return pref ? k.indexOf(pref) === 0 : k.indexOf('::') < 0; })
+        .map(function (k) { return encadenable(new Hoja(k, self)); });
     },
-    deleteSheet: function (h) { delete db.hojas[h.nombre]; db.orden = db.orden.filter(function (x) { return x !== h.nombre; }); guardar(); }
+    insertSheet: function (n, pos) {
+      var k = this.clave(n);
+      db.hojas[k] = { filas: [], maxF: 1000, maxC: 26 };
+      if (pos === 0) db.orden.unshift(k); else db.orden.push(k);
+      guardar();
+      return encadenable(new Hoja(k, this));
+    },
+    deleteSheet: function (h) { delete db.hojas[h.nombre]; db.orden = db.orden.filter(function (x) { return x !== h.nombre; }); guardar(); },
+    toast: function () {}
   };
+  var libro = new Libro('demo');
 
   var email = params.has('anonimo') ? '' : (params.get('usuario') || 'coordinacion@iesgoya.es');
   var cache = {};
   window.SpreadsheetApp = {
     getActive: function () { return libro; },
-    openById: function () { return libro; },
-    create: function () { throw new Error('En la demo el historial va en la propia hoja'); },
+    openById: function (id) { if (!db.libros[id]) throw new Error('No existe el archivo ' + id); return new Libro(id); },
+    create: function (nombre) {
+      var id = 'L' + (Object.keys(db.libros).length + 1);
+      db.libros[id] = { nombre: nombre };
+      var l = new Libro(id);
+      l.insertSheet('Hoja 1');
+      return l;
+    },
     getUi: function () { throw new Error("Sin interfaz"); },
     newDataValidation: function () { return encadenable({}); },
     newConditionalFormatRule: function () { return encadenable({}); },
@@ -151,7 +175,10 @@
     AuthMode: { FULL: 'FULL' },
     requireAllScopes: function () {}
   };
-  window.DriveApp = new Proxy({}, { get: function () { return function () { throw new Error('Las copias en Google Drive no están disponibles en la demo.'); }; } });
+  window.DriveApp = new Proxy({}, { get: function (o, p) {
+    if (p === 'getFileById') return function () { return { getParents: function () { return { hasNext: function () { return false; } }; }, moveTo: function () {} }; };
+    return function () { throw new Error('Las copias en Google Drive no están disponibles en la demo.'); };
+  } });
 
   // google.script.run → api() de Codigo.gs (expuesta como __api para no chocar con la api() del cliente), de forma asíncrona como en Apps Script.
   function corredor(ok, mal) {
@@ -184,6 +211,7 @@
   // Primera vez: instalar y cargar unos ejemplos.
   window.__prepararDemo = function () {
     if (db.hojas.Alumnos) return;
+    try { localStorage.removeItem('goya_epoca'); } catch (e) { /* nada */ }
     instalar();
     var u = { email: 'coordinacion@iesgoya.es', nombre: 'COORDINACION', rol: 'ADMIN' };
     [['EDITOR', 'MARÍA LÓPEZ (HISTORIA)', 'maria.lopez@iesgoya.es', 'ABC123'], ['EDITOR', 'JAVIER RUIZ (LATÍN)', 'javier.ruiz@gmail.com', 'GOYA2026'], ['LECTOR', 'ANA SANZ (BIBLIOTECA)', 'ana.sanz@iesgoya.es', '']]
@@ -206,5 +234,14 @@
     });
     Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
     guardar_({ registro: { PROFESOR: 'JAVIER RUIZ (LATÍN)', CARPETA: '3', APELLIDOS: 'ALBIÑANA Y DUPONT', NOMBRE: 'Louis', PAIS: 'Francia', PROVINCIA: '', LOCALIDAD: 'Pau', CURSO: '1866', ESTADO: 'TERMINADO', ILUSTRE: 'NO', DIGITALIZADO: 'NO' } }, u);
+    // Segunda época, con su propio archivo, para ver la portada y la búsqueda en todas las épocas.
+    Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
+    crearEpoca_({ CODIGO: '1900_1930', NOMBRE: '1900–1930', DESDE: '1900', HASTA: '1930', PREFIJO: 'GOYA1900-', DESCRIPCION: 'Expedientes de los alumnos que ingresaron entre 1900 y 1930.', carpetas: 20 }, u);
+    [['ALCRUDO Y MARÍN', 'Vicente', 'Zaragoza', 'Zaragoza', '1901'], ['BUÑUEL Y PORTOLÉS', 'Luis', 'Teruel', 'Calanda', '1908'], ['ABAD Y SÁNCHEZ', 'Pilar', 'Zaragoza', 'Zaragoza', '1915']]
+      .forEach(function (e) {
+        Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
+        MEMO.epocaPedida = '1900_1930';
+        guardar_({ registro: { PROFESOR: 'COORDINACION', CARPETA: '1', APELLIDOS: e[0], NOMBRE: e[1], PAIS: 'España', PROVINCIA: e[2], LOCALIDAD: e[3], CURSO: e[4], ESTADO: 'EN PROCESO', ILUSTRE: e[0].indexOf('BUÑUEL') === 0 ? 'SÍ' : 'NO', DIGITALIZADO: 'NO' } }, u);
+      });
   };
 })();

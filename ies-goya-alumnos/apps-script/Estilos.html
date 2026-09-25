@@ -60,6 +60,24 @@
   .lateral a.activo { background: #f6e3e6; color: var(--granate); }
   .lateral a.activo i { color: var(--granate); }
   .lateral .pie { font-size: 12px; color: var(--suave); padding: 16px 12px 0; border-top: 1px solid var(--papel-2); margin-top: 18px; }
+  .selector-epoca { margin: 14px 4px 4px; padding: 10px 10px 12px; background: var(--papel); border: 1px solid var(--borde); border-radius: 10px; }
+  .selector-epoca label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--granate); margin-bottom: 4px; }
+  .selector-epoca select { font-weight: 600; color: var(--tinta); }
+  .portada-hero { background: var(--tinta); color: #fff; border-radius: 14px; padding: 32px 30px; margin-bottom: 22px; border-bottom: 4px solid var(--oro); position: relative; overflow: hidden; }
+  .portada-hero h1 { font-size: 30px; font-weight: 700; margin: 0 0 6px; }
+  .portada-hero p { margin: 0; opacity: .8; max-width: 640px; }
+  .portada-hero .sello { position: absolute; right: 26px; top: 50%; transform: translateY(-50%); width: 92px; height: 92px; font-size: 44px; opacity: .9; }
+  .tarjeta-epoca { background: #fff; border: 1px solid var(--borde); border-radius: 12px; padding: 20px; height: 100%; display: flex; flex-direction: column; transition: box-shadow .15s, border-color .15s; }
+  .tarjeta-epoca:hover { border-color: var(--oro); box-shadow: 0 6px 24px rgba(31, 42, 68, .08); }
+  .tarjeta-epoca.actual { border-color: var(--granate); box-shadow: inset 0 0 0 1px var(--granate); }
+  .tarjeta-epoca .anos { font-family: 'Source Serif 4', Georgia, serif; color: var(--granate); font-weight: 700; font-size: 15px; letter-spacing: .03em; }
+  .tarjeta-epoca h2 { font-size: 21px; font-weight: 700; color: var(--tinta); margin: 2px 0 6px; }
+  .tarjeta-epoca .cifras { display: flex; gap: 22px; margin: 14px 0; }
+  .tarjeta-epoca .cifras strong { display: block; font-size: 22px; font-family: 'Source Serif 4', Georgia, serif; color: var(--tinta); line-height: 1.1; }
+  .tarjeta-epoca .cifras span { font-size: 12px; color: var(--suave); }
+  .tarjeta-epoca.nueva { border-style: dashed; align-items: center; justify-content: center; text-align: center; color: var(--suave); cursor: pointer; min-height: 220px; }
+  .tarjeta-epoca.nueva i { font-size: 30px; color: var(--granate); }
+  .e-EPOCA { background: #efe7f6; color: #5b3a86; }
   .contenido { flex: 1; min-width: 0; padding: 26px 30px 90px; }
   .velo { display: none; }
   @media (max-width: 991.98px) {
