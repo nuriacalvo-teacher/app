@@ -131,6 +131,15 @@ function onOpen() {
  * Ejecútala desde el editor (desplegable → diagnostico → Run) si «instalar» falla.
  * Escribe en el registro de ejecución con qué cuenta se ejecuta y si puede abrir la hoja.
  */
+/**
+ * Muestra en el registro de ejecución la «clave secreta» que hay que pegar en
+ * SECRETO del proyecto aparte «Acceso con Google». Ejecútala desde el editor.
+ */
+function verClaveSecreta() {
+  console.log('Clave secreta para pegar en Acceso.gs (entre las comillas de SECRETO):');
+  console.log(secretoAcceso_());
+}
+
 function diagnostico() {
   pedirPermisos_();
   invalidarConfig_();
@@ -1946,9 +1955,11 @@ function configurarCopiaAutomatica_(activar) {
  * permisos que necesita la aplicación (hojas de cálculo, Drive para las copias y activadores).
  */
 function pedirPermisos_() {
+  console.log('Comprobando permisos…');
   try { ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL); } catch (e) {
-    if (!ScriptApp.requireAllScopes) return; // versiones antiguas de Apps Script
-    throw e;
+    // Si Google falla aquí («unknown error»), seguimos: si de verdad falta algún
+    // permiso, el primer paso que lo necesite dará un mensaje más claro.
+    console.warn('Aviso al comprobar permisos: ' + (e && e.message ? e.message : e));
   }
 }
 
