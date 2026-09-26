@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-30';
+const VERSION_APP = '2026-10-01';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -271,6 +271,7 @@ const ACCIONES = {
   crearEpoca:          { rol: 'ADMIN',   fn: crearEpoca_ },
   guardarEpoca:        { rol: 'ADMIN',   fn: guardarEpoca_ },
   ordenarAhora:        { rol: 'ADMIN',   fn: ordenarAhora_ },
+  importar:            { rol: 'ADMIN',   fn: importar_ },
   capacidad:           { rol: 'ADMIN',   fn: capacidad_ }
 };
 
@@ -1303,6 +1304,96 @@ function guardar_(d, u) {
     CacheService.getScriptCache().remove('edit_' + nuevo._UID);
     formatoSiHaceFalta_();
     return { id: nuevo._UID, numero: numero, version: String(nuevo._VERSION), creado: !anterior };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Importación en bloque (p. ej. expedientes transcritos de PDFs): cada fila pasa por el mismo control
+ * de duplicados que el formulario (también contra las demás filas del lote). Los posibles duplicados
+ * no se importan salvo que se pida expresamente; se devuelven para revisarlos a mano.
+ */
+function importar_(d, u) {
+  epocaEditable_(u);
+  const filas = Array.isArray(d.filas) ? d.filas.slice(0, 500) : [];
+  if (!filas.length) throw new Error('No hay filas para importar.');
+  const campos = camposActivos_();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const h = hojaAlumnos_();
+    const mapa = asegurarColumnas_(h);
+    const idx = leerColumnas_(h, mapa, COLS_NUMERACION.concat(['_CLAVE', '_FONETICA']));
+    const existentes = {};
+    for (let i = 0; i < idx._n; i++) {
+      if (!idx._UID[i] || si_(idx._BORRADO[i])) continue;
+      const nombre = idx.APELLIDOS[i] + ', ' + idx.NOMBRE[i];
+      existentes['c' + (idx._CLAVE[i] || claveDuplicado_(idx.APELLIDOS[i], idx.NOMBRE[i]))] = nombre;
+      existentes['f' + (idx._FONETICA[i] || claveFonetica_(idx.APELLIDOS[i], idx.NOMBRE[i]))] = nombre;
+    }
+    const t = ahora_();
+    const uids = idx._UID.slice();
+    const nuevos = [], saltados = [];
+    filas.forEach(function (x, n) {
+      const reg = {};
+      campos.forEach(function (c) {
+        let v = x[c.clave] === undefined || x[c.clave] === null ? '' : String(x[c.clave]);
+        v = c.tipo === 'texto_largo' ? v.trim() : v.replace(/\s+/g, ' ').trim();
+        if (v && c.tipo === 'seleccion') {
+          const op = c.opciones.find(function (o) { return sinAcentos_(o) === sinAcentos_(v); });
+          if (op) v = op;
+        }
+        if (!v && c.clave === 'ESTADO') v = d.estado || 'PENDIENTE DE REVISIÓN';
+        if (!v && c.tipo === 'profesor') v = d.profesor || u.nombre;
+        if (!v && c.obligatorio && (c.tipo === 'seleccion' || c.tipo === 'si_no')) v = (c.opciones || [])[0] || 'NO';
+        reg[c.clave] = v.slice(0, 5000);
+      });
+      reg.APELLIDOS = String(reg.APELLIDOS || '').toUpperCase();
+      const quien = (reg.APELLIDOS || '¿?') + ', ' + (reg.NOMBRE || '¿?');
+      if (!reg.APELLIDOS || !reg.NOMBRE) { saltados.push({ fila: n + 1, alumno: quien, motivo: 'Faltan los apellidos o el nombre.' }); return; }
+      const clave = claveDuplicado_(reg.APELLIDOS, reg.NOMBRE), fon = claveFonetica_(reg.APELLIDOS, reg.NOMBRE);
+      const ya = existentes['c' + clave] || existentes['f' + fon];
+      if (ya && !d.duplicados) { saltados.push({ fila: n + 1, alumno: quien, motivo: 'Posible duplicado de «' + ya + '».' }); return; }
+      existentes['c' + clave] = existentes['f' + fon] = quien + ' (de esta importación)';
+      const uid = nuevoUid_(uids);
+      uids.push(uid);
+      nuevos.push(Object.assign(reg, {
+        ID: '', _BORRADO: '', _UID: uid, _CLAVE: clave, _FONETICA: fon, _ORDEN: claveOrdenFila_(reg.APELLIDOS, reg.NOMBRE, uid),
+        _CREADO_EN: t, _CREADO_POR: u.email, _MODIFICADO_EN: t, _MODIFICADO_POR: u.email, _VERSION: 1
+      }));
+    });
+    if (nuevos.length) {
+      mapaColumnas_(h);
+      const cab = MEMO.cabecera;
+      const fila0 = h.getLastRow() + 1;
+      const faltan = fila0 + nuevos.length - 1 - h.getMaxRows();
+      if (faltan > 0) {
+        const n = faltan + 500;
+        h.insertRowsAfter(h.getMaxRows(), n);
+        h.getRange(h.getMaxRows() - n + 1, 1, n, h.getMaxColumns()).setNumberFormat('@');
+        MEMO.formatoPendiente = true;
+      }
+      h.getRange(fila0, 1, nuevos.length, cab.length).setValues(nuevos.map(function (o) {
+        return cab.map(function (c) {
+          let v = o[c] === undefined || o[c] === null ? '' : String(o[c]);
+          if (/^[=+@]/.test(v)) v = "'" + v;
+          return v;
+        });
+      }));
+      tocarDatos_(h);
+      // Historial: una línea por expediente, escritas de una vez.
+      try {
+        const hh = hojaHistorial_();
+        const f = hh.getLastRow() + 1;
+        if (f + nuevos.length - 1 > hh.getMaxRows()) hh.insertRowsAfter(hh.getMaxRows(), nuevos.length + 100);
+        hh.getRange(f, 1, nuevos.length, 6).setValues(nuevos.map(function (o) {
+          return [t, u.email, u.nombre, 'IMPORTAR', o._UID, o.APELLIDOS + ', ' + o.NOMBRE + (o.CARPETA ? ' · carpeta ' + o.CARPETA : '')];
+        }));
+      } catch (e) { console.error('Historial', e); }
+      formatoSiHaceFalta_();
+    }
+    return { importados: nuevos.length, saltados: saltados };
   } finally {
     lock.releaseLock();
   }

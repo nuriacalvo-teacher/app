@@ -353,7 +353,7 @@ const VISTAS = {
   portada: vistaPortada, epocas: vistaEpocas,
   inicio: vistaInicio, nuevo: () => vistaFormulario(null), editar: (id) => vistaFormulario(id), buscar: vistaBuscar,
   indice: vistaIndice, carpetas: vistaCarpetas, campos: vistaCampos, profesores: vistaProfesores,
-  historial: vistaHistorial, ajustes: vistaAjustes, ayuda: vistaAyuda
+  historial: vistaHistorial, ajustes: vistaAjustes, ayuda: vistaAyuda, importar: vistaImportar
 };
 
 async function ir(destino, arg) {
@@ -363,7 +363,7 @@ async function ir(destino, arg) {
   if (!VISTAS[vista]) vista = 'portada';
   if (vista === 'nuevo' && !puede('EDITOR')) vista = puede('LECTOR') ? 'inicio' : 'portada';
   if (['inicio', 'carpetas', 'editar'].includes(vista) && !puede('LECTOR')) vista = 'portada';
-  if (['campos', 'profesores', 'historial', 'ajustes', 'epocas'].includes(vista) && !puede('ADMIN')) vista = 'portada';
+  if (['campos', 'profesores', 'historial', 'ajustes', 'epocas', 'importar'].includes(vista) && !puede('ADMIN')) vista = 'portada';
   S.vista = vista;
   const hash = vista + (arg || param ? '/' + (arg || param) : '');
   if (location.hash !== '#' + hash) history.replaceState(null, '', '#' + hash);
@@ -1375,6 +1375,138 @@ function vistaAjustes() {
   });
   $('#copiar-secreto') && $('#copiar-secreto').addEventListener('click', () => { $('#secreto-acceso').select(); navigator.clipboard && navigator.clipboard.writeText($('#secreto-acceso').value); aviso('Clave copiada.'); });
   $('#copiar-url') && $('#copiar-url').addEventListener('click', () => { $('#url-app').select(); navigator.clipboard && navigator.clipboard.writeText($('#url-app').value); aviso('Enlace copiado.'); });
+}
+
+/* ---------- Coordinación: importar expedientes ---------- */
+
+/** Lee lo pegado desde una hoja de cálculo (columnas separadas por tabuladores; admite celdas entre comillas). */
+function leerTabla(txt) {
+  const filas = [];
+  let fila = [], celda = '', comillas = false;
+  txt = String(txt || '').replace(/\r\n?/g, '\n');
+  for (let i = 0; i < txt.length; i++) {
+    const ch = txt[i];
+    if (comillas) {
+      if (ch === '"' && txt[i + 1] === '"') { celda += '"'; i++; }
+      else if (ch === '"') comillas = false;
+      else celda += ch;
+    } else if (ch === '"' && celda === '') comillas = true;
+    else if (ch === '\t') { fila.push(celda); celda = ''; }
+    else if (ch === '\n') { fila.push(celda); filas.push(fila); fila = []; celda = ''; }
+    else celda += ch;
+  }
+  if (celda !== '' || fila.length) { fila.push(celda); filas.push(fila); }
+  return filas.filter((f) => f.some((c) => c.trim()));
+}
+
+/** Qué campo corresponde a cada título de columna (por clave, por nombre del campo o por nombres habituales). */
+function campoDeTitulo(t) {
+  const n = sinAcentos(t).replace(/Ñ/g, 'N').replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  const alias = {
+    'APELLIDOS': 'APELLIDOS', 'NOMBRE': 'NOMBRE', 'NOMBRE DE PILA': 'NOMBRE', 'PAIS': 'PAIS', 'PAIS DE NACIMIENTO': 'PAIS',
+    'PROVINCIA': 'PROVINCIA', 'LOCALIDAD': 'LOCALIDAD', 'CIUDAD': 'LOCALIDAD', 'LUGAR': 'LOCALIDAD',
+    'ANO NACIMIENTO': 'FECHA_NACIMIENTO', 'ANO DE NACIMIENTO': 'FECHA_NACIMIENTO', 'FECHA DE NACIMIENTO': 'FECHA_NACIMIENTO', 'NACIMIENTO': 'FECHA_NACIMIENTO',
+    'ANO EXPEDIENTE': 'CURSO', 'ANO DEL EXPEDIENTE': 'CURSO', 'CURSO': 'CURSO',
+    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA'
+  };
+  for (const k of Object.keys(alias)) if (n === k || n.startsWith(k + ' ')) return alias[k];
+  const c = S.campos.find((x) => sinAcentos(x.clave).replace(/_/g, ' ') === n || sinAcentos(x.etiqueta).replace(/[^A-Z0-9Ñ ]/g, ' ').replace(/\s+/g, ' ').trim() === n);
+  return c ? c.clave : '';
+}
+
+let importacion = null;
+
+function vistaImportar() {
+  importacion = null;
+  const editores = profesoresEditores();
+  $('#vista').innerHTML = cabecera('Importar expedientes',
+    `Añade de una vez muchos expedientes a la época <strong>${esc(epocaActual().NOMBRE || '')}</strong>, por ejemplo los transcritos de los PDFs.`) + `
+    <div class="row g-3">
+      <div class="col-xl-8"><div class="panel"><div class="panel-cuerpo">
+        <ol class="small text-suave ps-3">
+          <li>Abre la tabla en Google Sheets o Excel, <strong>selecciónala entera con los títulos</strong> (⌘A / Ctrl+A) y cópiala (⌘C / Ctrl+C).</li>
+          <li>Pégala aquí debajo (⌘V / Ctrl+V) y pulsa <strong>Revisar</strong>. Todavía no se guarda nada.</li>
+        </ol>
+        <textarea class="form-control font-monospace small" id="imp-texto" rows="9" placeholder="APELLIDOS	Nombre	País	Provincia	Localidad	Año nacimiento	Año expediente	Destacado o ilustre	Observaciones"></textarea>
+        <div class="row g-3 mt-1">
+          <div class="col-md-4"><label class="form-label small">Profesor/a que registra</label><select class="form-select form-select-sm" id="imp-prof">${opcionesHtml(editores, editores.includes(S.usuario.nombre) ? S.usuario.nombre : '')}</select></div>
+          <div class="col-md-4"><label class="form-label small">Estado</label><select class="form-select form-select-sm" id="imp-estado">${opcionesHtml((campoPorClave('ESTADO') || {}).opciones || ['PENDIENTE DE REVISIÓN'], 'PENDIENTE DE REVISIÓN')}</select></div>
+          <div class="col-md-4 d-flex flex-column justify-content-end gap-1">
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-carpeta" checked><label class="form-check-label" for="imp-carpeta">Poner la carpeta según los apellidos</label></div>
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-dup"><label class="form-check-label" for="imp-dup">Importar también los posibles duplicados</label></div>
+          </div>
+        </div>
+        <div class="text-end mt-3"><button class="btn btn-primary" id="imp-revisar"><i class="bi bi-eye me-1"></i> Revisar</button></div>
+      </div></div></div>
+      <div class="col-xl-4"><div class="panel"><div class="panel-cab"><h2>Cómo funciona</h2></div><div class="panel-cuerpo small text-suave">
+        <p>La primera fila debe tener los títulos de las columnas: <em>APELLIDOS, Nombre, País, Provincia, Localidad, Año nacimiento, Año expediente, Destacado o ilustre, Observaciones</em>. Las columnas que no reconozca se ignoran.</p>
+        <p>Cada alumno pasa por la <strong>comprobación de duplicados</strong> (también frente a los demás de la lista). Los que ya existan no se importan: aparecerán en una lista para revisarlos a mano.</p>
+        <p class="mb-0">Los importados quedan en el historial y con el estado elegido, para que alguien los compare con el original.</p>
+      </div></div></div>
+    </div>
+    <div id="imp-vista" class="mt-3"></div>`;
+  $('#imp-revisar').addEventListener('click', revisarImportacion);
+}
+
+function revisarImportacion() {
+  const tabla = leerTabla($('#imp-texto').value);
+  const caja = $('#imp-vista');
+  if (tabla.length < 2) { caja.innerHTML = '<div class="alert alert-warning">Pega la tabla con la fila de títulos y al menos un alumno.</div>'; return; }
+  const titulos = tabla[0];
+  const cols = titulos.map(campoDeTitulo);
+  if (!cols.includes('APELLIDOS') || !cols.includes('NOMBRE')) {
+    caja.innerHTML = '<div class="alert alert-warning">No encuentro las columnas <strong>APELLIDOS</strong> y <strong>Nombre</strong> en la primera fila. ¿Has copiado también los títulos?</div>'; return;
+  }
+  const conCarpeta = $('#imp-carpeta').checked;
+  const filas = tabla.slice(1).map((f) => {
+    const r = {};
+    cols.forEach((k, i) => { if (k && f[i] !== undefined && String(f[i]).trim()) r[k] = String(f[i]).trim(); });
+    const notas = [];
+    ['CURSO', 'FECHA_NACIMIENTO'].forEach((k) => {
+      if (!r[k]) return;
+      const m = /\d{4}/.exec(r[k]);
+      if (m && m[0] !== r[k]) notas.push(`${etiquetaDe(k)}: «${r[k]}» en la transcripción.`);
+      r[k] = m ? m[0] : '';
+    });
+    if (notas.length) r.OBSERVACIONES = [r.OBSERVACIONES, notas.join(' ')].filter(Boolean).join('\n');
+    if (r.APELLIDOS) r.APELLIDOS = r.APELLIDOS.toUpperCase();
+    if (conCarpeta && !r.CARPETA) { const c = carpetaSugerida(r.APELLIDOS || ''); if (c) r.CARPETA = c.NUMERO; }
+    return r;
+  }).filter((r) => r.APELLIDOS || r.NOMBRE);
+  importacion = filas;
+  const ignoradas = titulos.filter((t, i) => !cols[i] && t.trim());
+  const ver = ['APELLIDOS', 'NOMBRE', 'PAIS', 'PROVINCIA', 'LOCALIDAD', 'FECHA_NACIMIENTO', 'CURSO', 'CARPETA', 'ILUSTRE'];
+  caja.innerHTML = `<div class="panel"><div class="panel-cab"><h2>${numero(filas.length)} expedientes para importar</h2>
+      <button class="btn btn-primary" id="imp-ok"><i class="bi bi-cloud-upload me-1"></i> Importar ${numero(filas.length)} expedientes</button></div>
+    ${ignoradas.length ? `<div class="alert alert-light border small m-3 mb-0">Columnas que no se importan: ${ignoradas.map(esc).join(', ')}.</div>` : ''}
+    <div class="table-responsive"><table class="table tabla"><thead><tr><th>#</th>${ver.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${filas.map((r, i) => `<tr><td class="text-suave small">${i + 1}</td>${ver.map((k) => `<td class="${k === 'APELLIDOS' ? 'ap' : 'small'}">${k === 'ILUSTRE' ? celda('ILUSTRE', r[k] || '') : k === 'CARPETA' && !r[k] ? '<span class="text-warning small">sin carpeta</span>' : esc(r[k] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  $('#imp-ok').addEventListener('click', hacerImportacion);
+}
+
+async function hacerImportacion(ev) {
+  const b = ev.currentTarget;
+  if (!importacion || !importacion.length) return;
+  ocupado(b, true, 'Importando…');
+  let importados = 0;
+  const saltados = [];
+  try {
+    for (let i = 0; i < importacion.length; i += 100) {
+      const r = await api('importar', { filas: importacion.slice(i, i + 100), profesor: $('#imp-prof').value, estado: $('#imp-estado').value, duplicados: $('#imp-dup').checked });
+      importados += r.importados;
+      r.saltados.forEach((x) => saltados.push(Object.assign(x, { fila: x.fila + i })));
+    }
+    $('#imp-texto').value = '';
+    $('#imp-vista').innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i><strong>${numero(importados)} expedientes importados</strong> en ${esc(epocaActual().NOMBRE || '')}.
+      <a href="#" data-ir="buscar">Verlos en «Buscar expedientes»</a>.</div>` +
+      (saltados.length ? `<div class="panel"><div class="panel-cab"><h2>${numero(saltados.length)} sin importar</h2></div><div class="table-responsive"><table class="table tabla">
+        <thead><tr><th>#</th><th>Alumno</th><th>Motivo</th></tr></thead><tbody>${saltados.map((x) => `<tr><td class="text-suave small">${x.fila}</td><td class="ap">${esc(x.alumno)}</td><td class="small">${esc(x.motivo)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="small text-suave px-3 pb-3">Revísalos: si es otra persona con el mismo nombre, créalo a mano en «Nuevo expediente» o vuelve a importarlo marcando «Importar también los posibles duplicados».</div></div>` : '');
+    importacion = null;
+  } catch (e) {
+    error(e);
+    if (importados) aviso(`Se llegaron a importar ${importados} expedientes antes del error.`, 'aviso');
+  } finally { ocupado(b, false); }
 }
 
 /* ---------- Ayuda ---------- */
