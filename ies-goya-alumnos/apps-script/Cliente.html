@@ -20,7 +20,8 @@ const S = {
   latido: null,          // renovación del aviso «en edición»
   localidades: {},       // localidades ya usadas, por provincia
   busqueda: { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false },
-  indice: { letra: 'A', pagina: 1 }
+  indice: { letra: 'A', pagina: 1 },
+  cacheVistas: {}        // últimos datos de cada pantalla, para mostrarla al instante
 };
 
 const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
@@ -58,6 +59,9 @@ function claveOrden(s) {
 function guardarLocal(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } }
 function leerLocal(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 
+const LECTURAS = ['arranque', 'inicio', 'consultar', 'obtener', 'comprobarDuplicados', 'localidadesUsadas', 'carpetas', 'historial',
+  'portada', 'capacidad', 'bloquear', 'liberar', 'exportar'];
+
 /** Llama al servidor (Apps Script). */
 function api(accion, datos) {
   return new Promise((resolve, reject) => {
@@ -65,7 +69,11 @@ function api(accion, datos) {
       .withSuccessHandler((txt) => {
         let r;
         try { r = JSON.parse(txt); } catch (e) { return reject(new Error('Respuesta no válida del servidor.')); }
-        if (r.ok) return resolve(r.data);
+        if (r.ok) {
+          // Tras cualquier cambio, lo guardado de cada pantalla se vuelve a comprobar al abrirla.
+          if (!LECTURAS.includes(accion)) Object.values(S.cacheVistas).forEach((c) => { c.t = 0; });
+          return resolve(r.data);
+        }
         if (r.sesion) { S.token = null; guardarLocal('goya_token', null); mostrarPantalla('login'); }
         reject(new Error(r.error || 'Error desconocido.'));
       })
@@ -172,6 +180,26 @@ async function cambiarEpoca(codigo, navegar = true) {
   if (navegar) ir('inicio');
 }
 
+/**
+ * Pinta al momento lo último que se vio en esa pantalla (si lo hay) y, a la vez, pide los datos
+ * al servidor; cuando llegan, sólo se vuelve a pintar si han cambiado. Así cambiar de sección es
+ * instantáneo y los datos siempre acaban al día.
+ */
+async function conCache(clave, pedir, pintar) {
+  const c = S.cacheVistas[clave];
+  const vista = S.vista, epoca = S.epoca;
+  if (c) pintar(c.datos);
+  if (c && Date.now() - c.t < 3000) return; // recién llegados: no hace falta volver a pedirlos
+  let datos;
+  try { datos = await pedir(); } catch (e) { if (c) { error(e); return; } throw e; }
+  const txt = JSON.stringify(datos);
+  const claves = Object.keys(S.cacheVistas);
+  if (claves.length > 60) delete S.cacheVistas[claves[0]];
+  S.cacheVistas[clave] = { datos, txt, t: Date.now() };
+  if (S.vista !== vista || S.epoca !== epoca) return;
+  if (!c || c.txt !== txt) pintar(datos);
+}
+
 const campoPorClave = (k) => S.campos.find((c) => c.clave === k);
 const camposActivos = () => S.campos.filter((c) => c.activo);
 const etiquetaDe = (k) => (campoPorClave(k) || {}).etiqueta || k;
@@ -219,7 +247,7 @@ async function arrancar() {
     const destino = location.hash.replace('#', '') || 'portada';
     const r = await api('arranque', { conPortada: destino === 'portada' });
     S.usuario = r.usuario;
-    S.portadaInicial = r.portada || null;
+    if (r.portada) S.cacheVistas.portada = { datos: r.portada, txt: JSON.stringify(r.portada), t: Date.now() };
     // Entrada con cualquier cuenta de Google (a través de la app «Acceso con Google»).
     const urlAcceso = String(r.urlAcceso || '').trim();
     $('#login-google-caja').classList.toggle('d-none', !urlAcceso);
@@ -364,8 +392,11 @@ function cabecera(titulo, texto, acciones = '') {
 
 /* ---------- Inicio ---------- */
 
-async function vistaInicio() {
-  const r = await api('inicio');
+function vistaInicio() {
+  return conCache('inicio|' + S.epoca, () => api('inicio'), pintarInicio);
+}
+
+function pintarInicio(r) {
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const carpetasMias = r.carpetas.mias.length
     ? r.carpetas.mias.map((n) => `<a href="#" class="etiqueta e-EN-CURSO text-decoration-none" data-ir="carpetas">Carpeta ${esc(n)}</a>`).join(' ')
@@ -891,12 +922,15 @@ async function buscar() {
   const n = ++numBusqueda;
   const cont = $('#resultados');
   if (!cont) return;
-  cont.style.opacity = '.55';
-  try {
-    const r = await api('consultar', { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 });
-    if (n !== numBusqueda || !$('#resultados')) return;
+  const params = { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 };
+  const clave = 'buscar|' + S.epoca + '|' + JSON.stringify(params);
+  const pintar = (r) => {
     cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
     enlazarFichas(cont);
+  };
+  cont.style.opacity = S.cacheVistas[clave] ? '' : '.55';
+  try {
+    await conCache(clave, () => api('consultar', params), (r) => { if (n === numBusqueda && $('#resultados')) pintar(r); });
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
   } finally { cont.style.opacity = ''; }
@@ -933,28 +967,35 @@ async function cargarIndice() {
   const I = S.indice;
   const cont = $('#indice');
   if (!cont) return;
-  cont.style.opacity = '.55';
+  const params = { letra: I.letra, pagina: I.pagina, tam: 100, orden: 'apellidos' };
+  const clave = 'indice|' + S.epoca + '|' + JSON.stringify(params);
+  cont.style.opacity = S.cacheVistas[clave] ? '' : '.55';
   try {
-    const r = await api('consultar', { letra: I.letra, pagina: I.pagina, tam: 100, orden: 'apellidos' });
-    if (!$('#indice')) return;
-    $('#letras').innerHTML = LETRAS.map((l) => `<button data-letra="${l}" class="${l === I.letra ? 'activa' : ''}" ${r.letras[l] ? '' : 'disabled'}>${l}<small>${r.letras[l] ? numero(r.letras[l]) : '·'}</small></button>`).join('');
-    $$('#letras [data-letra]').forEach((b) => b.addEventListener('click', () => { I.letra = b.dataset.letra; I.pagina = 1; cargarIndice(); }));
-    cont.innerHTML = `<div class="panel-cab"><h2 class="serif fs-3">${esc(I.letra)}</h2><span class="small text-suave">${numero(r.total)} alumnos</span></div>` +
-      tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
-    enlazarFichas(cont);
+    await conCache(clave, () => api('consultar', params), (r) => pintarIndice(r, I, params.letra, params.pagina));
   } catch (e) {
     cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
   } finally { cont.style.opacity = ''; }
+}
+
+function pintarIndice(r, I, letra, pagina) {
+  const cont = $('#indice');
+  if (!cont || I.letra !== letra || I.pagina !== pagina) return; // ya se ha pedido otra letra
+  $('#letras').innerHTML = LETRAS.map((l) => `<button data-letra="${l}" class="${l === I.letra ? 'activa' : ''}" ${r.letras[l] ? '' : 'disabled'}>${l}<small>${r.letras[l] ? numero(r.letras[l]) : '·'}</small></button>`).join('');
+  $$('#letras [data-letra]').forEach((b) => b.addEventListener('click', () => { I.letra = b.dataset.letra; I.pagina = 1; cargarIndice(); }));
+  cont.innerHTML = `<div class="panel-cab"><h2 class="serif fs-3">${esc(I.letra)}</h2><span class="small text-suave">${numero(r.total)} alumnos</span></div>` +
+    tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
+  enlazarFichas(cont);
 }
 
 /* ---------- Carpetas ---------- */
 
 let filtroCarpetas = 'todas';
 
-async function vistaCarpetas() {
-  const lista = await api('carpetas');
-  S.carpetas = lista.map(({ EXPEDIENTES, TERMINADOS, ...c }) => c);
-  pintarCarpetas(lista);
+function vistaCarpetas() {
+  return conCache('carpetas|' + S.epoca, () => api('carpetas'), (lista) => {
+    S.carpetas = lista.map(({ EXPEDIENTES, TERMINADOS, ...c }) => c);
+    pintarCarpetas(lista);
+  });
 }
 
 function pintarCarpetas(lista) {
@@ -1366,9 +1407,11 @@ function vistaAyuda() {
 
 /* ---------- Portada del archivo ---------- */
 
-async function vistaPortada() {
-  const lista = S.portadaInicial || await api('portada');
-  S.portadaInicial = null;
+function vistaPortada() {
+  return conCache('portada', () => api('portada'), pintarPortada);
+}
+
+function pintarPortada(lista) {
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const total = lista.reduce((t, e) => t + e.total, 0);
   $('#vista').innerHTML = `

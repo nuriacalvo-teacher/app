@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-29';
+const VERSION_APP = '2026-09-30';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -99,8 +99,11 @@ const AJUSTES_INICIALES = [
 /** Memoria de la ejecución en curso (Apps Script la reinicia en cada petición). */
 const MEMO = {};
 
-/** Hasta este nº de filas la hoja se reordena al guardar; por encima, sólo de noche o con el botón. */
-const LIMITE_ORDEN_INMEDIATO = 3000;
+/**
+ * La hoja de cálculo se reordena físicamente cada noche (o con el botón de Ajustes), no al guardar:
+ * reordenarla en cada guardado hacía esperar varios segundos. La aplicación siempre muestra el
+ * número de orden correcto porque lo calcula al momento.
+ */
 
 // ---------------------------------------------------------------------
 //  Web app
@@ -219,8 +222,10 @@ function api(accion, datos, token) {
     if (ACCIONES_LECTURA.indexOf(accion) >= 0) MEMO.usarCache = true;
     else if (def.rol === 'ADMIN') { invalidarConfig_(); MEMO.sinCacheConfig = true; }
     const data = def.fn(datos, u);
-    if (ACCIONES_LECTURA.indexOf(accion) < 0 && ['login', 'logout', 'bloquear', 'liberar'].indexOf(accion) < 0) {
-      invalidarConfig_();
+    // Sólo la coordinación cambia la configuración (campos, profesorado, ajustes, épocas): guardar
+    // expedientes o carpetas no obliga a releerla, y así la siguiente pantalla carga más rápido.
+    if (def.rol === 'ADMIN' && ACCIONES_LECTURA.indexOf(accion) < 0) invalidarConfig_();
+    if (ACCIONES_LECTURA.indexOf(accion) < 0 && ['login', 'loginGoogle', 'logout', 'bloquear', 'liberar'].indexOf(accion) < 0) {
       CacheService.getScriptCache().remove('portada');
     }
     return JSON.stringify({ ok: true, data: data });
@@ -1294,7 +1299,6 @@ function guardar_(d, u) {
     }
     const numero = prefijo_() + cero_(delante + 1, 6);
     // Con pocos datos la hoja se reordena al momento; con muchos, cada noche (o con el botón de Ajustes).
-    if (cambiaNombre && idx._n <= LIMITE_ORDEN_INMEDIATO) ordenar_(h);
     registrar_(u, anterior ? 'MODIFICAR' : 'CREAR', nuevo._UID, detalle + ' · Nº ' + numero);
     CacheService.getScriptCache().remove('edit_' + nuevo._UID);
     formatoSiHaceFalta_();
@@ -1489,7 +1493,6 @@ function marcarBorrado_(d, u, borrar) {
     reg._MODIFICADO_POR = u.email;
     reg._VERSION = (parseInt(reg._VERSION, 10) || 0) + 1;
     escribirFila_(h, fila, reg);
-    if (h.getLastRow() - 1 <= LIMITE_ORDEN_INMEDIATO) ordenar_(h);
     registrar_(u, borrar ? 'BORRAR' : 'RESTAURAR', d.id, (reg.APELLIDOS + ', ' + reg.NOMBRE) + (reg.ID ? ' · era ' + reg.ID : '') + (d.motivo ? ' · Motivo: ' + d.motivo : ''));
     return true;
   } finally {
