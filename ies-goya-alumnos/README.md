@@ -63,6 +63,28 @@ Cada época tiene un interruptor **«Consulta pública»** en *Coordinación →
 - ⚠️ **Protección de datos:** activa la consulta pública sólo en épocas antiguas, como el siglo XIX. Los expedientes de personas que pueden estar vivas están protegidos por el RGPD y **no deben publicarse**. Por eso cada época se decide por separado y el interruptor viene apagado.
 - Para que la consulta pública funcione, la app debe estar publicada con **Who has access: Anyone**.
 
+### Entrar con la cuenta del instituto (sin códigos)
+Con acceso «Anyone», Google no dice a la app quién es cada visitante, y por eso se piden códigos. Para que el profesorado del centro entre directamente con su cuenta **@iesgoya.es**, se publica **una segunda vez la misma app**:
+
+1. En Apps Script, ve a **Deploy → New deployment → Web app**.
+   - **Execute as:** *Me*.
+   - **Who has access:** *Anyone within IES Goya*.
+   - Pulsa **Deploy**.
+2. Copia su enlace. Tiene la forma `https://script.google.com/a/macros/iesgoya.es/s/…/exec`.
+3. En la app, ve a **Ajustes y copias** y pega ese enlace en **«Enlace para entrar con la cuenta del instituto»**. Guarda.
+
+A partir de entonces, **«Acceso profesorado»** ofrece **«Entrar con mi cuenta @iesgoya.es»**, y el código queda sólo para cuentas de fuera del centro. Los códigos deben tener al menos 8 caracteres, con letras y números (botón «Generar»). La lista de *Profesores y permisos* marca los códigos débiles.
+
+Cuando actualices el código, actualiza las **dos** publicaciones: *Manage deployments → ✏ → New version*.
+
+## Velocidad
+
+- La configuración (ajustes, campos, profesorado y épocas) y las columnas de alumnos se guardan unos minutos en la memoria rápida de Google (*CacheService*). Así, consultar, buscar y abrir fichas no lee la hoja entera cada vez.
+- Al guardar, la memoria se renueva al momento: nunca se ven datos antiguos después de un cambio hecho desde la app.
+- La portada llega en la misma petición que el arranque.
+- Si cambias algo **a mano en la hoja de cálculo** (por ejemplo, la pestaña *Épocas*), la app puede tardar **hasta 2 minutos** en verlo. Los datos de alumnos editados a mano se refrescan con **Ajustes y copias → Ordenar y renumerar la hoja ahora**.
+- La primera carga de la página siempre tarda uno o dos segundos: es lo que tarda Google en arrancar la app.
+
 ## Capacidad: ¿cabe todo el archivo?
 
 Unos 1000 alumnos al año desde 1845 dan unos **181 000 expedientes** hasta hoy.

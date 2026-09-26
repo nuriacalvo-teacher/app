@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  var CLAVE = 'goya_demo_v2';
+  var CLAVE = 'goya_demo_v3';
   var params = new URLSearchParams(location.search);
   var db;
   try { db = JSON.parse(localStorage.getItem(CLAVE)); } catch (e) { db = null; }
@@ -149,7 +149,9 @@
       return {
         get: function (k) { var e = cache[k]; return e && e.hasta > Date.now() ? e.v : null; },
         put: function (k, v, s) { cache[k] = { v: String(v), hasta: Date.now() + (s || 600) * 1000 }; },
-        remove: function (k) { delete cache[k]; }
+        remove: function (k) { delete cache[k]; },
+        getAll: function (ks) { var o = {}; ks.forEach(function (k) { var e = cache[k]; if (e && e.hasta > Date.now()) o[k] = e.v; }); return o; },
+        putAll: function (o, s) { Object.keys(o).forEach(function (k) { cache[k] = { v: String(o[k]), hasta: Date.now() + (s || 600) * 1000 }; }); }
       };
     }
   };
@@ -214,7 +216,7 @@
     try { localStorage.removeItem('goya_epoca'); } catch (e) { /* nada */ }
     instalar();
     var u = { email: 'coordinacion@iesgoya.es', nombre: 'COORDINACION', rol: 'ADMIN' };
-    [['EDITOR', 'MARÍA LÓPEZ (HISTORIA)', 'maria.lopez@iesgoya.es', 'ABC123'], ['EDITOR', 'JAVIER RUIZ (LATÍN)', 'javier.ruiz@gmail.com', 'GOYA2026'], ['LECTOR', 'ANA SANZ (BIBLIOTECA)', 'ana.sanz@iesgoya.es', '']]
+    [['EDITOR', 'MARÍA LÓPEZ (HISTORIA)', 'maria.lopez@iesgoya.es', 'ABC12345'], ['EDITOR', 'JAVIER RUIZ (LATÍN)', 'javier.ruiz@gmail.com', 'GOYA2026'], ['LECTOR', 'ANA SANZ (BIBLIOTECA)', 'ana.sanz@iesgoya.es', '']]
       .forEach(function (p) { Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; }); guardarProfesor_({ NOMBRE: p[1], EMAIL: p[2], ROL: p[0], CODIGO_ACCESO: p[3], ACTIVO: 'SÍ' }, u); });
     Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
     guardarCarpeta_({ original: '2', NUMERO: '2', DESDE: 'ABELLA Y GARCÍA', HASTA: 'AGUADO Y SANZ', ESTADO: 'EN CURSO', ASIGNADA_A: 'MARÍA LÓPEZ (HISTORIA)' }, u);

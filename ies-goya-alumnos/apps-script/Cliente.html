@@ -205,8 +205,18 @@ async function arrancar() {
   S.epoca = leerLocal('goya_epoca');
   mostrarPantalla('carga');
   try {
-    const r = await api('arranque');
+    const destino = location.hash.replace('#', '') || 'portada';
+    const r = await api('arranque', { conPortada: destino === 'portada' });
     S.usuario = r.usuario;
+    S.portadaInicial = r.portada || null;
+    // Entrada con la cuenta de Google del instituto (otra implementación de la misma app).
+    const urlEquipo = String(r.urlEquipo || '').trim();
+    $('#login-google-caja').classList.toggle('d-none', !urlEquipo);
+    if (urlEquipo) {
+      $('#login-google').href = urlEquipo;
+      const m = /\/a\/(?:macros\/)?([^/]+)\//.exec(urlEquipo);
+      $('#login-dominio').textContent = m ? '@' + m[1] : 'del instituto';
+    }
     S.consultaPublica = !!r.consultaPublica;
     $('#login-volver').classList.toggle('d-none', !S.consultaPublica);
     $('#login-info').innerHTML = `Versión ${esc(r.version || '?')}` + (S.consultaPublica ? '' :
@@ -218,7 +228,7 @@ async function arrancar() {
     guardarLocal('goya_epoca', r.epoca);
     pintarCabecera();
     mostrarPantalla('app');
-    ir(location.hash.replace('#', '') || 'portada');
+    ir(destino);
   } catch (e) {
     mostrarPantalla('carga');
     $('#pantalla-carga').innerHTML = `<div class="tarjeta-acceso text-center"><div class="sello grande mb-3">G</div>
@@ -1130,14 +1140,15 @@ function vistaProfesores() {
         <td><strong>${esc(p.NOMBRE)}</strong>${p.NOTAS ? `<div class="small text-suave">${esc(p.NOTAS)}</div>` : ''}</td>
         <td class="small">${esc(p.EMAIL) || '<span class="text-suave">sin correo (no puede entrar)</span>'}</td>
         <td><span class="rol rol-${esc(p.ROL)}">${esc(NOMBRES_ROL[p.ROL] || p.ROL)}</span></td>
-        <td class="id-exp">${p.CODIGO_ACCESO ? '••••••' : '—'}</td>
+        <td class="id-exp">${!p.CODIGO_ACCESO ? '—' : (String(p.CODIGO_ACCESO).length < 8 || !/[A-Za-z]/.test(p.CODIGO_ACCESO) || !/\d/.test(p.CODIGO_ACCESO))
+          ? '<span class="etiqueta e-PENDIENTE-DE-REVISION" title="Pulsa ✏ y «Generar» para cambiarlo"><i class="bi bi-exclamation-triangle"></i> Débil</span>' : '••••••••'}</td>
         <td>${p.ACTIVO === 'NO' ? '<span class="etiqueta">Inactivo</span>' : '<span class="etiqueta e-TERMINADO">Activo</span>'}</td>
         <td class="text-end"><button class="btn btn-sm btn-light" data-fila="${p._fila}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
     </table></div></div>
     <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
-      <strong class="text-body">¿Cómo entra cada persona?</strong> Si todo el equipo usa cuentas del mismo dominio que la aplicación (por ejemplo, @educa.aragon.es),
-      Google identifica a cada persona automáticamente y no hace falta código. Si alguien usa otra cuenta (p. ej. @gmail.com), la aplicación le pedirá su correo y
-      el <strong>código de acceso</strong> que pongas aquí. Para quitar el acceso a alguien, desactívalo: sus expedientes siguen a su nombre.
+      <strong class="text-body">¿Cómo entra cada persona?</strong> Con una cuenta del instituto, pulsando «Entrar con mi cuenta del instituto»: Google la identifica y no hace falta código
+      (hay que tener configurado el enlace del instituto en <em>Ajustes y copias</em>). Con otra cuenta (p. ej. @gmail.com), con su correo y el <strong>código de acceso</strong>
+      que pongas aquí (mínimo 8 caracteres, con letras y números: usa «Generar»). Para quitar el acceso a alguien, desactívalo: sus expedientes siguen a su nombre.
     </div></div>`;
   $('#btn-nuevo-prof').addEventListener('click', () => editarProfesor(null));
   $$('[data-fila]').forEach((b) => b.addEventListener('click', () => editarProfesor(S.profesores.find((p) => String(p._fila) === b.dataset.fila))));
@@ -1157,7 +1168,7 @@ function editarProfesor(p) {
       <div class="col-md-6"><label class="form-label">Nombre</label><input class="form-control" name="NOMBRE" value="${esc(v.NOMBRE)}" placeholder="PEDRO PÉREZ (HISTORIA)" required></div>
       <div class="col-md-6"><label class="form-label">Correo</label><input type="email" class="form-control" name="EMAIL" value="${esc(v.EMAIL)}" placeholder="nombre@educa.aragon.es"></div>
       <div class="col-md-6"><label class="form-label">Rol</label><select class="form-select" name="ROL">${opcionesHtml(Object.keys(NOMBRES_ROL).map((r) => ({ v: r, t: NOMBRES_ROL[r] })), v.ROL)}</select></div>
-      <div class="col-md-6"><label class="form-label">Código de acceso <span class="text-suave fw-normal">(para cuentas de otro dominio)</span></label>
+      <div class="col-md-6"><label class="form-label">Código de acceso <span class="text-suave fw-normal">(sólo para cuentas de fuera del instituto)</span></label>
         <div class="input-group"><input class="form-control font-monospace" name="CODIGO_ACCESO" value="${esc(v.CODIGO_ACCESO)}">
         <button class="btn btn-outline-secondary" type="button" id="btn-gen">Generar</button></div></div>
       <div class="col-12"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}" placeholder="Departamento, horario…"></div>
@@ -1219,6 +1230,10 @@ function vistaAjustes() {
           <div class="col-12"><label class="form-label">Subtítulo</label><input class="form-control" name="SUBTITULO" value="${esc(A.SUBTITULO)}"></div>
           <div class="col-md-6"><label class="form-label">País por defecto</label><select class="form-select" name="PAIS_DEFECTO">${opcionesHtml(GEO.paises, A.PAIS_DEFECTO)}</select></div>
           <div class="col-md-6"><label class="form-label">Provincia por defecto</label><select class="form-select" name="PROVINCIA_DEFECTO">${opcionesHtml(GEO.provincias, A.PROVINCIA_DEFECTO, '—')}</select></div>
+          <div class="col-12"><label class="form-label">Enlace para entrar con la cuenta del instituto</label>
+            <input class="form-control font-monospace small" name="URL_EQUIPO" value="${esc(A.URL_EQUIPO || '')}" placeholder="https://script.google.com/a/macros/iesgoya.es/s/…/exec">
+            <div class="form-text">Es la dirección de la segunda implementación de esta misma app, con acceso «Cualquier usuario de IES Goya». Con ella, el botón
+            «Acceso profesorado» ofrece «Entrar con mi cuenta del instituto» y nadie del centro necesita código.</div></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="EDITORES_SOLO_PROPIOS" id="a-prop" ${si(A.EDITORES_SOLO_PROPIOS) ? 'checked' : ''}>
             <label class="form-check-label" for="a-prop">Los editores sólo pueden modificar los expedientes que han creado ellos</label></div></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="LECTURA_ABIERTA" id="a-lec" ${si(A.LECTURA_ABIERTA) ? 'checked' : ''}>
@@ -1249,7 +1264,7 @@ function vistaAjustes() {
   $('#form-ajustes').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const f = ev.target;
-    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value,
+    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value, URL_EQUIPO: f.URL_EQUIPO.value.trim(),
       PROVINCIA_DEFECTO: f.PROVINCIA_DEFECTO.value, EDITORES_SOLO_PROPIOS: f.EDITORES_SOLO_PROPIOS.checked ? 'SÍ' : 'NO', LECTURA_ABIERTA: f.LECTURA_ABIERTA.checked ? 'SÍ' : 'NO' };
     const b = $('#btn-guardar-ajustes');
     ocupado(b, true);
@@ -1312,7 +1327,8 @@ function vistaAyuda() {
 /* ---------- Portada del archivo ---------- */
 
 async function vistaPortada() {
-  const lista = await api('portada');
+  const lista = S.portadaInicial || await api('portada');
+  S.portadaInicial = null;
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const total = lista.reduce((t, e) => t + e.total, 0);
   $('#vista').innerHTML = `

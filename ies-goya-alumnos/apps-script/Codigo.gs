@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-26';
+const VERSION_APP = '2026-09-27';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -92,7 +92,8 @@ const AJUSTES_INICIALES = [
   ['PAIS_DEFECTO', 'España', 'País que aparece por defecto en el formulario.'],
   ['PROVINCIA_DEFECTO', 'Zaragoza', 'Provincia que aparece por defecto en el formulario.'],
   ['COPIA_AUTOMATICA', 'NO', 'SÍ: copia de seguridad semanal automática en Google Drive (domingo de madrugada).'],
-  ['COPIAS_A_CONSERVAR', '12', 'Número de copias automáticas que se conservan.']
+  ['COPIAS_A_CONSERVAR', '12', 'Número de copias automáticas que se conservan.'],
+  ['URL_EQUIPO', '', 'Enlace de la implementación «Cualquier usuario de IES Goya»: el profesorado entra con su cuenta del instituto, sin código.']
 ];
 
 /** Memoria de la ejecución en curso (Apps Script la reinicia en cada petición). */
@@ -132,6 +133,8 @@ function onOpen() {
  */
 function diagnostico() {
   pedirPermisos_();
+  invalidarConfig_();
+  MEMO.sinCacheConfig = true;
   const linea = function (t) { console.log(t); };
   let efectiva = '', activa = '';
   try { efectiva = Session.getEffectiveUser().getEmail(); } catch (e) { efectiva = 'ERROR: ' + e.message; }
@@ -203,12 +206,24 @@ function api(accion, datos, token) {
     datos = datos || {};
     // Época con la que se trabaja: la del expediente (va en su nº de registro) o la elegida en la app.
     MEMO.epocaPedida = epocaDeUid_(datos.id) || datos.epoca || '';
-    return JSON.stringify({ ok: true, data: def.fn(datos, u) });
+    // Las consultas pueden usar la caché; las modificaciones leen siempre la hoja.
+    if (ACCIONES_LECTURA.indexOf(accion) >= 0) MEMO.usarCache = true;
+    else if (def.rol === 'ADMIN') { invalidarConfig_(); MEMO.sinCacheConfig = true; }
+    const data = def.fn(datos, u);
+    if (ACCIONES_LECTURA.indexOf(accion) < 0 && ['login', 'logout', 'bloquear', 'liberar'].indexOf(accion) < 0) {
+      invalidarConfig_();
+      CacheService.getScriptCache().remove('portada');
+    }
+    return JSON.stringify({ ok: true, data: data });
   } catch (e) {
     console.error(accion, e && e.stack || e);
     return JSON.stringify({ ok: false, error: (e && e.message) || String(e) });
   }
 }
+
+/** Acciones que sólo leen: pueden servirse desde la caché (mucho más rápido que leer la hoja). */
+const ACCIONES_LECTURA = ['arranque', 'inicio', 'consultar', 'exportar', 'obtener', 'comprobarDuplicados', 'localidadesUsadas',
+  'carpetas', 'historial', 'portada', 'capacidad'];
 
 const ACCIONES = {
   arranque:            { rol: 'NINGUNO', fn: arranque_ },
@@ -322,6 +337,7 @@ function logout_(d, u) {
 
 function arranque_(d, u) {
   const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado }, version: VERSION_APP };
+  try { r.urlEquipo = ajustes_().URL_EQUIPO || ''; } catch (e) { r.urlEquipo = ''; }
   r.consultaPublica = hayConsultaPublica_();
   if (u.rol === 'NINGUNO') return r;
   r.ajustes = ajustes_();
@@ -329,6 +345,11 @@ function arranque_(d, u) {
   r.epocas = epocas_().map(function (e) { const x = Object.assign({}, e); delete x.ID_HOJA; delete x._fila; return x; });
   r.epoca = epocaActual_().CODIGO;
   r.carpetas = carpetasLista_();
+  if (d.conPortada) r.portada = portada_(d, u); // así la portada llega en la misma petición
+  if (u.rol === 'PUBLICO') {
+    // Al público sólo le hace falta lo imprescindible.
+    r.ajustes = { NOMBRE_APP: r.ajustes.NOMBRE_APP, SUBTITULO: r.ajustes.SUBTITULO, URL_EQUIPO: r.ajustes.URL_EQUIPO };
+  }
   const profes = u.rol === 'PUBLICO' ? [] : profesores_();
   r.profesores = u.rol === 'ADMIN' ? profes : profes.filter(function (p) { return si_(p.ACTIVO); })
     .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO, ROL: p.ROL }; });
@@ -387,8 +408,9 @@ function epocas_() {
 function epocasTodas_() {
   if (MEMO.epocas) return MEMO.epocas;
   let lista = [];
-  if (ss_().getSheetByName(HOJA.EPOCAS)) {
-    lista = tabla_(HOJA.EPOCAS).filter(function (e) { return String(e.CODIGO).trim(); }).map(function (e) {
+  const filasEp = tablaConfig_(HOJA.EPOCAS);
+  if (filasEp.length) {
+    lista = filasEp.filter(function (e) { return String(e.CODIGO).trim(); }).map(function (e) {
       return {
         CODIGO: String(e.CODIGO).trim().toUpperCase(), NOMBRE: e.NOMBRE || e.CODIGO, DESDE: e.DESDE || '', HASTA: e.HASTA || '',
         PREFIJO: String(e.PREFIJO || '').trim().toUpperCase(), ESTADO: e.ESTADO || 'ABIERTA', ID_HOJA: String(e.ID_HOJA || '').trim(),
@@ -493,18 +515,92 @@ function ahora_() {
   return Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd HH:mm:ss');
 }
 
+// ---------------------------------------------------------------------
+//  Caché (CacheService): la configuración y las columnas de alumnos se guardan unos minutos en la
+//  memoria rápida de Google para no leer la hoja en cada clic. Cada escritura en una hoja de alumnos
+//  cambia su «versión», así que nunca se sirven datos antiguos después de guardar.
+// ---------------------------------------------------------------------
+
+const SEG_CONFIG = 120;    // la configuración (ajustes, campos, profesorado, épocas) se relee cada 2 min
+const SEG_DATOS = 1800;    // columnas de alumnos: 30 min (se invalidan al guardar)
+const TROZO = 40000;       // caracteres por trozo (CacheService admite 100 KB por clave)
+
+function cache_() { return CacheService.getScriptCache(); }
+
+/** Tablas de configuración de la hoja central (con caché corta). */
+function tablaConfig_(nombre) {
+  if (!MEMO.cfg) {
+    MEMO.cfg = {};
+    if (!MEMO.sinCacheConfig) {
+      try { const t = cache_().get('config'); if (t) MEMO.cfg = JSON.parse(t); } catch (e) { MEMO.cfg = {}; }
+    }
+  }
+  if (!MEMO.cfg[nombre]) {
+    MEMO.cfg[nombre] = ss_().getSheetByName(nombre) ? tabla_(nombre) : [];
+    if (!MEMO.sinCacheConfig) {
+      try { cache_().put('config', JSON.stringify(MEMO.cfg), SEG_CONFIG); } catch (e) { /* demasiado grande: sin caché */ }
+    }
+  }
+  return MEMO.cfg[nombre];
+}
+
+function invalidarConfig_() {
+  try { cache_().remove('config'); } catch (e) { /* nada */ }
+  ['cfg', 'ajustes', 'profesores', 'campos', 'epocas'].forEach(function (k) { delete MEMO[k]; });
+}
+
+function versionDatos_(h) {
+  const k = 'ver_' + h.getParent().getId();
+  let v = cache_().get(k);
+  if (!v) { v = String(Date.now()); cache_().put(k, v, 21600); }
+  return v;
+}
+
+/** Marca los datos de alumnos de esa hoja como cambiados (la caché anterior deja de usarse). */
+function tocarDatos_(h) {
+  try {
+    cache_().put('ver_' + h.getParent().getId(), String(Date.now()) + Math.random().toString(36).slice(2, 6), 21600);
+    cache_().remove('portada');
+  } catch (e) { /* nada */ }
+}
+
+function cacheLeer_(clave) {
+  const c = cache_();
+  const n = parseInt(c.get(clave) || '0', 10);
+  if (!n) return null;
+  const claves = [];
+  for (let i = 0; i < n; i++) claves.push(clave + '#' + i);
+  const trozos = c.getAll(claves);
+  let txt = '';
+  for (let i = 0; i < n; i++) { if (trozos[claves[i]] == null) return null; txt += trozos[claves[i]]; }
+  try { return JSON.parse(txt); } catch (e) { return null; }
+}
+
+function cacheGuardar_(clave, valor, seg) {
+  try {
+    const txt = JSON.stringify(valor);
+    const obj = {};
+    let n = 0;
+    for (let i = 0; i < txt.length; i += TROZO) obj[clave + '#' + (n++)] = txt.slice(i, i + TROZO);
+    if (n > 400) return; // demasiado grande: no merece la pena
+    cache_().putAll(obj, seg);
+    cache_().put(clave, String(n), seg);
+  } catch (e) { /* la caché es sólo una ayuda */ }
+}
+
 function ajustes_() {
   if (MEMO.ajustes) return MEMO.ajustes;
   const a = {};
   AJUSTES_INICIALES.forEach(function (x) { a[x[0]] = x[1]; });
-  tabla_(HOJA.AJUSTES).forEach(function (r) { if (r.CLAVE) a[r.CLAVE] = r.VALOR; });
+  tablaConfig_(HOJA.AJUSTES).forEach(function (r) { if (r.CLAVE) a[r.CLAVE] = r.VALOR; });
   MEMO.ajustes = a;
   return a;
 }
 
 function profesores_() {
   if (!MEMO.profesores) {
-    MEMO.profesores = tabla_(HOJA.PROFESORES).map(function (p) {
+    MEMO.profesores = tablaConfig_(HOJA.PROFESORES).map(function (p) {
+      p = Object.assign({}, p);
       p.EMAIL = String(p.EMAIL || '').trim();
       p.ROL = String(p.ROL || 'EDITOR').trim().toUpperCase();
       return p;
@@ -515,7 +611,7 @@ function profesores_() {
 
 function campos_() {
   if (MEMO.campos) return MEMO.campos;
-  const lista = tabla_(HOJA.CAMPOS).filter(function (c) { return c.CLAVE; }).map(function (c) {
+  const lista = tablaConfig_(HOJA.CAMPOS).filter(function (c) { return c.CLAVE; }).map(function (c) {
     return {
       clave: String(c.CLAVE).trim(),
       etiqueta: c.ETIQUETA || c.CLAVE,
@@ -550,8 +646,14 @@ function columnasListado_() {
 /** {CLAVE: número de columna} de la hoja Alumnos. */
 function mapaColumnas_(h) {
   if (MEMO.mapa) return MEMO.mapa;
-  const lastCol = h.getLastColumn();
-  const cab = lastCol ? h.getRange(1, 1, 1, lastCol).getDisplayValues()[0] : [];
+  let cab = null;
+  const k = MEMO.usarCache ? 'cab_' + h.getParent().getId() + '_' + versionDatos_(h) : '';
+  if (k) cab = cacheLeer_(k);
+  if (!cab) {
+    const lastCol = h.getLastColumn();
+    cab = lastCol ? h.getRange(1, 1, 1, lastCol).getDisplayValues()[0] : [];
+    if (k) cacheGuardar_(k, cab, SEG_DATOS);
+  }
   const m = {};
   cab.forEach(function (c, i) { c = String(c).trim(); if (c && !m[c]) m[c] = i + 1; });
   MEMO.mapa = m;
@@ -573,6 +675,7 @@ function asegurarColumnas_(h) {
     h.getRange(1, col + 1, 1, faltan.length).setValues([faltan]).setFontWeight('bold').setBackground('#1f2a44').setFontColor('#ffffff');
     delete MEMO.mapa;
     MEMO.formatoPendiente = true;
+    tocarDatos_(h);
     return mapaColumnas_(h);
   }
   return mapa;
@@ -580,6 +683,29 @@ function asegurarColumnas_(h) {
 
 /** Lee varias columnas completas de Alumnos: {CLAVE: [valores…]} (n = nº de filas de datos). */
 function leerColumnas_(h, mapa, claves) {
+  claves = claves.filter(function (k, i) { return claves.indexOf(k) === i; });
+  if (!MEMO.usarCache || h.getName() !== HOJA.ALUMNOS) return leerColumnasHoja_(h, mapa, claves);
+  // Con caché: cada columna se guarda aparte; sólo se leen de la hoja las que falten.
+  const base = 'col_' + h.getParent().getId() + '_' + versionDatos_(h) + '_';
+  let n = parseInt(cache_().get(base + '_n') || '-1', 10);
+  const out = {};
+  const faltan = [];
+  claves.forEach(function (k) {
+    const v = n >= 0 ? cacheLeer_(base + k) : null;
+    if (v && v.length === n) out[k] = v; else faltan.push(k);
+  });
+  if (faltan.length) {
+    const leidas = leerColumnasHoja_(h, mapa, faltan);
+    if (n >= 0 && leidas._n !== n) return leerColumnasHoja_(h, mapa, claves); // la hoja cambió por fuera
+    n = leidas._n;
+    cache_().put(base + '_n', String(n), SEG_DATOS);
+    faltan.forEach(function (k) { out[k] = leidas[k]; if (mapa[k]) cacheGuardar_(base + k, leidas[k], SEG_DATOS); });
+  }
+  out._n = Math.max(n, 0);
+  return out;
+}
+
+function leerColumnasHoja_(h, mapa, claves) {
   const n = h.getLastRow() - 1;
   const out = { _n: Math.max(n, 0) };
   claves = claves.filter(function (k, i) { return claves.indexOf(k) === i; });
@@ -629,13 +755,14 @@ function escribirFila_(h, fila, obj) {
     return v;
   });
   h.getRange(fila, 1, 1, cab.length).setValues([fila1]);
+  tocarDatos_(h);
 }
 
 /** Fila de un expediente a partir de su identificador interno permanente (_UID). */
 function filaDeId_(h, mapa, uid) {
   const ids = leerColumnas_(h, mapa, ['_UID'])._UID;
   const i = ids.indexOf(String(uid));
-  if (i < 0) throw new Error('No se encuentra el expediente ' + id + '.');
+  if (i < 0) throw new Error('No se encuentra el expediente ' + uid + '.');
   return i + 2;
 }
 
@@ -1140,6 +1267,12 @@ function nuevoUid_(uids) {
  * Devuelve el nº de expedientes numerados.
  */
 function ordenar_(h) {
+  const conCache = MEMO.usarCache;
+  MEMO.usarCache = false;
+  try { return ordenarSinCache_(h); } finally { MEMO.usarCache = conCache; }
+}
+
+function ordenarSinCache_(h) {
   const mapa = asegurarColumnas_(h);
   const c = leerColumnas_(h, mapa, ['ID', '_UID', 'APELLIDOS', 'NOMBRE', '_BORRADO', '_ORDEN', '_CLAVE', '_FONETICA']);
   const n = c._n;
@@ -1178,6 +1311,7 @@ function ordenar_(h) {
   Object.keys(tocadas).forEach(function (k) {
     h.getRange(2, mapa[k], n, 1).setValues(c[k].map(function (v) { return [v]; }));
   });
+  if (Object.keys(tocadas).length) tocarDatos_(h);
   // ¿Están ya las filas en su sitio? Si no, se ordena la hoja por el ID (los de la papelera, sin ID, al final).
   let enOrden = true;
   for (let j = 0; j < filas.length; j++) { if (filas[j].i !== j) { enOrden = false; break; } }
@@ -1193,6 +1327,7 @@ function ordenar_(h) {
       v.sort(function (a, b) { return a.p - b.p; });
       rango.setValues(v.map(function (x) { return x.r; }));
     }
+    tocarDatos_(h);
   }
   return num;
 }
@@ -1208,7 +1343,10 @@ function ordenarAhora_(d, u) {
   const lock = LockService.getScriptLock();
   lock.waitLock(60000);
   let n;
-  try { n = enCadaEpoca_(function () { return ordenar_(hojaAlumnos_()); }).reduce(function (a, b) { return a + b; }, 0); } finally { lock.releaseLock(); }
+  try {
+    n = enCadaEpoca_(function () { const h = hojaAlumnos_(); const k = ordenar_(h); tocarDatos_(h); return k; }).reduce(function (a, b) { return a + b; }, 0);
+  } finally { lock.releaseLock(); }
+  invalidarConfig_();
   registrar_(u, 'ORDENAR', '', 'Hojas ordenadas y numeradas: ' + n + ' expedientes');
   return { total: n };
 }
@@ -1305,6 +1443,20 @@ function marcarBorrado_(d, u, borrar) {
 
 /** Resumen de cada época para la portada del archivo. */
 function portada_(d, u) {
+  // Se calcula para todas las épocas y se guarda 5 min; al público sólo se le muestran las públicas.
+  let todas = null;
+  try { const t = cache_().get('portada'); if (t) todas = JSON.parse(t); } catch (e) { todas = null; }
+  if (!todas) {
+    const soloPub = MEMO.soloPublicas;
+    MEMO.soloPublicas = false;
+    try { todas = portadaCalcular_(); } finally { MEMO.soloPublicas = soloPub; }
+    try { cache_().put('portada', JSON.stringify(todas), 300); } catch (e) { /* nada */ }
+  }
+  const visibles = epocas_().map(function (e) { return e.CODIGO; });
+  return todas.filter(function (e) { return visibles.indexOf(e.CODIGO) >= 0; });
+}
+
+function portadaCalcular_() {
   return enCadaEpoca_(function (e) {
     const h = hojaAlumnos_();
     const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', '_BORRADO', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE']);
@@ -1358,7 +1510,7 @@ function crearEpoca_(d, u) {
     if (hCp.getMaxColumns() > 6) hCp.deleteColumns(7, hCp.getMaxColumns() - 6);
     const prefijo = String(d.PREFIJO || ('GOYA' + (String(d.DESDE || '').trim() || codigo) + '-')).trim().toUpperCase();
     hoja_(HOJA.EPOCAS).appendRow([codigo, nombre, String(d.DESDE || ''), String(d.HASTA || ''), prefijo, 'ABIERTA', libro.getId(), String(d.DESCRIPCION || ''), 'NO']);
-    delete MEMO.epocas;
+    invalidarConfig_();
     usarEpoca_(codigo);
     const h = hojaAlumnos_();
     asegurarColumnas_(h);
@@ -1384,7 +1536,7 @@ function guardarEpoca_(d, u) {
   h.getRange(e._fila, 8, 1, 2).setValues([[String(d.DESCRIPCION || ''), si_(d.PUBLICA) ? 'SÍ' : 'NO']]);
   registrar_(u, 'ÉPOCA', '', 'Modificada ' + e.CODIGO + ': «' + nombre + '» ' + d.DESDE + '–' + d.HASTA + ' · ' + estado +
     ' · consulta pública: ' + (si_(d.PUBLICA) ? 'SÍ' : 'NO'));
-  delete MEMO.epocas;
+  invalidarConfig_();
   return epocas_().map(function (x) { const y = Object.assign({}, x); delete y.ID_HOJA; delete y._fila; return y; });
 }
 
@@ -1549,11 +1701,11 @@ function guardarCampo_(d, u) {
     const orden = lista.reduce(function (m, x) { return Math.max(m, x.orden < 999 ? x.orden : 0); }, 0) + 1;
     h.appendRow([clave, etiqueta, tipo, opciones.join('\n'), d.obligatorio ? 'SÍ' : 'NO', String(d.seccion || 'Otros datos').trim(),
       orden, String(d.ayuda || '').trim(), d.enListados ? 'SÍ' : 'NO', 'SÍ', 'NO']);
-    delete MEMO.campos;
+    invalidarConfig_();
     enCadaEpoca_(function () { asegurarColumnas_(hojaAlumnos_()); formatoSiHaceFalta_(); });
     registrar_(u, 'CAMPO', '', 'Nuevo campo ' + clave + ' («' + etiqueta + '», ' + tipo + ')');
   }
-  delete MEMO.campos;
+  invalidarConfig_();
   return campos_();
 }
 
@@ -1565,7 +1717,7 @@ function moverCampo_(d, u) {
   const tmp = lista[i]; lista[i] = lista[j]; lista[j] = tmp;
   const h = hoja_(HOJA.CAMPOS);
   lista.forEach(function (c, k) { if (c.orden !== k + 1) h.getRange(c._fila, 7).setValue(k + 1); });
-  delete MEMO.campos;
+  invalidarConfig_();
   return campos_();
 }
 
@@ -1583,6 +1735,10 @@ function guardarProfesor_(d, u) {
     if (email && p.EMAIL.toLowerCase() === email) throw new Error('Ese correo ya está dado de alta (' + p.NOMBRE + ').');
     if (p.NOMBRE.trim().toUpperCase() === nombre.toUpperCase()) throw new Error('Ya existe un profesor/a con ese nombre.');
   });
+  const codigo = String(d.CODIGO_ACCESO || '').trim();
+  if (codigo && (codigo.length < 8 || !/[A-Za-z]/.test(codigo) || !/\d/.test(codigo))) {
+    throw new Error('El código de acceso debe tener al menos 8 caracteres, con letras y números. Pulsa «Generar» para crear uno seguro.');
+  }
   const activo = d.ACTIVO === false || d.ACTIVO === 'NO' ? 'NO' : 'SÍ';
   if (fila && email === u.email && (rol !== 'ADMIN' || activo === 'NO')) {
     throw new Error('No puedes quitarte a ti mismo/a el rol de administración.');
@@ -1592,7 +1748,7 @@ function guardarProfesor_(d, u) {
   if (fila) h.getRange(fila, 1, 1, 6).setValues([valores]);
   else h.appendRow(valores);
   registrar_(u, 'PROFESOR', '', (fila ? 'Modificado: ' : 'Alta: ') + nombre + ' <' + email + '> · ' + rol + (activo === 'NO' ? ' · INACTIVO' : ''));
-  delete MEMO.profesores;
+  invalidarConfig_();
   return profesores_();
 }
 
@@ -1602,7 +1758,7 @@ function borrarProfesor_(d, u) {
   if (p.EMAIL.toLowerCase() === u.email) throw new Error('No puedes borrarte a ti mismo/a.');
   hoja_(HOJA.PROFESORES).deleteRow(p._fila);
   registrar_(u, 'PROFESOR', '', 'Baja: ' + p.NOMBRE + ' <' + p.EMAIL + '>');
-  delete MEMO.profesores;
+  invalidarConfig_();
   return profesores_();
 }
 
@@ -1618,7 +1774,7 @@ function guardarAjustes_(d, u) {
     if (f) { if (f.VALOR !== v) { h.getRange(f._fila, 2).setValue(v); cambios.push(k + '=' + v); } }
     else { h.appendRow([k, v, a[2]]); cambios.push(k + '=' + v); }
   });
-  delete MEMO.ajustes;
+  invalidarConfig_();
   if (d.COPIA_AUTOMATICA !== undefined) configurarCopiaAutomatica_(si_(d.COPIA_AUTOMATICA));
   if (cambios.length) registrar_(u, 'AJUSTES', '', cambios.join(' | '));
   return ajustes_();
@@ -1746,6 +1902,8 @@ function pedirPermisos_() {
 
 function instalar() {
   pedirPermisos_();
+  invalidarConfig_();
+  MEMO.sinCacheConfig = true;
   const ss = ss_();
   PropertiesService.getScriptProperties().setProperty('SS_ID', ss.getId());
   let propietario = '';
@@ -1774,7 +1932,7 @@ function instalar() {
   }
   validarLista_(hEp, 6, ['ABIERTA', 'CERRADA']);
   validarLista_(hEp, 9, ['SÍ', 'NO']);
-  delete MEMO.epocas;
+  invalidarConfig_();
   usarEpoca_('XIX');
 
   console.log('2/7 Campos del formulario');
@@ -1786,13 +1944,13 @@ function instalar() {
     if (caExist.indexOf(c[0]) >= 0) return;
     hCa.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(i + 1), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
   });
-  delete MEMO.campos;
+  invalidarConfig_();
 
   console.log('3/7 Profesores');
   // Profesores
   const hPr = crearHoja_(ss, HOJA.PROFESORES, CABECERAS.Profesores);
   hPr.getRange(1, 1, hPr.getMaxRows(), 6).setNumberFormat('@');
-  delete MEMO.profesores;
+  invalidarConfig_();
   if (propietario && !profesores_().some(function (p) { return p.EMAIL.toLowerCase() === propietario; })) {
     hPr.appendRow([propietario.split('@')[0].toUpperCase(), propietario, 'ADMIN', 'SÍ', '', 'Coordinación (propietaria de la hoja)']);
   }
