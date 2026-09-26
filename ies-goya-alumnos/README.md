@@ -52,6 +52,17 @@ La app es el **Archivo histórico del IES Goya**, con una **portada** que muestr
   - Los borrados van a la papelera.
   - Google guarda el historial de versiones de la hoja (*Archivo → Historial de versiones*), y puedes activar la copia semanal en Drive.
 
+## Consulta pública (ver sin poder editar)
+
+Cada época tiene un interruptor **«Consulta pública»** en *Coordinación → Épocas del archivo → ✏*. Si está activado, **cualquier persona** que abra la app puede buscar y ver los expedientes de esa época, **sin iniciar sesión ni código**, pero no puede cambiar nada.
+
+- **Qué ven los visitantes:** portada, búsqueda, índice alfabético y fichas.
+- **Qué no ven:** correos del profesorado, historial, carpetas de trabajo y papelera.
+- **Cómo entra el profesorado:** con el botón **«Acceso profesorado»** (correo y código de acceso), o directamente si Google les reconoce con su cuenta del instituto.
+- **Épocas no públicas:** siguen siendo sólo para las personas dadas de alta en *Profesores y permisos*.
+- ⚠️ **Protección de datos:** activa la consulta pública sólo en épocas antiguas, como el siglo XIX. Los expedientes de personas que pueden estar vivas están protegidos por el RGPD y **no deben publicarse**. Por eso cada época se decide por separado y el interruptor viene apagado.
+- Para que la consulta pública funcione, la app debe estar publicada con **Who has access: Anyone**.
+
 ## Capacidad: ¿cabe todo el archivo?
 
 Unos 1000 alumnos al año desde 1845 dan unos **181 000 expedientes** hasta hoy.

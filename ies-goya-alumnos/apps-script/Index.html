@@ -44,6 +44,7 @@
       </div>
       <div class="alert alert-danger py-2 small d-none" id="login-error"></div>
       <button class="btn btn-primary w-100 py-2" type="submit" id="login-boton"><i class="bi bi-box-arrow-in-right me-1"></i> Entrar</button>
+      <button class="btn btn-link w-100 mt-2 d-none" type="button" id="login-volver">Volver a la consulta pública</button>
     </form>
   </div>
 
@@ -67,7 +68,8 @@
         <div class="titulo" data-nombre-app>Archivo histórico del IES Goya</div>
         <div class="subtitulo" id="subtitulo-app"></div>
       </div>
-      <div class="dropdown">
+      <button class="btn btn-sm btn-outline-light d-none" id="btn-acceso-prof"><i class="bi bi-person-lock me-1"></i> Acceso profesorado</button>
+      <div class="dropdown" id="menu-usuario">
         <button class="chip-usuario border-0" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="d-none d-sm-inline text-start lh-sm">
             <span class="d-block small fw-semibold" id="usuario-nombre"></span>
@@ -95,11 +97,11 @@
           <select id="sel-epoca" class="form-select form-select-sm"></select>
         </div>
         <div class="grupo">Trabajo en esta época</div>
-        <a href="#" data-ir="inicio"><i class="bi bi-speedometer2"></i> Resumen</a>
+        <a href="#" data-ir="inicio" data-rol="LECTOR"><i class="bi bi-speedometer2"></i> Resumen</a>
         <a href="#" data-ir="nuevo" data-rol="EDITOR"><i class="bi bi-plus-square"></i> Nuevo expediente</a>
         <a href="#" data-ir="buscar"><i class="bi bi-search"></i> Buscar expedientes</a>
         <a href="#" data-ir="indice"><i class="bi bi-sort-alpha-down"></i> Índice alfabético</a>
-        <a href="#" data-ir="carpetas"><i class="bi bi-folder2-open"></i> Carpetas</a>
+        <a href="#" data-ir="carpetas" data-rol="LECTOR"><i class="bi bi-folder2-open"></i> Carpetas</a>
         <div data-rol="ADMIN">
           <div class="grupo">Coordinación</div>
           <a href="#" data-ir="epocas"><i class="bi bi-hourglass-split"></i> Épocas del archivo</a>
@@ -108,8 +110,10 @@
           <a href="#" data-ir="historial"><i class="bi bi-clock-history"></i> Historial de cambios</a>
           <a href="#" data-ir="ajustes"><i class="bi bi-gear"></i> Ajustes y copias</a>
         </div>
-        <div class="grupo">Ayuda</div>
-        <a href="#" data-ir="ayuda"><i class="bi bi-question-circle"></i> Cómo trabajar</a>
+        <div data-rol="LECTOR">
+          <div class="grupo">Ayuda</div>
+          <a href="#" data-ir="ayuda"><i class="bi bi-question-circle"></i> Cómo trabajar</a>
+        </div>
         <div class="pie">Los datos se guardan en una hoja de cálculo de Google. Cada cambio queda registrado con su autor y fecha.</div>
       </nav>
       <div class="velo" id="velo"></div>

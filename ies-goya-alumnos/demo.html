@@ -220,6 +220,7 @@
       </div>
       <div class="alert alert-danger py-2 small d-none" id="login-error"></div>
       <button class="btn btn-primary w-100 py-2" type="submit" id="login-boton"><i class="bi bi-box-arrow-in-right me-1"></i> Entrar</button>
+      <button class="btn btn-link w-100 mt-2 d-none" type="button" id="login-volver">Volver a la consulta pública</button>
     </form>
   </div>
 
@@ -243,7 +244,8 @@
         <div class="titulo" data-nombre-app>Archivo histórico del IES Goya</div>
         <div class="subtitulo" id="subtitulo-app"></div>
       </div>
-      <div class="dropdown">
+      <button class="btn btn-sm btn-outline-light d-none" id="btn-acceso-prof"><i class="bi bi-person-lock me-1"></i> Acceso profesorado</button>
+      <div class="dropdown" id="menu-usuario">
         <button class="chip-usuario border-0" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="d-none d-sm-inline text-start lh-sm">
             <span class="d-block small fw-semibold" id="usuario-nombre"></span>
@@ -271,11 +273,11 @@
           <select id="sel-epoca" class="form-select form-select-sm"></select>
         </div>
         <div class="grupo">Trabajo en esta época</div>
-        <a href="#" data-ir="inicio"><i class="bi bi-speedometer2"></i> Resumen</a>
+        <a href="#" data-ir="inicio" data-rol="LECTOR"><i class="bi bi-speedometer2"></i> Resumen</a>
         <a href="#" data-ir="nuevo" data-rol="EDITOR"><i class="bi bi-plus-square"></i> Nuevo expediente</a>
         <a href="#" data-ir="buscar"><i class="bi bi-search"></i> Buscar expedientes</a>
         <a href="#" data-ir="indice"><i class="bi bi-sort-alpha-down"></i> Índice alfabético</a>
-        <a href="#" data-ir="carpetas"><i class="bi bi-folder2-open"></i> Carpetas</a>
+        <a href="#" data-ir="carpetas" data-rol="LECTOR"><i class="bi bi-folder2-open"></i> Carpetas</a>
         <div data-rol="ADMIN">
           <div class="grupo">Coordinación</div>
           <a href="#" data-ir="epocas"><i class="bi bi-hourglass-split"></i> Épocas del archivo</a>
@@ -284,8 +286,10 @@
           <a href="#" data-ir="historial"><i class="bi bi-clock-history"></i> Historial de cambios</a>
           <a href="#" data-ir="ajustes"><i class="bi bi-gear"></i> Ajustes y copias</a>
         </div>
-        <div class="grupo">Ayuda</div>
-        <a href="#" data-ir="ayuda"><i class="bi bi-question-circle"></i> Cómo trabajar</a>
+        <div data-rol="LECTOR">
+          <div class="grupo">Ayuda</div>
+          <a href="#" data-ir="ayuda"><i class="bi bi-question-circle"></i> Cómo trabajar</a>
+        </div>
         <div class="pie">Los datos se guardan en una hoja de cálculo de Google. Cada cambio queda registrado con su autor y fecha.</div>
       </nav>
       <div class="velo" id="velo"></div>
@@ -631,7 +635,7 @@ const META = ['ID', '_BORRADO', '_CREADO_EN', '_CREADO_POR', '_MODIFICADO_EN', '
 const META_OCULTAS = ['_UID', '_ORDEN', '_CLAVE', '_FONETICA', '_VERSION'];
 
 const CABECERAS = {
-  Epocas: ['CODIGO', 'NOMBRE', 'DESDE', 'HASTA', 'PREFIJO', 'ESTADO', 'ID_HOJA', 'DESCRIPCION'],
+  Epocas: ['CODIGO', 'NOMBRE', 'DESDE', 'HASTA', 'PREFIJO', 'ESTADO', 'ID_HOJA', 'DESCRIPCION', 'PUBLICA'],
   Campos: ['CLAVE', 'ETIQUETA', 'TIPO', 'OPCIONES', 'OBLIGATORIO', 'SECCION', 'ORDEN', 'AYUDA', 'EN_LISTADOS', 'ACTIVO', 'SISTEMA'],
   Profesores: ['NOMBRE', 'EMAIL', 'ROL', 'ACTIVO', 'CODIGO_ACCESO', 'NOTAS'],
   Carpetas: ['NUMERO', 'DESDE', 'HASTA', 'ESTADO', 'ASIGNADA_A', 'NOTAS'],
@@ -640,7 +644,8 @@ const CABECERAS = {
 };
 
 const TIPOS = ['texto', 'texto_largo', 'numero', 'fecha', 'seleccion', 'si_no', 'profesor', 'carpeta', 'pais', 'provincia', 'localidad'];
-const ROLES = { NINGUNO: 0, LECTOR: 1, EDITOR: 2, ADMIN: 3 };
+/** PUBLICO = visitante sin identificar que consulta épocas marcadas como públicas (sólo ver). */
+const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
 const ESTADOS_CARPETA = ['PENDIENTE', 'EN CURSO', 'TERMINADA'];
 
 // clave, etiqueta, tipo, opciones, obligatorio, sección, ayuda, en listados, sistema
@@ -757,6 +762,7 @@ function api(accion, datos, token) {
     if (!def) throw new Error('Acción no reconocida: ' + accion);
     const u = usuarioActual_(token);
     if (ROLES[u.rol] < ROLES[def.rol]) {
+      if (u.rol === 'PUBLICO') throw new Error('Esto es sólo para el profesorado. Pulsa «Acceso profesorado» (arriba a la derecha) para entrar.');
       if (!u.identificado) return JSON.stringify({ ok: false, sesion: true, error: 'La sesión ha caducado. Vuelve a entrar.' });
       throw new Error('No tienes permiso para esta operación.');
     }
@@ -775,9 +781,9 @@ const ACCIONES = {
   login:               { rol: 'NINGUNO', fn: login_ },
   logout:              { rol: 'NINGUNO', fn: logout_ },
   inicio:              { rol: 'LECTOR',  fn: inicio_ },
-  consultar:           { rol: 'LECTOR',  fn: consultar_ },
+  consultar:           { rol: 'PUBLICO', fn: consultar_ },
   exportar:            { rol: 'ADMIN',   fn: exportar_ },  // descargar la base entera: sólo coordinación
-  obtener:             { rol: 'LECTOR',  fn: obtener_ },
+  obtener:             { rol: 'PUBLICO', fn: obtener_ },
   comprobarDuplicados: { rol: 'LECTOR',  fn: comprobarDuplicados_ },
   localidadesUsadas:   { rol: 'LECTOR',  fn: localidadesUsadas_ },
   carpetas:            { rol: 'LECTOR',  fn: carpetasConRecuento_ },
@@ -797,7 +803,7 @@ const ACCIONES = {
   borrarCarpeta:       { rol: 'ADMIN',   fn: borrarCarpeta_ },
   guardarAjustes:      { rol: 'ADMIN',   fn: guardarAjustes_ },
   copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } },
-  portada:             { rol: 'LECTOR',  fn: portada_ },
+  portada:             { rol: 'PUBLICO', fn: portada_ },
   crearEpoca:          { rol: 'ADMIN',   fn: crearEpoca_ },
   guardarEpoca:        { rol: 'ADMIN',   fn: guardarEpoca_ },
   ordenarAhora:        { rol: 'ADMIN',   fn: ordenarAhora_ },
@@ -843,8 +849,16 @@ function usuarioActual_(token) {
       if (!u.nombre) u.nombre = email;
     }
   }
+  // Visitante sin identificar (o con una cuenta que no está en la lista): consulta pública si hay
+  // alguna época abierta al público. Sólo ve esas épocas y nunca puede modificar nada.
+  if (u.rol === 'NINGUNO' && hayConsultaPublica_()) u.rol = 'PUBLICO';
   MEMO.usuario = u;
+  if (u.rol === 'PUBLICO') MEMO.soloPublicas = true;
   return u;
+}
+
+function hayConsultaPublica_() {
+  try { return epocasTodas_().some(function (e) { return e.PUBLICA; }); } catch (e) { return false; }
 }
 
 function login_(d) {
@@ -874,13 +888,14 @@ function logout_(d, u) {
 
 function arranque_(d, u) {
   const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado } };
-  if (!u.identificado || u.rol === 'NINGUNO') return r;
+  if (u.rol === 'NINGUNO') return r;
   r.ajustes = ajustes_();
   r.campos = campos_();
   r.epocas = epocas_().map(function (e) { const x = Object.assign({}, e); delete x.ID_HOJA; delete x._fila; return x; });
+  r.consultaPublica = hayConsultaPublica_();
   r.epoca = epocaActual_().CODIGO;
   r.carpetas = carpetasLista_();
-  const profes = profesores_();
+  const profes = u.rol === 'PUBLICO' ? [] : profesores_();
   r.profesores = u.rol === 'ADMIN' ? profes : profes.filter(function (p) { return si_(p.ACTIVO); })
     .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO, ROL: p.ROL }; });
   if (u.rol === 'ADMIN') {
@@ -929,7 +944,13 @@ function hoja_(nombre) {
 //  (el siglo XIX, en la propia hoja central). Así cada época tiene su propia capacidad.
 // ---------------------------------------------------------------------
 
+/** Épocas que puede ver quien usa la app (el público, sólo las marcadas como públicas). */
 function epocas_() {
+  const todas = epocasTodas_();
+  return MEMO.soloPublicas ? todas.filter(function (e) { return e.PUBLICA; }) : todas;
+}
+
+function epocasTodas_() {
   if (MEMO.epocas) return MEMO.epocas;
   let lista = [];
   if (ss_().getSheetByName(HOJA.EPOCAS)) {
@@ -937,14 +958,14 @@ function epocas_() {
       return {
         CODIGO: String(e.CODIGO).trim().toUpperCase(), NOMBRE: e.NOMBRE || e.CODIGO, DESDE: e.DESDE || '', HASTA: e.HASTA || '',
         PREFIJO: String(e.PREFIJO || '').trim().toUpperCase(), ESTADO: e.ESTADO || 'ABIERTA', ID_HOJA: String(e.ID_HOJA || '').trim(),
-        DESCRIPCION: e.DESCRIPCION || '', _fila: e._fila
+        DESCRIPCION: e.DESCRIPCION || '', PUBLICA: si_(e.PUBLICA), _fila: e._fila
       };
     });
     lista.sort(function (a, b) { return (parseInt(a.DESDE, 10) || 0) - (parseInt(b.DESDE, 10) || 0); });
   }
   if (!lista.length) {
     // Instalaciones anteriores a las épocas: todo es el siglo XIX, en la hoja central.
-    lista = [{ CODIGO: 'XIX', NOMBRE: 'Siglo XIX', DESDE: '1845', HASTA: '1900', PREFIJO: '', ESTADO: 'ABIERTA', ID_HOJA: '', DESCRIPCION: '' }];
+    lista = [{ CODIGO: 'XIX', NOMBRE: 'Siglo XIX', DESDE: '1845', HASTA: '1900', PREFIJO: '', ESTADO: 'ABIERTA', ID_HOJA: '', DESCRIPCION: '', PUBLICA: false }];
   }
   MEMO.epocas = lista;
   return lista;
@@ -958,6 +979,7 @@ function epocaDeUid_(uid) {
 
 function usarEpoca_(codigo) {
   const lista = epocas_();
+  if (!lista.length) throw new Error('No hay épocas disponibles.');
   const e = lista.find(function (x) { return x.CODIGO === String(codigo || '').toUpperCase(); }) || lista[0];
   if (MEMO.epoca !== e) {
     MEMO.epoca = e;
@@ -975,6 +997,7 @@ function libroEpoca_() {
   const e = epocaActual_();
   let libro = ss_();
   if (e.ID_HOJA && e.ID_HOJA !== libro.getId()) {
+    // (el público sólo llega aquí con épocas públicas: epocas_() ya las filtra)
     try { libro = SpreadsheetApp.openById(e.ID_HOJA); } catch (err) {
       throw new Error('No se puede abrir el archivo de la época «' + e.NOMBRE + '»: ' + err.message);
     }
@@ -1456,6 +1479,11 @@ function obtener_(d, u) {
   const reg = leerFila_(h, i + 2);
   delete reg._fila;
   reg.ID = c.ID[i];
+  if (u.rol === 'PUBLICO') {
+    if (si_(reg._BORRADO)) throw new Error('No se encuentra el expediente.');
+    ['_CREADO_POR', '_MODIFICADO_POR', '_CREADO_EN', '_MODIFICADO_EN', '_CLAVE', '_FONETICA', '_ORDEN', '_VERSION'].forEach(function (k) { delete reg[k]; });
+    return { registro: reg, puedeEditar: false, bloqueo: null, publico: true };
+  }
   let bloqueo = null;
   try {
     const b = CacheService.getScriptCache().get('edit_' + reg._UID);
@@ -1895,7 +1923,7 @@ function crearEpoca_(d, u) {
     validarLista_(hCp, 4, ESTADOS_CARPETA);
     if (hCp.getMaxColumns() > 6) hCp.deleteColumns(7, hCp.getMaxColumns() - 6);
     const prefijo = String(d.PREFIJO || ('GOYA' + (String(d.DESDE || '').trim() || codigo) + '-')).trim().toUpperCase();
-    hoja_(HOJA.EPOCAS).appendRow([codigo, nombre, String(d.DESDE || ''), String(d.HASTA || ''), prefijo, 'ABIERTA', libro.getId(), String(d.DESCRIPCION || '')]);
+    hoja_(HOJA.EPOCAS).appendRow([codigo, nombre, String(d.DESDE || ''), String(d.HASTA || ''), prefijo, 'ABIERTA', libro.getId(), String(d.DESCRIPCION || ''), 'NO']);
     delete MEMO.epocas;
     usarEpoca_(codigo);
     const h = hojaAlumnos_();
@@ -1919,8 +1947,9 @@ function guardarEpoca_(d, u) {
   const estado = d.ESTADO === 'CERRADA' ? 'CERRADA' : 'ABIERTA';
   h.getRange(e._fila, 2, 1, 5).setValues([[nombre, String(d.DESDE || ''), String(d.HASTA || ''),
     String(d.PREFIJO || e.PREFIJO || 'GOYA').trim().toUpperCase(), estado]]);
-  h.getRange(e._fila, 8).setValue(String(d.DESCRIPCION || ''));
-  registrar_(u, 'ÉPOCA', '', 'Modificada ' + e.CODIGO + ': «' + nombre + '» ' + d.DESDE + '–' + d.HASTA + ' · ' + estado);
+  h.getRange(e._fila, 8, 1, 2).setValues([[String(d.DESCRIPCION || ''), si_(d.PUBLICA) ? 'SÍ' : 'NO']]);
+  registrar_(u, 'ÉPOCA', '', 'Modificada ' + e.CODIGO + ': «' + nombre + '» ' + d.DESDE + '–' + d.HASTA + ' · ' + estado +
+    ' · consulta pública: ' + (si_(d.PUBLICA) ? 'SÍ' : 'NO'));
   delete MEMO.epocas;
   return epocas_().map(function (x) { const y = Object.assign({}, x); delete y.ID_HOJA; delete y._fila; return y; });
 }
@@ -2301,9 +2330,16 @@ function instalar() {
   hEp.getRange(1, 1, hEp.getMaxRows(), CABECERAS.Epocas.length).setNumberFormat('@');
   if (!tabla_(HOJA.EPOCAS).some(function (e) { return String(e.CODIGO).trim(); })) {
     hEp.appendRow(['XIX', 'Siglo XIX', '1845', '1900', ajustes_().PREFIJO_ID || 'GOYA', 'ABIERTA', ss.getId(),
-      'Expedientes de los alumnos que ingresaron en el Instituto entre 1845 y 1900.']);
+      'Expedientes de los alumnos que ingresaron en el Instituto entre 1845 y 1900.', 'NO']);
+  }
+  // Instalaciones anteriores: añadir la columna PUBLICA si falta.
+  const cabEp = hEp.getRange(1, 1, 1, Math.max(hEp.getLastColumn(), 1)).getDisplayValues()[0];
+  if (cabEp.indexOf('PUBLICA') < 0) {
+    if (hEp.getMaxColumns() < 9) hEp.insertColumnsAfter(hEp.getMaxColumns(), 9 - hEp.getMaxColumns());
+    hEp.getRange(1, 9).setValue('PUBLICA').setFontWeight('bold').setBackground('#1f2a44').setFontColor('#ffffff');
   }
   validarLista_(hEp, 6, ['ABIERTA', 'CERRADA']);
+  validarLista_(hEp, 9, ['SÍ', 'NO']);
   delete MEMO.epocas;
   usarEpoca_('XIX');
 
@@ -2580,7 +2616,7 @@ function formatoConfig_() {
   hh.setTabColor(COLOR.tinta);
   cabeceraConfig_(hoja_(HOJA.AJUSTES), [200, 260, 560]);
   if (ss_().getSheetByName(HOJA.EPOCAS)) {
-    cabeceraConfig_(hoja_(HOJA.EPOCAS), [110, 220, 70, 70, 130, 100, 330, 420]);
+    cabeceraConfig_(hoja_(HOJA.EPOCAS), [110, 220, 70, 70, 130, 100, 330, 420, 90]);
     hoja_(HOJA.EPOCAS).setTabColor(COLOR.granate);
   }
   [HOJA.CAMPOS, HOJA.PROFESORES, HOJA.AJUSTES].forEach(function (n) { hoja_(n).setTabColor(COLOR.tinta); });
@@ -2632,13 +2668,13 @@ const S = {
   indice: { letra: 'A', pagina: 1 }
 };
 
-const ROLES = { NINGUNO: 0, LECTOR: 1, EDITOR: 2, ADMIN: 3 };
+const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
 const TIPOS = {
   texto: 'Texto corto', texto_largo: 'Texto largo', numero: 'Número', fecha: 'Fecha (dd/mm/aaaa, mm/aaaa o año)',
   seleccion: 'Lista de opciones', si_no: 'Sí / No', profesor: 'Profesor/a (lista)', carpeta: 'Carpeta (lista)',
   pais: 'País', provincia: 'Provincia', localidad: 'Localidad'
 };
-const NOMBRES_ROL = { ADMIN: 'Coordinación', EDITOR: 'Editor/a', LECTOR: 'Sólo consulta' };
+const NOMBRES_ROL = { ADMIN: 'Coordinación', EDITOR: 'Editor/a', LECTOR: 'Sólo consulta', PUBLICO: 'Consulta pública' };
 
 /* ---------- Utilidades ---------- */
 
@@ -2816,7 +2852,9 @@ async function arrancar() {
   try {
     const r = await api('arranque');
     S.usuario = r.usuario;
-    if (!r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
+    S.consultaPublica = !!r.consultaPublica;
+    $('#login-volver').classList.toggle('d-none', !S.consultaPublica);
+    if (r.usuario.rol === 'NINGUNO' && !r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
     if (r.usuario.rol === 'NINGUNO') { $('#sin-acceso-email').textContent = r.usuario.email; mostrarPantalla('sin-acceso'); return; }
     Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp,
       epocas: r.epocas, epoca: r.epoca });
@@ -2847,8 +2885,15 @@ function pintarCabecera() {
   $('#usuario-rol').textContent = NOMBRES_ROL[u.rol];
   $('#usuario-rol').className = 'rol mt-1 d-inline-block rol-' + u.rol;
   $('#item-salir').classList.toggle('d-none', u.via !== 'codigo');
+  // Visitantes: sin menú de usuario, con un botón para que el profesorado entre con su código.
+  const publico = u.rol === 'PUBLICO';
+  $('#menu-usuario').classList.toggle('d-none', publico);
+  $('#btn-acceso-prof').classList.toggle('d-none', !publico);
   $$('[data-rol]').forEach((el) => el.classList.toggle('d-none', !puede(el.dataset.rol)));
 }
+
+$('#btn-acceso-prof').addEventListener('click', () => { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); });
+$('#login-volver').addEventListener('click', () => mostrarPantalla('app'));
 
 $('#form-login').addEventListener('submit', async (ev) => {
   ev.preventDefault();
@@ -2897,7 +2942,8 @@ async function ir(destino, arg) {
   salirDeEdicion();
   let [vista, param] = String(destino).split('/');
   if (!VISTAS[vista]) vista = 'portada';
-  if (vista === 'nuevo' && !puede('EDITOR')) vista = 'inicio';
+  if (vista === 'nuevo' && !puede('EDITOR')) vista = puede('LECTOR') ? 'inicio' : 'portada';
+  if (['inicio', 'carpetas', 'editar'].includes(vista) && !puede('LECTOR')) vista = 'portada';
   if (['campos', 'profesores', 'historial', 'ajustes', 'epocas'].includes(vista) && !puede('ADMIN')) vista = 'portada';
   S.vista = vista;
   const hash = vista + (arg || param ? '/' + (arg || param) : '');
@@ -3282,6 +3328,8 @@ async function verFicha(id) {
       ${r.bloqueo ? `<div class="aviso-edicion small"><i class="bi bi-person-lock me-1"></i>${esc(r.bloqueo.nombre || r.bloqueo.email)} lo está editando ahora mismo.</div>` : ''}
       <div class="ficha">${secciones.map((s) => `<h3>${esc(s.nombre)}</h3><dl class="row mb-0">${s.campos.map((c) =>
         `<div class="${c.tipo === 'texto_largo' ? 'col-12' : 'col-sm-6'}"><dt>${esc(c.etiqueta)}</dt><dd>${valor(c)}</dd></div>`).join('')}</dl>`).join('')}
+      ${r.publico ? `<h3>Referencia</h3><dl class="row mb-0 small"><div class="col-sm-6"><dt>Época</dt><dd><span class="etiqueta e-EPOCA">${esc(epocaPorCodigo(epocaDeUid(reg._UID)).NOMBRE || '')}</span></dd></div>
+        <div class="col-sm-6"><dt>Nº de orden</dt><dd class="id-exp">${esc(reg.ID)}</dd></div></dl></div>` : `
       <h3>Control del registro</h3>
       <dl class="row mb-0 small">
         <div class="col-sm-6"><dt>Época</dt><dd><span class="etiqueta e-EPOCA">${esc(epocaPorCodigo(epocaDeUid(reg._UID)).NOMBRE || epocaActual().NOMBRE || '')}</span></dd></div>
@@ -3290,7 +3338,7 @@ async function verFicha(id) {
         <div class="col-sm-6"><dt>Creado</dt><dd>${esc(reg._CREADO_EN)}<br><span class="text-suave">${esc(reg._CREADO_POR)}</span></dd></div>
         <div class="col-sm-6"><dt>Última modificación</dt><dd>${esc(reg._MODIFICADO_EN)}<br><span class="text-suave">${esc(reg._MODIFICADO_POR)}</span></dd></div>
       </dl>
-      <div id="ficha-historial"><button class="btn btn-sm btn-link px-0" id="btn-hist-ficha"><i class="bi bi-clock-history me-1"></i>Ver historial de cambios de este expediente</button></div></div>`;
+      <div id="ficha-historial"><button class="btn btn-sm btn-link px-0" id="btn-hist-ficha"><i class="bi bi-clock-history me-1"></i>Ver historial de cambios de este expediente</button></div></div>`}`;
     const pie = `
       ${puede('ADMIN') ? (borrado ? '<button class="btn btn-outline-success me-auto" id="btn-restaurar"><i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar</button>'
         : '<button class="btn btn-outline-danger me-auto" id="btn-borrar"><i class="bi bi-trash me-1"></i>Enviar a la papelera</button>') : ''}
@@ -3298,7 +3346,7 @@ async function verFicha(id) {
       ${r.puedeEditar ? '<button class="btn btn-primary" id="btn-editar"><i class="bi bi-pencil me-1"></i>Modificar</button>' : ''}`;
     abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)} <span class="id-exp ms-2">${esc(reg.ID)}</span>`, cuerpo, pie);
     $('#btn-editar') && $('#btn-editar').addEventListener('click', () => { cerrarModal(); ir('editar', id); });
-    $('#btn-hist-ficha').addEventListener('click', async () => {
+    $('#btn-hist-ficha') && $('#btn-hist-ficha').addEventListener('click', async () => {
       $('#ficha-historial').innerHTML = '<div class="cargando py-2"><div class="spinner-border spinner-border-sm"></div></div>';
       try {
         const h = await api('historial', { id });
@@ -3417,7 +3465,7 @@ async function vistaBuscar() {
           <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
         <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
           ${S.epocas.length > 1 ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="todas" ${B.todas ? 'checked' : ''}><label class="form-check-label small fw-semibold" for="todas">Buscar en todas las épocas</label></div>` : ''}
-          <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
+          <div class="form-check form-switch mb-0${puede('EDITOR') ? '' : ' d-none'}"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
           ${puede('ADMIN') ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="papelera" ${B.papelera ? 'checked' : ''}><label class="form-check-label small" for="papelera">Papelera</label></div>` : ''}
           <button class="btn btn-sm btn-link ms-auto" id="limpiar">Quitar filtros</button>
         </div>
@@ -3929,10 +3977,13 @@ async function vistaPortada() {
         <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
         <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>
         <div class="mt-auto d-flex gap-2">
-          <button class="btn btn-primary btn-sm" data-entrar="${esc(e.CODIGO)}"><i class="bi bi-box-arrow-in-right me-1"></i>Entrar</button>
+          <button class="btn btn-primary btn-sm" data-entrar="${esc(e.CODIGO)}"><i class="bi bi-box-arrow-in-right me-1"></i>${puede('LECTOR') ? 'Entrar' : 'Consultar'}</button>
           <button class="btn btn-light btn-sm" data-entrar="${esc(e.CODIGO)}" data-destino="indice"><i class="bi bi-sort-alpha-down me-1"></i>Índice</button>
         </div>
       </div></div>`).join('')}
+      ${!puede('LECTOR') ? `<div class="col-12"><div class="alert alert-light border small mb-0"><i class="bi bi-eye me-1"></i>
+        Estás en la <strong>consulta pública</strong>: puedes buscar y ver los expedientes de las épocas abiertas al público.
+        Si formas parte del equipo, pulsa <strong>Acceso profesorado</strong> (arriba a la derecha).</div></div>` : ''}
       ${puede('ADMIN') ? `<div class="col-md-6 col-xl-4"><div class="tarjeta-epoca nueva" id="btn-nueva-epoca"><i class="bi bi-plus-circle mb-2"></i>
         <strong class="text-body">Añadir una época</strong><span class="small">1900–1930, 1930–1975…<br>Cada época tiene su propio archivo y capacidad.</span></div></div>` : ''}
     </div>
@@ -3941,7 +3992,7 @@ async function vistaPortada() {
       <button class="btn btn-sm btn-outline-primary" id="buscar-todas">Buscar en todo el archivo</button></div></div>` : ''}`;
   $$('[data-entrar]').forEach((b) => b.addEventListener('click', async () => {
     if (b.dataset.entrar !== S.epoca) await cambiarEpoca(b.dataset.entrar, false);
-    ir(b.dataset.destino || 'inicio');
+    ir(b.dataset.destino || (puede('LECTOR') ? 'inicio' : 'buscar'));
   }));
   $('#btn-nueva-epoca') && $('#btn-nueva-epoca').addEventListener('click', () => editarEpoca(null));
   $('#buscar-todas') && $('#buscar-todas').addEventListener('click', () => { S.busqueda.todas = true; ir('buscar'); });
@@ -3954,10 +4005,11 @@ function vistaEpocas() {
     'Cada época guarda sus alumnos y carpetas en su propio archivo de Google (con su propia capacidad). Profesorado, campos y ajustes son comunes a todas.',
     '<button class="btn btn-primary" id="btn-nueva"><i class="bi bi-plus-lg me-1"></i> Nueva época</button>') + `
     <div class="panel"><div class="table-responsive"><table class="table tabla">
-      <thead><tr><th>Código</th><th>Nombre</th><th>Años</th><th>Prefijo del nº</th><th>Estado</th><th></th></tr></thead>
+      <thead><tr><th>Código</th><th>Nombre</th><th>Años</th><th>Prefijo del nº</th><th>Estado</th><th>Consulta pública</th><th></th></tr></thead>
       <tbody>${S.epocas.map((e) => `<tr><td class="id-exp">${esc(e.CODIGO)}</td><td><strong>${esc(e.NOMBRE)}</strong>${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}</td>
         <td>${esc(anosEpoca(e))}</td><td class="id-exp">${esc(e.PREFIJO)}000001</td>
         <td>${e.ESTADO === 'CERRADA' ? '<span class="etiqueta">Cerrada</span>' : '<span class="etiqueta e-TERMINADO">Abierta</span>'}</td>
+        <td>${e.PUBLICA ? '<span class="etiqueta e-EXTRANJERO"><i class="bi bi-globe2"></i> Pública</span>' : '<span class="etiqueta">Sólo equipo</span>'}</td>
         <td class="text-end"><button class="btn btn-sm btn-light" data-epoca="${esc(e.CODIGO)}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
     </table></div></div>
     <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
@@ -3986,14 +4038,19 @@ function editarEpoca(e) {
       <div class="col-12"><label class="form-label">Descripción</label><input class="form-control" name="DESCRIPCION" value="${esc(v.DESCRIPCION)}" placeholder="Expedientes de los alumnos que ingresaron entre…"></div>
       ${nueva ? `<div class="col-md-6"><label class="form-label">Crear carpetas numeradas</label><input type="number" class="form-control" name="carpetas" value="40" min="0" max="2000">
         <div class="form-text">Se pueden añadir más después.</div></div>`
-        : `<div class="col-md-6"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml([{ v: 'ABIERTA', t: 'Abierta (se puede trabajar)' }, { v: 'CERRADA', t: 'Cerrada (sólo coordinación)' }], v.ESTADO)}</select></div>`}
+        : `<div class="col-md-6"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml([{ v: 'ABIERTA', t: 'Abierta (se puede trabajar)' }, { v: 'CERRADA', t: 'Cerrada (sólo coordinación)' }], v.ESTADO)}</select></div>
+        <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="PUBLICA" value="SÍ" id="ep-pub" ${v.PUBLICA ? 'checked' : ''}>
+          <label class="form-check-label fw-semibold" for="ep-pub">Consulta pública: cualquier persona puede ver (no editar) los expedientes de esta época</label></div>
+          <div class="alert alert-warning small mt-2 mb-0"><i class="bi bi-shield-exclamation me-1"></i>Actívala sólo en épocas antiguas (p. ej. el siglo XIX).
+          Los datos de personas que pueden estar vivas están protegidos por el RGPD y <strong>no deben publicarse</strong>.
+          El público nunca ve correos del profesorado, historial ni carpetas.</div></div>`}
       ${nueva ? '<div class="col-12"><div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>Se creará un archivo de Google nuevo para esta época, en la misma carpeta de Drive que la hoja central, con su propia capacidad. Tarda unos segundos.</div></div>' : ''}
     </form>`,
     `<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-epoca">${nueva ? 'Crear época' : 'Guardar'}</button>`, '');
   $('#btn-guardar-epoca').addEventListener('click', async (ev) => {
     const f = $('#form-epoca');
     const datos = Object.fromEntries(new FormData(f).entries());
-    if (!nueva) datos.CODIGO = e.CODIGO;
+    if (!nueva) { datos.CODIGO = e.CODIGO; datos.PUBLICA = f.PUBLICA && f.PUBLICA.checked ? 'SÍ' : 'NO'; }
     ocupado(ev.currentTarget, true, nueva ? 'Creando…' : 'Guardando…');
     try {
       if (nueva) {

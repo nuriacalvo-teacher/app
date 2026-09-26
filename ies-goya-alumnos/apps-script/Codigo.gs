@@ -50,7 +50,7 @@ const META = ['ID', '_BORRADO', '_CREADO_EN', '_CREADO_POR', '_MODIFICADO_EN', '
 const META_OCULTAS = ['_UID', '_ORDEN', '_CLAVE', '_FONETICA', '_VERSION'];
 
 const CABECERAS = {
-  Epocas: ['CODIGO', 'NOMBRE', 'DESDE', 'HASTA', 'PREFIJO', 'ESTADO', 'ID_HOJA', 'DESCRIPCION'],
+  Epocas: ['CODIGO', 'NOMBRE', 'DESDE', 'HASTA', 'PREFIJO', 'ESTADO', 'ID_HOJA', 'DESCRIPCION', 'PUBLICA'],
   Campos: ['CLAVE', 'ETIQUETA', 'TIPO', 'OPCIONES', 'OBLIGATORIO', 'SECCION', 'ORDEN', 'AYUDA', 'EN_LISTADOS', 'ACTIVO', 'SISTEMA'],
   Profesores: ['NOMBRE', 'EMAIL', 'ROL', 'ACTIVO', 'CODIGO_ACCESO', 'NOTAS'],
   Carpetas: ['NUMERO', 'DESDE', 'HASTA', 'ESTADO', 'ASIGNADA_A', 'NOTAS'],
@@ -59,7 +59,8 @@ const CABECERAS = {
 };
 
 const TIPOS = ['texto', 'texto_largo', 'numero', 'fecha', 'seleccion', 'si_no', 'profesor', 'carpeta', 'pais', 'provincia', 'localidad'];
-const ROLES = { NINGUNO: 0, LECTOR: 1, EDITOR: 2, ADMIN: 3 };
+/** PUBLICO = visitante sin identificar que consulta épocas marcadas como públicas (sólo ver). */
+const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
 const ESTADOS_CARPETA = ['PENDIENTE', 'EN CURSO', 'TERMINADA'];
 
 // clave, etiqueta, tipo, opciones, obligatorio, sección, ayuda, en listados, sistema
@@ -176,6 +177,7 @@ function api(accion, datos, token) {
     if (!def) throw new Error('Acción no reconocida: ' + accion);
     const u = usuarioActual_(token);
     if (ROLES[u.rol] < ROLES[def.rol]) {
+      if (u.rol === 'PUBLICO') throw new Error('Esto es sólo para el profesorado. Pulsa «Acceso profesorado» (arriba a la derecha) para entrar.');
       if (!u.identificado) return JSON.stringify({ ok: false, sesion: true, error: 'La sesión ha caducado. Vuelve a entrar.' });
       throw new Error('No tienes permiso para esta operación.');
     }
@@ -194,9 +196,9 @@ const ACCIONES = {
   login:               { rol: 'NINGUNO', fn: login_ },
   logout:              { rol: 'NINGUNO', fn: logout_ },
   inicio:              { rol: 'LECTOR',  fn: inicio_ },
-  consultar:           { rol: 'LECTOR',  fn: consultar_ },
+  consultar:           { rol: 'PUBLICO', fn: consultar_ },
   exportar:            { rol: 'ADMIN',   fn: exportar_ },  // descargar la base entera: sólo coordinación
-  obtener:             { rol: 'LECTOR',  fn: obtener_ },
+  obtener:             { rol: 'PUBLICO', fn: obtener_ },
   comprobarDuplicados: { rol: 'LECTOR',  fn: comprobarDuplicados_ },
   localidadesUsadas:   { rol: 'LECTOR',  fn: localidadesUsadas_ },
   carpetas:            { rol: 'LECTOR',  fn: carpetasConRecuento_ },
@@ -216,7 +218,7 @@ const ACCIONES = {
   borrarCarpeta:       { rol: 'ADMIN',   fn: borrarCarpeta_ },
   guardarAjustes:      { rol: 'ADMIN',   fn: guardarAjustes_ },
   copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } },
-  portada:             { rol: 'LECTOR',  fn: portada_ },
+  portada:             { rol: 'PUBLICO', fn: portada_ },
   crearEpoca:          { rol: 'ADMIN',   fn: crearEpoca_ },
   guardarEpoca:        { rol: 'ADMIN',   fn: guardarEpoca_ },
   ordenarAhora:        { rol: 'ADMIN',   fn: ordenarAhora_ },
@@ -262,8 +264,16 @@ function usuarioActual_(token) {
       if (!u.nombre) u.nombre = email;
     }
   }
+  // Visitante sin identificar (o con una cuenta que no está en la lista): consulta pública si hay
+  // alguna época abierta al público. Sólo ve esas épocas y nunca puede modificar nada.
+  if (u.rol === 'NINGUNO' && hayConsultaPublica_()) u.rol = 'PUBLICO';
   MEMO.usuario = u;
+  if (u.rol === 'PUBLICO') MEMO.soloPublicas = true;
   return u;
+}
+
+function hayConsultaPublica_() {
+  try { return epocasTodas_().some(function (e) { return e.PUBLICA; }); } catch (e) { return false; }
 }
 
 function login_(d) {
@@ -293,13 +303,14 @@ function logout_(d, u) {
 
 function arranque_(d, u) {
   const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado } };
-  if (!u.identificado || u.rol === 'NINGUNO') return r;
+  if (u.rol === 'NINGUNO') return r;
   r.ajustes = ajustes_();
   r.campos = campos_();
   r.epocas = epocas_().map(function (e) { const x = Object.assign({}, e); delete x.ID_HOJA; delete x._fila; return x; });
+  r.consultaPublica = hayConsultaPublica_();
   r.epoca = epocaActual_().CODIGO;
   r.carpetas = carpetasLista_();
-  const profes = profesores_();
+  const profes = u.rol === 'PUBLICO' ? [] : profesores_();
   r.profesores = u.rol === 'ADMIN' ? profes : profes.filter(function (p) { return si_(p.ACTIVO); })
     .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO, ROL: p.ROL }; });
   if (u.rol === 'ADMIN') {
@@ -348,7 +359,13 @@ function hoja_(nombre) {
 //  (el siglo XIX, en la propia hoja central). Así cada época tiene su propia capacidad.
 // ---------------------------------------------------------------------
 
+/** Épocas que puede ver quien usa la app (el público, sólo las marcadas como públicas). */
 function epocas_() {
+  const todas = epocasTodas_();
+  return MEMO.soloPublicas ? todas.filter(function (e) { return e.PUBLICA; }) : todas;
+}
+
+function epocasTodas_() {
   if (MEMO.epocas) return MEMO.epocas;
   let lista = [];
   if (ss_().getSheetByName(HOJA.EPOCAS)) {
@@ -356,14 +373,14 @@ function epocas_() {
       return {
         CODIGO: String(e.CODIGO).trim().toUpperCase(), NOMBRE: e.NOMBRE || e.CODIGO, DESDE: e.DESDE || '', HASTA: e.HASTA || '',
         PREFIJO: String(e.PREFIJO || '').trim().toUpperCase(), ESTADO: e.ESTADO || 'ABIERTA', ID_HOJA: String(e.ID_HOJA || '').trim(),
-        DESCRIPCION: e.DESCRIPCION || '', _fila: e._fila
+        DESCRIPCION: e.DESCRIPCION || '', PUBLICA: si_(e.PUBLICA), _fila: e._fila
       };
     });
     lista.sort(function (a, b) { return (parseInt(a.DESDE, 10) || 0) - (parseInt(b.DESDE, 10) || 0); });
   }
   if (!lista.length) {
     // Instalaciones anteriores a las épocas: todo es el siglo XIX, en la hoja central.
-    lista = [{ CODIGO: 'XIX', NOMBRE: 'Siglo XIX', DESDE: '1845', HASTA: '1900', PREFIJO: '', ESTADO: 'ABIERTA', ID_HOJA: '', DESCRIPCION: '' }];
+    lista = [{ CODIGO: 'XIX', NOMBRE: 'Siglo XIX', DESDE: '1845', HASTA: '1900', PREFIJO: '', ESTADO: 'ABIERTA', ID_HOJA: '', DESCRIPCION: '', PUBLICA: false }];
   }
   MEMO.epocas = lista;
   return lista;
@@ -377,6 +394,7 @@ function epocaDeUid_(uid) {
 
 function usarEpoca_(codigo) {
   const lista = epocas_();
+  if (!lista.length) throw new Error('No hay épocas disponibles.');
   const e = lista.find(function (x) { return x.CODIGO === String(codigo || '').toUpperCase(); }) || lista[0];
   if (MEMO.epoca !== e) {
     MEMO.epoca = e;
@@ -394,6 +412,7 @@ function libroEpoca_() {
   const e = epocaActual_();
   let libro = ss_();
   if (e.ID_HOJA && e.ID_HOJA !== libro.getId()) {
+    // (el público sólo llega aquí con épocas públicas: epocas_() ya las filtra)
     try { libro = SpreadsheetApp.openById(e.ID_HOJA); } catch (err) {
       throw new Error('No se puede abrir el archivo de la época «' + e.NOMBRE + '»: ' + err.message);
     }
@@ -875,6 +894,11 @@ function obtener_(d, u) {
   const reg = leerFila_(h, i + 2);
   delete reg._fila;
   reg.ID = c.ID[i];
+  if (u.rol === 'PUBLICO') {
+    if (si_(reg._BORRADO)) throw new Error('No se encuentra el expediente.');
+    ['_CREADO_POR', '_MODIFICADO_POR', '_CREADO_EN', '_MODIFICADO_EN', '_CLAVE', '_FONETICA', '_ORDEN', '_VERSION'].forEach(function (k) { delete reg[k]; });
+    return { registro: reg, puedeEditar: false, bloqueo: null, publico: true };
+  }
   let bloqueo = null;
   try {
     const b = CacheService.getScriptCache().get('edit_' + reg._UID);
@@ -1314,7 +1338,7 @@ function crearEpoca_(d, u) {
     validarLista_(hCp, 4, ESTADOS_CARPETA);
     if (hCp.getMaxColumns() > 6) hCp.deleteColumns(7, hCp.getMaxColumns() - 6);
     const prefijo = String(d.PREFIJO || ('GOYA' + (String(d.DESDE || '').trim() || codigo) + '-')).trim().toUpperCase();
-    hoja_(HOJA.EPOCAS).appendRow([codigo, nombre, String(d.DESDE || ''), String(d.HASTA || ''), prefijo, 'ABIERTA', libro.getId(), String(d.DESCRIPCION || '')]);
+    hoja_(HOJA.EPOCAS).appendRow([codigo, nombre, String(d.DESDE || ''), String(d.HASTA || ''), prefijo, 'ABIERTA', libro.getId(), String(d.DESCRIPCION || ''), 'NO']);
     delete MEMO.epocas;
     usarEpoca_(codigo);
     const h = hojaAlumnos_();
@@ -1338,8 +1362,9 @@ function guardarEpoca_(d, u) {
   const estado = d.ESTADO === 'CERRADA' ? 'CERRADA' : 'ABIERTA';
   h.getRange(e._fila, 2, 1, 5).setValues([[nombre, String(d.DESDE || ''), String(d.HASTA || ''),
     String(d.PREFIJO || e.PREFIJO || 'GOYA').trim().toUpperCase(), estado]]);
-  h.getRange(e._fila, 8).setValue(String(d.DESCRIPCION || ''));
-  registrar_(u, 'ÉPOCA', '', 'Modificada ' + e.CODIGO + ': «' + nombre + '» ' + d.DESDE + '–' + d.HASTA + ' · ' + estado);
+  h.getRange(e._fila, 8, 1, 2).setValues([[String(d.DESCRIPCION || ''), si_(d.PUBLICA) ? 'SÍ' : 'NO']]);
+  registrar_(u, 'ÉPOCA', '', 'Modificada ' + e.CODIGO + ': «' + nombre + '» ' + d.DESDE + '–' + d.HASTA + ' · ' + estado +
+    ' · consulta pública: ' + (si_(d.PUBLICA) ? 'SÍ' : 'NO'));
   delete MEMO.epocas;
   return epocas_().map(function (x) { const y = Object.assign({}, x); delete y.ID_HOJA; delete y._fila; return y; });
 }
@@ -1720,9 +1745,16 @@ function instalar() {
   hEp.getRange(1, 1, hEp.getMaxRows(), CABECERAS.Epocas.length).setNumberFormat('@');
   if (!tabla_(HOJA.EPOCAS).some(function (e) { return String(e.CODIGO).trim(); })) {
     hEp.appendRow(['XIX', 'Siglo XIX', '1845', '1900', ajustes_().PREFIJO_ID || 'GOYA', 'ABIERTA', ss.getId(),
-      'Expedientes de los alumnos que ingresaron en el Instituto entre 1845 y 1900.']);
+      'Expedientes de los alumnos que ingresaron en el Instituto entre 1845 y 1900.', 'NO']);
+  }
+  // Instalaciones anteriores: añadir la columna PUBLICA si falta.
+  const cabEp = hEp.getRange(1, 1, 1, Math.max(hEp.getLastColumn(), 1)).getDisplayValues()[0];
+  if (cabEp.indexOf('PUBLICA') < 0) {
+    if (hEp.getMaxColumns() < 9) hEp.insertColumnsAfter(hEp.getMaxColumns(), 9 - hEp.getMaxColumns());
+    hEp.getRange(1, 9).setValue('PUBLICA').setFontWeight('bold').setBackground('#1f2a44').setFontColor('#ffffff');
   }
   validarLista_(hEp, 6, ['ABIERTA', 'CERRADA']);
+  validarLista_(hEp, 9, ['SÍ', 'NO']);
   delete MEMO.epocas;
   usarEpoca_('XIX');
 
@@ -1999,7 +2031,7 @@ function formatoConfig_() {
   hh.setTabColor(COLOR.tinta);
   cabeceraConfig_(hoja_(HOJA.AJUSTES), [200, 260, 560]);
   if (ss_().getSheetByName(HOJA.EPOCAS)) {
-    cabeceraConfig_(hoja_(HOJA.EPOCAS), [110, 220, 70, 70, 130, 100, 330, 420]);
+    cabeceraConfig_(hoja_(HOJA.EPOCAS), [110, 220, 70, 70, 130, 100, 330, 420, 90]);
     hoja_(HOJA.EPOCAS).setTabColor(COLOR.granate);
   }
   [HOJA.CAMPOS, HOJA.PROFESORES, HOJA.AJUSTES].forEach(function (n) { hoja_(n).setTabColor(COLOR.tinta); });
