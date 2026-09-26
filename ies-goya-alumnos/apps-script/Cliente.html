@@ -1,0 +1,1664 @@
+<script>
+/* =====================================================================
+   ARCHIVO HISTÓRICO DEL IES GOYA · Interfaz (navegador)
+   ===================================================================== */
+'use strict';
+
+const S = {
+  token: null,
+  usuario: null,
+  ajustes: {},
+  campos: [],
+  profesores: [],
+  carpetas: [],
+  epocas: [],
+  epoca: null,           // código de la época en la que se trabaja (XIX, 1900_1930…)
+  vista: null,
+  sucio: false,          // hay cambios sin guardar en el formulario
+  edicion: null,         // {id, version, registro} cuando se modifica un expediente
+  pegajosos: {},         // valores que se mantienen al pulsar «Guardar y nuevo»
+  latido: null,          // renovación del aviso «en edición»
+  localidades: {},       // localidades ya usadas, por provincia
+  busqueda: { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false },
+  indice: { letra: 'A', pagina: 1 },
+  cacheVistas: {}        // últimos datos de cada pantalla, para mostrarla al instante
+};
+
+const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
+const TIPOS = {
+  texto: 'Texto corto', texto_largo: 'Texto largo', numero: 'Número', fecha: 'Fecha (dd/mm/aaaa, mm/aaaa o año)',
+  seleccion: 'Lista de opciones', si_no: 'Sí / No', profesor: 'Profesor/a (lista)', carpeta: 'Caja (lista)',
+  pais: 'País', provincia: 'Provincia', localidad: 'Localidad'
+};
+const NOMBRES_ROL = { ADMIN: 'Coordinación', EDITOR: 'Editor/a', LECTOR: 'Sólo consulta', PUBLICO: 'Consulta pública' };
+
+/* ---------- Utilidades ---------- */
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const puede = (rol) => S.usuario && ROLES[S.usuario.rol] >= ROLES[rol];
+const claseEstado = (e) => 'e-' + sinAcentos(e).replace(/\s+/g, '-');
+const etiquetaEstado = (e) => e ? `<span class="etiqueta ${claseEstado(e)}">${esc(e)}</span>` : '';
+const numero = (n) => Number(n || 0).toLocaleString('es-ES');
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function sinAcentos(s) {
+  return String(s || '').toUpperCase().replace(/Ñ/g, '\u0001').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\u0001/g, 'Ñ');
+}
+
+/** Igual que en el servidor: orden alfabético español ignorando la conjunción «Y». */
+function claveOrden(s) {
+  return sinAcentos(s).replace(/[^A-ZÑ0-9 ]/g, ' ').replace(/(^| )Y(?= |$)/g, ' ').replace(/\s+/g, ' ').trim().replace(/Ñ/g, 'N{');
+}
+
+function guardarLocal(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } }
+function leerLocal(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+const LECTURAS = ['arranque', 'inicio', 'consultar', 'obtener', 'comprobarDuplicados', 'localidadesUsadas', 'carpetas', 'historial',
+  'portada', 'capacidad', 'bloquear', 'liberar', 'exportar'];
+
+/** Llama al servidor (Apps Script). */
+function api(accion, datos) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler((txt) => {
+        let r;
+        try { r = JSON.parse(txt); } catch (e) { return reject(new Error('Respuesta no válida del servidor.')); }
+        if (r.ok) {
+          // Tras cualquier cambio, lo guardado de cada pantalla se vuelve a comprobar al abrirla.
+          if (!LECTURAS.includes(accion)) Object.values(S.cacheVistas).forEach((c) => { c.t = 0; });
+          return resolve(r.data);
+        }
+        if (r.sesion) { S.token = null; guardarLocal('goya_token', null); mostrarPantalla('login'); }
+        reject(new Error(r.error || 'Error desconocido.'));
+      })
+      .withFailureHandler((e) => reject(new Error((e && e.message) || 'No se ha podido conectar con el servidor.')))
+      .api(accion, Object.assign({ epoca: S.epoca }, datos || {}), S.token);
+  });
+}
+
+function aviso(msg, tipo = 'ok') {
+  const iconos = { ok: 'check-circle-fill text-success', error: 'exclamation-octagon-fill text-danger', info: 'info-circle-fill text-primary', aviso: 'exclamation-triangle-fill text-warning' };
+  const el = document.createElement('div');
+  el.className = 'toast align-items-center border-0 shadow';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<div class="d-flex"><div class="toast-body d-flex gap-2"><i class="bi bi-${iconos[tipo] || iconos.info}"></i><div>${esc(msg)}</div></div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+  $('#avisos').appendChild(el);
+  const t = new bootstrap.Toast(el, { delay: tipo === 'error' ? 9000 : 4000 });
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+  t.show();
+}
+
+function error(e) { aviso(e && e.message ? e.message : String(e), 'error'); }
+
+const modalBs = () => bootstrap.Modal.getOrCreateInstance($('#modal'));
+
+function abrirModal(titulo, cuerpo, pie = '', tam = 'lg') {
+  $('#modal-titulo').innerHTML = titulo;
+  $('#modal-cuerpo').innerHTML = cuerpo;
+  $('#modal-pie').innerHTML = pie || '<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>';
+  $('#modal-pie').classList.toggle('d-none', pie === null);
+  $('#modal .modal-dialog').className = 'modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down' + (tam ? ' modal-' + tam : '');
+  modalBs().show();
+}
+
+function cerrarModal() { modalBs().hide(); }
+
+/** Ventana de confirmación. Devuelve una promesa con true/false. */
+function confirmar(titulo, cuerpo, textoBoton = 'Confirmar', peligro = false) {
+  return new Promise((resolve) => {
+    const el = $('#modal-confirmar');
+    $('#confirmar-titulo').textContent = titulo;
+    $('#confirmar-cuerpo').innerHTML = cuerpo;
+    const b = $('#confirmar-si');
+    b.textContent = textoBoton;
+    b.className = 'btn ' + (peligro ? 'btn-danger' : 'btn-primary');
+    let res = false;
+    const m = bootstrap.Modal.getOrCreateInstance(el);
+    b.onclick = () => {
+      const chk = $('[data-requerido]', el);
+      if (chk && !chk.checked) { chk.classList.add('is-invalid'); return; }
+      res = true; m.hide();
+    };
+    el.addEventListener('hidden.bs.modal', () => resolve(res), { once: true });
+    m.show();
+  });
+}
+
+function ocupado(boton, si, texto) {
+  if (!boton) return;
+  if (si) {
+    boton.dataset.html = boton.innerHTML;
+    boton.disabled = true;
+    boton.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${esc(texto || 'Guardando…')}`;
+  } else {
+    boton.disabled = false;
+    if (boton.dataset.html) boton.innerHTML = boton.dataset.html;
+  }
+}
+
+function paginacion(p, paginas, total, alCambiar) {
+  const id = 'pag' + Math.random().toString(36).slice(2);
+  setTimeout(() => {
+    $$(`#${id} [data-pag]`).forEach((b) => b.addEventListener('click', () => alCambiar(parseInt(b.dataset.pag, 10))));
+  });
+  if (paginas <= 1) return `<div class="small text-suave px-3 py-2">${numero(total)} resultado${total === 1 ? '' : 's'}</div>`;
+  return `<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2" id="${id}">
+    <div class="small text-suave">${numero(total)} resultados · página ${p} de ${paginas}</div>
+    <div class="btn-group btn-group-sm">
+      <button class="btn btn-outline-secondary" data-pag="1" ${p === 1 ? 'disabled' : ''}><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-outline-secondary" data-pag="${p - 1}" ${p === 1 ? 'disabled' : ''}><i class="bi bi-chevron-left"></i> Anterior</button>
+      <button class="btn btn-outline-secondary" data-pag="${p + 1}" ${p === paginas ? 'disabled' : ''}>Siguiente <i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-outline-secondary" data-pag="${paginas}" ${p === paginas ? 'disabled' : ''}><i class="bi bi-chevron-double-right"></i></button>
+    </div></div>`;
+}
+
+const epocaDeUid = (uid) => { const m = /^([A-Z0-9_]+)-R\d+$/.exec(String(uid || '')); return m ? m[1] : ''; };
+const epocaPorCodigo = (c) => S.epocas.find((e) => e.CODIGO === c) || {};
+const epocaActual = () => epocaPorCodigo(S.epoca);
+const anosEpoca = (e) => (e.DESDE || e.HASTA ? `${e.DESDE || '…'}–${e.HASTA || '…'}` : '');
+/** «Siglo XIX · 1845–1900», sin repetir los años si ya están en el nombre. */
+const tituloEpoca = (e) => { const a = anosEpoca(e); return !a || String(e.NOMBRE).indexOf(a) >= 0 || /\d{4}/.test(e.NOMBRE || '') ? (e.NOMBRE || '') : `${e.NOMBRE} · ${a}`; };
+
+/** Cambia la época de trabajo: carga sus cajas y actualiza menú y cabecera. */
+async function cambiarEpoca(codigo, navegar = true) {
+  if (!codigo || codigo === S.epoca) return;
+  S.epoca = codigo;
+  guardarLocal('goya_epoca', codigo);
+  S.busqueda.filtros = {};
+  S.busqueda.pagina = 1;
+  S.indice = { letra: 'A', pagina: 1 };
+  S.localidades = {};
+  try { S.carpetas = (await api('carpetas')).map(({ EXPEDIENTES, TERMINADOS, ...c }) => c); } catch (e) { error(e); }
+  pintarCabecera();
+  if (navegar) ir('inicio');
+}
+
+/**
+ * Pinta al momento lo último que se vio en esa pantalla (si lo hay) y, a la vez, pide los datos
+ * al servidor; cuando llegan, sólo se vuelve a pintar si han cambiado. Así cambiar de sección es
+ * instantáneo y los datos siempre acaban al día.
+ */
+async function conCache(clave, pedir, pintar) {
+  const c = S.cacheVistas[clave];
+  const vista = S.vista, epoca = S.epoca;
+  if (c) pintar(c.datos);
+  if (c && Date.now() - c.t < 3000) return; // recién llegados: no hace falta volver a pedirlos
+  let datos;
+  try { datos = await pedir(); } catch (e) { if (c) { error(e); return; } throw e; }
+  const txt = JSON.stringify(datos);
+  const claves = Object.keys(S.cacheVistas);
+  if (claves.length > 60) delete S.cacheVistas[claves[0]];
+  S.cacheVistas[clave] = { datos, txt, t: Date.now() };
+  if (S.vista !== vista || S.epoca !== epoca) return;
+  if (!c || c.txt !== txt) pintar(datos);
+}
+
+const campoPorClave = (k) => S.campos.find((c) => c.clave === k);
+const camposActivos = () => S.campos.filter((c) => c.activo);
+const etiquetaDe = (k) => (campoPorClave(k) || {}).etiqueta || k;
+
+function textoCarpeta(num) {
+  const c = S.carpetas.find((x) => x.NUMERO === String(num));
+  if (!c) return String(num || '');
+  return c.DESDE || c.HASTA ? `${c.NUMERO} · ${c.DESDE || '…'} – ${c.HASTA || '…'}` : c.NUMERO;
+}
+
+/** Caja cuyo rango de apellidos contiene los apellidos dados. */
+function carpetaSugerida(apellidos) {
+  const k = claveOrden(apellidos);
+  if (!k) return null;
+  return S.carpetas.find((c) => {
+    if (!c.DESDE || !c.HASTA) return false;
+    const d = claveOrden(c.DESDE), h = claveOrden(c.HASTA);
+    return k >= d && (k <= h || k.startsWith(h));
+  }) || null;
+}
+
+/* ---------- Arranque y pantallas ---------- */
+
+function mostrarPantalla(cual) {
+  ['carga', 'login', 'sin-acceso'].forEach((p) => $('#pantalla-' + p).classList.toggle('d-none', p !== cual));
+  $('#app').classList.toggle('d-none', cual !== 'app');
+}
+
+async function arrancar() {
+  S.token = leerLocal('goya_token');
+  S.epoca = leerLocal('goya_epoca');
+  mostrarPantalla('carga');
+  try {
+    // ¿Venimos de «Entrar con mi cuenta de Google»? Entonces la dirección trae un pase firmado.
+    const pase = await leerPaseAcceso();
+    let entroConGoogle = '';
+    if (pase) {
+      try {
+        const l = await api('loginGoogle', { acceso: pase });
+        S.token = l.token;
+        guardarLocal('goya_token', l.token);
+        entroConGoogle = l.email;
+      } catch (e) { setTimeout(() => aviso(e.message, 'error'), 500); }
+    }
+    const destino = location.hash.replace('#', '') || 'portada';
+    const r = await api('arranque', { conPortada: destino === 'portada' });
+    S.usuario = r.usuario;
+    if (r.portada) S.cacheVistas.portada = { datos: r.portada, txt: JSON.stringify(r.portada), t: Date.now() };
+    // Entrada con cualquier cuenta de Google (a través de la app «Acceso con Google»).
+    const urlAcceso = String(r.urlAcceso || '').trim();
+    $('#login-google-caja').classList.toggle('d-none', !urlAcceso);
+    if (urlAcceso) $('#login-google').href = urlAcceso;
+    if (entroConGoogle && r.usuario.rol === 'PUBLICO') {
+      setTimeout(() => aviso(`Has entrado como ${entroConGoogle}, pero esa cuenta no tiene permiso para editar. Estás en la consulta pública.`, 'aviso'), 600);
+    }
+    S.consultaPublica = !!r.consultaPublica;
+    $('#login-volver').classList.toggle('d-none', !S.consultaPublica);
+    $('#login-info').innerHTML = `Versión ${esc(r.version || '?')}` + (S.consultaPublica ? '' :
+      '<br><span class="text-warning">Ninguna época tiene activada la consulta pública, por eso se pide identificarse.</span>');
+    if (r.usuario.rol === 'NINGUNO' && !r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
+    if (r.usuario.rol === 'NINGUNO') { $('#sin-acceso-email').textContent = r.usuario.email; mostrarPantalla('sin-acceso'); return; }
+    Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp, secretoAcceso: r.secretoAcceso,
+      epocas: r.epocas, epoca: r.epoca });
+    guardarLocal('goya_epoca', r.epoca);
+    pintarCabecera();
+    mostrarPantalla('app');
+    ir(destino);
+  } catch (e) {
+    mostrarPantalla('carga');
+    $('#pantalla-carga').innerHTML = `<div class="tarjeta-acceso text-center"><div class="sello grande mb-3">G</div>
+      <h1 class="h5 fw-bold">No se ha podido abrir el archivo</h1><p class="text-suave small">${esc(e.message)}</p>
+      <button class="btn btn-outline-primary" onclick="location.reload()">Reintentar</button></div>`;
+  }
+}
+
+/** Lee (y quita de la dirección) el parámetro «acceso» que añade la app «Acceso con Google». */
+function leerPaseAcceso() {
+  return new Promise((resolve) => {
+    try {
+      if (!window.google || !google.script || !google.script.url) return resolve('');
+      google.script.url.getLocation((loc) => {
+        const pase = loc && loc.parameter && loc.parameter.acceso ? String(loc.parameter.acceso) : '';
+        if (pase) { try { google.script.history.replace(null, {}, loc.hash || ''); } catch (e) { /* nada */ } }
+        resolve(pase);
+      });
+    } catch (e) { resolve(''); }
+  });
+}
+
+function pintarCabecera() {
+  const u = S.usuario;
+  $$('[data-nombre-app]').forEach((el) => { el.textContent = S.ajustes.NOMBRE_APP || 'Archivo histórico del IES Goya'; });
+  const ep = epocaActual();
+  $('#subtitulo-app').textContent = ep.NOMBRE ? tituloEpoca(ep) : (S.ajustes.SUBTITULO || '');
+  $('#sel-epoca').innerHTML = S.epocas.map((e) => `<option value="${esc(e.CODIGO)}"${e.CODIGO === S.epoca ? ' selected' : ''}>${esc(e.NOMBRE)}${e.ESTADO === 'CERRADA' ? ' · cerrada' : ''}</option>`).join('');
+  document.title = S.ajustes.NOMBRE_APP || document.title;
+  const iniciales = (u.nombre || u.email).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
+  $('#usuario-avatar').textContent = iniciales;
+  $('#usuario-nombre').textContent = u.nombre;
+  $('#usuario-nombre-2').textContent = u.nombre;
+  $('#usuario-email').textContent = u.email;
+  $('#usuario-rol').textContent = NOMBRES_ROL[u.rol];
+  $('#usuario-rol').className = 'rol mt-1 d-inline-block rol-' + u.rol;
+  $('#item-salir').classList.toggle('d-none', u.via !== 'codigo');
+  // Visitantes: sin menú de usuario, con un botón para que el profesorado entre con su código.
+  const publico = u.rol === 'PUBLICO';
+  $('#menu-usuario').classList.toggle('d-none', publico);
+  $('#btn-acceso-prof').classList.toggle('d-none', !publico);
+  $$('[data-rol]').forEach((el) => el.classList.toggle('d-none', !puede(el.dataset.rol)));
+}
+
+$('#btn-acceso-prof').addEventListener('click', () => { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); });
+$('#login-volver').addEventListener('click', () => mostrarPantalla('app'));
+
+$('#form-login').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const b = $('#login-boton');
+  $('#login-error').classList.add('d-none');
+  ocupado(b, true, 'Comprobando…');
+  try {
+    const r = await api('login', { email: $('#login-email').value, codigo: $('#login-codigo').value });
+    S.token = r.token;
+    guardarLocal('goya_token', r.token);
+    await arrancar();
+  } catch (e) {
+    $('#login-error').textContent = e.message;
+    $('#login-error').classList.remove('d-none');
+  } finally { ocupado(b, false); }
+});
+
+$('#btn-salir').addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  try { await api('logout', { token: S.token }); } catch (e) { /* da igual */ }
+  S.token = null;
+  guardarLocal('goya_token', null);
+  location.reload();
+});
+
+$('#sel-epoca').addEventListener('change', async (ev) => {
+  const nueva = ev.target.value;
+  if (S.sucio && !(await confirmar('Hay cambios sin guardar', '<p>Si cambias de época perderás lo que has escrito en el formulario.</p>', 'Cambiar de época', true))) {
+    ev.target.value = S.epoca; return;
+  }
+  S.sucio = false;
+  cambiarEpoca(nueva);
+});
+
+/* ---------- Navegación ---------- */
+
+const VISTAS = {
+  portada: vistaPortada, epocas: vistaEpocas,
+  inicio: vistaInicio, nuevo: () => vistaFormulario(null), editar: (id) => vistaFormulario(id), buscar: vistaBuscar,
+  indice: vistaIndice, carpetas: vistaCarpetas, campos: vistaCampos, profesores: vistaProfesores,
+  historial: vistaHistorial, ajustes: vistaAjustes, ayuda: vistaAyuda, importar: vistaImportar
+};
+
+async function ir(destino, arg) {
+  if (S.sucio && !(await confirmar('Hay cambios sin guardar', '<p>Si sales ahora perderás lo que has escrito en el formulario.</p>', 'Salir sin guardar', true))) return;
+  salirDeEdicion();
+  let [vista, param] = String(destino).split('/');
+  if (!VISTAS[vista]) vista = 'portada';
+  if (vista === 'nuevo' && !puede('EDITOR')) vista = puede('LECTOR') ? 'inicio' : 'portada';
+  if (['inicio', 'carpetas', 'editar'].includes(vista) && !puede('LECTOR')) vista = 'portada';
+  if (['campos', 'profesores', 'historial', 'ajustes', 'epocas', 'importar'].includes(vista) && !puede('ADMIN')) vista = 'portada';
+  S.vista = vista;
+  const hash = vista + (arg || param ? '/' + (arg || param) : '');
+  if (location.hash !== '#' + hash) history.replaceState(null, '', '#' + hash);
+  $$('.lateral a').forEach((a) => a.classList.toggle('activo', a.dataset.ir === (vista === 'editar' ? 'buscar' : vista)));
+  cerrarMenu();
+  window.scrollTo(0, 0);
+  $('#vista').innerHTML = '<div class="cargando"><div class="spinner-border spinner-border-sm me-2"></div>Cargando…</div>';
+  try { await VISTAS[vista](arg || param); } catch (e) { $('#vista').innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`; }
+}
+
+document.addEventListener('click', (ev) => {
+  const a = ev.target.closest('[data-ir]');
+  if (!a) return;
+  ev.preventDefault();
+  ir(a.dataset.ir);
+});
+
+function cerrarMenu() { $('#lateral').classList.remove('abierto'); $('#velo').classList.remove('visible'); }
+$('#btn-menu').addEventListener('click', () => { $('#lateral').classList.toggle('abierto'); $('#velo').classList.toggle('visible'); });
+$('#velo').addEventListener('click', cerrarMenu);
+window.addEventListener('beforeunload', (ev) => { if (S.sucio) { ev.preventDefault(); ev.returnValue = ''; } });
+
+function cabecera(titulo, texto, acciones = '') {
+  return `<div class="cabecera-vista"><div><h1>${titulo}</h1>${texto ? `<p>${texto}</p>` : ''}</div><div class="d-flex flex-wrap gap-2 no-imprimir">${acciones}</div></div>`;
+}
+
+/* ---------- Inicio ---------- */
+
+function vistaInicio() {
+  return conCache('inicio|' + S.epoca, () => api('inicio'), pintarInicio);
+}
+
+function pintarInicio(r) {
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const carpetasMias = r.carpetas.mias.length
+    ? r.carpetas.mias.map((n) => `<a href="#" class="etiqueta e-EN-CURSO text-decoration-none" data-ir="carpetas">Caja ${esc(n)}</a>`).join(' ')
+    : '<span class="text-suave">Ninguna. Ve a <a href="#" data-ir="carpetas">Cajas</a> y asígnate una antes de empezar.</span>';
+  const profes = Object.entries(r.porProfesor).sort((a, b) => b[1] - a[1]);
+  const maxP = profes.length ? profes[0][1] : 1;
+  const ep = epocaActual();
+  $('#vista').innerHTML = cabecera(`${esc(ep.NOMBRE || 'Resumen')} <small class="fs-6 text-suave fw-normal">${esc(anosEpoca(ep))}</small>`,
+    `Hola, ${esc((S.usuario.nombre || '').split(' ')[0] || '')}. Estado del vaciado de esta época.${ep.ESTADO === 'CERRADA' ? ' <span class="etiqueta">Época cerrada</span>' : ''}`,
+    puede('EDITOR') ? '<button class="btn btn-primary" data-ir="nuevo"><i class="bi bi-plus-lg me-1"></i> Nuevo expediente</button>' : '') + `
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Expedientes registrados</div><div class="num">${numero(r.total)}</div><div class="sub">${numero(r.hoy)} hoy · ${numero(r.mios)} tuyos</div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Terminados</div><div class="num">${numero(r.terminados)}</div>
+        <div class="barra-prog mt-2"><div style="width:${pct(r.terminados, r.total)}%"></div></div><div class="sub mt-1">${pct(r.terminados, r.total)} % del total</div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Cajas terminadas</div><div class="num">${numero(r.carpetas.terminadas)} <small class="fs-6 text-suave">/ ${numero(r.carpetas.total)}</small></div>
+        <div class="barra-prog mt-2"><div style="width:${pct(r.carpetas.terminadas, r.carpetas.total)}%"></div></div><div class="sub mt-1">${numero(r.carpetas.enCurso)} en curso</div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Ilustres · Destacados</div><div class="num">${numero(r.ilustres)} <small class="fs-6 text-suave">· ${numero(r.destacados)}</small></div><div class="sub">${numero(r.digitalizados)} expedientes digitalizados</div></div></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-7">
+        <div class="panel h-100"><div class="panel-cab"><h2>Últimos movimientos</h2>${puede('ADMIN') ? '<a href="#" data-ir="historial" class="small">Ver todo</a>' : ''}</div>
+          ${r.ultimos.length ? `<div class="table-responsive"><table class="table tabla"><tbody>${r.ultimos.map((m) => `
+            <tr${m.ID ? ` class="clic" data-ficha="${esc(m.ID)}"` : ''}><td class="text-nowrap small text-suave">${esc(m.FECHA.slice(0, 16))}</td>
+            <td class="small"><strong>${esc(m.USUARIO)}</strong> · ${esc(m.ACCION.toLowerCase())} <div class="text-suave text-truncate" style="max-width:420px">${esc(m.DETALLE)}</div></td></tr>`).join('')}
+          </tbody></table></div>` : '<div class="vacio"><i class="bi bi-inbox"></i>Todavía no hay movimientos.</div>'}
+        </div>
+      </div>
+      <div class="col-lg-5 d-flex flex-column gap-3">
+        <div class="panel"><div class="panel-cab"><h2>Tus cajas en curso</h2></div><div class="panel-cuerpo">${carpetasMias}</div></div>
+        <div class="panel"><div class="panel-cab"><h2>Expedientes por profesor/a</h2></div><div class="panel-cuerpo">
+          ${profes.length ? profes.slice(0, 12).map(([p, n]) => `<div class="mb-2"><div class="d-flex justify-content-between small"><span>${esc(p)}</span><strong>${numero(n)}</strong></div>
+            <div class="barra-prog"><div style="width:${pct(n, maxP)}%;background:var(--tinta)"></div></div></div>`).join('') : '<span class="text-suave small">Sin datos todavía.</span>'}
+        </div></div>
+      </div>
+    </div>`;
+  $$('[data-ficha]').forEach((tr) => tr.addEventListener('click', () => verFicha(tr.dataset.ficha)));
+}
+
+/* ---------- Formulario de expediente ---------- */
+
+function opcionesHtml(lista, valor, vacio) {
+  let h = vacio !== undefined ? `<option value="">${esc(vacio)}</option>` : '';
+  const vals = lista.map((o) => (typeof o === 'string' ? { v: o, t: o } : o));
+  if (valor && !vals.some((o) => o.v === valor)) vals.unshift({ v: valor, t: valor + ' (valor antiguo)' });
+  return h + vals.map((o) => `<option value="${esc(o.v)}"${o.v === valor ? ' selected' : ''}>${esc(o.t)}</option>`).join('');
+}
+
+function controlCampo(c, valor) {
+  const id = 'f_' + c.clave;
+  const req = c.obligatorio ? ' required' : '';
+  const base = `id="${id}" name="${esc(c.clave)}" data-campo="${esc(c.clave)}"${req}`;
+  const v = valor == null ? '' : String(valor);
+  switch (c.tipo) {
+    case 'texto_largo':
+      return `<textarea class="form-control" rows="3" ${base}>${esc(v)}</textarea>`;
+    case 'numero':
+      return `<input type="text" inputmode="numeric" class="form-control" pattern="-?[0-9]+([.,][0-9]+)?" ${base} value="${esc(v)}">`;
+    case 'fecha':
+      return `<input type="text" class="form-control" placeholder="dd/mm/aaaa" pattern="(\\d{1,2}/)?(\\d{1,2}/)?\\d{4}" ${base} value="${esc(v)}">`;
+    case 'seleccion':
+      return `<select class="form-select" ${base}>${opcionesHtml(c.opciones, v, c.obligatorio ? undefined : '—')}</select>`;
+    case 'si_no':
+      return `<select class="form-select" ${base}>${opcionesHtml(['SÍ', 'NO'], v, c.obligatorio ? undefined : '—')}</select>`;
+    case 'profesor':
+      return `<select class="form-select" ${base}>${opcionesHtml(S.profesores.filter((p) => p.ACTIVO !== 'NO').map((p) => p.NOMBRE), v, '— Elegir —')}</select>`;
+    case 'carpeta':
+      return `<select class="form-select" ${base}>${opcionesHtml(S.carpetas.map((x) => ({ v: x.NUMERO, t: textoCarpeta(x.NUMERO) })), v, '— Elegir caja —')}</select>`;
+    case 'pais':
+      return `<select class="form-select" ${base} data-geo="pais">${opcionesHtml(GEO.paises, v || S.ajustes.PAIS_DEFECTO || 'España', c.obligatorio ? undefined : '—')}</select>`;
+    case 'provincia':
+      return `<div data-geo="provincia-caja">${controlProvincia(c, v)}</div>`;
+    case 'localidad':
+      return `<input type="text" class="form-control" list="dl-localidades" autocomplete="off" ${base} value="${esc(v)}" placeholder="Escríbela a mano">`;
+    default:
+      return `<input type="text" class="form-control" ${base} value="${esc(v)}"${c.clave === 'APELLIDOS' ? ' data-mayus autocomplete="off"' : c.clave === 'NOMBRE' ? ' autocomplete="off"' : ''}>`;
+  }
+}
+
+function controlProvincia(c, v, pais) {
+  pais = pais || ($('[data-geo="pais"]') || {}).value || S.ajustes.PAIS_DEFECTO || 'España';
+  const base = `id="f_${c.clave}" name="${esc(c.clave)}" data-campo="${esc(c.clave)}" data-geo="provincia"${c.obligatorio ? ' required' : ''}`;
+  if (pais === 'España') return `<select class="form-select" ${base}>${opcionesHtml(GEO.provincias, v, '— Elegir provincia —')}</select>`;
+  // Fuera de España no hay lista de provincias: el campo queda vacío y oculto.
+  return `<input type="hidden" ${base.replace(' required', '')} value=""><div class="form-control bg-light text-suave">No aplica (fuera de España)</div>`;
+}
+
+/** Actualiza provincia y sugerencias de localidad al cambiar el país o la provincia. */
+async function actualizarGeo(cambioPais) {
+  const pais = ($('[data-geo="pais"]') || {}).value || 'España';
+  const cProv = S.campos.find((c) => c.tipo === 'provincia' && c.activo);
+  if (cambioPais && cProv) {
+    const caja = $('[data-geo="provincia-caja"]');
+    if (caja) {
+      caja.innerHTML = controlProvincia(cProv, pais === 'España' ? S.ajustes.PROVINCIA_DEFECTO || '' : '', pais);
+      const sel = $('[data-geo="provincia"]', caja);
+      sel.addEventListener('change', () => actualizarGeo(false));
+    }
+  }
+  const prov = ($('[data-geo="provincia"]') || {}).value || '';
+  const loc = $('#f_LOCALIDAD');
+  if (loc) loc.placeholder = pais === 'España' ? (prov ? `Localidad de ${prov} (escríbela)` : 'Escríbela a mano') : `Ciudad o localidad de ${pais}`;
+  // Sugerencias: municipios actuales (INE) + localidades ya registradas por el equipo. Siempre se puede escribir otra.
+  const clave = pais === 'España' ? 'ES|' + prov : pais;
+  let usadas = S.localidades[clave];
+  const pintar = () => {
+    const municipios = pais === 'España' && prov && GEO.municipios[prov] ? GEO.municipios[prov] : [];
+    const todas = Array.from(new Set((usadas || []).concat(municipios))).sort((a, b) => a.localeCompare(b, 'es'));
+    $('#dl-localidades').innerHTML = todas.map((l) => `<option value="${esc(l)}">`).join('');
+  };
+  pintar();
+  if (!usadas && (prov || pais !== 'España')) {
+    try {
+      usadas = await api('localidadesUsadas', pais === 'España' ? { provincia: prov } : { pais });
+      S.localidades[clave] = usadas;
+      pintar();
+    } catch (e) { /* sólo sugerencias */ }
+  }
+}
+
+async function vistaFormulario(id) {
+  if (!puede('EDITOR')) { $('#vista').innerHTML = '<div class="alert alert-warning">Tu perfil es de sólo consulta.</div>'; return; }
+  let reg = null, bloqueo = null;
+  if (id && epocaDeUid(id) && epocaDeUid(id) !== S.epoca) await cambiarEpoca(epocaDeUid(id), false);
+  if (epocaActual().ESTADO === 'CERRADA' && !puede('ADMIN')) {
+    $('#vista').innerHTML = `<div class="alert alert-warning">La época «${esc(epocaActual().NOMBRE)}» está cerrada: sólo la coordinación puede añadir o modificar expedientes.</div>`;
+    return;
+  }
+  if (id) {
+    const r = await api('obtener', { id });
+    if (!r.puedeEditar) { aviso('No puedes modificar este expediente.', 'aviso'); verFicha(id); ir('buscar'); return; }
+    reg = r.registro;
+    bloqueo = r.bloqueo;
+    const b = await api('bloquear', { id });
+    bloqueo = b.bloqueo || bloqueo;
+    S.edicion = { id, version: reg._VERSION, registro: reg };
+    S.latido = setInterval(() => api('bloquear', { id }).catch(() => {}), 4 * 60 * 1000);
+  } else {
+    S.edicion = null;
+  }
+  const campos = camposActivos();
+  const valorInicial = (c) => {
+    if (reg) return reg[c.clave];
+    if (S.pegajosos[c.clave] !== undefined) return S.pegajosos[c.clave];
+    if (c.tipo === 'profesor') return S.usuario.nombre;
+    if (c.tipo === 'provincia') return S.ajustes.PROVINCIA_DEFECTO || '';
+    if ((c.tipo === 'seleccion' || c.tipo === 'si_no') && c.obligatorio) return (c.opciones || [])[0] || 'NO';
+    return '';
+  };
+  const secciones = [];
+  campos.forEach((c) => {
+    let s = secciones.find((x) => x.nombre === c.seccion);
+    if (!s) secciones.push((s = { nombre: c.seccion, campos: [] }));
+    s.campos.push(c);
+  });
+  const ancho = (c) => (c.tipo === 'texto_largo' ? 'col-12' : ['pais', 'provincia', 'localidad'].includes(c.tipo) ? 'col-md-4' : 'col-md-6');
+
+  $('#vista').innerHTML = cabecera((reg ? 'Modificar expediente' : 'Nuevo expediente') + ` <span class="etiqueta e-EPOCA align-middle">${esc(epocaActual().NOMBRE || '')}</span>`,
+    reg ? `<span class="id-exp">${esc(reg.ID || 'En papelera')}</span> · creado por ${esc(reg._CREADO_POR)} el ${esc(reg._CREADO_EN)}` : 'Antes de guardar, la aplicación comprueba si el alumno ya está registrado.',
+    reg ? `<button class="btn btn-light" id="btn-ver-ficha"><i class="bi bi-eye me-1"></i> Ver ficha</button>` : '') + `
+    ${bloqueo ? `<div class="aviso-edicion"><i class="bi bi-person-lock me-2"></i><strong>${esc(bloqueo.nombre || bloqueo.email)}</strong> tiene abierto este expediente para editarlo desde las ${esc(String(bloqueo.desde).slice(11, 16))}. Si guardáis los dos, sólo se aceptará el primero.</div>` : ''}
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <form id="form-exp" novalidate autocomplete="off">
+          ${secciones.map((s) => `<div class="panel seccion-form"><div class="panel-cab"><h2>${esc(s.nombre)}</h2></div><div class="panel-cuerpo"><div class="row g-3">
+            ${s.campos.map((c) => `<div class="${ancho(c)}"><label class="form-label" for="f_${esc(c.clave)}">${esc(c.etiqueta)}${c.obligatorio ? ' <span class="req">*</span>' : ''}</label>
+              ${controlCampo(c, valorInicial(c))}${c.ayuda ? `<div class="form-text">${esc(c.ayuda)}</div>` : ''}<div class="invalid-feedback">Revisa este dato.</div></div>`).join('')}
+          </div></div></div>`).join('')}
+          <datalist id="dl-localidades"></datalist>
+          <div class="barra-acciones">
+            <button type="button" class="btn btn-light me-auto" id="btn-cancelar">${reg ? 'Cancelar' : 'Vaciar formulario'}</button>
+            ${reg ? '' : '<button type="submit" class="btn btn-outline-primary" data-despues="ficha"><i class="bi bi-check2 me-1"></i> Guardar</button>'}
+            <button type="submit" class="btn btn-primary" data-despues="${reg ? 'ficha' : 'nuevo'}"><i class="bi bi-save me-1"></i> ${reg ? 'Guardar cambios' : 'Guardar y siguiente'}</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-xl-4">
+        <div class="lateral-form d-flex flex-column gap-3">
+          <div class="panel"><div class="panel-cab"><h2><i class="bi bi-shield-check me-1"></i> Comprobación de duplicados</h2></div>
+            <div class="panel-cuerpo" id="panel-dup"><div class="estado-dup neutro">Escribe los apellidos y el nombre para comprobar si el alumno ya está registrado.</div></div></div>
+          <div class="panel"><div class="panel-cab"><h2><i class="bi bi-folder2 me-1"></i> Caja</h2></div>
+            <div class="panel-cuerpo small" id="panel-carpeta"><span class="text-suave">Según los apellidos, la aplicación te dirá en qué caja debería estar.</span></div></div>
+        </div>
+      </div>
+    </div>`;
+
+  const form = $('#form-exp');
+  S.sucio = false;
+  form.addEventListener('input', () => { S.sucio = true; });
+  form.addEventListener('change', () => { S.sucio = true; });
+  const selPais = $('[data-geo="pais"]', form);
+  if (selPais) selPais.addEventListener('change', () => actualizarGeo(true));
+  const selProv = $('[data-geo="provincia"]', form);
+  if (selProv) selProv.addEventListener('change', () => actualizarGeo(false));
+  actualizarGeo(false);
+
+  const ap = $('#f_APELLIDOS'), no = $('#f_NOMBRE'), ca = $('#f_CARPETA');
+  const comprobar = debounce(comprobarDuplicadosForm, 600);
+  [ap, no].forEach((el) => el && el.addEventListener('input', comprobar));
+  if (ap) ap.addEventListener('input', revisarCarpeta);
+  if (ca) ca.addEventListener('change', revisarCarpeta);
+  if (reg) { comprobarDuplicadosForm(); revisarCarpeta(); }
+  $('#btn-ver-ficha') && $('#btn-ver-ficha').addEventListener('click', () => verFicha(reg._UID));
+  $('#btn-cancelar').addEventListener('click', async () => {
+    if (S.sucio && !(await confirmar('Descartar cambios', '<p>Se perderá lo que has escrito.</p>', 'Descartar', true))) return;
+    S.sucio = false;
+    if (reg) ir('buscar'); else { S.pegajosos = {}; ir('nuevo'); }
+  });
+  form.addEventListener('submit', (ev) => { ev.preventDefault(); guardarExpediente(ev.submitter); });
+  (reg ? null : ($('#f_CARPETA') && $('#f_CARPETA').value ? ap : $('#f_CARPETA')) || ap)?.focus();
+}
+
+function salirDeEdicion() {
+  if (S.latido) { clearInterval(S.latido); S.latido = null; }
+  if (S.edicion) { api('liberar', { id: S.edicion.id }).catch(() => {}); S.edicion = null; }
+  S.sucio = false;
+}
+
+async function comprobarDuplicadosForm() {
+  const ap = ($('#f_APELLIDOS') || {}).value || '', no = ($('#f_NOMBRE') || {}).value || '';
+  const panel = $('#panel-dup');
+  if (!panel) return;
+  if (ap.trim().length < 2) { panel.innerHTML = '<div class="estado-dup neutro">Escribe los apellidos y el nombre para comprobar si el alumno ya está registrado.</div>'; return; }
+  panel.innerHTML = '<div class="estado-dup neutro"><span class="spinner-border spinner-border-sm me-2"></span>Comprobando…</div>';
+  try {
+    const r = await api('comprobarDuplicados', { apellidos: ap, nombre: no, id: S.edicion && S.edicion.id });
+    if (($('#f_APELLIDOS') || {}).value !== ap || ($('#f_NOMBRE') || {}).value !== no) return; // ya ha cambiado
+    const fila = (x) => `<div class="coincidencia"><div><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)}
+      <div class="text-suave small">${[x.CARPETA && 'Caja ' + x.CARPETA, x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></div>
+      <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x._UID)}">Ver</button></div>`;
+    let h = '';
+    if (r.exactos.length) h += `<div class="estado-dup mal mb-2"><i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Este alumno ya está registrado.</strong> Revísalo antes de crear otro expediente.</div>${r.exactos.map(fila).join('')}`;
+    if (r.parecidos.length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-exclamation-triangle-fill me-1"></i><strong>Nombre muy parecido</strong> (grafía antigua: X/J, V/B, Y/I…). ¿Es la misma persona?</div>${r.parecidos.map(fila).join('')}`;
+    if (!r.exactos.length && !r.parecidos.length && no.trim()) h += `<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>No hay ningún expediente con este nombre${S.epocas.length > 1 ? ' en esta época' : ''}.</div>`;
+    if ((r.otrasEpocas || []).length) h += `<div class="estado-dup aviso my-2"><i class="bi bi-hourglass-split me-1"></i><strong>También aparece en otra época.</strong> Puede ser el mismo alumno si estudió en varios periodos.</div>${r.otrasEpocas.map((x) => fila(x).replace('<div class="text-suave small">', `<div class="text-suave small"><span class="etiqueta e-EPOCA">${esc(x.EPOCA)}</span> `)).join('')}`;
+    if (r.mismosApellidos.length) h += `<div class="small text-suave mt-3 mb-1">Otros alumnos con los mismos apellidos (${r.totalMismos}):</div>${r.mismosApellidos.slice(0, 8).map(fila).join('')}`;
+    panel.innerHTML = h || '<div class="estado-dup neutro">Escribe también el nombre.</div>';
+    $$('[data-ficha]', panel).forEach((b) => b.addEventListener('click', () => verFicha(b.dataset.ficha)));
+  } catch (e) {
+    panel.innerHTML = `<div class="estado-dup aviso">${esc(e.message)}</div>`;
+  }
+}
+
+function revisarCarpeta() {
+  const panel = $('#panel-carpeta');
+  if (!panel) return;
+  const ap = ($('#f_APELLIDOS') || {}).value || '';
+  const sel = $('#f_CARPETA');
+  const actual = sel ? sel.value : '';
+  const sug = carpetaSugerida(ap);
+  let h = '';
+  if (actual) {
+    const c = S.carpetas.find((x) => x.NUMERO === actual);
+    h += `<div class="mb-2">Seleccionada: <strong>Caja ${esc(actual)}</strong>${c && (c.DESDE || c.HASTA) ? `<div class="text-suave">De ${esc(c.DESDE || '…')} a ${esc(c.HASTA || '…')}</div>` : '<div class="text-suave">Esta caja aún no tiene definido su rango de apellidos.</div>'}</div>`;
+  }
+  if (ap.trim().length >= 2) {
+    if (sug && sug.NUMERO !== actual) {
+      h += `<div class="estado-dup aviso"><i class="bi bi-lightbulb me-1"></i>Por los apellidos, debería estar en la <strong>caja ${esc(sug.NUMERO)}</strong> (${esc(sug.DESDE)} – ${esc(sug.HASTA)}).
+        <button type="button" class="btn btn-sm btn-outline-primary mt-2 d-block" id="usar-carpeta">Usar la caja ${esc(sug.NUMERO)}</button></div>`;
+    } else if (sug) {
+      h += '<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>Los apellidos encajan con el rango de esta caja.</div>';
+    } else {
+      h += '<div class="text-suave">Ninguna caja con rango definido incluye estos apellidos.</div>';
+    }
+  }
+  panel.innerHTML = h || '<span class="text-suave">Según los apellidos, la aplicación te dirá en qué caja debería estar.</span>';
+  $('#usar-carpeta') && $('#usar-carpeta').addEventListener('click', () => { sel.value = sug.NUMERO; S.sucio = true; revisarCarpeta(); });
+}
+
+function recogerFormulario() {
+  const datos = {};
+  $$('[data-campo]', $('#form-exp')).forEach((el) => { datos[el.dataset.campo] = el.value; });
+  if (datos.APELLIDOS) datos.APELLIDOS = datos.APELLIDOS.toUpperCase();
+  return datos;
+}
+
+async function guardarExpediente(boton) {
+  const form = $('#form-exp');
+  form.classList.add('was-validated');
+  if (!form.checkValidity()) {
+    const mal = $(':invalid', form);
+    if (mal) { mal.focus(); mal.scrollIntoView({ block: 'center' }); }
+    aviso('Faltan datos obligatorios o hay alguno incorrecto.', 'aviso');
+    return;
+  }
+  const despues = boton && boton.dataset.despues;
+  const registro = recogerFormulario();
+  const peticion = { registro, id: S.edicion && S.edicion.id, version: S.edicion && S.edicion.version };
+  const botones = $$('button[type=submit]', form);
+  botones.forEach((b) => (b.disabled = true));
+  ocupado(boton, true);
+  try {
+    let r = await api('guardar', peticion);
+    if (r.duplicado) {
+      const lista = r.coincidencias.map((x) => `<li><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)} <span class="id-exp">${esc(x.ID)}</span>
+        <div class="small text-suave">${[x.CARPETA && 'Caja ' + x.CARPETA, x.CURSO && 'Curso ' + x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></li>`).join('');
+      const ok = await confirmar('Posible expediente duplicado',
+        `<p>Ya hay ${r.coincidencias.length === 1 ? 'un expediente' : 'expedientes'} con este nombre:</p><ul class="mb-3">${lista}</ul>
+         <p class="small">Guarda sólo si estás seguro/a de que es <strong>otra persona</strong> (un homónimo). Quedará anotado en el historial.</p>
+         <div class="form-check"><input class="form-check-input" type="checkbox" id="chk-homonimo" data-requerido>
+         <label class="form-check-label" for="chk-homonimo">He comprobado que es otra persona</label></div>`,
+        'Guardar igualmente', true);
+      if (!ok) return;
+      peticion.confirmarHomonimo = true;
+      r = await api('guardar', peticion);
+    }
+    S.sucio = false;
+    if (S.latido) { clearInterval(S.latido); S.latido = null; }
+    S.edicion = null;
+    aviso(r.creado ? `Expediente ${r.numero} guardado (nº de orden alfabético).` : `Cambios guardados en ${r.numero}.`);
+    if (r.creado) {
+      // Se conservan profesor/a y caja para agilizar el vaciado de la misma caja.
+      S.pegajosos = {};
+      camposActivos().filter((c) => ['profesor', 'carpeta'].includes(c.tipo)).forEach((c) => { S.pegajosos[c.clave] = registro[c.clave]; });
+    }
+    if (despues === 'nuevo') { await ir('nuevo'); $('#f_APELLIDOS') && $('#f_APELLIDOS').focus(); }
+    else { await ir('buscar'); verFicha(r.id); }
+  } catch (e) {
+    if (/^CONFLICTO/.test(e.message)) {
+      const ok = await confirmar('Otra persona ha cambiado este expediente', `<p>${esc(e.message.replace(/^CONFLICTO:\s*/, ''))}</p><p class="small text-suave">Copia lo que necesites antes de recargar.</p>`, 'Recargar el expediente');
+      if (ok) { S.sucio = false; const id = S.edicion.id; ir('editar', id); }
+    } else error(e);
+  } finally {
+    ocupado(boton, false);
+    botones.forEach((b) => (b.disabled = false));
+  }
+}
+
+/* ---------- Ficha de un expediente ---------- */
+
+async function verFicha(id) {
+  abrirModal('Expediente', '<div class="cargando"><div class="spinner-border spinner-border-sm"></div></div>', null);
+  try {
+    const r = await api('obtener', { id });
+    const reg = r.registro;
+    const borrado = reg._BORRADO === 'SÍ';
+    const secciones = [];
+    camposActivos().forEach((c) => {
+      let s = secciones.find((x) => x.nombre === c.seccion);
+      if (!s) secciones.push((s = { nombre: c.seccion, campos: [] }));
+      s.campos.push(c);
+    });
+    const valor = (c) => {
+      const v = reg[c.clave];
+      if (!v) return '<span class="text-suave">—</span>';
+      if (c.tipo === 'carpeta') return esc(textoCarpeta(v));
+      if (c.clave === 'ESTADO') return etiquetaEstado(v);
+      if (c.clave === 'ILUSTRE') return celda('ILUSTRE', v);
+      return esc(v);
+    };
+    const cuerpo = `
+      ${borrado ? '<div class="alert alert-danger py-2"><i class="bi bi-trash me-1"></i>Este expediente está en la papelera.</div>' : ''}
+      ${r.bloqueo ? `<div class="aviso-edicion small"><i class="bi bi-person-lock me-1"></i>${esc(r.bloqueo.nombre || r.bloqueo.email)} lo está editando ahora mismo.</div>` : ''}
+      <div class="ficha">${secciones.map((s) => `<h3>${esc(s.nombre)}</h3><dl class="row mb-0">${s.campos.map((c) =>
+        `<div class="${c.tipo === 'texto_largo' ? 'col-12' : 'col-sm-6'}"><dt>${esc(c.etiqueta)}</dt><dd>${valor(c)}</dd></div>`).join('')}</dl>`).join('')}
+      ${r.publico ? `<h3>Referencia</h3><dl class="row mb-0 small"><div class="col-sm-6"><dt>Época</dt><dd><span class="etiqueta e-EPOCA">${esc(epocaPorCodigo(epocaDeUid(reg._UID)).NOMBRE || '')}</span></dd></div>
+        <div class="col-sm-6"><dt>Nº de orden</dt><dd class="id-exp">${esc(reg.ID)}</dd></div></dl></div>` : `
+      <h3>Control del registro</h3>
+      <dl class="row mb-0 small">
+        <div class="col-sm-6"><dt>Época</dt><dd><span class="etiqueta e-EPOCA">${esc(epocaPorCodigo(epocaDeUid(reg._UID)).NOMBRE || epocaActual().NOMBRE || '')}</span></dd></div>
+        <div class="col-sm-6"><dt>Nº de orden alfabético</dt><dd class="id-exp">${esc(reg.ID || '—')}</dd></div>
+        <div class="col-sm-6"><dt>Nº de registro (permanente) · versión</dt><dd><span class="id-exp">${esc(reg._UID)}</span> · v${esc(reg._VERSION)}</dd></div>
+        <div class="col-sm-6"><dt>Creado</dt><dd>${esc(reg._CREADO_EN)}<br><span class="text-suave">${esc(reg._CREADO_POR)}</span></dd></div>
+        <div class="col-sm-6"><dt>Última modificación</dt><dd>${esc(reg._MODIFICADO_EN)}<br><span class="text-suave">${esc(reg._MODIFICADO_POR)}</span></dd></div>
+      </dl>
+      <div id="ficha-historial"><button class="btn btn-sm btn-link px-0" id="btn-hist-ficha"><i class="bi bi-clock-history me-1"></i>Ver historial de cambios de este expediente</button></div></div>`}`;
+    const pie = `
+      ${puede('ADMIN') ? (borrado ? '<button class="btn btn-outline-success me-auto" id="btn-restaurar"><i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar</button>'
+        : '<button class="btn btn-outline-danger me-auto" id="btn-borrar"><i class="bi bi-trash me-1"></i>Enviar a la papelera</button>') : ''}
+      <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      ${r.puedeEditar ? '<button class="btn btn-primary" id="btn-editar"><i class="bi bi-pencil me-1"></i>Modificar</button>' : ''}`;
+    abrirModal(`<span class="ap">${esc(reg.APELLIDOS)}</span>, ${esc(reg.NOMBRE)} <span class="id-exp ms-2">${esc(reg.ID)}</span>`, cuerpo, pie);
+    $('#btn-editar') && $('#btn-editar').addEventListener('click', () => { cerrarModal(); ir('editar', id); });
+    $('#btn-hist-ficha') && $('#btn-hist-ficha').addEventListener('click', async () => {
+      $('#ficha-historial').innerHTML = '<div class="cargando py-2"><div class="spinner-border spinner-border-sm"></div></div>';
+      try {
+        const h = await api('historial', { id });
+        $('#ficha-historial').innerHTML = h.filas.length ? `<ul class="list-unstyled small mb-0">${h.filas.map((f) =>
+          `<li class="py-2 border-bottom"><strong>${esc(f.FECHA)}</strong> · ${esc(f.USUARIO || f.EMAIL)} · ${esc(f.ACCION)}<div class="text-suave" style="white-space:pre-wrap">${esc(f.DETALLE.replace(/ \| /g, '\n'))}</div></li>`).join('')}</ul>`
+          : '<div class="small text-suave">Sin movimientos registrados.</div>';
+      } catch (e) { $('#ficha-historial').innerHTML = `<div class="small text-danger">${esc(e.message)}</div>`; }
+    });
+    $('#btn-borrar') && $('#btn-borrar').addEventListener('click', async () => {
+      cerrarModal();
+      const ok = await confirmar('Enviar a la papelera', `<p>El expediente de <strong>${esc(reg.APELLIDOS)}, ${esc(reg.NOMBRE)}</strong> dejará de aparecer en búsquedas y listados. Podrás restaurarlo desde «Buscar &gt; Papelera».</p>
+        <label class="form-label small" for="motivo-borrado">Motivo (queda en el historial)</label><input class="form-control" id="motivo-borrado" placeholder="Ej.: duplicado de GOYA-000123">`, 'Enviar a la papelera', true);
+      if (!ok) return;
+      try { await api('borrar', { id, motivo: ($('#motivo-borrado') || {}).value || '' }); aviso('Expediente enviado a la papelera.'); refrescarVista(); } catch (e) { error(e); }
+    });
+    $('#btn-restaurar') && $('#btn-restaurar').addEventListener('click', async () => {
+      try { await api('restaurar', { id }); cerrarModal(); aviso('Expediente restaurado.'); refrescarVista(); } catch (e) { error(e); }
+    });
+  } catch (e) {
+    abrirModal('Expediente', `<div class="alert alert-danger">${esc(e.message)}</div>`);
+  }
+}
+
+function refrescarVista() {
+  if (S.vista === 'buscar') buscar();
+  else if (S.vista === 'indice') cargarIndice();
+  else if (S.vista === 'inicio') vistaInicio();
+}
+
+/* ---------- Tablas de resultados ---------- */
+
+const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Caja', CURSO: 'Curso', ILUSTRE: 'Destacado / ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
+
+function etiquetaSiNo(v) {
+  const t = sinAcentos(v);
+  if (t === 'SI') return '<span class="etiqueta e-SI"><i class="bi bi-check-lg"></i> Sí</span>';
+  if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+  if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO">Hay que buscar</span>';
+  return esc(v);
+}
+
+function lugar(f) {
+  const partes = [];
+  if (f.LOCALIDAD) partes.push(`<strong class="fw-semibold">${esc(f.LOCALIDAD)}</strong>`);
+  if (f.PROVINCIA) partes.push(f.LOCALIDAD ? `<span class="text-suave">(${esc(f.PROVINCIA)})</span>` : esc(f.PROVINCIA));
+  if (f.PAIS && f.PAIS !== 'España') partes.push(`<span class="etiqueta e-EXTRANJERO"><i class="bi bi-globe2"></i> ${esc(f.PAIS)}</span>`);
+  return partes.join(' ') || '<span class="text-suave">—</span>';
+}
+
+function celda(k, v, f) {
+  if (k === 'LUGAR') return lugar(f);
+  if (k === 'ESTADO') return etiquetaEstado(v);
+  if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
+  if (k === 'ILUSTRE') {
+    const t = sinAcentos(v);
+    if (t === 'ILUSTRE' || t === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Ilustre</span>';
+    if (t === 'DESTACADO') return '<span class="etiqueta e-DESTACADO"><i class="bi bi-award"></i> Destacado</span>';
+    if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+    if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO"><i class="bi bi-search"></i> Hay que buscar</span>';
+    if (t === 'SIN COMPROBAR') return '<span class="etiqueta"><i class="bi bi-question-circle"></i> Sin comprobar</span>';
+    return esc(v);
+  }
+  const c = campoPorClave(k);
+  if (c && ['seleccion', 'si_no'].includes(c.tipo) && /^(SÍ|SI|NO|HAY QUE BUSCAR)$/i.test(v || '')) return etiquetaSiNo(v);
+  return esc(v);
+}
+
+/** Columnas de los listados: país, provincia y localidad se juntan en «Lugar de nacimiento». */
+function columnasVisibles(cols) {
+  const out = [];
+  cols.forEach((k) => {
+    const x = GEO_CLAVES.includes(k) ? 'LUGAR' : k;
+    if (!out.includes(x)) out.push(x);
+  });
+  const pos = (k) => (ORDEN_COLUMNAS.indexOf(k) < 0 ? 99 : ORDEN_COLUMNAS.indexOf(k));
+  return out.sort((a, b) => pos(a) - pos(b));
+}
+
+function tablaResultados(r) {
+  if (!r.filas.length) return '<div class="vacio"><i class="bi bi-search"></i>No hay expedientes que coincidan.</div>';
+  const cols = columnasVisibles(r.columnas);
+  const conEpoca = !!r.todas;
+  return `<div class="table-responsive"><table class="table tabla table-hover">
+    <thead><tr>${conEpoca ? '<th>Época</th>' : ''}<th>Nº</th><th>Apellidos</th><th>Nombre</th>${cols.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${r.filas.map((f) => `<tr class="clic" data-ficha="${esc(f._UID)}">${conEpoca ? `<td><span class="etiqueta e-EPOCA">${esc(f.EPOCA)}</span></td>` : ''}<td class="id-exp text-nowrap">${esc(f.ID || '—')}</td>
+      <td class="ap">${esc(f.APELLIDOS)}</td><td>${esc(f.NOMBRE)}</td>
+      ${cols.map((k) => `<td>${celda(k, f[k], f)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+function enlazarFichas(el) {
+  $$('[data-ficha]', el).forEach((tr) => tr.addEventListener('click', () => verFicha(tr.dataset.ficha)));
+}
+
+/* ---------- Buscar ---------- */
+
+function camposFiltro() {
+  return camposActivos().filter((c) => ['seleccion', 'si_no', 'profesor', 'carpeta', 'provincia', 'pais'].includes(c.tipo));
+}
+
+function opcionesFiltro(c) {
+  if (c.tipo === 'profesor') return S.profesores.map((p) => p.NOMBRE);
+  if (c.tipo === 'carpeta') return S.carpetas.map((x) => ({ v: x.NUMERO, t: 'Caja ' + x.NUMERO }));
+  if (c.tipo === 'provincia') return GEO.provincias;
+  if (c.tipo === 'pais') return GEO.paises;
+  if (c.tipo === 'si_no') return ['SÍ', 'NO'];
+  return c.opciones;
+}
+
+async function vistaBuscar() {
+  const B = S.busqueda;
+  $('#vista').innerHTML = cabecera('Buscar expedientes', `Busca por apellidos, nombre, localidad o número y combina filtros. Época: <strong>${esc(epocaActual().NOMBRE || '')}</strong>${S.epocas.length > 1 ? ' (o todas, con el interruptor)' : ''}.`,
+    puede('ADMIN') ? `<button class="btn btn-light" id="btn-exportar"><i class="bi bi-download me-1"></i> Exportar CSV</button>` : '') + `
+    <div class="panel mb-3"><div class="panel-cuerpo">
+      <div class="input-group input-group-lg mb-3">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="search" class="form-control" id="q" placeholder="Ej.: abadía cortina, Jaca, GOYA-000012…" value="${esc(B.q)}">
+      </div>
+      <div class="row g-2 align-items-end">
+        ${camposFiltro().map((c) => `<div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">${esc(c.etiqueta)}</label>
+          <select class="form-select form-select-sm" data-filtro="${esc(c.clave)}">${opcionesHtml(opcionesFiltro(c), B.filtros[c.clave] || '', 'Todos')}</select></div>`).join('')}
+        <div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">Ordenar por</label>
+          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Caja' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
+        <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
+          ${S.epocas.length > 1 ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="todas" ${B.todas ? 'checked' : ''}><label class="form-check-label small fw-semibold" for="todas">Buscar en todas las épocas</label></div>` : ''}
+          <div class="form-check form-switch mb-0${puede('EDITOR') ? '' : ' d-none'}"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
+          ${puede('ADMIN') ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="papelera" ${B.papelera ? 'checked' : ''}><label class="form-check-label small" for="papelera">Papelera</label></div>` : ''}
+          <button class="btn btn-sm btn-link ms-auto" id="limpiar">Quitar filtros</button>
+        </div>
+      </div>
+    </div></div>
+    <div class="panel" id="resultados"><div class="cargando"><div class="spinner-border spinner-border-sm"></div></div></div>`;
+  const lanzar = debounce(() => { B.pagina = 1; buscar(); }, 450);
+  $('#q').addEventListener('input', () => { B.q = $('#q').value; lanzar(); });
+  $$('[data-filtro]').forEach((s) => s.addEventListener('change', () => { B.filtros[s.dataset.filtro] = s.value; B.pagina = 1; buscar(); }));
+  $('#orden').addEventListener('change', () => { B.orden = $('#orden').value; buscar(); });
+  $('#solo-mios').addEventListener('change', (e) => { B.soloMios = e.target.checked; B.pagina = 1; buscar(); });
+  $('#todas') && $('#todas').addEventListener('change', (e) => { B.todas = e.target.checked; B.pagina = 1; buscar(); });
+  $('#papelera') && $('#papelera').addEventListener('change', (e) => { B.papelera = e.target.checked; B.pagina = 1; buscar(); });
+  $('#limpiar').addEventListener('click', () => { S.busqueda = { q: '', filtros: {}, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false }; vistaBuscar(); });
+  $('#btn-exportar') && $('#btn-exportar').addEventListener('click', exportarCsv);
+  $('#q').focus();
+  await buscar();
+}
+
+let numBusqueda = 0;
+async function buscar() {
+  const B = S.busqueda;
+  const n = ++numBusqueda;
+  const cont = $('#resultados');
+  if (!cont) return;
+  const params = { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 };
+  const clave = 'buscar|' + S.epoca + '|' + JSON.stringify(params);
+  const pintar = (r) => {
+    cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
+    enlazarFichas(cont);
+  };
+  cont.style.opacity = S.cacheVistas[clave] ? '' : '.55';
+  try {
+    await conCache(clave, () => api('consultar', params), (r) => { if (n === numBusqueda && $('#resultados')) pintar(r); });
+  } catch (e) {
+    cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
+  } finally { cont.style.opacity = ''; }
+}
+
+async function exportarCsv() {
+  const b = $('#btn-exportar');
+  ocupado(b, true, 'Preparando…');
+  try {
+    const B = S.busqueda;
+    const r = await api('exportar', { q: B.q, filtros: B.filtros, orden: B.orden, papelera: B.papelera, soloMios: B.soloMios });
+    const blob = new Blob([r.csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `expedientes-ies-goya-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    aviso(`Exportados ${numero(r.total)} expedientes.`);
+  } catch (e) { error(e); } finally { ocupado(b, false); }
+}
+
+/* ---------- Índice alfabético ---------- */
+
+const LETRAS = 'A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z #'.split(' ');
+
+async function vistaIndice() {
+  $('#vista').innerHTML = cabecera('Índice alfabético', `Alumnos de <strong>${esc(epocaActual().NOMBRE || '')}</strong>, ordenados por el primer apellido.`,
+    '<button class="btn btn-light" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir</button>') + `
+    <div class="panel mb-3 no-imprimir"><div class="panel-cuerpo"><div class="letras" id="letras"></div></div></div>
+    <div class="panel" id="indice"><div class="cargando"><div class="spinner-border spinner-border-sm"></div></div></div>`;
+  await cargarIndice();
+}
+
+async function cargarIndice() {
+  const I = S.indice;
+  const cont = $('#indice');
+  if (!cont) return;
+  const params = { letra: I.letra, pagina: I.pagina, tam: 100, orden: 'apellidos' };
+  const clave = 'indice|' + S.epoca + '|' + JSON.stringify(params);
+  cont.style.opacity = S.cacheVistas[clave] ? '' : '.55';
+  try {
+    await conCache(clave, () => api('consultar', params), (r) => pintarIndice(r, I, params.letra, params.pagina));
+  } catch (e) {
+    cont.innerHTML = `<div class="alert alert-danger m-3">${esc(e.message)}</div>`;
+  } finally { cont.style.opacity = ''; }
+}
+
+function pintarIndice(r, I, letra, pagina) {
+  const cont = $('#indice');
+  if (!cont || I.letra !== letra || I.pagina !== pagina) return; // ya se ha pedido otra letra
+  $('#letras').innerHTML = LETRAS.map((l) => `<button data-letra="${l}" class="${l === I.letra ? 'activa' : ''}" ${r.letras[l] ? '' : 'disabled'}>${l}<small>${r.letras[l] ? numero(r.letras[l]) : '·'}</small></button>`).join('');
+  $$('#letras [data-letra]').forEach((b) => b.addEventListener('click', () => { I.letra = b.dataset.letra; I.pagina = 1; cargarIndice(); }));
+  cont.innerHTML = `<div class="panel-cab"><h2 class="serif fs-3">${esc(I.letra)}</h2><span class="small text-suave">${numero(r.total)} alumnos</span></div>` +
+    tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { I.pagina = p; cargarIndice(); window.scrollTo(0, 0); });
+  enlazarFichas(cont);
+}
+
+/* ---------- Cajas ---------- */
+
+let filtroCarpetas = 'todas';
+
+function vistaCarpetas() {
+  return conCache('carpetas|' + S.epoca, () => api('carpetas'), (lista) => {
+    S.carpetas = lista.map(({ EXPEDIENTES, TERMINADOS, ...c }) => c);
+    pintarCarpetas(lista);
+  });
+}
+
+function pintarCarpetas(lista) {
+  const admin = puede('ADMIN'), editor = puede('EDITOR');
+  const yo = S.usuario.nombre;
+  const f = filtroCarpetas;
+  const visibles = lista.filter((c) => f === 'todas' || (f === 'sinrango' ? !c.DESDE || !c.HASTA : f === 'mias' ? c.ASIGNADA_A === yo : c.ESTADO === f));
+  const cuenta = (e) => lista.filter((c) => c.ESTADO === e).length;
+  $('#vista').innerHTML = cabecera(`Cajas · ${esc(epocaActual().NOMBRE || '')}`,
+    'Cada caja agrupa un tramo alfabético de apellidos. Asígnate una caja antes de empezar para no trabajar dos personas en la misma.',
+    admin ? `<button class="btn btn-light" id="btn-crear-varias"><i class="bi bi-folder-plus me-1"></i> Añadir varias</button>
+      <button class="btn btn-primary" id="btn-nueva-carpeta"><i class="bi bi-plus-lg me-1"></i> Nueva caja</button>` : '') + `
+    <div class="row g-3 mb-3">
+      <div class="col-lg-6"><div class="panel h-100"><div class="panel-cuerpo">
+        <label class="form-label" for="localizar">¿En qué caja está un apellido?</label>
+        <input class="form-control" id="localizar" placeholder="Escribe un apellido, p. ej. ABADÍA" autocomplete="off" data-mayus>
+        <div class="small mt-2" id="localizar-res"></div>
+      </div></div></div>
+      <div class="col-lg-6"><div class="panel h-100"><div class="panel-cuerpo d-flex flex-wrap gap-4 align-items-center">
+        <div><div class="kpi border-0 p-0"><div class="etq">Pendientes</div><div class="num">${cuenta('PENDIENTE')}</div></div></div>
+        <div><div class="kpi border-0 p-0"><div class="etq">En curso</div><div class="num">${cuenta('EN CURSO')}</div></div></div>
+        <div><div class="kpi border-0 p-0"><div class="etq">Terminadas</div><div class="num">${cuenta('TERMINADA')}</div></div></div>
+        <div><div class="kpi border-0 p-0"><div class="etq">Sin rango</div><div class="num">${lista.filter((c) => !c.DESDE || !c.HASTA).length}</div></div></div>
+      </div></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-cab flex-wrap"><div class="btn-group btn-group-sm" role="group">
+        ${[['todas', 'Todas'], ['mias', 'Mías'], ['PENDIENTE', 'Pendientes'], ['EN CURSO', 'En curso'], ['TERMINADA', 'Terminadas'], ['sinrango', 'Sin rango']]
+          .map(([v, t]) => `<button class="btn ${f === v ? 'btn-tinta' : 'btn-outline-secondary'}" data-fc="${v}">${t}</button>`).join('')}
+      </div><span class="small text-suave">${visibles.length} cajas</span></div>
+      ${visibles.length ? `<div class="table-responsive"><table class="table tabla table-hover">
+        <thead><tr><th>Nº</th><th>Desde</th><th>Hasta</th><th class="text-end">Expedientes</th><th>Estado</th><th>La trabaja</th><th></th></tr></thead>
+        <tbody>${visibles.map((c) => {
+          const mia = c.ASIGNADA_A && c.ASIGNADA_A === yo;
+          const acciones = [];
+          if (editor && c.ESTADO !== 'TERMINADA' && !c.ASIGNADA_A) acciones.push(`<button class="btn btn-sm btn-outline-primary" data-asignar="${esc(c.NUMERO)}"><i class="bi bi-person-plus"></i> Asignar</button>`);
+          if ((mia || admin) && c.ESTADO === 'EN CURSO') acciones.push(`<button class="btn btn-sm btn-outline-success" data-tc="terminar" data-n="${esc(c.NUMERO)}">Terminada</button>`);
+          if ((mia || admin) && c.ASIGNADA_A && c.ESTADO !== 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="liberar" data-n="${esc(c.NUMERO)}">Liberar</button>`);
+          if ((mia || admin) && c.ESTADO === 'TERMINADA') acciones.push(`<button class="btn btn-sm btn-light" data-tc="reabrir" data-n="${esc(c.NUMERO)}">Reabrir</button>`);
+          acciones.push(`<button class="btn btn-sm btn-light" data-ver="${esc(c.NUMERO)}" title="Ver expedientes"><i class="bi bi-list-ul"></i></button>`);
+          if (admin) acciones.push(`<button class="btn btn-sm btn-light" data-editar-c="${esc(c.NUMERO)}" title="Editar"><i class="bi bi-pencil"></i></button>`);
+          return `<tr><td class="fw-bold">${esc(c.NUMERO)}</td><td class="ap">${esc(c.DESDE) || '<span class="text-suave fw-normal">—</span>'}</td>
+            <td class="ap">${esc(c.HASTA) || '<span class="text-suave fw-normal">—</span>'}</td>
+            <td class="text-end">${numero(c.EXPEDIENTES)}${c.EXPEDIENTES ? `<div class="small text-suave">${numero(c.TERMINADOS)} terminados</div>` : ''}</td>
+            <td>${etiquetaEstado(c.ESTADO)}</td><td>${esc(c.ASIGNADA_A)}${c.NOTAS ? `<div class="small text-suave">${esc(c.NOTAS)}</div>` : ''}</td>
+            <td class="text-end text-nowrap"><div class="d-inline-flex gap-1">${acciones.join('')}</div></td></tr>`;
+        }).join('')}</tbody></table></div>` : '<div class="vacio"><i class="bi bi-folder"></i>No hay cajas con este filtro.</div>'}
+    </div>`;
+
+  $$('[data-fc]').forEach((b) => b.addEventListener('click', () => { filtroCarpetas = b.dataset.fc; pintarCarpetas(lista); }));
+  $('#localizar').addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    const s = carpetaSugerida(v);
+    $('#localizar-res').innerHTML = !v ? '' : s ? `<i class="bi bi-arrow-right-circle-fill text-success me-1"></i><strong>Caja ${esc(s.NUMERO)}</strong> · ${esc(s.DESDE)} – ${esc(s.HASTA)}`
+      : '<span class="text-suave">Ninguna caja con rango definido incluye ese apellido.</span>';
+  });
+  $$('[data-asignar]').forEach((b) => b.addEventListener('click', () => asignarCarpeta(lista.find((c) => c.NUMERO === b.dataset.asignar))));
+  $$('[data-tc]').forEach((b) => b.addEventListener('click', async () => {
+    ocupado(b, true, '');
+    try { await api('tomarCarpeta', { numero: b.dataset.n, accion: b.dataset.tc }); aviso('Caja ' + b.dataset.n + ' actualizada.'); vistaCarpetas(); }
+    catch (e) { error(e); ocupado(b, false); }
+  }));
+  $$('[data-ver]').forEach((b) => b.addEventListener('click', () => {
+    S.busqueda = { q: '', filtros: { CARPETA: b.dataset.ver }, orden: 'apellidos', pagina: 1, papelera: false, soloMios: false, todas: false };
+    ir('buscar');
+  }));
+  $$('[data-editar-c]').forEach((b) => b.addEventListener('click', () => editarCarpeta(lista.find((c) => c.NUMERO === b.dataset.editarC))));
+  $('#btn-nueva-carpeta') && $('#btn-nueva-carpeta').addEventListener('click', () => editarCarpeta(null, lista));
+  $('#btn-crear-varias') && $('#btn-crear-varias').addEventListener('click', () => crearVariasCarpetas(lista));
+}
+
+/** Profesorado que puede trabajar cajas (activo y con permiso de edición). */
+function profesoresEditores() {
+  return S.profesores.filter((p) => p.ACTIVO !== 'NO' && ['EDITOR', 'ADMIN'].includes(p.ROL)).map((p) => p.NOMBRE);
+}
+
+function asignarCarpeta(c) {
+  const nombres = profesoresEditores();
+  const yo = nombres.includes(S.usuario.nombre) ? S.usuario.nombre : '';
+  abrirModal(`Asignar la caja ${esc(c.NUMERO)}`, `
+    ${c.DESDE || c.HASTA ? `<p class="text-suave">De <strong>${esc(c.DESDE || '…')}</strong> a <strong>${esc(c.HASTA || '…')}</strong></p>` : ''}
+    <label class="form-label" for="asig-prof">¿Quién va a trabajar esta caja?</label>
+    <select class="form-select" id="asig-prof">${opcionesHtml(nombres, yo, '— Elegir profesor/a —')}</select>
+    <div class="form-text">Sólo aparece el profesorado activo con permiso de edición. La caja pasará a «EN CURSO».</div>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-asignar">Asignar</button>', '');
+  $('#btn-asignar').addEventListener('click', async (ev) => {
+    const prof = $('#asig-prof').value;
+    if (!prof) { $('#asig-prof').classList.add('is-invalid'); return; }
+    ocupado(ev.currentTarget, true, 'Asignando…');
+    try {
+      await api('tomarCarpeta', { numero: c.NUMERO, accion: 'asignar', profesor: prof });
+      cerrarModal(); aviso(`Caja ${c.NUMERO} asignada a ${prof}.`); vistaCarpetas();
+    } catch (e) { error(e); ocupado($('#btn-asignar'), false); }
+  });
+}
+
+function editarCarpeta(c, lista) {
+  const siguiente = lista ? String(lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1) : '';
+  const v = c || { NUMERO: siguiente, DESDE: '', HASTA: '', ESTADO: 'PENDIENTE', ASIGNADA_A: '', NOTAS: '' };
+  abrirModal(c ? 'Caja ' + esc(c.NUMERO) : 'Nueva caja', `
+    <form id="form-carpeta" class="row g-3">
+      <div class="col-sm-4"><label class="form-label">Número</label><input class="form-control" name="NUMERO" value="${esc(v.NUMERO)}" required></div>
+      <div class="col-sm-8"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml(['PENDIENTE', 'EN CURSO', 'TERMINADA'], v.ESTADO)}</select></div>
+      <div class="col-sm-6"><label class="form-label">Primer apellido de la caja</label><input class="form-control" name="DESDE" data-mayus value="${esc(v.DESDE)}" placeholder="ABADÍA Y CORTINA"></div>
+      <div class="col-sm-6"><label class="form-label">Último apellido de la caja</label><input class="form-control" name="HASTA" data-mayus value="${esc(v.HASTA)}" placeholder="ABEIJÓN Y FUERTES"></div>
+      <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(profesoresEditores(), v.ASIGNADA_A, '— Nadie —')}</select></div>
+      <div class="col-sm-6"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}"></div>
+      <div class="col-12 form-text">Con el primer y el último apellido, la aplicación sugiere automáticamente la caja al registrar un alumno.</div>
+    </form>`,
+    `${c ? '<button class="btn btn-outline-danger me-auto" id="btn-borrar-carpeta"><i class="bi bi-trash me-1"></i>Borrar</button>' : ''}
+     <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-carpeta">Guardar</button>`, '');
+  $('#btn-guardar-carpeta').addEventListener('click', async (ev) => {
+    const datos = Object.fromEntries(new FormData($('#form-carpeta')).entries());
+    datos.original = c ? c.NUMERO : '';
+    ocupado(ev.currentTarget, true);
+    try { await api('guardarCarpeta', datos); cerrarModal(); aviso('Caja guardada.'); vistaCarpetas(); }
+    catch (e) { error(e); ocupado($('#btn-guardar-carpeta'), false); }
+  });
+  $('#btn-borrar-carpeta') && $('#btn-borrar-carpeta').addEventListener('click', async () => {
+    cerrarModal();
+    if (!(await confirmar('Borrar caja', `<p>¿Borrar la caja ${esc(c.NUMERO)}? Sólo se puede si no tiene expedientes.</p>`, 'Borrar', true))) return;
+    try { await api('borrarCarpeta', { numero: c.NUMERO }); aviso('Caja borrada.'); vistaCarpetas(); } catch (e) { error(e); }
+  });
+}
+
+function crearVariasCarpetas(lista) {
+  const siguiente = lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1;
+  abrirModal('Añadir varias cajas', `
+    <p class="text-suave">Crea de golpe las cajas numeradas que faltan. Después podrás definir el primer y el último apellido de cada una.</p>
+    <div class="row g-3"><div class="col-6"><label class="form-label">Desde la nº</label><input type="number" class="form-control" id="cv-desde" value="${siguiente}" min="1"></div>
+    <div class="col-6"><label class="form-label">Hasta la nº</label><input type="number" class="form-control" id="cv-hasta" value="${siguiente + 19}" min="1"></div></div>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-cv">Crear cajas</button>', '');
+  $('#btn-cv').addEventListener('click', async (ev) => {
+    ocupado(ev.currentTarget, true, 'Creando…');
+    try { await api('crearCarpetas', { desde: $('#cv-desde').value, hasta: $('#cv-hasta').value }); cerrarModal(); aviso('Cajas creadas.'); vistaCarpetas(); }
+    catch (e) { error(e); ocupado($('#btn-cv'), false); }
+  });
+}
+
+/* ---------- Coordinación: campos del formulario ---------- */
+
+async function vistaCampos() {
+  const tipos = (t) => TIPOS[t] || t;
+  $('#vista').innerHTML = cabecera('Campos del formulario',
+    'Añade, renombra u ordena los datos que se recogen de cada expediente. Los campos nunca se borran (se desactivan) para no perder información.',
+    '<button class="btn btn-primary" id="btn-nuevo-campo"><i class="bi bi-plus-lg me-1"></i> Nuevo campo</button>') + `
+    <div class="panel"><div class="table-responsive"><table class="table tabla">
+      <thead><tr><th style="width:80px">Orden</th><th>Campo</th><th>Tipo</th><th>Sección</th><th>Obligatorio</th><th>En listados</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${S.campos.map((c, i) => `<tr class="${c.activo ? '' : 'text-suave'}">
+        <td><div class="btn-group btn-group-sm"><button class="btn btn-light" data-mover="${esc(c.clave)}" data-dir="-1" ${i === 0 ? 'disabled' : ''}><i class="bi bi-arrow-up"></i></button>
+          <button class="btn btn-light" data-mover="${esc(c.clave)}" data-dir="1" ${i === S.campos.length - 1 ? 'disabled' : ''}><i class="bi bi-arrow-down"></i></button></div></td>
+        <td><strong>${esc(c.etiqueta)}</strong><div class="id-exp">${esc(c.clave)}${c.sistema ? ' · básico' : ''}</div></td>
+        <td class="small">${esc(tipos(c.tipo))}${c.tipo === 'seleccion' ? `<div class="text-suave">${esc(c.opciones.join(' · '))}</div>` : ''}</td>
+        <td class="small">${esc(c.seccion)}</td><td>${c.obligatorio ? 'Sí' : '—'}</td><td>${c.enListados ? 'Sí' : '—'}</td>
+        <td>${c.activo ? '<span class="etiqueta e-TERMINADO">Activo</span>' : '<span class="etiqueta">Desactivado</span>'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-light" data-editar="${esc(c.clave)}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}
+      </tbody></table></div></div>`;
+  $('#btn-nuevo-campo').addEventListener('click', () => editarCampo(null));
+  $$('[data-editar]').forEach((b) => b.addEventListener('click', () => editarCampo(campoPorClave(b.dataset.editar))));
+  $$('[data-mover]').forEach((b) => b.addEventListener('click', async () => {
+    try { S.campos = await api('moverCampo', { clave: b.dataset.mover, dir: parseInt(b.dataset.dir, 10) }); vistaCampos(); } catch (e) { error(e); }
+  }));
+}
+
+function editarCampo(c) {
+  const v = c || { etiqueta: '', tipo: 'texto', opciones: [], obligatorio: false, seccion: 'Otros datos', ayuda: '', enListados: false, activo: true, sistema: false };
+  const secciones = Array.from(new Set(S.campos.map((x) => x.seccion)));
+  const tiposPermitidos = Object.keys(TIPOS).filter((t) => !['pais', 'provincia', 'localidad', 'profesor', 'carpeta'].includes(t) || t === v.tipo);
+  abrirModal(c ? 'Campo: ' + esc(c.etiqueta) : 'Nuevo campo', `
+    <form id="form-campo" class="row g-3">
+      <div class="col-md-7"><label class="form-label">Nombre del campo (lo que verá el profesorado)</label><input class="form-control" name="etiqueta" value="${esc(v.etiqueta)}" required placeholder="Ej.: Nombre del padre"></div>
+      <div class="col-md-5"><label class="form-label">Tipo de dato</label><select class="form-select" name="tipo" ${v.sistema ? 'disabled' : ''}>${opcionesHtml(tiposPermitidos.map((t) => ({ v: t, t: TIPOS[t] })), v.tipo)}</select></div>
+      <div class="col-12" id="caja-opciones"><label class="form-label">Opciones (una por línea)</label><textarea class="form-control" name="opciones" rows="4" placeholder="SÍ&#10;NO&#10;HAY QUE BUSCAR">${esc(v.opciones.join('\n'))}</textarea>
+        <div class="form-text">Si cambias una opción, los expedientes antiguos conservan el valor que tenían.</div></div>
+      <div class="col-md-6"><label class="form-label">Sección del formulario</label><input class="form-control" name="seccion" list="dl-secciones" value="${esc(v.seccion)}">
+        <datalist id="dl-secciones">${secciones.map((s) => `<option value="${esc(s)}">`).join('')}</datalist></div>
+      <div class="col-md-6"><label class="form-label">Texto de ayuda</label><input class="form-control" name="ayuda" value="${esc(v.ayuda)}"></div>
+      <div class="col-12 d-flex flex-wrap gap-4">
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="obligatorio" id="c-obl" ${v.obligatorio ? 'checked' : ''}><label class="form-check-label" for="c-obl">Obligatorio</label></div>
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="enListados" id="c-lis" ${v.enListados ? 'checked' : ''}><label class="form-check-label" for="c-lis">Mostrar como columna en búsquedas e índice</label></div>
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="activo" id="c-act" ${v.activo ? 'checked' : ''} ${v.sistema ? 'disabled' : ''}><label class="form-check-label" for="c-act">Activo</label></div>
+      </div>
+      ${v.sistema ? '<div class="col-12 form-text">Es un campo básico de la aplicación: puedes cambiar su nombre, ayuda u opciones, pero no su tipo ni desactivarlo.</div>' : ''}
+    </form>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-campo">Guardar</button>', '');
+  const tipoSel = $('#form-campo [name=tipo]');
+  const verOpciones = () => $('#caja-opciones').classList.toggle('d-none', tipoSel.value !== 'seleccion');
+  tipoSel.addEventListener('change', verOpciones);
+  verOpciones();
+  $('#btn-guardar-campo').addEventListener('click', async (ev) => {
+    const f = $('#form-campo');
+    const datos = {
+      clave: c ? c.clave : '', etiqueta: f.etiqueta.value, tipo: tipoSel.value, opciones: f.opciones.value, seccion: f.seccion.value,
+      ayuda: f.ayuda.value, obligatorio: f.obligatorio.checked, enListados: f.enListados.checked, activo: f.activo.checked
+    };
+    ocupado(ev.currentTarget, true);
+    try { S.campos = await api('guardarCampo', datos); cerrarModal(); aviso('Campo guardado.'); vistaCampos(); }
+    catch (e) { error(e); ocupado($('#btn-guardar-campo'), false); }
+  });
+}
+
+/* ---------- Coordinación: profesores y permisos ---------- */
+
+function vistaProfesores() {
+  $('#vista').innerHTML = cabecera('Profesores y permisos', 'Quién aparece en la lista de profesores y qué puede hacer cada persona en la aplicación.',
+    '<button class="btn btn-primary" id="btn-nuevo-prof"><i class="bi bi-person-plus me-1"></i> Añadir persona</button>') + `
+    <div class="row g-3 mb-3">
+      ${[['ADMIN', 'Coordinación', 'Todo: modificar cualquier expediente, papelera, campos, cajas, profesores, ajustes e historial.'],
+        ['EDITOR', 'Editor/a', 'Crear expedientes y modificarlos. Asignarse cajas.'],
+        ['LECTOR', 'Sólo consulta', 'Buscar y ver expedientes, índice y cajas. No puede cambiar nada.']]
+        .map(([r, t, d]) => `<div class="col-md-4"><div class="panel h-100"><div class="panel-cuerpo"><span class="rol rol-${r}">${t}</span><div class="small text-suave mt-2">${d}</div></div></div></div>`).join('')}
+    </div>
+    <div class="panel"><div class="table-responsive"><table class="table tabla">
+      <thead><tr><th>Nombre (como aparece en la lista)</th><th>Correo</th><th>Rol</th><th>Código de acceso</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${S.profesores.map((p) => `<tr class="${p.ACTIVO === 'NO' ? 'text-suave' : ''}">
+        <td><strong>${esc(p.NOMBRE)}</strong>${p.NOTAS ? `<div class="small text-suave">${esc(p.NOTAS)}</div>` : ''}</td>
+        <td class="small">${esc(p.EMAIL) || '<span class="text-suave">sin correo (no puede entrar)</span>'}</td>
+        <td><span class="rol rol-${esc(p.ROL)}">${esc(NOMBRES_ROL[p.ROL] || p.ROL)}</span></td>
+        <td class="id-exp">${!p.CODIGO_ACCESO ? '—' : (String(p.CODIGO_ACCESO).length < 8 || !/[A-Za-z]/.test(p.CODIGO_ACCESO) || !/\d/.test(p.CODIGO_ACCESO))
+          ? '<span class="etiqueta e-PENDIENTE-DE-REVISION" title="Pulsa ✏ y «Generar» para cambiarlo"><i class="bi bi-exclamation-triangle"></i> Débil</span>' : '••••••••'}</td>
+        <td>${p.ACTIVO === 'NO' ? '<span class="etiqueta">Inactivo</span>' : '<span class="etiqueta e-TERMINADO">Activo</span>'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-light" data-fila="${p._fila}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
+    </table></div></div>
+    <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
+      <strong class="text-body">¿Cómo entra cada persona?</strong> Pulsando «Acceso profesorado → Entrar con mi cuenta de Google», con la cuenta de Google cuyo correo pongas aquí
+      (@gmail.com, @iesgoya.es…), sin códigos (requiere la app «Acceso con Google», ver <em>Ajustes y copias</em>). Quien no tenga cuenta de Google entra con su correo y el
+      <strong>código de acceso</strong> que pongas aquí (mínimo 8 caracteres, con letras y números: usa «Generar»). Para quitar el acceso a alguien, desactívalo.
+    </div></div>`;
+  $('#btn-nuevo-prof').addEventListener('click', () => editarProfesor(null));
+  $$('[data-fila]').forEach((b) => b.addEventListener('click', () => editarProfesor(S.profesores.find((p) => String(p._fila) === b.dataset.fila))));
+}
+
+function generarCodigo() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const a = new Uint32Array(8);
+  crypto.getRandomValues(a);
+  return Array.from(a, (n) => c[n % c.length]).join('');
+}
+
+function editarProfesor(p) {
+  const v = p || { NOMBRE: '', EMAIL: '', ROL: 'EDITOR', ACTIVO: 'SÍ', CODIGO_ACCESO: '', NOTAS: '' };
+  abrirModal(p ? esc(p.NOMBRE) : 'Añadir persona', `
+    <form id="form-prof" class="row g-3">
+      <div class="col-md-6"><label class="form-label">Nombre</label><input class="form-control" name="NOMBRE" value="${esc(v.NOMBRE)}" placeholder="PEDRO PÉREZ (HISTORIA)" required></div>
+      <div class="col-md-6"><label class="form-label">Correo</label><input type="email" class="form-control" name="EMAIL" value="${esc(v.EMAIL)}" placeholder="nombre@educa.aragon.es"></div>
+      <div class="col-md-6"><label class="form-label">Rol</label><select class="form-select" name="ROL">${opcionesHtml(Object.keys(NOMBRES_ROL).map((r) => ({ v: r, t: NOMBRES_ROL[r] })), v.ROL)}</select></div>
+      <div class="col-md-6"><label class="form-label">Código de acceso <span class="text-suave fw-normal">(sólo si no entra con su cuenta de Google)</span></label>
+        <div class="input-group"><input class="form-control font-monospace" name="CODIGO_ACCESO" value="${esc(v.CODIGO_ACCESO)}">
+        <button class="btn btn-outline-secondary" type="button" id="btn-gen">Generar</button></div></div>
+      <div class="col-12"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}" placeholder="Departamento, horario…"></div>
+      <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="ACTIVO" id="p-act" ${v.ACTIVO !== 'NO' ? 'checked' : ''}><label class="form-check-label" for="p-act">Activo (aparece en la lista y puede entrar)</label></div></div>
+    </form>`,
+    `${p ? '<button class="btn btn-outline-danger me-auto" id="btn-borrar-prof"><i class="bi bi-trash me-1"></i>Eliminar</button>' : ''}
+     <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-prof">Guardar</button>`, '');
+  $('#btn-gen').addEventListener('click', () => { $('#form-prof [name=CODIGO_ACCESO]').value = generarCodigo(); });
+  $('#btn-guardar-prof').addEventListener('click', async (ev) => {
+    const f = $('#form-prof');
+    const datos = { _fila: p ? p._fila : 0, NOMBRE: f.NOMBRE.value, EMAIL: f.EMAIL.value, ROL: f.ROL.value, CODIGO_ACCESO: f.CODIGO_ACCESO.value, NOTAS: f.NOTAS.value, ACTIVO: f.ACTIVO.checked ? 'SÍ' : 'NO' };
+    ocupado(ev.currentTarget, true);
+    try { S.profesores = await api('guardarProfesor', datos); cerrarModal(); aviso('Guardado.'); vistaProfesores(); }
+    catch (e) { error(e); ocupado($('#btn-guardar-prof'), false); }
+  });
+  $('#btn-borrar-prof') && $('#btn-borrar-prof').addEventListener('click', async () => {
+    cerrarModal();
+    if (!(await confirmar('Eliminar persona', `<p>¿Eliminar a <strong>${esc(p.NOMBRE)}</strong>? Normalmente es mejor <em>desactivarla</em>. Sus expedientes no se borran.</p>`, 'Eliminar', true))) return;
+    try { S.profesores = await api('borrarProfesor', { _fila: p._fila }); aviso('Eliminado.'); vistaProfesores(); } catch (e) { error(e); }
+  });
+}
+
+/* ---------- Coordinación: historial ---------- */
+
+let histEstado = { q: '', pagina: 1 };
+
+async function vistaHistorial() {
+  $('#vista').innerHTML = cabecera('Historial de cambios', 'Cada alta, modificación, borrado y cambio de configuración queda registrado.') + `
+    <div class="panel mb-3"><div class="panel-cuerpo"><input type="search" class="form-control" id="hq" placeholder="Filtrar por persona, acción, identificador, apellido…" value="${esc(histEstado.q)}"></div></div>
+    <div class="panel" id="hist"><div class="cargando"><div class="spinner-border spinner-border-sm"></div></div></div>`;
+  $('#hq').addEventListener('input', debounce(() => { histEstado = { q: $('#hq').value, pagina: 1 }; cargarHistorial(); }, 400));
+  await cargarHistorial();
+}
+
+async function cargarHistorial() {
+  const cont = $('#hist');
+  const r = await api('historial', histEstado);
+  if (!$('#hist')) return;
+  cont.innerHTML = r.filas.length ? `<div class="table-responsive"><table class="table tabla">
+    <thead><tr><th>Fecha</th><th>Persona</th><th>Acción</th><th>Expediente</th><th>Detalle</th></tr></thead>
+    <tbody>${r.filas.map((f) => `<tr><td class="small text-nowrap">${esc(f.FECHA)}</td><td class="small">${esc(f.USUARIO)}<div class="text-suave">${esc(f.EMAIL)}</div></td>
+      <td><span class="etiqueta">${esc(f.ACCION)}</span></td><td>${f.ID ? `<a href="#" data-ficha="${esc(f.ID)}" class="small">Ver ficha</a>` : ''}</td>
+      <td class="small" style="white-space:pre-wrap;max-width:560px">${esc(f.DETALLE.replace(/ \| /g, '\n'))}</td></tr>`).join('')}</tbody></table></div>`
+    + paginacion(r.pagina, r.paginas, r.total, (p) => { histEstado.pagina = p; cargarHistorial(); })
+    : '<div class="vacio"><i class="bi bi-clock-history"></i>Sin movimientos.</div>';
+  $$('[data-ficha]', cont).forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); verFicha(a.dataset.ficha); }));
+}
+
+/* ---------- Coordinación: ajustes y copias ---------- */
+
+function vistaAjustes() {
+  const A = S.ajustes;
+  const si = (v) => ['SÍ', 'SI'].includes(String(v).toUpperCase());
+  $('#vista').innerHTML = cabecera('Ajustes y copias de seguridad', 'Opciones generales de la aplicación.') + `
+    <div class="row g-3">
+      <div class="col-lg-7"><div class="panel"><div class="panel-cab"><h2>General</h2></div><div class="panel-cuerpo">
+        <form id="form-ajustes" class="row g-3">
+          <div class="col-12"><label class="form-label">Título</label><input class="form-control" name="NOMBRE_APP" value="${esc(A.NOMBRE_APP)}"></div>
+          <div class="col-12"><label class="form-label">Subtítulo</label><input class="form-control" name="SUBTITULO" value="${esc(A.SUBTITULO)}"></div>
+          <div class="col-md-6"><label class="form-label">País por defecto</label><select class="form-select" name="PAIS_DEFECTO">${opcionesHtml(GEO.paises, A.PAIS_DEFECTO)}</select></div>
+          <div class="col-md-6"><label class="form-label">Provincia por defecto</label><select class="form-select" name="PROVINCIA_DEFECTO">${opcionesHtml(GEO.provincias, A.PROVINCIA_DEFECTO, '—')}</select></div>
+          <div class="col-12"><div class="border rounded p-3 bg-light">
+            <div class="fw-semibold mb-1"><i class="bi bi-google me-1"></i> Entrar con cualquier cuenta de Google</div>
+            <div class="form-text mt-0 mb-2">Para que el profesorado autorizado entre con su cuenta de Google (@gmail.com, @iesgoya.es…) sin códigos, se instala
+            una pequeña app aparte, «Acceso con Google» (archivo <code>Acceso.gs</code>). Esa app necesita esta clave secreta:</div>
+            ${S.secretoAcceso ? `<div class="input-group input-group-sm mb-2"><span class="input-group-text">Clave secreta</span><input class="form-control font-monospace" readonly value="${esc(S.secretoAcceso)}" id="secreto-acceso">
+              <button class="btn btn-outline-secondary" type="button" id="copiar-secreto">Copiar</button></div>` : ''}
+            <label class="form-label small mb-1">Enlace de la app «Acceso con Google»</label>
+            <input class="form-control font-monospace small" name="URL_ACCESO" value="${esc(A.URL_ACCESO || '')}" placeholder="https://script.google.com/macros/s/…/exec">
+            <div class="form-text">Cuando lo pongas, «Acceso profesorado» mostrará «Entrar con mi cuenta de Google». Sólo podrá editar quien esté en <em>Profesores y permisos</em>.</div>
+          </div></div>
+          <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="EDITORES_SOLO_PROPIOS" id="a-prop" ${si(A.EDITORES_SOLO_PROPIOS) ? 'checked' : ''}>
+            <label class="form-check-label" for="a-prop">Los editores sólo pueden modificar los expedientes que han creado ellos</label></div></div>
+          <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="LECTURA_ABIERTA" id="a-lec" ${si(A.LECTURA_ABIERTA) ? 'checked' : ''}>
+            <label class="form-check-label" for="a-lec">Cualquier persona identificada que no esté en la lista puede <em>consultar</em> (sin editar)</label></div></div>
+          <div class="col-12 text-end"><button class="btn btn-primary" type="submit" id="btn-guardar-ajustes">Guardar ajustes</button></div>
+        </form>
+      </div></div></div>
+      <div class="col-lg-5 d-flex flex-column gap-3">
+        <div class="panel"><div class="panel-cab"><h2>Copias de seguridad</h2></div><div class="panel-cuerpo">
+          <p class="small text-suave">Además del historial de versiones de Google, puedes guardar copias completas de la hoja en una carpeta de tu Google Drive.</p>
+          <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="a-copia" ${si(A.COPIA_AUTOMATICA) ? 'checked' : ''}>
+            <label class="form-check-label" for="a-copia">Copia automática semanal (se conservan las ${esc(A.COPIAS_A_CONSERVAR || 12)} últimas)</label></div>
+          <button class="btn btn-tinta" id="btn-copia"><i class="bi bi-cloud-arrow-up me-1"></i> Hacer una copia ahora</button>
+          <div class="small mt-2" id="copia-res"></div>
+        </div></div>
+        <div class="panel"><div class="panel-cab"><h2>Capacidad y orden</h2></div><div class="panel-cuerpo small">
+          <div id="capacidad" class="mb-3 text-suave">Calculando…</div>
+          <p class="text-suave mb-2">La hoja se ordena por apellidos y se renumera sola cada noche. La aplicación siempre muestra el número correcto.</p>
+          <button class="btn btn-light btn-sm" id="btn-ordenar"><i class="bi bi-sort-alpha-down me-1"></i> Ordenar y renumerar la hoja ahora</button>
+        </div></div>
+        <div class="panel"><div class="panel-cab"><h2>Enlaces</h2></div><div class="panel-cuerpo small">
+          ${S.urlApp ? `<div class="mb-2"><div class="text-suave">Enlace para el profesorado</div><div class="input-group input-group-sm"><input class="form-control" readonly value="${esc(S.urlApp)}" id="url-app"><button class="btn btn-outline-secondary" id="copiar-url">Copiar</button></div></div>` : ''}
+          ${S.urlHoja ? `<a href="${esc(S.urlHoja)}" target="_blank" rel="noopener"><i class="bi bi-table me-1"></i>Abrir la hoja de cálculo</a>
+            <div class="text-suave mt-1">No compartas la hoja con permiso de edición: el profesorado debe trabajar sólo desde la aplicación.</div>` : ''}
+        </div></div>
+      </div>
+    </div>`;
+  $('#form-ajustes').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const f = ev.target;
+    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value, URL_ACCESO: f.URL_ACCESO.value.trim(),
+      PROVINCIA_DEFECTO: f.PROVINCIA_DEFECTO.value, EDITORES_SOLO_PROPIOS: f.EDITORES_SOLO_PROPIOS.checked ? 'SÍ' : 'NO', LECTURA_ABIERTA: f.LECTURA_ABIERTA.checked ? 'SÍ' : 'NO' };
+    const b = $('#btn-guardar-ajustes');
+    ocupado(b, true);
+    try { S.ajustes = await api('guardarAjustes', datos); pintarCabecera(); aviso('Ajustes guardados.'); } catch (e) { error(e); } finally { ocupado(b, false); }
+  });
+  $('#a-copia').addEventListener('change', async (ev) => {
+    try { S.ajustes = await api('guardarAjustes', { COPIA_AUTOMATICA: ev.target.checked ? 'SÍ' : 'NO' }); aviso(ev.target.checked ? 'Copia semanal activada.' : 'Copia semanal desactivada.'); }
+    catch (e) { error(e); ev.target.checked = !ev.target.checked; }
+  });
+  $('#btn-copia').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Copiando…');
+    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver caja</a>`; }
+    catch (e) { error(e); } finally { ocupado(b, false); }
+  });
+  api('capacidad').then((c) => {
+    $('#capacidad').innerHTML = c.epocas.map((e) => {
+      const pct = Math.round((e.celdas / c.limite) * 1000) / 10;
+      return `<div class="mb-3"><div class="d-flex justify-content-between"><strong>${esc(e.nombre)}</strong><span>${pct} %</span></div>
+        <div class="barra-prog my-1"><div style="width:${Math.max(pct, 1)}%;background:${pct > 80 ? 'var(--peligro)' : 'var(--ok)'}"></div></div>
+        <div>${numero(e.expedientes)} expedientes · caben unos <strong>${numero(e.caben)}</strong> más${e.central ? ' · en la hoja central' : ' · en su propio archivo'}</div></div>`;
+    }).join('') + `<div>Cada época tiene su propio límite de ${numero(c.limite)} celdas. ${c.historialAparte ? `Historial en un archivo aparte (${numero(c.historialFilas)} movimientos).` : `Historial en la hoja central (${numero(c.historialFilas)} movimientos).`}</div>`;
+  }).catch((e) => { $('#capacidad').textContent = e.message; });
+  $('#btn-ordenar').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Ordenando…');
+    try { const r = await api('ordenarAhora'); aviso(`Hoja ordenada: ${numero(r.total)} expedientes numerados.`); } catch (e) { error(e); } finally { ocupado(b, false); }
+  });
+  $('#copiar-secreto') && $('#copiar-secreto').addEventListener('click', () => { $('#secreto-acceso').select(); navigator.clipboard && navigator.clipboard.writeText($('#secreto-acceso').value); aviso('Clave copiada.'); });
+  $('#copiar-url') && $('#copiar-url').addEventListener('click', () => { $('#url-app').select(); navigator.clipboard && navigator.clipboard.writeText($('#url-app').value); aviso('Enlace copiado.'); });
+}
+
+/* ---------- Coordinación: importar expedientes ---------- */
+
+/** Lee lo pegado desde una hoja de cálculo (columnas separadas por tabuladores; admite celdas entre comillas). */
+function leerTabla(txt) {
+  const filas = [];
+  let fila = [], celda = '', comillas = false;
+  txt = String(txt || '').replace(/\r\n?/g, '\n');
+  for (let i = 0; i < txt.length; i++) {
+    const ch = txt[i];
+    if (comillas) {
+      if (ch === '"' && txt[i + 1] === '"') { celda += '"'; i++; }
+      else if (ch === '"') comillas = false;
+      else celda += ch;
+    } else if (ch === '"' && celda === '') comillas = true;
+    else if (ch === '\t') { fila.push(celda); celda = ''; }
+    else if (ch === '\n') { fila.push(celda); filas.push(fila); fila = []; celda = ''; }
+    else celda += ch;
+  }
+  if (celda !== '' || fila.length) { fila.push(celda); filas.push(fila); }
+  return filas.filter((f) => f.some((c) => c.trim()));
+}
+
+/** Qué campo corresponde a cada título de columna (por clave, por nombre del campo o por nombres habituales). */
+function campoDeTitulo(t) {
+  const n = sinAcentos(t).replace(/Ñ/g, 'N').replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  const alias = {
+    'APELLIDOS': 'APELLIDOS', 'NOMBRE': 'NOMBRE', 'NOMBRE DE PILA': 'NOMBRE', 'PAIS': 'PAIS', 'PAIS DE NACIMIENTO': 'PAIS',
+    'PROVINCIA': 'PROVINCIA', 'LOCALIDAD': 'LOCALIDAD', 'CIUDAD': 'LOCALIDAD', 'LUGAR': 'LOCALIDAD',
+    'ANO NACIMIENTO': 'FECHA_NACIMIENTO', 'ANO DE NACIMIENTO': 'FECHA_NACIMIENTO', 'FECHA DE NACIMIENTO': 'FECHA_NACIMIENTO', 'NACIMIENTO': 'FECHA_NACIMIENTO',
+    'ANO EXPEDIENTE': 'CURSO', 'ANO DEL EXPEDIENTE': 'CURSO', 'CURSO': 'CURSO',
+    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA', 'CAJA': 'CARPETA', 'CAJA DEL ARCHIVO': 'CARPETA'
+  };
+  for (const k of Object.keys(alias)) if (n === k || n.startsWith(k + ' ')) return alias[k];
+  const c = S.campos.find((x) => sinAcentos(x.clave).replace(/_/g, ' ') === n || sinAcentos(x.etiqueta).replace(/[^A-Z0-9Ñ ]/g, ' ').replace(/\s+/g, ' ').trim() === n);
+  return c ? c.clave : '';
+}
+
+let importacion = null;
+
+function vistaImportar() {
+  importacion = null;
+  const editores = profesoresEditores();
+  $('#vista').innerHTML = cabecera('Importar expedientes',
+    `Añade de una vez muchos expedientes a la época <strong>${esc(epocaActual().NOMBRE || '')}</strong>, por ejemplo los transcritos de los PDFs.`) + `
+    <div class="row g-3">
+      <div class="col-xl-8"><div class="panel"><div class="panel-cuerpo">
+        <ol class="small text-suave ps-3">
+          <li>Abre la tabla en Google Sheets o Excel, <strong>selecciónala entera con los títulos</strong> (⌘A / Ctrl+A) y cópiala (⌘C / Ctrl+C).</li>
+          <li>Pégala aquí debajo (⌘V / Ctrl+V) y pulsa <strong>Revisar</strong>. Todavía no se guarda nada.</li>
+        </ol>
+        <textarea class="form-control font-monospace small" id="imp-texto" rows="9" placeholder="APELLIDOS	Nombre	País	Provincia	Localidad	Año nacimiento	Año expediente	Destacado o ilustre	Observaciones"></textarea>
+        <div class="row g-3 mt-1">
+          <div class="col-md-4"><label class="form-label small">Profesor/a que registra</label><select class="form-select form-select-sm" id="imp-prof">${opcionesHtml(editores, editores.includes(S.usuario.nombre) ? S.usuario.nombre : '')}</select></div>
+          <div class="col-md-4"><label class="form-label small">Estado</label><select class="form-select form-select-sm" id="imp-estado">${opcionesHtml((campoPorClave('ESTADO') || {}).opciones || ['PENDIENTE DE REVISIÓN'], 'PENDIENTE DE REVISIÓN')}</select></div>
+          <div class="col-md-4 d-flex flex-column justify-content-end gap-1">
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-carpeta" checked><label class="form-check-label" for="imp-carpeta">Poner la caja según los apellidos</label></div>
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-act"><label class="form-check-label" for="imp-act">Actualizar los que ya existen (caja, observaciones…)</label></div>
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-dup"><label class="form-check-label" for="imp-dup">Importar también los posibles duplicados</label></div>
+          </div>
+        </div>
+        <div class="text-end mt-3"><button class="btn btn-primary" id="imp-revisar"><i class="bi bi-eye me-1"></i> Revisar</button></div>
+      </div></div></div>
+      <div class="col-xl-4"><div class="panel"><div class="panel-cab"><h2>Cómo funciona</h2></div><div class="panel-cuerpo small text-suave">
+        <p>La primera fila debe tener los títulos de las columnas: <em>APELLIDOS, Nombre, País, Provincia, Localidad, Año nacimiento, Año expediente, Destacado o ilustre, Observaciones</em>. Las columnas que no reconozca se ignoran.</p>
+        <p>Cada alumno pasa por la <strong>comprobación de duplicados</strong> (también frente a los demás de la lista). Los que ya existan no se importan: aparecerán en una lista para revisarlos a mano.</p>
+        <p>Para <strong>corregir</strong> alumnos ya importados (por ejemplo, ponerles la caja o cambiar las observaciones), vuelve a pegar la tabla corregida y marca <em>«Actualizar los que ya existen»</em>: se cambian sólo las columnas que traiga la tabla y cada cambio queda en el historial.</p>
+        <p class="mb-0">Los importados quedan en el historial y con el estado elegido, para que alguien los compare con el original.</p>
+      </div></div></div>
+    </div>
+    <div id="imp-vista" class="mt-3"></div>`;
+  $('#imp-revisar').addEventListener('click', revisarImportacion);
+}
+
+function revisarImportacion() {
+  const tabla = leerTabla($('#imp-texto').value);
+  const caja = $('#imp-vista');
+  if (tabla.length < 2) { caja.innerHTML = '<div class="alert alert-warning">Pega la tabla con la fila de títulos y al menos un alumno.</div>'; return; }
+  const titulos = tabla[0];
+  const cols = titulos.map(campoDeTitulo);
+  if (!cols.includes('APELLIDOS') || !cols.includes('NOMBRE')) {
+    caja.innerHTML = '<div class="alert alert-warning">No encuentro las columnas <strong>APELLIDOS</strong> y <strong>Nombre</strong> en la primera fila. ¿Has copiado también los títulos?</div>'; return;
+  }
+  const conCarpeta = $('#imp-carpeta').checked;
+  const filas = tabla.slice(1).map((f) => {
+    const r = {};
+    cols.forEach((k, i) => { if (k && f[i] !== undefined && String(f[i]).trim()) r[k] = String(f[i]).trim(); });
+    const notas = [];
+    ['CURSO', 'FECHA_NACIMIENTO'].forEach((k) => {
+      if (!r[k]) return;
+      const m = /\d{4}/.exec(r[k]);
+      if (m && m[0] !== r[k]) notas.push(`${etiquetaDe(k)}: «${r[k]}» en la transcripción.`);
+      r[k] = m ? m[0] : '';
+    });
+    if (notas.length) r.OBSERVACIONES = [r.OBSERVACIONES, notas.join(' ')].filter(Boolean).join('\n');
+    if (r.APELLIDOS) r.APELLIDOS = r.APELLIDOS.toUpperCase();
+    if (conCarpeta && !r.CARPETA) { const c = carpetaSugerida(r.APELLIDOS || ''); if (c) r.CARPETA = c.NUMERO; }
+    return r;
+  }).filter((r) => r.APELLIDOS || r.NOMBRE);
+  importacion = filas;
+  const ignoradas = titulos.filter((t, i) => !cols[i] && t.trim());
+  const ver = ['APELLIDOS', 'NOMBRE', 'PAIS', 'PROVINCIA', 'LOCALIDAD', 'FECHA_NACIMIENTO', 'CURSO', 'CARPETA', 'ILUSTRE'];
+  caja.innerHTML = `<div class="panel"><div class="panel-cab"><h2>${numero(filas.length)} expedientes para importar</h2>
+      <button class="btn btn-primary" id="imp-ok"><i class="bi bi-cloud-upload me-1"></i> Importar ${numero(filas.length)} expedientes</button></div>
+    ${ignoradas.length ? `<div class="alert alert-light border small m-3 mb-0">Columnas que no se importan: ${ignoradas.map(esc).join(', ')}.</div>` : ''}
+    <div class="table-responsive"><table class="table tabla"><thead><tr><th>#</th>${ver.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
+    <tbody>${filas.map((r, i) => `<tr><td class="text-suave small">${i + 1}</td>${ver.map((k) => `<td class="${k === 'APELLIDOS' ? 'ap' : 'small'}">${k === 'ILUSTRE' ? celda('ILUSTRE', r[k] || '') : k === 'CARPETA' && !r[k] ? '<span class="text-warning small">sin caja</span>' : esc(r[k] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  $('#imp-ok').addEventListener('click', hacerImportacion);
+}
+
+async function hacerImportacion(ev) {
+  const b = ev.currentTarget;
+  if (!importacion || !importacion.length) return;
+  ocupado(b, true, 'Importando…');
+  let importados = 0, actualizados = 0;
+  const saltados = [];
+  try {
+    for (let i = 0; i < importacion.length; i += 100) {
+      const r = await api('importar', { filas: importacion.slice(i, i + 100), profesor: $('#imp-prof').value, estado: $('#imp-estado').value, duplicados: $('#imp-dup').checked, actualizar: $('#imp-act').checked });
+      importados += r.importados;
+      actualizados += r.actualizados || 0;
+      r.saltados.forEach((x) => saltados.push(Object.assign(x, { fila: x.fila + i })));
+    }
+    $('#imp-texto').value = '';
+    $('#imp-vista').innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i><strong>${numero(importados)} expedientes importados</strong>${actualizados ? ` y <strong>${numero(actualizados)} actualizados</strong>` : ''} en ${esc(epocaActual().NOMBRE || '')}.
+      <a href="#" data-ir="buscar">Verlos en «Buscar expedientes»</a>.</div>` +
+      (saltados.length ? `<div class="panel"><div class="panel-cab"><h2>${numero(saltados.length)} sin importar</h2></div><div class="table-responsive"><table class="table tabla">
+        <thead><tr><th>#</th><th>Alumno</th><th>Motivo</th></tr></thead><tbody>${saltados.map((x) => `<tr><td class="text-suave small">${x.fila}</td><td class="ap">${esc(x.alumno)}</td><td class="small">${esc(x.motivo)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="small text-suave px-3 pb-3">Revísalos: si es otra persona con el mismo nombre, créalo a mano en «Nuevo expediente» o vuelve a importarlo marcando «Importar también los posibles duplicados».</div></div>` : '');
+    importacion = null;
+  } catch (e) {
+    error(e);
+    if (importados || actualizados) aviso(`Antes del error se llegaron a importar ${importados} expedientes y a actualizar ${actualizados}.`, 'aviso');
+  } finally { ocupado(b, false); }
+}
+
+/* ---------- Ayuda ---------- */
+
+function vistaAyuda() {
+  $('#vista').innerHTML = cabecera('Cómo trabajar', 'Normas para que varias personas vacíen el archivo sin duplicar ni perder expedientes.') + `
+    <div class="row g-3">
+      <div class="col-lg-7"><div class="panel"><div class="panel-cuerpo">
+        <ol class="pasos">
+          <li><strong>Elige la época</strong> en la que vas a trabajar (Siglo XIX, 1900–1930…) en el selector del menú o desde la <a href="#" data-ir="portada">Portada</a>.</li>
+          <li><strong>Asígnate una caja</strong> en <a href="#" data-ir="carpetas">Cajas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
+          <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la caja.</li>
+          <li><strong>Mira el panel «Comprobación de duplicados»</strong> mientras escribes: avisa si el alumno ya existe, incluso con grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…).</li>
+          <li><strong>Si el expediente ya existe</strong>, ábrelo y complétalo en vez de crear otro. Sólo si es otra persona con el mismo nombre, confirma que es un homónimo.</li>
+          <li><strong>Marca el estado</strong>: EN PROCESO mientras falten datos, TERMINADO cuando esté completo.</li>
+          <li><strong>Al acabar la caja</strong>, márcala como «Terminada».</li>
+        </ol>
+      </div></div></div>
+      <div class="col-lg-5"><div class="panel"><div class="panel-cab"><h2>Consejos de escritura</h2></div><div class="panel-cuerpo small">
+        <ul class="mb-0">
+          <li class="mb-2">Apellidos tal como figuran en el expediente, con la «Y»: <strong>ABADÍA Y CORTINA</strong>. Se guardan en mayúsculas automáticamente.</li>
+          <li class="mb-2">Lugar de nacimiento: elige país y, si es España, la provincia. La localidad se escribe a mano (la lista sólo sugiere).</li>
+          <li class="mb-2">Fechas incompletas: si sólo consta el año, escribe el año (<em>1852</em>); si consta mes y año, <em>03/1852</em>.</li>
+          <li class="mb-2">Si dos personas abren el mismo expediente a la vez, la aplicación avisa y no deja que uno sobrescriba los cambios del otro.</li>
+          <li>Todo cambio queda en el historial con su autor y fecha; nada se borra definitivamente.</li>
+        </ul>
+      </div></div></div>
+    </div>`;
+}
+
+/* ---------- Portada del archivo ---------- */
+
+function vistaPortada() {
+  return conCache('portada', () => api('portada'), pintarPortada);
+}
+
+function pintarPortada(lista) {
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const total = lista.reduce((t, e) => t + e.total, 0);
+  $('#vista').innerHTML = `
+    <div class="portada-hero">
+      <h1 class="serif">${esc(S.ajustes.NOMBRE_APP || 'Archivo histórico del IES Goya')}</h1>
+      <p>${esc(S.ajustes.SUBTITULO || '')}${S.ajustes.SUBTITULO ? ' · ' : ''}${numero(total)} expedientes registrados en ${lista.length} ${lista.length === 1 ? 'época' : 'épocas'}.</p>
+      <div class="sello d-none d-md-inline-flex">G</div>
+    </div>
+    <div class="row g-3">
+      ${lista.map((e) => `<div class="col-md-6 col-xl-4"><div class="tarjeta-epoca${e.CODIGO === S.epoca ? ' actual' : ''}">
+        <div class="anos">${esc(anosEpoca(e))}</div>
+        <h2>${esc(e.NOMBRE)} ${e.ESTADO === 'CERRADA' ? '<span class="etiqueta align-middle">Cerrada</span>' : ''}</h2>
+        ${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}
+        <div class="cifras">
+          <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
+          <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>cajas terminadas</span></div>
+          <div><strong>${numero(e.ilustres)}<small class="fs-6 text-suave"> · ${numero(e.destacados || 0)}</small></strong><span>ilustres · destacados</span></div>
+        </div>
+        <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
+        <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>
+        <div class="mt-auto d-flex gap-2">
+          <button class="btn btn-primary btn-sm" data-entrar="${esc(e.CODIGO)}"><i class="bi bi-box-arrow-in-right me-1"></i>${puede('LECTOR') ? 'Entrar' : 'Consultar'}</button>
+          <button class="btn btn-light btn-sm" data-entrar="${esc(e.CODIGO)}" data-destino="indice"><i class="bi bi-sort-alpha-down me-1"></i>Índice</button>
+        </div>
+      </div></div>`).join('')}
+      ${!puede('LECTOR') ? `<div class="col-12"><div class="alert alert-light border small mb-0"><i class="bi bi-eye me-1"></i>
+        Estás en la <strong>consulta pública</strong>: puedes buscar y ver los expedientes de las épocas abiertas al público.
+        Si formas parte del equipo, pulsa <strong>Acceso profesorado</strong> (arriba a la derecha).</div></div>` : ''}
+      ${puede('ADMIN') ? `<div class="col-md-6 col-xl-4"><div class="tarjeta-epoca nueva" id="btn-nueva-epoca"><i class="bi bi-plus-circle mb-2"></i>
+        <strong class="text-body">Añadir una época</strong><span class="small">1900–1930, 1930–1975…<br>Cada época tiene su propio archivo y capacidad.</span></div></div>` : ''}
+    </div>
+    ${S.epocas.length > 1 ? `<div class="panel mt-3"><div class="panel-cuerpo d-flex flex-wrap align-items-center gap-2">
+      <i class="bi bi-search text-suave"></i><span class="me-2">¿Buscas a alguien y no sabes de qué época es?</span>
+      <button class="btn btn-sm btn-outline-primary" id="buscar-todas">Buscar en todo el archivo</button></div></div>` : ''}`;
+  $$('[data-entrar]').forEach((b) => b.addEventListener('click', async () => {
+    if (b.dataset.entrar !== S.epoca) await cambiarEpoca(b.dataset.entrar, false);
+    ir(b.dataset.destino || (puede('LECTOR') ? 'inicio' : 'buscar'));
+  }));
+  $('#btn-nueva-epoca') && $('#btn-nueva-epoca').addEventListener('click', () => editarEpoca(null));
+  $('#buscar-todas') && $('#buscar-todas').addEventListener('click', () => { S.busqueda.todas = true; ir('buscar'); });
+}
+
+/* ---------- Coordinación: épocas ---------- */
+
+function vistaEpocas() {
+  $('#vista').innerHTML = cabecera('Épocas del archivo',
+    'Cada época guarda sus alumnos y cajas en su propio archivo de Google (con su propia capacidad). Profesorado, campos y ajustes son comunes a todas.',
+    '<button class="btn btn-primary" id="btn-nueva"><i class="bi bi-plus-lg me-1"></i> Nueva época</button>') + `
+    <div class="panel"><div class="table-responsive"><table class="table tabla">
+      <thead><tr><th>Código</th><th>Nombre</th><th>Años</th><th>Prefijo del nº</th><th>Estado</th><th>Consulta pública</th><th></th></tr></thead>
+      <tbody>${S.epocas.map((e) => `<tr><td class="id-exp">${esc(e.CODIGO)}</td><td><strong>${esc(e.NOMBRE)}</strong>${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}</td>
+        <td>${esc(anosEpoca(e))}</td><td class="id-exp">${esc(e.PREFIJO)}000001</td>
+        <td>${e.ESTADO === 'CERRADA' ? '<span class="etiqueta">Cerrada</span>' : '<span class="etiqueta e-TERMINADO">Abierta</span>'}</td>
+        <td>${e.PUBLICA ? '<span class="etiqueta e-EXTRANJERO"><i class="bi bi-globe2"></i> Pública</span>' : '<span class="etiqueta">Sólo equipo</span>'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-light" data-epoca="${esc(e.CODIGO)}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
+    </table></div></div>
+    <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
+      <strong class="text-body">Cerrar una época</strong> impide que el profesorado añada o modifique expedientes (la coordinación sí puede). Útil cuando se termina de vaciar.
+      El <strong>prefijo</strong> es el comienzo del número de orden de esa época (p. ej. GOYA000001 en el siglo XIX, GOYA1900-000001 en 1900–1930).
+    </div></div>`;
+  $('#btn-nueva').addEventListener('click', () => editarEpoca(null));
+  $$('[data-epoca]').forEach((b) => b.addEventListener('click', () => editarEpoca(epocaPorCodigo(b.dataset.epoca))));
+}
+
+const EPOCAS_SUGERIDAS = [['1900_1930', '1900–1930', '1900', '1930'], ['1930_1975', '1930–1975', '1930', '1975'], ['1975_2000', '1975–2000', '1975', '2000'], ['2000_HOY', 'Desde 2000', '2000', '']];
+
+function editarEpoca(e) {
+  const nueva = !e;
+  const sug = nueva ? (EPOCAS_SUGERIDAS.find((x) => !S.epocas.some((y) => y.CODIGO === x[0])) || ['', '', '', '']) : null;
+  const v = e || { CODIGO: sug[0], NOMBRE: sug[1], DESDE: sug[2], HASTA: sug[3], PREFIJO: sug[2] ? 'GOYA' + sug[2] + '-' : '', ESTADO: 'ABIERTA', DESCRIPCION: '' };
+  abrirModal(nueva ? 'Nueva época' : 'Época: ' + esc(e.NOMBRE), `
+    <form id="form-epoca" class="row g-3">
+      <div class="col-md-4"><label class="form-label">Código</label><input class="form-control font-monospace" name="CODIGO" value="${esc(v.CODIGO)}" ${nueva ? '' : 'disabled'} placeholder="1900_1930">
+        <div class="form-text">Letras, números y «_». No se puede cambiar después.</div></div>
+      <div class="col-md-8"><label class="form-label">Nombre</label><input class="form-control" name="NOMBRE" value="${esc(v.NOMBRE)}" placeholder="1900–1930" required></div>
+      <div class="col-6 col-md-3"><label class="form-label">Desde (año)</label><input class="form-control" name="DESDE" inputmode="numeric" value="${esc(v.DESDE)}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Hasta (año)</label><input class="form-control" name="HASTA" inputmode="numeric" value="${esc(v.HASTA)}"></div>
+      <div class="col-md-6"><label class="form-label">Prefijo del número de orden</label><input class="form-control font-monospace" name="PREFIJO" value="${esc(v.PREFIJO)}" placeholder="GOYA1900-">
+        <div class="form-text">Ejemplo de número: <span class="id-exp">${esc(v.PREFIJO || 'GOYA')}000001</span></div></div>
+      <div class="col-12"><label class="form-label">Descripción</label><input class="form-control" name="DESCRIPCION" value="${esc(v.DESCRIPCION)}" placeholder="Expedientes de los alumnos que ingresaron entre…"></div>
+      ${nueva ? `<div class="col-md-6"><label class="form-label">Crear cajas numeradas</label><input type="number" class="form-control" name="carpetas" value="40" min="0" max="2000">
+        <div class="form-text">Se pueden añadir más después.</div></div>`
+        : `<div class="col-md-6"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml([{ v: 'ABIERTA', t: 'Abierta (se puede trabajar)' }, { v: 'CERRADA', t: 'Cerrada (sólo coordinación)' }], v.ESTADO)}</select></div>
+        <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="PUBLICA" value="SÍ" id="ep-pub" ${v.PUBLICA ? 'checked' : ''}>
+          <label class="form-check-label fw-semibold" for="ep-pub">Consulta pública: cualquier persona puede ver (no editar) los expedientes de esta época</label></div>
+          <div class="alert alert-warning small mt-2 mb-0"><i class="bi bi-shield-exclamation me-1"></i>Actívala sólo en épocas antiguas (p. ej. el siglo XIX).
+          Los datos de personas que pueden estar vivas están protegidos por el RGPD y <strong>no deben publicarse</strong>.
+          El público nunca ve correos del profesorado, historial ni cajas.</div></div>`}
+      ${nueva ? '<div class="col-12"><div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>Se creará un archivo de Google nuevo para esta época, en la misma carpeta de Drive que la hoja central, con su propia capacidad. Tarda unos segundos.</div></div>' : ''}
+    </form>`,
+    `<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-epoca">${nueva ? 'Crear época' : 'Guardar'}</button>`, '');
+  $('#btn-guardar-epoca').addEventListener('click', async (ev) => {
+    const f = $('#form-epoca');
+    const datos = Object.fromEntries(new FormData(f).entries());
+    if (!nueva) { datos.CODIGO = e.CODIGO; datos.PUBLICA = f.PUBLICA && f.PUBLICA.checked ? 'SÍ' : 'NO'; }
+    ocupado(ev.currentTarget, true, nueva ? 'Creando…' : 'Guardando…');
+    try {
+      if (nueva) {
+        const r = await api('crearEpoca', datos);
+        S.epocas = r.epocas;
+        cerrarModal();
+        aviso(`Época «${datos.NOMBRE}» creada.`);
+        await cambiarEpoca(r.codigo, false);
+        ir('portada');
+      } else {
+        S.epocas = await api('guardarEpoca', datos);
+        cerrarModal(); aviso('Época guardada.'); pintarCabecera(); ir(S.vista);
+      }
+    } catch (err) { error(err); ocupado($('#btn-guardar-epoca'), false); }
+  });
+}
+
+/* ---------- Inicio ---------- */
+arrancar();
+</script>
