@@ -78,7 +78,7 @@ const CAMPOS_INICIALES = [
   ['LOCALIDAD', 'Localidad', 'localidad', '', false, 'Lugar y fecha de nacimiento', 'Elígela de la lista o escríbela si no aparece (nombres antiguos, pedanías…).', true, true],
   ['FECHA_NACIMIENTO', 'Fecha de nacimiento', 'fecha', '', false, 'Lugar y fecha de nacimiento', 'dd/mm/aaaa. Si sólo consta el año, escribe el año.', false, false],
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
-  ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nHAY QUE BUSCAR\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. HAY QUE BUSCAR: hay que investigarlo. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
+  ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
   ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
   ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
 ];
@@ -1992,9 +1992,9 @@ function instalar() {
   const hCa = crearHoja_(ss, HOJA.CAMPOS, CABECERAS.Campos);
   hCa.getRange(1, 1, hCa.getMaxRows(), CABECERAS.Campos.length).setNumberFormat('@');
   const caExist = tabla_(HOJA.CAMPOS).map(function (r) { return r.CLAVE; });
-  // Actualización: «ilustre» pasa de NO/SÍ/HAY QUE BUSCAR a NO/DESTACADO/ILUSTRE.
+  // Actualización: «ilustre» pasa de NO/SÍ/HAY QUE BUSCAR a NO/DESTACADO/ILUSTRE/SIN COMPROBAR.
   tabla_(HOJA.CAMPOS).forEach(function (r) {
-    const antiguas = ['NO|SÍ|HAY QUE BUSCAR', 'NO|DESTACADO|ILUSTRE'];
+    const antiguas = ['NO|SÍ|HAY QUE BUSCAR', 'NO|DESTACADO|ILUSTRE', 'NO|DESTACADO|ILUSTRE|HAY QUE BUSCAR', 'NO|DESTACADO|ILUSTRE|HAY QUE BUSCAR|SIN COMPROBAR'];
     if (r.CLAVE === 'ILUSTRE' && antiguas.indexOf(String(r.OPCIONES).trim().split(/\s*[\n;]\s*/).join('|')) >= 0) {
       const def = CAMPOS_INICIALES.find(function (c) { return c[0] === 'ILUSTRE'; });
       hCa.getRange(r._fila, 2).setValue(def[1]);
@@ -2087,14 +2087,18 @@ function instalar() {
   });
   usarEpoca_('XIX');
   if (MEMO.migrarIlustre) {
-    // Los expedientes que ya tenían «SÍ» pasan a «ILUSTRE».
+    // Los expedientes que ya tenían «SÍ» pasan a «ILUSTRE» y los «HAY QUE BUSCAR», a «SIN COMPROBAR».
     enCadaEpoca_(function () {
       const h = hojaAlumnos_(), mapa = mapaColumnas_(h), n = h.getLastRow() - 1;
       if (!mapa.ILUSTRE || n < 1) return;
       const r = h.getRange(2, mapa.ILUSTRE, n, 1);
       const v = r.getDisplayValues();
       let cambia = false;
-      v.forEach(function (f) { if (/^S[IÍ]$/i.test(String(f[0]).trim())) { f[0] = 'ILUSTRE'; cambia = true; } });
+      v.forEach(function (f) {
+        const t = String(f[0]).trim().toUpperCase();
+        if (/^S[IÍ]$/.test(t)) { f[0] = 'ILUSTRE'; cambia = true; }
+        else if (t === 'HAY QUE BUSCAR') { f[0] = 'SIN COMPROBAR'; cambia = true; }
+      });
       if (cambia) { r.setValues(v); tocarDatos_(h); }
     });
     usarEpoca_('XIX');
@@ -2233,7 +2237,6 @@ function formatoAlumnos_(h) {
     reglas.push(reglaTexto_('ILUSTRE', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
     reglas.push(reglaTexto_('DESTACADO', col('ILUSTRE'), COLOR.azul, COLOR.azulT, true));
     reglas.push(reglaTexto_('SÍ', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
-    reglas.push(reglaTexto_('HAY QUE BUSCAR', col('ILUSTRE'), COLOR.ambar, COLOR.ambarT, false));
     reglas.push(reglaTexto_('SIN COMPROBAR', col('ILUSTRE'), COLOR.borrado, COLOR.gris, false));
   }
   if (col('DIGITALIZADO')) {
