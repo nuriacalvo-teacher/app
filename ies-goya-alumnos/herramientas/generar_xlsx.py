@@ -1,4 +1,5 @@
-import json, re
+import json, re, sys
+CARPETA = sys.argv[1] if len(sys.argv) > 1 else ''  # carpeta del archivo donde están estos expedientes
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -54,14 +55,14 @@ norm = lambda s: re.sub(r'[^A-ZÑ ]', '', s.upper().translate(str.maketrans('Á�
 filas.sort(key=lambda r: (norm(r['APELLIDOS']), r['NOMBRE']))
 
 wb = Workbook(); ws = wb.active; ws.title = 'Para revisar'
-ws.append(['APELLIDOS', 'Nombre', 'País', 'Provincia', 'Localidad', 'Año nacimiento', 'Año expediente', 'Destacado o ilustre', 'Observaciones'])
+ws.append(['APELLIDOS', 'Nombre', 'País', 'Provincia', 'Localidad', 'Año nacimiento', 'Año expediente', 'Destacado o ilustre', 'Observaciones', 'Carpeta'])
 colores = {'ILUSTRE': 'F3E7C9', 'DESTACADO': 'E3ECF6', 'SIN COMPROBAR': 'EEEEEE'}
 for r in filas:
-    ws.append([r['APELLIDOS'], r['NOMBRE'], r['PAIS'], r['PROVINCIA'], r['LOCALIDAD'], r['NAC'], str(r['ANIO_EXPEDIENTE']), r['ILUSTRE'], r['OBS']])
+    ws.append([r['APELLIDOS'], r['NOMBRE'], r['PAIS'], r['PROVINCIA'], r['LOCALIDAD'], r['NAC'], str(r['ANIO_EXPEDIENTE']), r['ILUSTRE'], r['OBS'], CARPETA])
     c = ws.cell(ws.max_row, 8)
     if r['ILUSTRE'] in colores: c.fill = PatternFill('solid', fgColor=colores[r['ILUSTRE']]); c.font = Font(bold=r['ILUSTRE'] != 'SIN COMPROBAR')
 fino = Side(style='thin', color='DCD6C8')
-for i, a in enumerate([30, 20, 10, 14, 26, 11, 11, 16, 90], 1): ws.column_dimensions[get_column_letter(i)].width = a
+for i, a in enumerate([30, 20, 10, 14, 26, 11, 11, 16, 90, 10], 1): ws.column_dimensions[get_column_letter(i)].width = a
 for fila in ws.iter_rows():
     for c in fila: c.alignment = Alignment(wrap_text=True, vertical='top'); c.border = Border(bottom=fino)
 for c in ws[1]: c.font = Font(bold=True, color='FFFFFF'); c.fill = PatternFill('solid', fgColor='1F2A44')

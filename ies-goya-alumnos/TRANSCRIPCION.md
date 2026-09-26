@@ -25,6 +25,7 @@ cada alumno fue **destacado** o **ilustre**. Primera tanda hecha: 3 PDFs, 53 pá
 | Año expediente | Año de la portada; en hojas académicas, el de la fila de Ingreso/primera matrícula. |
 | Destacado o ilustre | ILUSTRE / DESTACADO solo con coincidencia sólida (nombre + lugar + fechas); SIN COMPROBAR si hay un posible candidato; NO si no aparece nada. |
 | Observaciones | Qué se encontró, fuente y enlace. Nada de enlaces inventados. |
+| Carpeta | Nº de la carpeta física del archivo donde están esos expedientes (me lo dice la coordinación; la 1.ª tanda es la carpeta 1). |
 
 Lecturas dudosas: se marcan con **[?]** dentro del propio dato; lo ilegible, **[ilegible]**.
 
@@ -35,9 +36,9 @@ Catalana, Auñamendi/Gran Enciclopedia de Navarra, hemerotecas, PARES. Hace falt
 abrir las páginas (en la primera tanda solo se vieron los resultados del buscador).
 
 ## 4. Entrega
-Una hoja Excel ordenada por apellidos con estas 9 columnas (los títulos son los que reconoce la app):
-`APELLIDOS | Nombre | País | Provincia | Localidad | Año nacimiento | Año expediente | Destacado o ilustre | Observaciones`
-(`herramientas/generar_xlsx.py` la genera a partir de los JSON de la transcripción.)
+Una hoja Excel ordenada por apellidos con estas 10 columnas (los títulos son los que reconoce la app):
+`APELLIDOS | Nombre | País | Provincia | Localidad | Año nacimiento | Año expediente | Destacado o ilustre | Observaciones | Carpeta`
+(`python3 herramientas/generar_xlsx.py <nº de carpeta>` la genera a partir de los JSON de la transcripción.)
 
 ## 5. Importar a la app
 Coordinación → **Importar expedientes**: pegar la tabla copiada (con títulos) → Revisar → Importar.
