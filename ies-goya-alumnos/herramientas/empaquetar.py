@@ -16,6 +16,7 @@ def main():
     assert '<?' not in html, 'Quedan etiquetas de plantilla sin resolver'
     (SALIDA / 'Index.html').write_text(html, encoding='utf-8')
     (SALIDA / 'Codigo.gs').write_text((GAS / 'Codigo.gs').read_text(encoding='utf-8'), encoding='utf-8')
+    (SALIDA / 'Acceso.gs').write_text((GAS / 'Acceso.gs').read_text(encoding='utf-8'), encoding='utf-8')
     print('Escrito', SALIDA)
 
 

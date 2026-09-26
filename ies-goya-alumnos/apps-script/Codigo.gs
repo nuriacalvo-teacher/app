@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-27';
+const VERSION_APP = '2026-09-28';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -93,7 +93,7 @@ const AJUSTES_INICIALES = [
   ['PROVINCIA_DEFECTO', 'Zaragoza', 'Provincia que aparece por defecto en el formulario.'],
   ['COPIA_AUTOMATICA', 'NO', 'SÍ: copia de seguridad semanal automática en Google Drive (domingo de madrugada).'],
   ['COPIAS_A_CONSERVAR', '12', 'Número de copias automáticas que se conservan.'],
-  ['URL_EQUIPO', '', 'Enlace de la implementación «Cualquier usuario de IES Goya»: el profesorado entra con su cuenta del instituto, sin código.']
+  ['URL_ACCESO', '', 'Enlace de la app «Acceso con Google» (proyecto aparte): permite entrar con cualquier cuenta de Google, sin código.']
 ];
 
 /** Memoria de la ejecución en curso (Apps Script la reinicia en cada petición). */
@@ -228,6 +228,7 @@ const ACCIONES_LECTURA = ['arranque', 'inicio', 'consultar', 'exportar', 'obtene
 const ACCIONES = {
   arranque:            { rol: 'NINGUNO', fn: arranque_ },
   login:               { rol: 'NINGUNO', fn: login_ },
+  loginGoogle:         { rol: 'NINGUNO', fn: loginGoogle_ },
   logout:              { rol: 'NINGUNO', fn: logout_ },
   inicio:              { rol: 'LECTOR',  fn: inicio_ },
   consultar:           { rol: 'PUBLICO', fn: consultar_ },
@@ -330,6 +331,47 @@ function login_(d) {
   return { token: token };
 }
 
+/**
+ * Entrada con CUALQUIER cuenta de Google (@gmail.com, @iesgoya.es…).
+ * La app pública no puede saber quién es un visitante de otro dominio, así que un pequeño proyecto
+ * aparte («Acceso con Google», archivo Acceso.gs) se ejecuta con la cuenta de la persona, obtiene su
+ * correo y la devuelve aquí con un pase firmado con una clave secreta compartida: caduca en 5 minutos,
+ * sólo vale una vez y no se puede falsificar. Después, los permisos los decide la lista de Profesores.
+ */
+function secretoAcceso_() {
+  const props = PropertiesService.getScriptProperties();
+  let s = props.getProperty('SECRETO_ACCESO');
+  if (!s) {
+    s = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+    props.setProperty('SECRETO_ACCESO', s);
+  }
+  return s;
+}
+
+function loginGoogle_(d) {
+  const partes = String(d.acceso || '').split('.');
+  if (partes.length !== 2) throw new Error('Enlace de acceso no válido.');
+  let datos;
+  try { datos = Utilities.newBlob(Utilities.base64DecodeWebSafe(partes[0])).getDataAsString('UTF-8'); } catch (e) {
+    throw new Error('Enlace de acceso no válido.');
+  }
+  const firma = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(datos, secretoAcceso_()));
+  if (firma !== partes[1]) throw new Error('Enlace de acceso no válido: revisa que la clave secreta de la app «Acceso con Google» sea la misma que la de Ajustes.');
+  const trozos = datos.split('|');
+  const email = String(trozos[0] || '').trim().toLowerCase();
+  const caduca = parseInt(trozos[1], 10) || 0;
+  if (!email) throw new Error('Google no ha facilitado tu correo.');
+  if (Date.now() > caduca) throw new Error('El enlace de acceso ha caducado. Vuelve a pulsar «Entrar con mi cuenta de Google».');
+  const cache = CacheService.getScriptCache();
+  const kUsado = 'usado_' + partes[1].slice(0, 200);
+  if (cache.get(kUsado)) throw new Error('Este enlace de acceso ya se ha usado. Vuelve a pulsar «Entrar con mi cuenta de Google».');
+  cache.put(kUsado, '1', 900);
+  const token = Utilities.getUuid();
+  cache.put('tok_' + token, email, 21600); // 6 horas
+  delete MEMO.usuario;
+  return { token: token, email: email };
+}
+
 function logout_(d, u) {
   if (d.token) CacheService.getScriptCache().remove('tok_' + d.token);
   return true;
@@ -337,7 +379,7 @@ function logout_(d, u) {
 
 function arranque_(d, u) {
   const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado }, version: VERSION_APP };
-  try { r.urlEquipo = ajustes_().URL_EQUIPO || ''; } catch (e) { r.urlEquipo = ''; }
+  try { r.urlAcceso = ajustes_().URL_ACCESO || ''; } catch (e) { r.urlAcceso = ''; }
   r.consultaPublica = hayConsultaPublica_();
   if (u.rol === 'NINGUNO') return r;
   r.ajustes = ajustes_();
@@ -348,12 +390,13 @@ function arranque_(d, u) {
   if (d.conPortada) r.portada = portada_(d, u); // así la portada llega en la misma petición
   if (u.rol === 'PUBLICO') {
     // Al público sólo le hace falta lo imprescindible.
-    r.ajustes = { NOMBRE_APP: r.ajustes.NOMBRE_APP, SUBTITULO: r.ajustes.SUBTITULO, URL_EQUIPO: r.ajustes.URL_EQUIPO };
+    r.ajustes = { NOMBRE_APP: r.ajustes.NOMBRE_APP, SUBTITULO: r.ajustes.SUBTITULO, URL_ACCESO: r.ajustes.URL_ACCESO };
   }
   const profes = u.rol === 'PUBLICO' ? [] : profesores_();
   r.profesores = u.rol === 'ADMIN' ? profes : profes.filter(function (p) { return si_(p.ACTIVO); })
     .map(function (p) { return { NOMBRE: p.NOMBRE, ACTIVO: p.ACTIVO, ROL: p.ROL }; });
   if (u.rol === 'ADMIN') {
+    r.secretoAcceso = secretoAcceso_();
     r.urlHoja = ss_().getUrl();
     try { r.urlApp = ScriptApp.getService().getUrl(); } catch (e) { r.urlApp = ''; }
   }

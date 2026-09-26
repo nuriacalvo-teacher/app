@@ -63,19 +63,29 @@ Cada época tiene un interruptor **«Consulta pública»** en *Coordinación →
 - ⚠️ **Protección de datos:** activa la consulta pública sólo en épocas antiguas, como el siglo XIX. Los expedientes de personas que pueden estar vivas están protegidos por el RGPD y **no deben publicarse**. Por eso cada época se decide por separado y el interruptor viene apagado.
 - Para que la consulta pública funcione, la app debe estar publicada con **Who has access: Anyone**.
 
-### Entrar con la cuenta del instituto (sin códigos)
-Con acceso «Anyone», Google no dice a la app quién es cada visitante, y por eso se piden códigos. Para que el profesorado del centro entre directamente con su cuenta **@iesgoya.es**, se publica **una segunda vez la misma app**:
+### Entrar con la cuenta de Google (sin códigos)
+**Quién puede hacer qué:**
+- **Ver:** todo el mundo, en las épocas públicas.
+- **Editar:** sólo los correos que pongas en *Profesores y permisos*, sean de @gmail.com, @iesgoya.es o de cualquier otro dominio.
 
-1. En Apps Script, ve a **Deploy → New deployment → Web app**.
-   - **Execute as:** *Me*.
-   - **Who has access:** *Anyone within IES Goya*.
-   - Pulsa **Deploy**.
-2. Copia su enlace. Tiene la forma `https://script.google.com/a/macros/iesgoya.es/s/…/exec`.
-3. En la app, ve a **Ajustes y copias** y pega ese enlace en **«Enlace para entrar con la cuenta del instituto»**. Guarda.
+Para que esas personas entren con su cuenta de Google de siempre, sin códigos, se instala **una pequeña app aparte, «Acceso con Google»** (archivo `Acceso.gs`). Esa app se ejecuta con la cuenta de quien la abre, pregunta a Google su correo y le devuelve al archivo con un **pase firmado**:
+- caduca en 5 minutos;
+- sólo vale una vez;
+- no se puede falsificar sin la clave secreta.
 
-A partir de entonces, **«Acceso profesorado»** ofrece **«Entrar con mi cuenta @iesgoya.es»**, y el código queda sólo para cuentas de fuera del centro. Los códigos deben tener al menos 8 caracteres, con letras y números (botón «Generar»). La lista de *Profesores y permisos* marca los códigos débiles.
+Sólo pide permiso para *ver la dirección de correo*.
 
-Cuando actualices el código, actualiza las **dos** publicaciones: *Manage deployments → ✏ → New version*.
+1. En la app del archivo, ve a **Ajustes y copias** y copia la **clave secreta**.
+2. En [script.google.com](https://script.google.com), crea un **Nuevo proyecto** llamado «Acceso Archivo IES Goya» y pega `para-copiar/Acceso.gs`. Rellena:
+   - `SECRETO`: la clave secreta del paso 1.
+   - `URL_ARCHIVO`: el enlace público del archivo (el que termina en `/exec`).
+3. Ve a **Implementar → Nueva implementación → Aplicación web**:
+   - **Ejecutar como:** *Usuario que accede a la aplicación web*.
+   - **Quién tiene acceso:** *Cualquier usuario con una cuenta de Google*.
+   - Copia el enlace que te da.
+4. En la app del archivo, pega ese enlace en **Ajustes y copias → «Enlace de la app Acceso con Google»** y guarda.
+
+A partir de entonces, **«Acceso profesorado»** muestra **«Entrar con mi cuenta de Google»**. Si el correo está en la lista, la persona edita. Si no, se queda en la consulta pública con un aviso. El código de acceso queda sólo para quien no tenga cuenta de Google: mínimo 8 caracteres, con letras y números.
 
 ## Velocidad
 

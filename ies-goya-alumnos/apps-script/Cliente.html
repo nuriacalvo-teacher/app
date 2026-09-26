@@ -205,17 +205,27 @@ async function arrancar() {
   S.epoca = leerLocal('goya_epoca');
   mostrarPantalla('carga');
   try {
+    // ¿Venimos de «Entrar con mi cuenta de Google»? Entonces la dirección trae un pase firmado.
+    const pase = await leerPaseAcceso();
+    let entroConGoogle = '';
+    if (pase) {
+      try {
+        const l = await api('loginGoogle', { acceso: pase });
+        S.token = l.token;
+        guardarLocal('goya_token', l.token);
+        entroConGoogle = l.email;
+      } catch (e) { setTimeout(() => aviso(e.message, 'error'), 500); }
+    }
     const destino = location.hash.replace('#', '') || 'portada';
     const r = await api('arranque', { conPortada: destino === 'portada' });
     S.usuario = r.usuario;
     S.portadaInicial = r.portada || null;
-    // Entrada con la cuenta de Google del instituto (otra implementación de la misma app).
-    const urlEquipo = String(r.urlEquipo || '').trim();
-    $('#login-google-caja').classList.toggle('d-none', !urlEquipo);
-    if (urlEquipo) {
-      $('#login-google').href = urlEquipo;
-      const m = /\/a\/(?:macros\/)?([^/]+)\//.exec(urlEquipo);
-      $('#login-dominio').textContent = m ? '@' + m[1] : 'del instituto';
+    // Entrada con cualquier cuenta de Google (a través de la app «Acceso con Google»).
+    const urlAcceso = String(r.urlAcceso || '').trim();
+    $('#login-google-caja').classList.toggle('d-none', !urlAcceso);
+    if (urlAcceso) $('#login-google').href = urlAcceso;
+    if (entroConGoogle && r.usuario.rol === 'PUBLICO') {
+      setTimeout(() => aviso(`Has entrado como ${entroConGoogle}, pero esa cuenta no tiene permiso para editar. Estás en la consulta pública.`, 'aviso'), 600);
     }
     S.consultaPublica = !!r.consultaPublica;
     $('#login-volver').classList.toggle('d-none', !S.consultaPublica);
@@ -223,7 +233,7 @@ async function arrancar() {
       '<br><span class="text-warning">Ninguna época tiene activada la consulta pública, por eso se pide identificarse.</span>');
     if (r.usuario.rol === 'NINGUNO' && !r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
     if (r.usuario.rol === 'NINGUNO') { $('#sin-acceso-email').textContent = r.usuario.email; mostrarPantalla('sin-acceso'); return; }
-    Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp,
+    Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp, secretoAcceso: r.secretoAcceso,
       epocas: r.epocas, epoca: r.epoca });
     guardarLocal('goya_epoca', r.epoca);
     pintarCabecera();
@@ -235,6 +245,20 @@ async function arrancar() {
       <h1 class="h5 fw-bold">No se ha podido abrir el archivo</h1><p class="text-suave small">${esc(e.message)}</p>
       <button class="btn btn-outline-primary" onclick="location.reload()">Reintentar</button></div>`;
   }
+}
+
+/** Lee (y quita de la dirección) el parámetro «acceso» que añade la app «Acceso con Google». */
+function leerPaseAcceso() {
+  return new Promise((resolve) => {
+    try {
+      if (!window.google || !google.script || !google.script.url) return resolve('');
+      google.script.url.getLocation((loc) => {
+        const pase = loc && loc.parameter && loc.parameter.acceso ? String(loc.parameter.acceso) : '';
+        if (pase) { try { google.script.history.replace(null, {}, loc.hash || ''); } catch (e) { /* nada */ } }
+        resolve(pase);
+      });
+    } catch (e) { resolve(''); }
+  });
 }
 
 function pintarCabecera() {
@@ -1146,9 +1170,9 @@ function vistaProfesores() {
         <td class="text-end"><button class="btn btn-sm btn-light" data-fila="${p._fila}"><i class="bi bi-pencil"></i></button></td></tr>`).join('')}</tbody>
     </table></div></div>
     <div class="panel mt-3"><div class="panel-cuerpo small text-suave">
-      <strong class="text-body">¿Cómo entra cada persona?</strong> Con una cuenta del instituto, pulsando «Entrar con mi cuenta del instituto»: Google la identifica y no hace falta código
-      (hay que tener configurado el enlace del instituto en <em>Ajustes y copias</em>). Con otra cuenta (p. ej. @gmail.com), con su correo y el <strong>código de acceso</strong>
-      que pongas aquí (mínimo 8 caracteres, con letras y números: usa «Generar»). Para quitar el acceso a alguien, desactívalo: sus expedientes siguen a su nombre.
+      <strong class="text-body">¿Cómo entra cada persona?</strong> Pulsando «Acceso profesorado → Entrar con mi cuenta de Google», con la cuenta de Google cuyo correo pongas aquí
+      (@gmail.com, @iesgoya.es…), sin códigos (requiere la app «Acceso con Google», ver <em>Ajustes y copias</em>). Quien no tenga cuenta de Google entra con su correo y el
+      <strong>código de acceso</strong> que pongas aquí (mínimo 8 caracteres, con letras y números: usa «Generar»). Para quitar el acceso a alguien, desactívalo.
     </div></div>`;
   $('#btn-nuevo-prof').addEventListener('click', () => editarProfesor(null));
   $$('[data-fila]').forEach((b) => b.addEventListener('click', () => editarProfesor(S.profesores.find((p) => String(p._fila) === b.dataset.fila))));
@@ -1168,7 +1192,7 @@ function editarProfesor(p) {
       <div class="col-md-6"><label class="form-label">Nombre</label><input class="form-control" name="NOMBRE" value="${esc(v.NOMBRE)}" placeholder="PEDRO PÉREZ (HISTORIA)" required></div>
       <div class="col-md-6"><label class="form-label">Correo</label><input type="email" class="form-control" name="EMAIL" value="${esc(v.EMAIL)}" placeholder="nombre@educa.aragon.es"></div>
       <div class="col-md-6"><label class="form-label">Rol</label><select class="form-select" name="ROL">${opcionesHtml(Object.keys(NOMBRES_ROL).map((r) => ({ v: r, t: NOMBRES_ROL[r] })), v.ROL)}</select></div>
-      <div class="col-md-6"><label class="form-label">Código de acceso <span class="text-suave fw-normal">(sólo para cuentas de fuera del instituto)</span></label>
+      <div class="col-md-6"><label class="form-label">Código de acceso <span class="text-suave fw-normal">(sólo si no entra con su cuenta de Google)</span></label>
         <div class="input-group"><input class="form-control font-monospace" name="CODIGO_ACCESO" value="${esc(v.CODIGO_ACCESO)}">
         <button class="btn btn-outline-secondary" type="button" id="btn-gen">Generar</button></div></div>
       <div class="col-12"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}" placeholder="Departamento, horario…"></div>
@@ -1230,10 +1254,16 @@ function vistaAjustes() {
           <div class="col-12"><label class="form-label">Subtítulo</label><input class="form-control" name="SUBTITULO" value="${esc(A.SUBTITULO)}"></div>
           <div class="col-md-6"><label class="form-label">País por defecto</label><select class="form-select" name="PAIS_DEFECTO">${opcionesHtml(GEO.paises, A.PAIS_DEFECTO)}</select></div>
           <div class="col-md-6"><label class="form-label">Provincia por defecto</label><select class="form-select" name="PROVINCIA_DEFECTO">${opcionesHtml(GEO.provincias, A.PROVINCIA_DEFECTO, '—')}</select></div>
-          <div class="col-12"><label class="form-label">Enlace para entrar con la cuenta del instituto</label>
-            <input class="form-control font-monospace small" name="URL_EQUIPO" value="${esc(A.URL_EQUIPO || '')}" placeholder="https://script.google.com/a/macros/iesgoya.es/s/…/exec">
-            <div class="form-text">Es la dirección de la segunda implementación de esta misma app, con acceso «Cualquier usuario de IES Goya». Con ella, el botón
-            «Acceso profesorado» ofrece «Entrar con mi cuenta del instituto» y nadie del centro necesita código.</div></div>
+          <div class="col-12"><div class="border rounded p-3 bg-light">
+            <div class="fw-semibold mb-1"><i class="bi bi-google me-1"></i> Entrar con cualquier cuenta de Google</div>
+            <div class="form-text mt-0 mb-2">Para que el profesorado autorizado entre con su cuenta de Google (@gmail.com, @iesgoya.es…) sin códigos, se instala
+            una pequeña app aparte, «Acceso con Google» (archivo <code>Acceso.gs</code>). Esa app necesita esta clave secreta:</div>
+            ${S.secretoAcceso ? `<div class="input-group input-group-sm mb-2"><span class="input-group-text">Clave secreta</span><input class="form-control font-monospace" readonly value="${esc(S.secretoAcceso)}" id="secreto-acceso">
+              <button class="btn btn-outline-secondary" type="button" id="copiar-secreto">Copiar</button></div>` : ''}
+            <label class="form-label small mb-1">Enlace de la app «Acceso con Google»</label>
+            <input class="form-control font-monospace small" name="URL_ACCESO" value="${esc(A.URL_ACCESO || '')}" placeholder="https://script.google.com/macros/s/…/exec">
+            <div class="form-text">Cuando lo pongas, «Acceso profesorado» mostrará «Entrar con mi cuenta de Google». Sólo podrá editar quien esté en <em>Profesores y permisos</em>.</div>
+          </div></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="EDITORES_SOLO_PROPIOS" id="a-prop" ${si(A.EDITORES_SOLO_PROPIOS) ? 'checked' : ''}>
             <label class="form-check-label" for="a-prop">Los editores sólo pueden modificar los expedientes que han creado ellos</label></div></div>
           <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="LECTURA_ABIERTA" id="a-lec" ${si(A.LECTURA_ABIERTA) ? 'checked' : ''}>
@@ -1264,7 +1294,7 @@ function vistaAjustes() {
   $('#form-ajustes').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const f = ev.target;
-    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value, URL_EQUIPO: f.URL_EQUIPO.value.trim(),
+    const datos = { NOMBRE_APP: f.NOMBRE_APP.value, SUBTITULO: f.SUBTITULO.value, PAIS_DEFECTO: f.PAIS_DEFECTO.value, URL_ACCESO: f.URL_ACCESO.value.trim(),
       PROVINCIA_DEFECTO: f.PROVINCIA_DEFECTO.value, EDITORES_SOLO_PROPIOS: f.EDITORES_SOLO_PROPIOS.checked ? 'SÍ' : 'NO', LECTURA_ABIERTA: f.LECTURA_ABIERTA.checked ? 'SÍ' : 'NO' };
     const b = $('#btn-guardar-ajustes');
     ocupado(b, true);
@@ -1293,6 +1323,7 @@ function vistaAjustes() {
     ocupado(b, true, 'Ordenando…');
     try { const r = await api('ordenarAhora'); aviso(`Hoja ordenada: ${numero(r.total)} expedientes numerados.`); } catch (e) { error(e); } finally { ocupado(b, false); }
   });
+  $('#copiar-secreto') && $('#copiar-secreto').addEventListener('click', () => { $('#secreto-acceso').select(); navigator.clipboard && navigator.clipboard.writeText($('#secreto-acceso').value); aviso('Clave copiada.'); });
   $('#copiar-url') && $('#copiar-url').addEventListener('click', () => { $('#url-app').select(); navigator.clipboard && navigator.clipboard.writeText($('#url-app').value); aviso('Enlace copiado.'); });
 }
 
