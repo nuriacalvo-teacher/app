@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-28';
+const VERSION_APP = '2026-09-29';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -78,7 +78,7 @@ const CAMPOS_INICIALES = [
   ['LOCALIDAD', 'Localidad', 'localidad', '', false, 'Lugar y fecha de nacimiento', 'Elígela de la lista o escríbela si no aparece (nombres antiguos, pedanías…).', true, true],
   ['FECHA_NACIMIENTO', 'Fecha de nacimiento', 'fecha', '', false, 'Lugar y fecha de nacimiento', 'dd/mm/aaaa. Si sólo consta el año, escribe el año.', false, false],
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
-  ['ILUSTRE', 'Alumno ilustre o destacado', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
+  ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nHAY QUE BUSCAR\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. HAY QUE BUSCAR: hay que investigarlo. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
   ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
   ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
 ];
@@ -550,6 +550,13 @@ function tablaDe_(h) {
   return out;
 }
 
+/** Valor del campo «destacado o ilustre»: 'ILUSTRE', 'DESTACADO' o '' (los «SÍ» antiguos cuentan como ilustres). */
+function nivelIlustre_(v) {
+  const t = String(v || '').trim().toUpperCase();
+  if (t === 'ILUSTRE' || t === 'SÍ' || t === 'SI') return 'ILUSTRE';
+  return t === 'DESTACADO' ? 'DESTACADO' : '';
+}
+
 function si_(v) {
   return ['SÍ', 'SI', 'TRUE', 'VERDADERO', 'X', '1', 'S'].indexOf(String(v || '').trim().toUpperCase()) >= 0;
 }
@@ -925,7 +932,7 @@ function inicio_(d, u) {
   const h = hojaAlumnos_();
   const mapa = mapaColumnas_(h);
   const c = leerColumnas_(h, mapa, ['_UID', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE', 'PROFESOR', '_BORRADO', '_CREADO_POR', '_CREADO_EN']);
-  const r = { total: 0, terminados: 0, digitalizados: 0, ilustres: 0, mios: 0, hoy: 0, porEstado: {}, porProfesor: {} };
+  const r = { total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0, mios: 0, hoy: 0, porEstado: {}, porProfesor: {} };
   const hoy = ahora_().slice(0, 10);
   for (let i = 0; i < c._n; i++) {
     if (!c._UID[i] || si_(c._BORRADO[i])) continue;
@@ -934,7 +941,8 @@ function inicio_(d, u) {
     r.porEstado[est] = (r.porEstado[est] || 0) + 1;
     if (est === 'TERMINADO') r.terminados++;
     if (si_(c.DIGITALIZADO[i])) r.digitalizados++;
-    if (si_(c.ILUSTRE[i])) r.ilustres++;
+    if (nivelIlustre_(c.ILUSTRE[i]) === 'ILUSTRE') r.ilustres++;
+    if (nivelIlustre_(c.ILUSTRE[i]) === 'DESTACADO') r.destacados++;
     if (c._CREADO_POR[i] === u.email) r.mios++;
     if (String(c._CREADO_EN[i]).slice(0, 10) === hoy) r.hoy++;
     const p = c.PROFESOR[i] || '(sin profesor)';
@@ -1504,13 +1512,14 @@ function portadaCalcular_() {
     const h = hojaAlumnos_();
     const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', '_BORRADO', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE']);
     const r = { CODIGO: e.CODIGO, NOMBRE: e.NOMBRE, DESDE: e.DESDE, HASTA: e.HASTA, ESTADO: e.ESTADO, DESCRIPCION: e.DESCRIPCION,
-      total: 0, terminados: 0, digitalizados: 0, ilustres: 0 };
+      total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0 };
     for (let i = 0; i < c._n; i++) {
       if (!c._UID[i] || si_(c._BORRADO[i])) continue;
       r.total++;
       if (c.ESTADO[i] === 'TERMINADO') r.terminados++;
       if (si_(c.DIGITALIZADO[i])) r.digitalizados++;
-      if (si_(c.ILUSTRE[i])) r.ilustres++;
+      if (nivelIlustre_(c.ILUSTRE[i]) === 'ILUSTRE') r.ilustres++;
+      if (nivelIlustre_(c.ILUSTRE[i]) === 'DESTACADO') r.destacados++;
     }
     const cp = carpetasLista_();
     r.carpetas = cp.length;
@@ -1983,6 +1992,17 @@ function instalar() {
   const hCa = crearHoja_(ss, HOJA.CAMPOS, CABECERAS.Campos);
   hCa.getRange(1, 1, hCa.getMaxRows(), CABECERAS.Campos.length).setNumberFormat('@');
   const caExist = tabla_(HOJA.CAMPOS).map(function (r) { return r.CLAVE; });
+  // Actualización: «ilustre» pasa de NO/SÍ/HAY QUE BUSCAR a NO/DESTACADO/ILUSTRE.
+  tabla_(HOJA.CAMPOS).forEach(function (r) {
+    const antiguas = ['NO|SÍ|HAY QUE BUSCAR', 'NO|DESTACADO|ILUSTRE'];
+    if (r.CLAVE === 'ILUSTRE' && antiguas.indexOf(String(r.OPCIONES).trim().split(/\s*[\n;]\s*/).join('|')) >= 0) {
+      const def = CAMPOS_INICIALES.find(function (c) { return c[0] === 'ILUSTRE'; });
+      hCa.getRange(r._fila, 2).setValue(def[1]);
+      hCa.getRange(r._fila, 4).setValue(def[3]);
+      hCa.getRange(r._fila, 8).setValue(def[6]);
+      MEMO.migrarIlustre = true;
+    }
+  });
   CAMPOS_INICIALES.forEach(function (c, i) {
     if (caExist.indexOf(c[0]) >= 0) return;
     hCa.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(i + 1), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
@@ -2066,6 +2086,19 @@ function instalar() {
     if (e.ID_HOJA && e.ID_HOJA !== ss.getId()) { asegurarColumnas_(hojaAlumnos_()); ordenar_(hojaAlumnos_()); }
   });
   usarEpoca_('XIX');
+  if (MEMO.migrarIlustre) {
+    // Los expedientes que ya tenían «SÍ» pasan a «ILUSTRE».
+    enCadaEpoca_(function () {
+      const h = hojaAlumnos_(), mapa = mapaColumnas_(h), n = h.getLastRow() - 1;
+      if (!mapa.ILUSTRE || n < 1) return;
+      const r = h.getRange(2, mapa.ILUSTRE, n, 1);
+      const v = r.getDisplayValues();
+      let cambia = false;
+      v.forEach(function (f) { if (/^S[IÍ]$/i.test(String(f[0]).trim())) { f[0] = 'ILUSTRE'; cambia = true; } });
+      if (cambia) { r.setValues(v); tocarDatos_(h); }
+    });
+    usarEpoca_('XIX');
+  }
   [[hAl, hAl.getLastColumn()], [hAj, 3], [hCa, 11], [hPr, 6], [hCp, 6], [hEp, CABECERAS.Epocas.length]].forEach(function (x) {
     if (x[0].getMaxColumns() > x[1]) x[0].deleteColumns(x[1] + 1, x[0].getMaxColumns() - x[1]);
   });
@@ -2197,8 +2230,11 @@ function formatoAlumnos_(h) {
     reglas.push(reglaTexto_('PENDIENTE DE REVISIÓN', col('ESTADO'), COLOR.rosa, COLOR.granate, true));
   }
   if (col('ILUSTRE')) {
+    reglas.push(reglaTexto_('ILUSTRE', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
+    reglas.push(reglaTexto_('DESTACADO', col('ILUSTRE'), COLOR.azul, COLOR.azulT, true));
     reglas.push(reglaTexto_('SÍ', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
     reglas.push(reglaTexto_('HAY QUE BUSCAR', col('ILUSTRE'), COLOR.ambar, COLOR.ambarT, false));
+    reglas.push(reglaTexto_('SIN COMPROBAR', col('ILUSTRE'), COLOR.borrado, COLOR.gris, false));
   }
   if (col('DIGITALIZADO')) {
     reglas.push(reglaTexto_('SÍ', col('DIGITALIZADO'), COLOR.verde, COLOR.verdeT, true));

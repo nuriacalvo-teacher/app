@@ -4,7 +4,7 @@
  */
 (function () {
   'use strict';
-  var CLAVE = 'goya_demo_v3';
+  var CLAVE = 'goya_demo_v4';
   var params = new URLSearchParams(location.search);
   var db;
   try { db = JSON.parse(localStorage.getItem(CLAVE)); } catch (e) { db = null; }
@@ -224,8 +224,8 @@
     var ejemplos = [
       ['1', 'ABADÍA Y CORTINA', 'Juan Manuel', 'Zaragoza', 'Borja', '1871', 'TERMINADO', 'NO', 'SÍ'],
       ['1', 'ABADÍA Y LASALA', 'Mariano', 'Huesca', 'Barbastro', '1868', 'TERMINADO', 'NO', 'NO'],
-      ['1', 'ABEIJÓN Y FUERTES', 'Pedro', 'Zaragoza', 'Calatayud', '1880', 'EN PROCESO', 'HAY QUE BUSCAR', 'NO'],
-      ['2', 'AGUADO Y SANZ', 'Francisco', 'Teruel', 'Alcañiz', '1859', 'TERMINADO', 'SÍ', 'SÍ'],
+      ['1', 'ABEIJÓN Y FUERTES', 'Pedro', 'Zaragoza', 'Calatayud', '1880', 'EN PROCESO', 'DESTACADO', 'NO'],
+      ['2', 'AGUADO Y SANZ', 'Francisco', 'Teruel', 'Alcañiz', '1859', 'TERMINADO', 'ILUSTRE', 'SÍ'],
       ['2', 'ABELLA Y GARCÍA', 'Joaquín', 'Navarra', 'Tudela', '1862', 'EN PROCESO', 'NO', 'NO'],
       ['2', 'ACÍN Y BLASCO', 'Santiago', 'Zaragoza', 'Tarazona', '1875', 'TERMINADO', 'NO', 'NO'],
       ['3', 'ALCRUDO Y MARÍN', 'Vicente', 'Zaragoza', 'Zaragoza', '1849', 'TERMINADO', 'NO', 'SÍ']
@@ -243,7 +243,7 @@
       .forEach(function (e) {
         Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
         MEMO.epocaPedida = '1900_1930';
-        guardar_({ registro: { PROFESOR: 'COORDINACION', CARPETA: '1', APELLIDOS: e[0], NOMBRE: e[1], PAIS: 'España', PROVINCIA: e[2], LOCALIDAD: e[3], CURSO: e[4], ESTADO: 'EN PROCESO', ILUSTRE: e[0].indexOf('BUÑUEL') === 0 ? 'SÍ' : 'NO', DIGITALIZADO: 'NO' } }, u);
+        guardar_({ registro: { PROFESOR: 'COORDINACION', CARPETA: '1', APELLIDOS: e[0], NOMBRE: e[1], PAIS: 'España', PROVINCIA: e[2], LOCALIDAD: e[3], CURSO: e[4], ESTADO: 'EN PROCESO', ILUSTRE: e[0].indexOf('BUÑUEL') === 0 ? 'ILUSTRE' : 'NO', DIGITALIZADO: 'NO' } }, u);
       });
   };
 })();

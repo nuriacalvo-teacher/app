@@ -382,7 +382,7 @@ async function vistaInicio() {
         <div class="barra-prog mt-2"><div style="width:${pct(r.terminados, r.total)}%"></div></div><div class="sub mt-1">${pct(r.terminados, r.total)} % del total</div></div></div>
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Carpetas terminadas</div><div class="num">${numero(r.carpetas.terminadas)} <small class="fs-6 text-suave">/ ${numero(r.carpetas.total)}</small></div>
         <div class="barra-prog mt-2"><div style="width:${pct(r.carpetas.terminadas, r.carpetas.total)}%"></div></div><div class="sub mt-1">${numero(r.carpetas.enCurso)} en curso</div></div></div>
-      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Digitalizados · Ilustres</div><div class="num">${numero(r.digitalizados)} <small class="fs-6 text-suave">· ${numero(r.ilustres)}</small></div><div class="sub">expedientes marcados «SÍ»</div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Ilustres · Destacados</div><div class="num">${numero(r.ilustres)} <small class="fs-6 text-suave">· ${numero(r.destacados)}</small></div><div class="sub">${numero(r.digitalizados)} expedientes digitalizados</div></div></div>
     </div>
     <div class="row g-3">
       <div class="col-lg-7">
@@ -712,6 +712,7 @@ async function verFicha(id) {
       if (!v) return '<span class="text-suave">—</span>';
       if (c.tipo === 'carpeta') return esc(textoCarpeta(v));
       if (c.clave === 'ESTADO') return etiquetaEstado(v);
+      if (c.clave === 'ILUSTRE') return celda('ILUSTRE', v);
       return esc(v);
     };
     const cuerpo = `
@@ -770,7 +771,7 @@ function refrescarVista() {
 /* ---------- Tablas de resultados ---------- */
 
 const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
-const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Destacado / ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
 const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
 
 function etiquetaSiNo(v) {
@@ -793,7 +794,15 @@ function celda(k, v, f) {
   if (k === 'LUGAR') return lugar(f);
   if (k === 'ESTADO') return etiquetaEstado(v);
   if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
-  if (k === 'ILUSTRE' && sinAcentos(v) === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Sí</span>';
+  if (k === 'ILUSTRE') {
+    const t = sinAcentos(v);
+    if (t === 'ILUSTRE' || t === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Ilustre</span>';
+    if (t === 'DESTACADO') return '<span class="etiqueta e-DESTACADO"><i class="bi bi-award"></i> Destacado</span>';
+    if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+    if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO"><i class="bi bi-search"></i> Hay que buscar</span>';
+    if (t === 'SIN COMPROBAR') return '<span class="etiqueta"><i class="bi bi-question-circle"></i> Sin comprobar</span>';
+    return esc(v);
+  }
   const c = campoPorClave(k);
   if (c && ['seleccion', 'si_no'].includes(c.tipo) && /^(SÍ|SI|NO|HAY QUE BUSCAR)$/i.test(v || '')) return etiquetaSiNo(v);
   return esc(v);
@@ -1376,7 +1385,7 @@ async function vistaPortada() {
         <div class="cifras">
           <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
           <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>carpetas terminadas</span></div>
-          <div><strong>${numero(e.ilustres)}</strong><span>ilustres</span></div>
+          <div><strong>${numero(e.ilustres)}<small class="fs-6 text-suave"> · ${numero(e.destacados || 0)}</small></strong><span>ilustres · destacados</span></div>
         </div>
         <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
         <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>

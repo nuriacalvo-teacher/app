@@ -153,6 +153,7 @@
   .e-SI { background: #e3f1e8; color: #1f5a37; }
   .e-NO { background: transparent; color: #8a8f98; font-weight: 500; }
   .e-ILUSTRE { background: #f3e7c9; color: #6b4e16; }
+  .e-DESTACADO { background: #e3ecf6; color: #1d4f8c; }
   .e-EXTRANJERO { background: #e3ecf6; color: #1d4f8c; }
 
   .letras { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -344,7 +345,7 @@
  */
 (function () {
   'use strict';
-  var CLAVE = 'goya_demo_v3';
+  var CLAVE = 'goya_demo_v4';
   var params = new URLSearchParams(location.search);
   var db;
   try { db = JSON.parse(localStorage.getItem(CLAVE)); } catch (e) { db = null; }
@@ -564,8 +565,8 @@
     var ejemplos = [
       ['1', 'ABADÍA Y CORTINA', 'Juan Manuel', 'Zaragoza', 'Borja', '1871', 'TERMINADO', 'NO', 'SÍ'],
       ['1', 'ABADÍA Y LASALA', 'Mariano', 'Huesca', 'Barbastro', '1868', 'TERMINADO', 'NO', 'NO'],
-      ['1', 'ABEIJÓN Y FUERTES', 'Pedro', 'Zaragoza', 'Calatayud', '1880', 'EN PROCESO', 'HAY QUE BUSCAR', 'NO'],
-      ['2', 'AGUADO Y SANZ', 'Francisco', 'Teruel', 'Alcañiz', '1859', 'TERMINADO', 'SÍ', 'SÍ'],
+      ['1', 'ABEIJÓN Y FUERTES', 'Pedro', 'Zaragoza', 'Calatayud', '1880', 'EN PROCESO', 'DESTACADO', 'NO'],
+      ['2', 'AGUADO Y SANZ', 'Francisco', 'Teruel', 'Alcañiz', '1859', 'TERMINADO', 'ILUSTRE', 'SÍ'],
       ['2', 'ABELLA Y GARCÍA', 'Joaquín', 'Navarra', 'Tudela', '1862', 'EN PROCESO', 'NO', 'NO'],
       ['2', 'ACÍN Y BLASCO', 'Santiago', 'Zaragoza', 'Tarazona', '1875', 'TERMINADO', 'NO', 'NO'],
       ['3', 'ALCRUDO Y MARÍN', 'Vicente', 'Zaragoza', 'Zaragoza', '1849', 'TERMINADO', 'NO', 'SÍ']
@@ -583,7 +584,7 @@
       .forEach(function (e) {
         Object.keys(MEMO).forEach(function (k) { delete MEMO[k]; });
         MEMO.epocaPedida = '1900_1930';
-        guardar_({ registro: { PROFESOR: 'COORDINACION', CARPETA: '1', APELLIDOS: e[0], NOMBRE: e[1], PAIS: 'España', PROVINCIA: e[2], LOCALIDAD: e[3], CURSO: e[4], ESTADO: 'EN PROCESO', ILUSTRE: e[0].indexOf('BUÑUEL') === 0 ? 'SÍ' : 'NO', DIGITALIZADO: 'NO' } }, u);
+        guardar_({ registro: { PROFESOR: 'COORDINACION', CARPETA: '1', APELLIDOS: e[0], NOMBRE: e[1], PAIS: 'España', PROVINCIA: e[2], LOCALIDAD: e[3], CURSO: e[4], ESTADO: 'EN PROCESO', ILUSTRE: e[0].indexOf('BUÑUEL') === 0 ? 'ILUSTRE' : 'NO', DIGITALIZADO: 'NO' } }, u);
       });
   };
 })();
@@ -621,7 +622,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-09-28';
+const VERSION_APP = '2026-09-29';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -671,7 +672,7 @@ const CAMPOS_INICIALES = [
   ['LOCALIDAD', 'Localidad', 'localidad', '', false, 'Lugar y fecha de nacimiento', 'Elígela de la lista o escríbela si no aparece (nombres antiguos, pedanías…).', true, true],
   ['FECHA_NACIMIENTO', 'Fecha de nacimiento', 'fecha', '', false, 'Lugar y fecha de nacimiento', 'dd/mm/aaaa. Si sólo consta el año, escribe el año.', false, false],
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
-  ['ILUSTRE', 'Alumno ilustre o destacado', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
+  ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nHAY QUE BUSCAR\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. HAY QUE BUSCAR: hay que investigarlo. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
   ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
   ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
 ];
@@ -1143,6 +1144,13 @@ function tablaDe_(h) {
   return out;
 }
 
+/** Valor del campo «destacado o ilustre»: 'ILUSTRE', 'DESTACADO' o '' (los «SÍ» antiguos cuentan como ilustres). */
+function nivelIlustre_(v) {
+  const t = String(v || '').trim().toUpperCase();
+  if (t === 'ILUSTRE' || t === 'SÍ' || t === 'SI') return 'ILUSTRE';
+  return t === 'DESTACADO' ? 'DESTACADO' : '';
+}
+
 function si_(v) {
   return ['SÍ', 'SI', 'TRUE', 'VERDADERO', 'X', '1', 'S'].indexOf(String(v || '').trim().toUpperCase()) >= 0;
 }
@@ -1518,7 +1526,7 @@ function inicio_(d, u) {
   const h = hojaAlumnos_();
   const mapa = mapaColumnas_(h);
   const c = leerColumnas_(h, mapa, ['_UID', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE', 'PROFESOR', '_BORRADO', '_CREADO_POR', '_CREADO_EN']);
-  const r = { total: 0, terminados: 0, digitalizados: 0, ilustres: 0, mios: 0, hoy: 0, porEstado: {}, porProfesor: {} };
+  const r = { total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0, mios: 0, hoy: 0, porEstado: {}, porProfesor: {} };
   const hoy = ahora_().slice(0, 10);
   for (let i = 0; i < c._n; i++) {
     if (!c._UID[i] || si_(c._BORRADO[i])) continue;
@@ -1527,7 +1535,8 @@ function inicio_(d, u) {
     r.porEstado[est] = (r.porEstado[est] || 0) + 1;
     if (est === 'TERMINADO') r.terminados++;
     if (si_(c.DIGITALIZADO[i])) r.digitalizados++;
-    if (si_(c.ILUSTRE[i])) r.ilustres++;
+    if (nivelIlustre_(c.ILUSTRE[i]) === 'ILUSTRE') r.ilustres++;
+    if (nivelIlustre_(c.ILUSTRE[i]) === 'DESTACADO') r.destacados++;
     if (c._CREADO_POR[i] === u.email) r.mios++;
     if (String(c._CREADO_EN[i]).slice(0, 10) === hoy) r.hoy++;
     const p = c.PROFESOR[i] || '(sin profesor)';
@@ -2097,13 +2106,14 @@ function portadaCalcular_() {
     const h = hojaAlumnos_();
     const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', '_BORRADO', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE']);
     const r = { CODIGO: e.CODIGO, NOMBRE: e.NOMBRE, DESDE: e.DESDE, HASTA: e.HASTA, ESTADO: e.ESTADO, DESCRIPCION: e.DESCRIPCION,
-      total: 0, terminados: 0, digitalizados: 0, ilustres: 0 };
+      total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0 };
     for (let i = 0; i < c._n; i++) {
       if (!c._UID[i] || si_(c._BORRADO[i])) continue;
       r.total++;
       if (c.ESTADO[i] === 'TERMINADO') r.terminados++;
       if (si_(c.DIGITALIZADO[i])) r.digitalizados++;
-      if (si_(c.ILUSTRE[i])) r.ilustres++;
+      if (nivelIlustre_(c.ILUSTRE[i]) === 'ILUSTRE') r.ilustres++;
+      if (nivelIlustre_(c.ILUSTRE[i]) === 'DESTACADO') r.destacados++;
     }
     const cp = carpetasLista_();
     r.carpetas = cp.length;
@@ -2576,6 +2586,17 @@ function instalar() {
   const hCa = crearHoja_(ss, HOJA.CAMPOS, CABECERAS.Campos);
   hCa.getRange(1, 1, hCa.getMaxRows(), CABECERAS.Campos.length).setNumberFormat('@');
   const caExist = tabla_(HOJA.CAMPOS).map(function (r) { return r.CLAVE; });
+  // Actualización: «ilustre» pasa de NO/SÍ/HAY QUE BUSCAR a NO/DESTACADO/ILUSTRE.
+  tabla_(HOJA.CAMPOS).forEach(function (r) {
+    const antiguas = ['NO|SÍ|HAY QUE BUSCAR', 'NO|DESTACADO|ILUSTRE'];
+    if (r.CLAVE === 'ILUSTRE' && antiguas.indexOf(String(r.OPCIONES).trim().split(/\s*[\n;]\s*/).join('|')) >= 0) {
+      const def = CAMPOS_INICIALES.find(function (c) { return c[0] === 'ILUSTRE'; });
+      hCa.getRange(r._fila, 2).setValue(def[1]);
+      hCa.getRange(r._fila, 4).setValue(def[3]);
+      hCa.getRange(r._fila, 8).setValue(def[6]);
+      MEMO.migrarIlustre = true;
+    }
+  });
   CAMPOS_INICIALES.forEach(function (c, i) {
     if (caExist.indexOf(c[0]) >= 0) return;
     hCa.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(i + 1), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
@@ -2659,6 +2680,19 @@ function instalar() {
     if (e.ID_HOJA && e.ID_HOJA !== ss.getId()) { asegurarColumnas_(hojaAlumnos_()); ordenar_(hojaAlumnos_()); }
   });
   usarEpoca_('XIX');
+  if (MEMO.migrarIlustre) {
+    // Los expedientes que ya tenían «SÍ» pasan a «ILUSTRE».
+    enCadaEpoca_(function () {
+      const h = hojaAlumnos_(), mapa = mapaColumnas_(h), n = h.getLastRow() - 1;
+      if (!mapa.ILUSTRE || n < 1) return;
+      const r = h.getRange(2, mapa.ILUSTRE, n, 1);
+      const v = r.getDisplayValues();
+      let cambia = false;
+      v.forEach(function (f) { if (/^S[IÍ]$/i.test(String(f[0]).trim())) { f[0] = 'ILUSTRE'; cambia = true; } });
+      if (cambia) { r.setValues(v); tocarDatos_(h); }
+    });
+    usarEpoca_('XIX');
+  }
   [[hAl, hAl.getLastColumn()], [hAj, 3], [hCa, 11], [hPr, 6], [hCp, 6], [hEp, CABECERAS.Epocas.length]].forEach(function (x) {
     if (x[0].getMaxColumns() > x[1]) x[0].deleteColumns(x[1] + 1, x[0].getMaxColumns() - x[1]);
   });
@@ -2790,8 +2824,11 @@ function formatoAlumnos_(h) {
     reglas.push(reglaTexto_('PENDIENTE DE REVISIÓN', col('ESTADO'), COLOR.rosa, COLOR.granate, true));
   }
   if (col('ILUSTRE')) {
+    reglas.push(reglaTexto_('ILUSTRE', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
+    reglas.push(reglaTexto_('DESTACADO', col('ILUSTRE'), COLOR.azul, COLOR.azulT, true));
     reglas.push(reglaTexto_('SÍ', col('ILUSTRE'), COLOR.oro, COLOR.oroT, true));
     reglas.push(reglaTexto_('HAY QUE BUSCAR', col('ILUSTRE'), COLOR.ambar, COLOR.ambarT, false));
+    reglas.push(reglaTexto_('SIN COMPROBAR', col('ILUSTRE'), COLOR.borrado, COLOR.gris, false));
   }
   if (col('DIGITALIZADO')) {
     reglas.push(reglaTexto_('SÍ', col('DIGITALIZADO'), COLOR.verde, COLOR.verdeT, true));
@@ -3255,7 +3292,7 @@ async function vistaInicio() {
         <div class="barra-prog mt-2"><div style="width:${pct(r.terminados, r.total)}%"></div></div><div class="sub mt-1">${pct(r.terminados, r.total)} % del total</div></div></div>
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Carpetas terminadas</div><div class="num">${numero(r.carpetas.terminadas)} <small class="fs-6 text-suave">/ ${numero(r.carpetas.total)}</small></div>
         <div class="barra-prog mt-2"><div style="width:${pct(r.carpetas.terminadas, r.carpetas.total)}%"></div></div><div class="sub mt-1">${numero(r.carpetas.enCurso)} en curso</div></div></div>
-      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Digitalizados · Ilustres</div><div class="num">${numero(r.digitalizados)} <small class="fs-6 text-suave">· ${numero(r.ilustres)}</small></div><div class="sub">expedientes marcados «SÍ»</div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Ilustres · Destacados</div><div class="num">${numero(r.ilustres)} <small class="fs-6 text-suave">· ${numero(r.destacados)}</small></div><div class="sub">${numero(r.digitalizados)} expedientes digitalizados</div></div></div>
     </div>
     <div class="row g-3">
       <div class="col-lg-7">
@@ -3585,6 +3622,7 @@ async function verFicha(id) {
       if (!v) return '<span class="text-suave">—</span>';
       if (c.tipo === 'carpeta') return esc(textoCarpeta(v));
       if (c.clave === 'ESTADO') return etiquetaEstado(v);
+      if (c.clave === 'ILUSTRE') return celda('ILUSTRE', v);
       return esc(v);
     };
     const cuerpo = `
@@ -3643,7 +3681,7 @@ function refrescarVista() {
 /* ---------- Tablas de resultados ---------- */
 
 const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
-const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Destacado / ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
 const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
 
 function etiquetaSiNo(v) {
@@ -3666,7 +3704,15 @@ function celda(k, v, f) {
   if (k === 'LUGAR') return lugar(f);
   if (k === 'ESTADO') return etiquetaEstado(v);
   if (k === 'CARPETA') return v ? `<span class="etiqueta">${esc(v)}</span>` : '';
-  if (k === 'ILUSTRE' && sinAcentos(v) === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Sí</span>';
+  if (k === 'ILUSTRE') {
+    const t = sinAcentos(v);
+    if (t === 'ILUSTRE' || t === 'SI') return '<span class="etiqueta e-ILUSTRE"><i class="bi bi-star-fill"></i> Ilustre</span>';
+    if (t === 'DESTACADO') return '<span class="etiqueta e-DESTACADO"><i class="bi bi-award"></i> Destacado</span>';
+    if (t === 'NO') return '<span class="etiqueta e-NO">No</span>';
+    if (t === 'HAY QUE BUSCAR') return '<span class="etiqueta e-EN-PROCESO"><i class="bi bi-search"></i> Hay que buscar</span>';
+    if (t === 'SIN COMPROBAR') return '<span class="etiqueta"><i class="bi bi-question-circle"></i> Sin comprobar</span>';
+    return esc(v);
+  }
   const c = campoPorClave(k);
   if (c && ['seleccion', 'si_no'].includes(c.tipo) && /^(SÍ|SI|NO|HAY QUE BUSCAR)$/i.test(v || '')) return etiquetaSiNo(v);
   return esc(v);
@@ -4249,7 +4295,7 @@ async function vistaPortada() {
         <div class="cifras">
           <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
           <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>carpetas terminadas</span></div>
-          <div><strong>${numero(e.ilustres)}</strong><span>ilustres</span></div>
+          <div><strong>${numero(e.ilustres)}<small class="fs-6 text-suave"> · ${numero(e.destacados || 0)}</small></strong><span>ilustres · destacados</span></div>
         </div>
         <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
         <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>
