@@ -27,6 +27,9 @@
  */
 const ID_HOJA = '';
 
+/** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
+const VERSION_APP = '2026-09-26';
+
 const HOJA = {
   EPOCAS: 'Épocas',
   ALUMNOS: 'Alumnos',
@@ -149,6 +152,22 @@ function diagnostico() {
   try {
     linea('6) SpreadsheetApp la abre: «' + SpreadsheetApp.openById(id).getName() + '» → TODO CORRECTO, ya puedes ejecutar «instalar».');
   } catch (e) { linea('6) SpreadsheetApp NO la abre: ' + e.message); }
+  linea('7) Versión de este código: ' + VERSION_APP + ' (la app publicada debe mostrar la misma en la pantalla de acceso)');
+  try {
+    const h = ss_().getSheetByName(HOJA.EPOCAS);
+    if (!h) { linea('8) No existe la pestaña «' + HOJA.EPOCAS + '»: ejecuta «instalar».'); return; }
+    const v = h.getDataRange().getDisplayValues();
+    linea('8) Cabecera de «Épocas»: ' + v[0].join(' | '));
+    const col = v[0].indexOf('PUBLICA');
+    if (col < 0) linea('   ⚠ Falta la columna PUBLICA: ejecuta «instalar».');
+    v.slice(1).forEach(function (f) {
+      if (!f[0]) return;
+      linea('   Época ' + f[0] + ' → PUBLICA = «' + (col >= 0 ? f[col] : '') + '» → ' + (col >= 0 && si_(f[col]) ? 'PÚBLICA' : 'sólo equipo'));
+    });
+    linea('9) ¿Hay consulta pública? ' + (hayConsultaPublica_() ? 'SÍ → los visitantes verán la portada' : 'NO → los visitantes verán la pantalla de acceso'));
+    let url = ''; try { url = ScriptApp.getService().getUrl(); } catch (e) { url = '(no publicada)'; }
+    linea('10) Enlace de la app publicada: ' + url);
+  } catch (e) { linea('8) Error leyendo «Épocas»: ' + e.message); }
 }
 
 /**
@@ -302,12 +321,12 @@ function logout_(d, u) {
 }
 
 function arranque_(d, u) {
-  const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado } };
+  const r = { usuario: { email: u.email, nombre: u.nombre, rol: u.rol, via: u.via, identificado: u.identificado }, version: VERSION_APP };
+  r.consultaPublica = hayConsultaPublica_();
   if (u.rol === 'NINGUNO') return r;
   r.ajustes = ajustes_();
   r.campos = campos_();
   r.epocas = epocas_().map(function (e) { const x = Object.assign({}, e); delete x.ID_HOJA; delete x._fila; return x; });
-  r.consultaPublica = hayConsultaPublica_();
   r.epoca = epocaActual_().CODIGO;
   r.carpetas = carpetasLista_();
   const profes = u.rol === 'PUBLICO' ? [] : profesores_();

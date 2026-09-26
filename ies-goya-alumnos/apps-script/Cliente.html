@@ -209,6 +209,8 @@ async function arrancar() {
     S.usuario = r.usuario;
     S.consultaPublica = !!r.consultaPublica;
     $('#login-volver').classList.toggle('d-none', !S.consultaPublica);
+    $('#login-info').innerHTML = `Versión ${esc(r.version || '?')}` + (S.consultaPublica ? '' :
+      '<br><span class="text-warning">Ninguna época tiene activada la consulta pública, por eso se pide identificarse.</span>');
     if (r.usuario.rol === 'NINGUNO' && !r.usuario.identificado) { mostrarPantalla('login'); setTimeout(() => $('#login-email').focus(), 50); return; }
     if (r.usuario.rol === 'NINGUNO') { $('#sin-acceso-email').textContent = r.usuario.email; mostrarPantalla('sin-acceso'); return; }
     Object.assign(S, { ajustes: r.ajustes, campos: r.campos, profesores: r.profesores, carpetas: r.carpetas, urlHoja: r.urlHoja, urlApp: r.urlApp,
