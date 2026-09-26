@@ -15,7 +15,7 @@
  *    Alumnos     → un expediente por fila. Fila 1 = claves de los campos.
  *    Campos      → definición del formulario (se edita desde la app).
  *    Profesores  → personas, correo, rol (ADMIN / EDITOR / LECTOR) y código de acceso.
- *    Carpetas    → número de carpeta, primer y último apellido, estado y quién la trabaja.
+ *    Cajas    → número de caja, primer y último apellido, estado y quién la trabaja.
  *    Historial   → registro de todos los cambios (quién, cuándo, qué).
  *    Ajustes     → opciones generales.
  */
@@ -28,14 +28,14 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-01';
+const VERSION_APP = '2026-10-02';
 
 const HOJA = {
   EPOCAS: 'Épocas',
   ALUMNOS: 'Alumnos',
   CAMPOS: 'Campos',
   PROFESORES: 'Profesores',
-  CARPETAS: 'Carpetas',
+  CARPETAS: 'Cajas',   // antes «Carpetas»: se renombra sola (ver renombrarCajas_)
   HISTORIAL: 'Historial',
   AJUSTES: 'Ajustes'
 };
@@ -70,7 +70,7 @@ const ESTADOS_CARPETA = ['PENDIENTE', 'EN CURSO', 'TERMINADA'];
 const CAMPOS_INICIALES = [
   ['PROFESOR', 'Profesor/a que registra', 'profesor', '', true, 'Registro', '', true, true],
   ['ESTADO', 'Estado de la toma de datos', 'seleccion', 'EN PROCESO\nTERMINADO\nPENDIENTE DE REVISIÓN', true, 'Registro', 'Marca TERMINADO cuando hayas vaciado todo el expediente.', true, true],
-  ['CARPETA', 'Carpeta del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la carpeta según los apellidos.', true, true],
+  ['CARPETA', 'Caja del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la caja según los apellidos.', true, true],
   ['APELLIDOS', 'Apellidos', 'texto', '', true, 'Identificación del alumno', 'Tal como aparecen en el expediente. Ej.: ABADÍA Y CORTINA', true, true],
   ['NOMBRE', 'Nombre de pila', 'texto', '', true, 'Identificación del alumno', 'Ej.: Juan Manuel', true, true],
   ['PAIS', 'País de nacimiento', 'pais', '', false, 'Lugar y fecha de nacimiento', '', true, true],
@@ -80,7 +80,7 @@ const CAMPOS_INICIALES = [
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
   ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
   ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
-  ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
+  ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene el expediente…', false, false]
 ];
 
 const AJUSTES_INICIALES = [
@@ -223,7 +223,7 @@ function api(accion, datos, token) {
     else if (def.rol === 'ADMIN') { invalidarConfig_(); MEMO.sinCacheConfig = true; }
     const data = def.fn(datos, u);
     // Sólo la coordinación cambia la configuración (campos, profesorado, ajustes, épocas): guardar
-    // expedientes o carpetas no obliga a releerla, y así la siguiente pantalla carga más rápido.
+    // expedientes o cajas no obliga a releerla, y así la siguiente pantalla carga más rápido.
     if (def.rol === 'ADMIN' && ACCIONES_LECTURA.indexOf(accion) < 0) invalidarConfig_();
     if (ACCIONES_LECTURA.indexOf(accion) < 0 && ['login', 'loginGoogle', 'logout', 'bloquear', 'liberar'].indexOf(accion) < 0) {
       CacheService.getScriptCache().remove('portada');
@@ -453,7 +453,7 @@ function hoja_(nombre) {
 
 // ---------------------------------------------------------------------
 //  Épocas del archivo (Siglo XIX, 1900-1930…). La hoja central guarda lo común (épocas, campos,
-//  profesorado, ajustes); cada época guarda sus alumnos y carpetas en su propio archivo de Google
+//  profesorado, ajustes); cada época guarda sus alumnos y cajas en su propio archivo de Google
 //  (el siglo XIX, en la propia hoja central). Así cada época tiene su propia capacidad.
 // ---------------------------------------------------------------------
 
@@ -526,9 +526,18 @@ function hojaAlumnos_() {
   return h;
 }
 
+/** Las antiguas pestañas «Carpetas» pasan a llamarse «Cajas» (mismos datos). */
+function renombrarCajas_(libro) {
+  if (!libro.getSheetByName(HOJA.CARPETAS)) {
+    const vieja = libro.getSheetByName('Carpetas');
+    if (vieja) { try { vieja.setName(HOJA.CARPETAS); } catch (e) { console.error('Renombrar Carpetas', e); } }
+  }
+  return libro;
+}
+
 function hojaCarpetas_() {
-  const h = libroEpoca_().getSheetByName(HOJA.CARPETAS);
-  if (!h) throw new Error('Falta la hoja «Carpetas» de la época «' + epocaActual_().NOMBRE + '». Ejecuta «instalar».');
+  const h = renombrarCajas_(libroEpoca_()).getSheetByName(HOJA.CARPETAS);
+  if (!h) throw new Error('Falta la hoja «Cajas» de la época «' + epocaActual_().NOMBRE + '». Ejecuta «instalar».');
   return h;
 }
 
@@ -963,12 +972,12 @@ function inicio_(d, u) {
     const p = c.PROFESOR[i] || '(sin profesor)';
     r.porProfesor[p] = (r.porProfesor[p] || 0) + 1;
   }
-  const carpetas = carpetasLista_();
+  const cajas = carpetasLista_();
   r.carpetas = {
-    total: carpetas.length,
-    terminadas: carpetas.filter(function (x) { return x.ESTADO === 'TERMINADA'; }).length,
-    enCurso: carpetas.filter(function (x) { return x.ESTADO === 'EN CURSO'; }).length,
-    mias: carpetas.filter(function (x) { return x.ASIGNADA_A && x.ASIGNADA_A === u.nombre && x.ESTADO !== 'TERMINADA'; })
+    total: cajas.length,
+    terminadas: cajas.filter(function (x) { return x.ESTADO === 'TERMINADA'; }).length,
+    enCurso: cajas.filter(function (x) { return x.ESTADO === 'EN CURSO'; }).length,
+    mias: cajas.filter(function (x) { return x.ASIGNADA_A && x.ASIGNADA_A === u.nombre && x.ESTADO !== 'TERMINADA'; })
       .map(function (x) { return x.NUMERO; })
   };
   // Últimos movimientos
@@ -1059,7 +1068,7 @@ function consultar_(d, u) {
 function consultarTodas_(d, u) {
   const tam = Math.min(Math.max(parseInt(d.tam, 10) || 50, 10), 500);
   const filtros = Object.assign({}, d.filtros || {});
-  delete filtros.CARPETA; // las carpetas son de cada época
+  delete filtros.CARPETA; // las cajas son de cada época
   const todas = [];
   const letras = {};
   let listado = [];
@@ -1284,7 +1293,7 @@ function guardar_(d, u) {
       nuevo._VERSION = 1;
       nuevo._BORRADO = '';
       fila = h.getLastRow() + 1;
-      detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + (reg.CARPETA ? ' · carpeta ' + reg.CARPETA : '');
+      detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + (reg.CARPETA ? ' · caja ' + reg.CARPETA : '');
     }
     if (coincidencias.length && cambiaNombre) {
       detalle += ' | HOMÓNIMO CONFIRMADO frente a ' + coincidencias.map(function (x) { return x.APELLIDOS + ', ' + x.NOMBRE + ' (' + x._UID + ')'; }).join('; ');
@@ -1388,7 +1397,7 @@ function importar_(d, u) {
         const f = hh.getLastRow() + 1;
         if (f + nuevos.length - 1 > hh.getMaxRows()) hh.insertRowsAfter(hh.getMaxRows(), nuevos.length + 100);
         hh.getRange(f, 1, nuevos.length, 6).setValues(nuevos.map(function (o) {
-          return [t, u.email, u.nombre, 'IMPORTAR', o._UID, o.APELLIDOS + ', ' + o.NOMBRE + (o.CARPETA ? ' · carpeta ' + o.CARPETA : '')];
+          return [t, u.email, u.nombre, 'IMPORTAR', o._UID, o.APELLIDOS + ', ' + o.NOMBRE + (o.CARPETA ? ' · caja ' + o.CARPETA : '')];
         }));
       } catch (e) { console.error('Historial', e); }
       formatoSiHaceFalta_();
@@ -1632,7 +1641,7 @@ function portadaCalcular_() {
 }
 
 /**
- * Crea una época nueva con su propio archivo de Google (Alumnos + Carpetas) en la misma carpeta de
+ * Crea una época nueva con su propio archivo de Google (Alumnos + Cajas) en la misma caja de
  * Drive que la hoja central. Usa los mismos campos, profesorado y ajustes que el resto del archivo.
  */
 function crearEpoca_(d, u) {
@@ -1696,7 +1705,7 @@ function guardarEpoca_(d, u) {
 }
 
 // ---------------------------------------------------------------------
-//  Carpetas
+//  Cajas
 // ---------------------------------------------------------------------
 
 function carpetasLista_() {
@@ -1723,7 +1732,7 @@ function carpetasConRecuento_(d, u) {
 
 function buscarCarpeta_(numero) {
   const c = carpetasLista_().find(function (x) { return x.NUMERO === String(numero).trim(); });
-  if (!c) throw new Error('No existe la carpeta ' + numero + '.');
+  if (!c) throw new Error('No existe la caja ' + numero + '.');
   return c;
 }
 
@@ -1732,7 +1741,7 @@ function escribirCarpeta_(c) {
     .setValues([[c.NUMERO, c.DESDE, c.HASTA, c.ESTADO, c.ASIGNADA_A, c.NOTAS]]);
 }
 
-/** Un editor se asigna una carpeta, la libera o la da por terminada (para no trabajar dos en la misma). */
+/** Un editor se asigna una caja, la libera o la da por terminada (para no trabajar dos en la misma). */
 function tomarCarpeta_(d, u) {
   epocaEditable_(u);
   const lock = LockService.getScriptLock();
@@ -1742,17 +1751,17 @@ function tomarCarpeta_(d, u) {
     const esMia = c.ASIGNADA_A === u.nombre;
     const admin = u.rol === 'ADMIN';
     if (d.accion === 'asignar') {
-      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA' && !admin) throw new Error('La carpeta ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
+      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA' && !admin) throw new Error('La caja ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
       // Se asigna a quien se elija en el desplegable (sólo profesorado activo con permiso de edición).
       const nombre = String(d.profesor || u.nombre).trim();
       const p = profesores_().find(function (x) { return x.NOMBRE === nombre && si_(x.ACTIVO) && (x.ROL === 'EDITOR' || x.ROL === 'ADMIN'); });
       if (!p && nombre !== u.nombre) throw new Error(nombre + ' no está activo/a como editor/a.');
       c.ASIGNADA_A = nombre; c.ESTADO = 'EN CURSO';
     } else if (d.accion === 'liberar') {
-      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la carpeta (o la coordinación) puede liberarla.');
+      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la caja (o la coordinación) puede liberarla.');
       c.ASIGNADA_A = ''; c.ESTADO = 'PENDIENTE';
     } else if (d.accion === 'terminar') {
-      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la carpeta (o la coordinación) puede darla por terminada.');
+      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la caja (o la coordinación) puede darla por terminada.');
       c.ESTADO = 'TERMINADA';
     } else if (d.accion === 'reabrir') {
       if (!esMia && !admin) throw new Error('Sólo quien la terminó (o la coordinación) puede reabrirla.');
@@ -1761,7 +1770,7 @@ function tomarCarpeta_(d, u) {
       throw new Error('Acción no válida.');
     }
     escribirCarpeta_(c);
-    registrar_(u, 'CARPETA', '', 'Carpeta ' + c.NUMERO + ': ' + d.accion + ' → ' + c.ESTADO + (c.ASIGNADA_A ? ' (' + c.ASIGNADA_A + ')' : ''));
+    registrar_(u, 'CAJA', '', 'Caja ' + c.NUMERO + ': ' + d.accion + ' → ' + c.ESTADO + (c.ASIGNADA_A ? ' (' + c.ASIGNADA_A + ')' : ''));
     return carpetasLista_();
   } finally {
     lock.releaseLock();
@@ -1770,11 +1779,11 @@ function tomarCarpeta_(d, u) {
 
 function guardarCarpeta_(d, u) {
   const numero = String(d.NUMERO || '').trim();
-  if (!numero) throw new Error('Indica el número de carpeta.');
+  if (!numero) throw new Error('Indica el número de caja.');
   const lista = carpetasLista_();
   const existente = lista.find(function (x) { return x.NUMERO === numero; });
   const original = d.original ? lista.find(function (x) { return x.NUMERO === String(d.original); }) : null;
-  if (existente && (!original || existente._fila !== original._fila)) throw new Error('Ya existe la carpeta ' + numero + '.');
+  if (existente && (!original || existente._fila !== original._fila)) throw new Error('Ya existe la caja ' + numero + '.');
   const c = {
     NUMERO: numero,
     DESDE: String(d.DESDE || '').trim().toUpperCase(),
@@ -1793,7 +1802,7 @@ function guardarCarpeta_(d, u) {
   } else {
     h.appendRow([c.NUMERO, c.DESDE, c.HASTA, c.ESTADO, c.ASIGNADA_A, c.NOTAS]);
   }
-  registrar_(u, 'CARPETA', '', 'Carpeta ' + numero + ': ' + (c.DESDE || '…') + ' – ' + (c.HASTA || '…') + ' · ' + c.ESTADO);
+  registrar_(u, 'CAJA', '', 'Caja ' + numero + ': ' + (c.DESDE || '…') + ' – ' + (c.HASTA || '…') + ' · ' + c.ESTADO);
   return carpetasLista_();
 }
 
@@ -1809,7 +1818,7 @@ function crearCarpetas_(d, u) {
     const f = h.getLastRow() + 1;
     if (f + filas.length - 1 > h.getMaxRows()) h.insertRowsAfter(h.getMaxRows(), filas.length + 50);
     h.getRange(f, 1, filas.length, 6).setValues(filas);
-    registrar_(u, 'CARPETA', '', 'Creadas ' + filas.length + ' carpetas (' + desde + '–' + hasta + ')');
+    registrar_(u, 'CAJA', '', 'Creadas ' + filas.length + ' cajas (' + desde + '–' + hasta + ')');
   }
   return carpetasLista_();
 }
@@ -1817,9 +1826,9 @@ function crearCarpetas_(d, u) {
 function borrarCarpeta_(d, u) {
   const c = buscarCarpeta_(d.numero);
   const usadas = carpetasConRecuento_(d, u).find(function (x) { return x.NUMERO === c.NUMERO; });
-  if (usadas && usadas.EXPEDIENTES) throw new Error('No se puede borrar: la carpeta ' + c.NUMERO + ' tiene ' + usadas.EXPEDIENTES + ' expedientes.');
+  if (usadas && usadas.EXPEDIENTES) throw new Error('No se puede borrar: la caja ' + c.NUMERO + ' tiene ' + usadas.EXPEDIENTES + ' expedientes.');
   hojaCarpetas_().deleteRow(c._fila);
-  registrar_(u, 'CARPETA', '', 'Borrada la carpeta ' + c.NUMERO);
+  registrar_(u, 'CAJA', '', 'Borrada la caja ' + c.NUMERO);
   return carpetasLista_();
 }
 
@@ -2108,6 +2117,13 @@ function instalar() {
       MEMO.migrarIlustre = true;
     }
   });
+  // Actualización: «Carpeta del archivo» pasa a «Caja del archivo» (mismo campo, mismos datos).
+  tabla_(HOJA.CAMPOS).forEach(function (r) {
+    if (r.CLAVE === 'CARPETA' && /carpeta/i.test(r.ETIQUETA)) {
+      hCa.getRange(r._fila, 2).setValue(String(r.ETIQUETA).replace(/Carpeta/g, 'Caja').replace(/carpeta/g, 'caja'));
+      hCa.getRange(r._fila, 8).setValue(String(r.AYUDA || '').replace(/carpeta/g, 'caja'));
+    }
+  });
   CAMPOS_INICIALES.forEach(function (c, i) {
     if (caExist.indexOf(c[0]) >= 0) return;
     hCa.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(i + 1), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
@@ -2125,8 +2141,9 @@ function instalar() {
   validarLista_(hPr, 3, ['ADMIN', 'EDITOR', 'LECTOR']);
   validarLista_(hPr, 4, ['SÍ', 'NO']);
 
-  console.log('4/7 Carpetas');
-  // Carpetas
+  console.log('4/7 Cajas');
+  // Cajas
+  renombrarCajas_(ss);
   const hCp = crearHoja_(ss, HOJA.CARPETAS, CABECERAS.Carpetas);
   hCp.getRange(1, 1, hCp.getMaxRows(), 6).setNumberFormat('@');
   if (hCp.getLastRow() < 2) {

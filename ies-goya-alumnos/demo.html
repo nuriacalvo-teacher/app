@@ -284,7 +284,7 @@
         <a href="#" data-ir="nuevo" data-rol="EDITOR"><i class="bi bi-plus-square"></i> Nuevo expediente</a>
         <a href="#" data-ir="buscar"><i class="bi bi-search"></i> Buscar expedientes</a>
         <a href="#" data-ir="indice"><i class="bi bi-sort-alpha-down"></i> Índice alfabético</a>
-        <a href="#" data-ir="carpetas" data-rol="LECTOR"><i class="bi bi-folder2-open"></i> Carpetas</a>
+        <a href="#" data-ir="carpetas" data-rol="LECTOR"><i class="bi bi-folder2-open"></i> Cajas</a>
         <div data-rol="ADMIN">
           <div class="grupo">Coordinación</div>
           <a href="#" data-ir="epocas"><i class="bi bi-hourglass-split"></i> Épocas del archivo</a>
@@ -610,7 +610,7 @@
  *    Alumnos     → un expediente por fila. Fila 1 = claves de los campos.
  *    Campos      → definición del formulario (se edita desde la app).
  *    Profesores  → personas, correo, rol (ADMIN / EDITOR / LECTOR) y código de acceso.
- *    Carpetas    → número de carpeta, primer y último apellido, estado y quién la trabaja.
+ *    Cajas    → número de caja, primer y último apellido, estado y quién la trabaja.
  *    Historial   → registro de todos los cambios (quién, cuándo, qué).
  *    Ajustes     → opciones generales.
  */
@@ -623,14 +623,14 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-01';
+const VERSION_APP = '2026-10-02';
 
 const HOJA = {
   EPOCAS: 'Épocas',
   ALUMNOS: 'Alumnos',
   CAMPOS: 'Campos',
   PROFESORES: 'Profesores',
-  CARPETAS: 'Carpetas',
+  CARPETAS: 'Cajas',   // antes «Carpetas»: se renombra sola (ver renombrarCajas_)
   HISTORIAL: 'Historial',
   AJUSTES: 'Ajustes'
 };
@@ -665,7 +665,7 @@ const ESTADOS_CARPETA = ['PENDIENTE', 'EN CURSO', 'TERMINADA'];
 const CAMPOS_INICIALES = [
   ['PROFESOR', 'Profesor/a que registra', 'profesor', '', true, 'Registro', '', true, true],
   ['ESTADO', 'Estado de la toma de datos', 'seleccion', 'EN PROCESO\nTERMINADO\nPENDIENTE DE REVISIÓN', true, 'Registro', 'Marca TERMINADO cuando hayas vaciado todo el expediente.', true, true],
-  ['CARPETA', 'Carpeta del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la carpeta según los apellidos.', true, true],
+  ['CARPETA', 'Caja del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la caja según los apellidos.', true, true],
   ['APELLIDOS', 'Apellidos', 'texto', '', true, 'Identificación del alumno', 'Tal como aparecen en el expediente. Ej.: ABADÍA Y CORTINA', true, true],
   ['NOMBRE', 'Nombre de pila', 'texto', '', true, 'Identificación del alumno', 'Ej.: Juan Manuel', true, true],
   ['PAIS', 'País de nacimiento', 'pais', '', false, 'Lugar y fecha de nacimiento', '', true, true],
@@ -675,7 +675,7 @@ const CAMPOS_INICIALES = [
   ['CURSO', 'Curso del expediente (año de inicio)', 'numero', '', true, 'Expediente', 'Ej.: 1871', true, false],
   ['ILUSTRE', 'Alumno destacado o ilustre', 'seleccion', 'NO\nDESTACADO\nILUSTRE\nSIN COMPROBAR', true, 'Expediente', 'DESTACADO: sobresalió en algún campo. ILUSTRE: personaje de renombre. SIN COMPROBAR: nadie lo ha mirado aún.', true, false],
   ['DIGITALIZADO', 'Digitalización hecha', 'seleccion', 'NO\nSÍ\nHAY QUE BUSCAR', true, 'Expediente', '', true, false],
-  ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene la carpeta…', false, false]
+  ['OBSERVACIONES', 'Observaciones', 'texto_largo', '', false, 'Observaciones', 'Estudios cursados, calificaciones, títulos, documentos que contiene el expediente…', false, false]
 ];
 
 const AJUSTES_INICIALES = [
@@ -818,7 +818,7 @@ function api(accion, datos, token) {
     else if (def.rol === 'ADMIN') { invalidarConfig_(); MEMO.sinCacheConfig = true; }
     const data = def.fn(datos, u);
     // Sólo la coordinación cambia la configuración (campos, profesorado, ajustes, épocas): guardar
-    // expedientes o carpetas no obliga a releerla, y así la siguiente pantalla carga más rápido.
+    // expedientes o cajas no obliga a releerla, y así la siguiente pantalla carga más rápido.
     if (def.rol === 'ADMIN' && ACCIONES_LECTURA.indexOf(accion) < 0) invalidarConfig_();
     if (ACCIONES_LECTURA.indexOf(accion) < 0 && ['login', 'loginGoogle', 'logout', 'bloquear', 'liberar'].indexOf(accion) < 0) {
       CacheService.getScriptCache().remove('portada');
@@ -1048,7 +1048,7 @@ function hoja_(nombre) {
 
 // ---------------------------------------------------------------------
 //  Épocas del archivo (Siglo XIX, 1900-1930…). La hoja central guarda lo común (épocas, campos,
-//  profesorado, ajustes); cada época guarda sus alumnos y carpetas en su propio archivo de Google
+//  profesorado, ajustes); cada época guarda sus alumnos y cajas en su propio archivo de Google
 //  (el siglo XIX, en la propia hoja central). Así cada época tiene su propia capacidad.
 // ---------------------------------------------------------------------
 
@@ -1121,9 +1121,18 @@ function hojaAlumnos_() {
   return h;
 }
 
+/** Las antiguas pestañas «Carpetas» pasan a llamarse «Cajas» (mismos datos). */
+function renombrarCajas_(libro) {
+  if (!libro.getSheetByName(HOJA.CARPETAS)) {
+    const vieja = libro.getSheetByName('Carpetas');
+    if (vieja) { try { vieja.setName(HOJA.CARPETAS); } catch (e) { console.error('Renombrar Carpetas', e); } }
+  }
+  return libro;
+}
+
 function hojaCarpetas_() {
-  const h = libroEpoca_().getSheetByName(HOJA.CARPETAS);
-  if (!h) throw new Error('Falta la hoja «Carpetas» de la época «' + epocaActual_().NOMBRE + '». Ejecuta «instalar».');
+  const h = renombrarCajas_(libroEpoca_()).getSheetByName(HOJA.CARPETAS);
+  if (!h) throw new Error('Falta la hoja «Cajas» de la época «' + epocaActual_().NOMBRE + '». Ejecuta «instalar».');
   return h;
 }
 
@@ -1558,12 +1567,12 @@ function inicio_(d, u) {
     const p = c.PROFESOR[i] || '(sin profesor)';
     r.porProfesor[p] = (r.porProfesor[p] || 0) + 1;
   }
-  const carpetas = carpetasLista_();
+  const cajas = carpetasLista_();
   r.carpetas = {
-    total: carpetas.length,
-    terminadas: carpetas.filter(function (x) { return x.ESTADO === 'TERMINADA'; }).length,
-    enCurso: carpetas.filter(function (x) { return x.ESTADO === 'EN CURSO'; }).length,
-    mias: carpetas.filter(function (x) { return x.ASIGNADA_A && x.ASIGNADA_A === u.nombre && x.ESTADO !== 'TERMINADA'; })
+    total: cajas.length,
+    terminadas: cajas.filter(function (x) { return x.ESTADO === 'TERMINADA'; }).length,
+    enCurso: cajas.filter(function (x) { return x.ESTADO === 'EN CURSO'; }).length,
+    mias: cajas.filter(function (x) { return x.ASIGNADA_A && x.ASIGNADA_A === u.nombre && x.ESTADO !== 'TERMINADA'; })
       .map(function (x) { return x.NUMERO; })
   };
   // Últimos movimientos
@@ -1654,7 +1663,7 @@ function consultar_(d, u) {
 function consultarTodas_(d, u) {
   const tam = Math.min(Math.max(parseInt(d.tam, 10) || 50, 10), 500);
   const filtros = Object.assign({}, d.filtros || {});
-  delete filtros.CARPETA; // las carpetas son de cada época
+  delete filtros.CARPETA; // las cajas son de cada época
   const todas = [];
   const letras = {};
   let listado = [];
@@ -1879,7 +1888,7 @@ function guardar_(d, u) {
       nuevo._VERSION = 1;
       nuevo._BORRADO = '';
       fila = h.getLastRow() + 1;
-      detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + (reg.CARPETA ? ' · carpeta ' + reg.CARPETA : '');
+      detalle = reg.APELLIDOS + ', ' + reg.NOMBRE + (reg.CARPETA ? ' · caja ' + reg.CARPETA : '');
     }
     if (coincidencias.length && cambiaNombre) {
       detalle += ' | HOMÓNIMO CONFIRMADO frente a ' + coincidencias.map(function (x) { return x.APELLIDOS + ', ' + x.NOMBRE + ' (' + x._UID + ')'; }).join('; ');
@@ -1983,7 +1992,7 @@ function importar_(d, u) {
         const f = hh.getLastRow() + 1;
         if (f + nuevos.length - 1 > hh.getMaxRows()) hh.insertRowsAfter(hh.getMaxRows(), nuevos.length + 100);
         hh.getRange(f, 1, nuevos.length, 6).setValues(nuevos.map(function (o) {
-          return [t, u.email, u.nombre, 'IMPORTAR', o._UID, o.APELLIDOS + ', ' + o.NOMBRE + (o.CARPETA ? ' · carpeta ' + o.CARPETA : '')];
+          return [t, u.email, u.nombre, 'IMPORTAR', o._UID, o.APELLIDOS + ', ' + o.NOMBRE + (o.CARPETA ? ' · caja ' + o.CARPETA : '')];
         }));
       } catch (e) { console.error('Historial', e); }
       formatoSiHaceFalta_();
@@ -2227,7 +2236,7 @@ function portadaCalcular_() {
 }
 
 /**
- * Crea una época nueva con su propio archivo de Google (Alumnos + Carpetas) en la misma carpeta de
+ * Crea una época nueva con su propio archivo de Google (Alumnos + Cajas) en la misma caja de
  * Drive que la hoja central. Usa los mismos campos, profesorado y ajustes que el resto del archivo.
  */
 function crearEpoca_(d, u) {
@@ -2291,7 +2300,7 @@ function guardarEpoca_(d, u) {
 }
 
 // ---------------------------------------------------------------------
-//  Carpetas
+//  Cajas
 // ---------------------------------------------------------------------
 
 function carpetasLista_() {
@@ -2318,7 +2327,7 @@ function carpetasConRecuento_(d, u) {
 
 function buscarCarpeta_(numero) {
   const c = carpetasLista_().find(function (x) { return x.NUMERO === String(numero).trim(); });
-  if (!c) throw new Error('No existe la carpeta ' + numero + '.');
+  if (!c) throw new Error('No existe la caja ' + numero + '.');
   return c;
 }
 
@@ -2327,7 +2336,7 @@ function escribirCarpeta_(c) {
     .setValues([[c.NUMERO, c.DESDE, c.HASTA, c.ESTADO, c.ASIGNADA_A, c.NOTAS]]);
 }
 
-/** Un editor se asigna una carpeta, la libera o la da por terminada (para no trabajar dos en la misma). */
+/** Un editor se asigna una caja, la libera o la da por terminada (para no trabajar dos en la misma). */
 function tomarCarpeta_(d, u) {
   epocaEditable_(u);
   const lock = LockService.getScriptLock();
@@ -2337,17 +2346,17 @@ function tomarCarpeta_(d, u) {
     const esMia = c.ASIGNADA_A === u.nombre;
     const admin = u.rol === 'ADMIN';
     if (d.accion === 'asignar') {
-      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA' && !admin) throw new Error('La carpeta ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
+      if (c.ASIGNADA_A && !esMia && c.ESTADO !== 'TERMINADA' && !admin) throw new Error('La caja ' + c.NUMERO + ' ya la está trabajando ' + c.ASIGNADA_A + '.');
       // Se asigna a quien se elija en el desplegable (sólo profesorado activo con permiso de edición).
       const nombre = String(d.profesor || u.nombre).trim();
       const p = profesores_().find(function (x) { return x.NOMBRE === nombre && si_(x.ACTIVO) && (x.ROL === 'EDITOR' || x.ROL === 'ADMIN'); });
       if (!p && nombre !== u.nombre) throw new Error(nombre + ' no está activo/a como editor/a.');
       c.ASIGNADA_A = nombre; c.ESTADO = 'EN CURSO';
     } else if (d.accion === 'liberar') {
-      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la carpeta (o la coordinación) puede liberarla.');
+      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la caja (o la coordinación) puede liberarla.');
       c.ASIGNADA_A = ''; c.ESTADO = 'PENDIENTE';
     } else if (d.accion === 'terminar') {
-      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la carpeta (o la coordinación) puede darla por terminada.');
+      if (!esMia && !admin) throw new Error('Sólo quien tiene asignada la caja (o la coordinación) puede darla por terminada.');
       c.ESTADO = 'TERMINADA';
     } else if (d.accion === 'reabrir') {
       if (!esMia && !admin) throw new Error('Sólo quien la terminó (o la coordinación) puede reabrirla.');
@@ -2356,7 +2365,7 @@ function tomarCarpeta_(d, u) {
       throw new Error('Acción no válida.');
     }
     escribirCarpeta_(c);
-    registrar_(u, 'CARPETA', '', 'Carpeta ' + c.NUMERO + ': ' + d.accion + ' → ' + c.ESTADO + (c.ASIGNADA_A ? ' (' + c.ASIGNADA_A + ')' : ''));
+    registrar_(u, 'CAJA', '', 'Caja ' + c.NUMERO + ': ' + d.accion + ' → ' + c.ESTADO + (c.ASIGNADA_A ? ' (' + c.ASIGNADA_A + ')' : ''));
     return carpetasLista_();
   } finally {
     lock.releaseLock();
@@ -2365,11 +2374,11 @@ function tomarCarpeta_(d, u) {
 
 function guardarCarpeta_(d, u) {
   const numero = String(d.NUMERO || '').trim();
-  if (!numero) throw new Error('Indica el número de carpeta.');
+  if (!numero) throw new Error('Indica el número de caja.');
   const lista = carpetasLista_();
   const existente = lista.find(function (x) { return x.NUMERO === numero; });
   const original = d.original ? lista.find(function (x) { return x.NUMERO === String(d.original); }) : null;
-  if (existente && (!original || existente._fila !== original._fila)) throw new Error('Ya existe la carpeta ' + numero + '.');
+  if (existente && (!original || existente._fila !== original._fila)) throw new Error('Ya existe la caja ' + numero + '.');
   const c = {
     NUMERO: numero,
     DESDE: String(d.DESDE || '').trim().toUpperCase(),
@@ -2388,7 +2397,7 @@ function guardarCarpeta_(d, u) {
   } else {
     h.appendRow([c.NUMERO, c.DESDE, c.HASTA, c.ESTADO, c.ASIGNADA_A, c.NOTAS]);
   }
-  registrar_(u, 'CARPETA', '', 'Carpeta ' + numero + ': ' + (c.DESDE || '…') + ' – ' + (c.HASTA || '…') + ' · ' + c.ESTADO);
+  registrar_(u, 'CAJA', '', 'Caja ' + numero + ': ' + (c.DESDE || '…') + ' – ' + (c.HASTA || '…') + ' · ' + c.ESTADO);
   return carpetasLista_();
 }
 
@@ -2404,7 +2413,7 @@ function crearCarpetas_(d, u) {
     const f = h.getLastRow() + 1;
     if (f + filas.length - 1 > h.getMaxRows()) h.insertRowsAfter(h.getMaxRows(), filas.length + 50);
     h.getRange(f, 1, filas.length, 6).setValues(filas);
-    registrar_(u, 'CARPETA', '', 'Creadas ' + filas.length + ' carpetas (' + desde + '–' + hasta + ')');
+    registrar_(u, 'CAJA', '', 'Creadas ' + filas.length + ' cajas (' + desde + '–' + hasta + ')');
   }
   return carpetasLista_();
 }
@@ -2412,9 +2421,9 @@ function crearCarpetas_(d, u) {
 function borrarCarpeta_(d, u) {
   const c = buscarCarpeta_(d.numero);
   const usadas = carpetasConRecuento_(d, u).find(function (x) { return x.NUMERO === c.NUMERO; });
-  if (usadas && usadas.EXPEDIENTES) throw new Error('No se puede borrar: la carpeta ' + c.NUMERO + ' tiene ' + usadas.EXPEDIENTES + ' expedientes.');
+  if (usadas && usadas.EXPEDIENTES) throw new Error('No se puede borrar: la caja ' + c.NUMERO + ' tiene ' + usadas.EXPEDIENTES + ' expedientes.');
   hojaCarpetas_().deleteRow(c._fila);
-  registrar_(u, 'CARPETA', '', 'Borrada la carpeta ' + c.NUMERO);
+  registrar_(u, 'CAJA', '', 'Borrada la caja ' + c.NUMERO);
   return carpetasLista_();
 }
 
@@ -2703,6 +2712,13 @@ function instalar() {
       MEMO.migrarIlustre = true;
     }
   });
+  // Actualización: «Carpeta del archivo» pasa a «Caja del archivo» (mismo campo, mismos datos).
+  tabla_(HOJA.CAMPOS).forEach(function (r) {
+    if (r.CLAVE === 'CARPETA' && /carpeta/i.test(r.ETIQUETA)) {
+      hCa.getRange(r._fila, 2).setValue(String(r.ETIQUETA).replace(/Carpeta/g, 'Caja').replace(/carpeta/g, 'caja'));
+      hCa.getRange(r._fila, 8).setValue(String(r.AYUDA || '').replace(/carpeta/g, 'caja'));
+    }
+  });
   CAMPOS_INICIALES.forEach(function (c, i) {
     if (caExist.indexOf(c[0]) >= 0) return;
     hCa.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(i + 1), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
@@ -2720,8 +2736,9 @@ function instalar() {
   validarLista_(hPr, 3, ['ADMIN', 'EDITOR', 'LECTOR']);
   validarLista_(hPr, 4, ['SÍ', 'NO']);
 
-  console.log('4/7 Carpetas');
-  // Carpetas
+  console.log('4/7 Cajas');
+  // Cajas
+  renombrarCajas_(ss);
   const hCp = crearHoja_(ss, HOJA.CARPETAS, CABECERAS.Carpetas);
   hCp.getRange(1, 1, hCp.getMaxRows(), 6).setNumberFormat('@');
   if (hCp.getLastRow() < 2) {
@@ -3046,7 +3063,7 @@ const S = {
 const ROLES = { NINGUNO: 0, PUBLICO: 1, LECTOR: 2, EDITOR: 3, ADMIN: 4 };
 const TIPOS = {
   texto: 'Texto corto', texto_largo: 'Texto largo', numero: 'Número', fecha: 'Fecha (dd/mm/aaaa, mm/aaaa o año)',
-  seleccion: 'Lista de opciones', si_no: 'Sí / No', profesor: 'Profesor/a (lista)', carpeta: 'Carpeta (lista)',
+  seleccion: 'Lista de opciones', si_no: 'Sí / No', profesor: 'Profesor/a (lista)', carpeta: 'Caja (lista)',
   pais: 'País', provincia: 'Provincia', localidad: 'Localidad'
 };
 const NOMBRES_ROL = { ADMIN: 'Coordinación', EDITOR: 'Editor/a', LECTOR: 'Sólo consulta', PUBLICO: 'Consulta pública' };
@@ -3185,7 +3202,7 @@ const anosEpoca = (e) => (e.DESDE || e.HASTA ? `${e.DESDE || '…'}–${e.HASTA 
 /** «Siglo XIX · 1845–1900», sin repetir los años si ya están en el nombre. */
 const tituloEpoca = (e) => { const a = anosEpoca(e); return !a || String(e.NOMBRE).indexOf(a) >= 0 || /\d{4}/.test(e.NOMBRE || '') ? (e.NOMBRE || '') : `${e.NOMBRE} · ${a}`; };
 
-/** Cambia la época de trabajo: carga sus carpetas y actualiza menú y cabecera. */
+/** Cambia la época de trabajo: carga sus cajas y actualiza menú y cabecera. */
 async function cambiarEpoca(codigo, navegar = true) {
   if (!codigo || codigo === S.epoca) return;
   S.epoca = codigo;
@@ -3229,7 +3246,7 @@ function textoCarpeta(num) {
   return c.DESDE || c.HASTA ? `${c.NUMERO} · ${c.DESDE || '…'} – ${c.HASTA || '…'}` : c.NUMERO;
 }
 
-/** Carpeta cuyo rango de apellidos contiene los apellidos dados. */
+/** Caja cuyo rango de apellidos contiene los apellidos dados. */
 function carpetaSugerida(apellidos) {
   const k = claveOrden(apellidos);
   if (!k) return null;
@@ -3418,8 +3435,8 @@ function vistaInicio() {
 function pintarInicio(r) {
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const carpetasMias = r.carpetas.mias.length
-    ? r.carpetas.mias.map((n) => `<a href="#" class="etiqueta e-EN-CURSO text-decoration-none" data-ir="carpetas">Carpeta ${esc(n)}</a>`).join(' ')
-    : '<span class="text-suave">Ninguna. Ve a <a href="#" data-ir="carpetas">Carpetas</a> y asígnate una antes de empezar.</span>';
+    ? r.carpetas.mias.map((n) => `<a href="#" class="etiqueta e-EN-CURSO text-decoration-none" data-ir="carpetas">Caja ${esc(n)}</a>`).join(' ')
+    : '<span class="text-suave">Ninguna. Ve a <a href="#" data-ir="carpetas">Cajas</a> y asígnate una antes de empezar.</span>';
   const profes = Object.entries(r.porProfesor).sort((a, b) => b[1] - a[1]);
   const maxP = profes.length ? profes[0][1] : 1;
   const ep = epocaActual();
@@ -3430,7 +3447,7 @@ function pintarInicio(r) {
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Expedientes registrados</div><div class="num">${numero(r.total)}</div><div class="sub">${numero(r.hoy)} hoy · ${numero(r.mios)} tuyos</div></div></div>
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Terminados</div><div class="num">${numero(r.terminados)}</div>
         <div class="barra-prog mt-2"><div style="width:${pct(r.terminados, r.total)}%"></div></div><div class="sub mt-1">${pct(r.terminados, r.total)} % del total</div></div></div>
-      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Carpetas terminadas</div><div class="num">${numero(r.carpetas.terminadas)} <small class="fs-6 text-suave">/ ${numero(r.carpetas.total)}</small></div>
+      <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Cajas terminadas</div><div class="num">${numero(r.carpetas.terminadas)} <small class="fs-6 text-suave">/ ${numero(r.carpetas.total)}</small></div>
         <div class="barra-prog mt-2"><div style="width:${pct(r.carpetas.terminadas, r.carpetas.total)}%"></div></div><div class="sub mt-1">${numero(r.carpetas.enCurso)} en curso</div></div></div>
       <div class="col-6 col-xl-3"><div class="kpi"><div class="etq">Ilustres · Destacados</div><div class="num">${numero(r.ilustres)} <small class="fs-6 text-suave">· ${numero(r.destacados)}</small></div><div class="sub">${numero(r.digitalizados)} expedientes digitalizados</div></div></div>
     </div>
@@ -3444,7 +3461,7 @@ function pintarInicio(r) {
         </div>
       </div>
       <div class="col-lg-5 d-flex flex-column gap-3">
-        <div class="panel"><div class="panel-cab"><h2>Tus carpetas en curso</h2></div><div class="panel-cuerpo">${carpetasMias}</div></div>
+        <div class="panel"><div class="panel-cab"><h2>Tus cajas en curso</h2></div><div class="panel-cuerpo">${carpetasMias}</div></div>
         <div class="panel"><div class="panel-cab"><h2>Expedientes por profesor/a</h2></div><div class="panel-cuerpo">
           ${profes.length ? profes.slice(0, 12).map(([p, n]) => `<div class="mb-2"><div class="d-flex justify-content-between small"><span>${esc(p)}</span><strong>${numero(n)}</strong></div>
             <div class="barra-prog"><div style="width:${pct(n, maxP)}%;background:var(--tinta)"></div></div></div>`).join('') : '<span class="text-suave small">Sin datos todavía.</span>'}
@@ -3482,7 +3499,7 @@ function controlCampo(c, valor) {
     case 'profesor':
       return `<select class="form-select" ${base}>${opcionesHtml(S.profesores.filter((p) => p.ACTIVO !== 'NO').map((p) => p.NOMBRE), v, '— Elegir —')}</select>`;
     case 'carpeta':
-      return `<select class="form-select" ${base}>${opcionesHtml(S.carpetas.map((x) => ({ v: x.NUMERO, t: textoCarpeta(x.NUMERO) })), v, '— Elegir carpeta —')}</select>`;
+      return `<select class="form-select" ${base}>${opcionesHtml(S.carpetas.map((x) => ({ v: x.NUMERO, t: textoCarpeta(x.NUMERO) })), v, '— Elegir caja —')}</select>`;
     case 'pais':
       return `<select class="form-select" ${base} data-geo="pais">${opcionesHtml(GEO.paises, v || S.ajustes.PAIS_DEFECTO || 'España', c.obligatorio ? undefined : '—')}</select>`;
     case 'provincia':
@@ -3595,8 +3612,8 @@ async function vistaFormulario(id) {
         <div class="lateral-form d-flex flex-column gap-3">
           <div class="panel"><div class="panel-cab"><h2><i class="bi bi-shield-check me-1"></i> Comprobación de duplicados</h2></div>
             <div class="panel-cuerpo" id="panel-dup"><div class="estado-dup neutro">Escribe los apellidos y el nombre para comprobar si el alumno ya está registrado.</div></div></div>
-          <div class="panel"><div class="panel-cab"><h2><i class="bi bi-folder2 me-1"></i> Carpeta</h2></div>
-            <div class="panel-cuerpo small" id="panel-carpeta"><span class="text-suave">Según los apellidos, la aplicación te dirá en qué carpeta debería estar.</span></div></div>
+          <div class="panel"><div class="panel-cab"><h2><i class="bi bi-folder2 me-1"></i> Caja</h2></div>
+            <div class="panel-cuerpo small" id="panel-carpeta"><span class="text-suave">Según los apellidos, la aplicación te dirá en qué caja debería estar.</span></div></div>
         </div>
       </div>
     </div>`;
@@ -3643,7 +3660,7 @@ async function comprobarDuplicadosForm() {
     const r = await api('comprobarDuplicados', { apellidos: ap, nombre: no, id: S.edicion && S.edicion.id });
     if (($('#f_APELLIDOS') || {}).value !== ap || ($('#f_NOMBRE') || {}).value !== no) return; // ya ha cambiado
     const fila = (x) => `<div class="coincidencia"><div><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)}
-      <div class="text-suave small">${[x.CARPETA && 'Carpeta ' + x.CARPETA, x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></div>
+      <div class="text-suave small">${[x.CARPETA && 'Caja ' + x.CARPETA, x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></div>
       <button type="button" class="btn btn-sm btn-light align-self-start" data-ficha="${esc(x._UID)}">Ver</button></div>`;
     let h = '';
     if (r.exactos.length) h += `<div class="estado-dup mal mb-2"><i class="bi bi-exclamation-octagon-fill me-1"></i><strong>Este alumno ya está registrado.</strong> Revísalo antes de crear otro expediente.</div>${r.exactos.map(fila).join('')}`;
@@ -3668,19 +3685,19 @@ function revisarCarpeta() {
   let h = '';
   if (actual) {
     const c = S.carpetas.find((x) => x.NUMERO === actual);
-    h += `<div class="mb-2">Seleccionada: <strong>Carpeta ${esc(actual)}</strong>${c && (c.DESDE || c.HASTA) ? `<div class="text-suave">De ${esc(c.DESDE || '…')} a ${esc(c.HASTA || '…')}</div>` : '<div class="text-suave">Esta carpeta aún no tiene definido su rango de apellidos.</div>'}</div>`;
+    h += `<div class="mb-2">Seleccionada: <strong>Caja ${esc(actual)}</strong>${c && (c.DESDE || c.HASTA) ? `<div class="text-suave">De ${esc(c.DESDE || '…')} a ${esc(c.HASTA || '…')}</div>` : '<div class="text-suave">Esta caja aún no tiene definido su rango de apellidos.</div>'}</div>`;
   }
   if (ap.trim().length >= 2) {
     if (sug && sug.NUMERO !== actual) {
-      h += `<div class="estado-dup aviso"><i class="bi bi-lightbulb me-1"></i>Por los apellidos, debería estar en la <strong>carpeta ${esc(sug.NUMERO)}</strong> (${esc(sug.DESDE)} – ${esc(sug.HASTA)}).
-        <button type="button" class="btn btn-sm btn-outline-primary mt-2 d-block" id="usar-carpeta">Usar la carpeta ${esc(sug.NUMERO)}</button></div>`;
+      h += `<div class="estado-dup aviso"><i class="bi bi-lightbulb me-1"></i>Por los apellidos, debería estar en la <strong>caja ${esc(sug.NUMERO)}</strong> (${esc(sug.DESDE)} – ${esc(sug.HASTA)}).
+        <button type="button" class="btn btn-sm btn-outline-primary mt-2 d-block" id="usar-carpeta">Usar la caja ${esc(sug.NUMERO)}</button></div>`;
     } else if (sug) {
-      h += '<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>Los apellidos encajan con el rango de esta carpeta.</div>';
+      h += '<div class="estado-dup ok"><i class="bi bi-check-circle-fill me-1"></i>Los apellidos encajan con el rango de esta caja.</div>';
     } else {
-      h += '<div class="text-suave">Ninguna carpeta con rango definido incluye estos apellidos.</div>';
+      h += '<div class="text-suave">Ninguna caja con rango definido incluye estos apellidos.</div>';
     }
   }
-  panel.innerHTML = h || '<span class="text-suave">Según los apellidos, la aplicación te dirá en qué carpeta debería estar.</span>';
+  panel.innerHTML = h || '<span class="text-suave">Según los apellidos, la aplicación te dirá en qué caja debería estar.</span>';
   $('#usar-carpeta') && $('#usar-carpeta').addEventListener('click', () => { sel.value = sug.NUMERO; S.sucio = true; revisarCarpeta(); });
 }
 
@@ -3710,7 +3727,7 @@ async function guardarExpediente(boton) {
     let r = await api('guardar', peticion);
     if (r.duplicado) {
       const lista = r.coincidencias.map((x) => `<li><strong>${esc(x.APELLIDOS)}</strong>, ${esc(x.NOMBRE)} <span class="id-exp">${esc(x.ID)}</span>
-        <div class="small text-suave">${[x.CARPETA && 'Carpeta ' + x.CARPETA, x.CURSO && 'Curso ' + x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></li>`).join('');
+        <div class="small text-suave">${[x.CARPETA && 'Caja ' + x.CARPETA, x.CURSO && 'Curso ' + x.CURSO, x.LOCALIDAD, x.PROFESOR].filter(Boolean).map(esc).join(' · ')}</div></li>`).join('');
       const ok = await confirmar('Posible expediente duplicado',
         `<p>Ya hay ${r.coincidencias.length === 1 ? 'un expediente' : 'expedientes'} con este nombre:</p><ul class="mb-3">${lista}</ul>
          <p class="small">Guarda sólo si estás seguro/a de que es <strong>otra persona</strong> (un homónimo). Quedará anotado en el historial.</p>
@@ -3726,7 +3743,7 @@ async function guardarExpediente(boton) {
     S.edicion = null;
     aviso(r.creado ? `Expediente ${r.numero} guardado (nº de orden alfabético).` : `Cambios guardados en ${r.numero}.`);
     if (r.creado) {
-      // Se conservan profesor/a y carpeta para agilizar el vaciado de la misma carpeta.
+      // Se conservan profesor/a y caja para agilizar el vaciado de la misma caja.
       S.pegajosos = {};
       camposActivos().filter((c) => ['profesor', 'carpeta'].includes(c.tipo)).forEach((c) => { S.pegajosos[c.clave] = registro[c.clave]; });
     }
@@ -3821,7 +3838,7 @@ function refrescarVista() {
 /* ---------- Tablas de resultados ---------- */
 
 const GEO_CLAVES = ['LOCALIDAD', 'PROVINCIA', 'PAIS'];
-const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Carpeta', CURSO: 'Curso', ILUSTRE: 'Destacado / ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
+const CABECERAS_CORTAS = { PROFESOR: 'Profesor/a', ESTADO: 'Estado', CARPETA: 'Caja', CURSO: 'Curso', ILUSTRE: 'Destacado / ilustre', DIGITALIZADO: 'Digitalizado', LUGAR: 'Lugar de nacimiento' };
 const ORDEN_COLUMNAS = ['LUGAR', 'CURSO', 'CARPETA', 'ILUSTRE', 'DIGITALIZADO', 'ESTADO', 'PROFESOR'];
 
 function etiquetaSiNo(v) {
@@ -3892,7 +3909,7 @@ function camposFiltro() {
 
 function opcionesFiltro(c) {
   if (c.tipo === 'profesor') return S.profesores.map((p) => p.NOMBRE);
-  if (c.tipo === 'carpeta') return S.carpetas.map((x) => ({ v: x.NUMERO, t: 'Carpeta ' + x.NUMERO }));
+  if (c.tipo === 'carpeta') return S.carpetas.map((x) => ({ v: x.NUMERO, t: 'Caja ' + x.NUMERO }));
   if (c.tipo === 'provincia') return GEO.provincias;
   if (c.tipo === 'pais') return GEO.paises;
   if (c.tipo === 'si_no') return ['SÍ', 'NO'];
@@ -3912,7 +3929,7 @@ async function vistaBuscar() {
         ${camposFiltro().map((c) => `<div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">${esc(c.etiqueta)}</label>
           <select class="form-select form-select-sm" data-filtro="${esc(c.clave)}">${opcionesHtml(opcionesFiltro(c), B.filtros[c.clave] || '', 'Todos')}</select></div>`).join('')}
         <div class="col-6 col-md-4 col-xl-2"><label class="form-label small text-suave mb-1">Ordenar por</label>
-          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Carpeta' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
+          <select class="form-select form-select-sm" id="orden">${opcionesHtml([{ v: 'apellidos', t: 'Nº / Apellidos' }, { v: 'carpeta', t: 'Caja' }, { v: 'curso', t: 'Curso' }, { v: 'reciente', t: 'Últimos modificados' }], B.orden)}</select></div>
         <div class="col-12 col-xl d-flex flex-wrap gap-3 align-items-center pt-2">
           ${S.epocas.length > 1 ? `<div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" id="todas" ${B.todas ? 'checked' : ''}><label class="form-check-label small fw-semibold" for="todas">Buscar en todas las épocas</label></div>` : ''}
           <div class="form-check form-switch mb-0${puede('EDITOR') ? '' : ' d-none'}"><input class="form-check-input" type="checkbox" id="solo-mios" ${B.soloMios ? 'checked' : ''}><label class="form-check-label small" for="solo-mios">Sólo los que he creado yo</label></div>
@@ -4006,7 +4023,7 @@ function pintarIndice(r, I, letra, pagina) {
   enlazarFichas(cont);
 }
 
-/* ---------- Carpetas ---------- */
+/* ---------- Cajas ---------- */
 
 let filtroCarpetas = 'todas';
 
@@ -4023,13 +4040,13 @@ function pintarCarpetas(lista) {
   const f = filtroCarpetas;
   const visibles = lista.filter((c) => f === 'todas' || (f === 'sinrango' ? !c.DESDE || !c.HASTA : f === 'mias' ? c.ASIGNADA_A === yo : c.ESTADO === f));
   const cuenta = (e) => lista.filter((c) => c.ESTADO === e).length;
-  $('#vista').innerHTML = cabecera(`Carpetas · ${esc(epocaActual().NOMBRE || '')}`,
-    'Cada carpeta agrupa un tramo alfabético de apellidos. Asígnate una carpeta antes de empezar para no trabajar dos personas en la misma.',
+  $('#vista').innerHTML = cabecera(`Cajas · ${esc(epocaActual().NOMBRE || '')}`,
+    'Cada caja agrupa un tramo alfabético de apellidos. Asígnate una caja antes de empezar para no trabajar dos personas en la misma.',
     admin ? `<button class="btn btn-light" id="btn-crear-varias"><i class="bi bi-folder-plus me-1"></i> Añadir varias</button>
-      <button class="btn btn-primary" id="btn-nueva-carpeta"><i class="bi bi-plus-lg me-1"></i> Nueva carpeta</button>` : '') + `
+      <button class="btn btn-primary" id="btn-nueva-carpeta"><i class="bi bi-plus-lg me-1"></i> Nueva caja</button>` : '') + `
     <div class="row g-3 mb-3">
       <div class="col-lg-6"><div class="panel h-100"><div class="panel-cuerpo">
-        <label class="form-label" for="localizar">¿En qué carpeta está un apellido?</label>
+        <label class="form-label" for="localizar">¿En qué caja está un apellido?</label>
         <input class="form-control" id="localizar" placeholder="Escribe un apellido, p. ej. ABADÍA" autocomplete="off" data-mayus>
         <div class="small mt-2" id="localizar-res"></div>
       </div></div></div>
@@ -4044,7 +4061,7 @@ function pintarCarpetas(lista) {
       <div class="panel-cab flex-wrap"><div class="btn-group btn-group-sm" role="group">
         ${[['todas', 'Todas'], ['mias', 'Mías'], ['PENDIENTE', 'Pendientes'], ['EN CURSO', 'En curso'], ['TERMINADA', 'Terminadas'], ['sinrango', 'Sin rango']]
           .map(([v, t]) => `<button class="btn ${f === v ? 'btn-tinta' : 'btn-outline-secondary'}" data-fc="${v}">${t}</button>`).join('')}
-      </div><span class="small text-suave">${visibles.length} carpetas</span></div>
+      </div><span class="small text-suave">${visibles.length} cajas</span></div>
       ${visibles.length ? `<div class="table-responsive"><table class="table tabla table-hover">
         <thead><tr><th>Nº</th><th>Desde</th><th>Hasta</th><th class="text-end">Expedientes</th><th>Estado</th><th>La trabaja</th><th></th></tr></thead>
         <tbody>${visibles.map((c) => {
@@ -4061,20 +4078,20 @@ function pintarCarpetas(lista) {
             <td class="text-end">${numero(c.EXPEDIENTES)}${c.EXPEDIENTES ? `<div class="small text-suave">${numero(c.TERMINADOS)} terminados</div>` : ''}</td>
             <td>${etiquetaEstado(c.ESTADO)}</td><td>${esc(c.ASIGNADA_A)}${c.NOTAS ? `<div class="small text-suave">${esc(c.NOTAS)}</div>` : ''}</td>
             <td class="text-end text-nowrap"><div class="d-inline-flex gap-1">${acciones.join('')}</div></td></tr>`;
-        }).join('')}</tbody></table></div>` : '<div class="vacio"><i class="bi bi-folder"></i>No hay carpetas con este filtro.</div>'}
+        }).join('')}</tbody></table></div>` : '<div class="vacio"><i class="bi bi-folder"></i>No hay cajas con este filtro.</div>'}
     </div>`;
 
   $$('[data-fc]').forEach((b) => b.addEventListener('click', () => { filtroCarpetas = b.dataset.fc; pintarCarpetas(lista); }));
   $('#localizar').addEventListener('input', (e) => {
     const v = e.target.value.trim();
     const s = carpetaSugerida(v);
-    $('#localizar-res').innerHTML = !v ? '' : s ? `<i class="bi bi-arrow-right-circle-fill text-success me-1"></i><strong>Carpeta ${esc(s.NUMERO)}</strong> · ${esc(s.DESDE)} – ${esc(s.HASTA)}`
-      : '<span class="text-suave">Ninguna carpeta con rango definido incluye ese apellido.</span>';
+    $('#localizar-res').innerHTML = !v ? '' : s ? `<i class="bi bi-arrow-right-circle-fill text-success me-1"></i><strong>Caja ${esc(s.NUMERO)}</strong> · ${esc(s.DESDE)} – ${esc(s.HASTA)}`
+      : '<span class="text-suave">Ninguna caja con rango definido incluye ese apellido.</span>';
   });
   $$('[data-asignar]').forEach((b) => b.addEventListener('click', () => asignarCarpeta(lista.find((c) => c.NUMERO === b.dataset.asignar))));
   $$('[data-tc]').forEach((b) => b.addEventListener('click', async () => {
     ocupado(b, true, '');
-    try { await api('tomarCarpeta', { numero: b.dataset.n, accion: b.dataset.tc }); aviso('Carpeta ' + b.dataset.n + ' actualizada.'); vistaCarpetas(); }
+    try { await api('tomarCarpeta', { numero: b.dataset.n, accion: b.dataset.tc }); aviso('Caja ' + b.dataset.n + ' actualizada.'); vistaCarpetas(); }
     catch (e) { error(e); ocupado(b, false); }
   }));
   $$('[data-ver]').forEach((b) => b.addEventListener('click', () => {
@@ -4086,7 +4103,7 @@ function pintarCarpetas(lista) {
   $('#btn-crear-varias') && $('#btn-crear-varias').addEventListener('click', () => crearVariasCarpetas(lista));
 }
 
-/** Profesorado que puede trabajar carpetas (activo y con permiso de edición). */
+/** Profesorado que puede trabajar cajas (activo y con permiso de edición). */
 function profesoresEditores() {
   return S.profesores.filter((p) => p.ACTIVO !== 'NO' && ['EDITOR', 'ADMIN'].includes(p.ROL)).map((p) => p.NOMBRE);
 }
@@ -4094,11 +4111,11 @@ function profesoresEditores() {
 function asignarCarpeta(c) {
   const nombres = profesoresEditores();
   const yo = nombres.includes(S.usuario.nombre) ? S.usuario.nombre : '';
-  abrirModal(`Asignar la carpeta ${esc(c.NUMERO)}`, `
+  abrirModal(`Asignar la caja ${esc(c.NUMERO)}`, `
     ${c.DESDE || c.HASTA ? `<p class="text-suave">De <strong>${esc(c.DESDE || '…')}</strong> a <strong>${esc(c.HASTA || '…')}</strong></p>` : ''}
-    <label class="form-label" for="asig-prof">¿Quién va a trabajar esta carpeta?</label>
+    <label class="form-label" for="asig-prof">¿Quién va a trabajar esta caja?</label>
     <select class="form-select" id="asig-prof">${opcionesHtml(nombres, yo, '— Elegir profesor/a —')}</select>
-    <div class="form-text">Sólo aparece el profesorado activo con permiso de edición. La carpeta pasará a «EN CURSO».</div>`,
+    <div class="form-text">Sólo aparece el profesorado activo con permiso de edición. La caja pasará a «EN CURSO».</div>`,
     '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-asignar">Asignar</button>', '');
   $('#btn-asignar').addEventListener('click', async (ev) => {
     const prof = $('#asig-prof').value;
@@ -4106,7 +4123,7 @@ function asignarCarpeta(c) {
     ocupado(ev.currentTarget, true, 'Asignando…');
     try {
       await api('tomarCarpeta', { numero: c.NUMERO, accion: 'asignar', profesor: prof });
-      cerrarModal(); aviso(`Carpeta ${c.NUMERO} asignada a ${prof}.`); vistaCarpetas();
+      cerrarModal(); aviso(`Caja ${c.NUMERO} asignada a ${prof}.`); vistaCarpetas();
     } catch (e) { error(e); ocupado($('#btn-asignar'), false); }
   });
 }
@@ -4114,15 +4131,15 @@ function asignarCarpeta(c) {
 function editarCarpeta(c, lista) {
   const siguiente = lista ? String(lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1) : '';
   const v = c || { NUMERO: siguiente, DESDE: '', HASTA: '', ESTADO: 'PENDIENTE', ASIGNADA_A: '', NOTAS: '' };
-  abrirModal(c ? 'Carpeta ' + esc(c.NUMERO) : 'Nueva carpeta', `
+  abrirModal(c ? 'Caja ' + esc(c.NUMERO) : 'Nueva caja', `
     <form id="form-carpeta" class="row g-3">
       <div class="col-sm-4"><label class="form-label">Número</label><input class="form-control" name="NUMERO" value="${esc(v.NUMERO)}" required></div>
       <div class="col-sm-8"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml(['PENDIENTE', 'EN CURSO', 'TERMINADA'], v.ESTADO)}</select></div>
-      <div class="col-sm-6"><label class="form-label">Primer apellido de la carpeta</label><input class="form-control" name="DESDE" data-mayus value="${esc(v.DESDE)}" placeholder="ABADÍA Y CORTINA"></div>
-      <div class="col-sm-6"><label class="form-label">Último apellido de la carpeta</label><input class="form-control" name="HASTA" data-mayus value="${esc(v.HASTA)}" placeholder="ABEIJÓN Y FUERTES"></div>
+      <div class="col-sm-6"><label class="form-label">Primer apellido de la caja</label><input class="form-control" name="DESDE" data-mayus value="${esc(v.DESDE)}" placeholder="ABADÍA Y CORTINA"></div>
+      <div class="col-sm-6"><label class="form-label">Último apellido de la caja</label><input class="form-control" name="HASTA" data-mayus value="${esc(v.HASTA)}" placeholder="ABEIJÓN Y FUERTES"></div>
       <div class="col-sm-6"><label class="form-label">La trabaja</label><select class="form-select" name="ASIGNADA_A">${opcionesHtml(profesoresEditores(), v.ASIGNADA_A, '— Nadie —')}</select></div>
       <div class="col-sm-6"><label class="form-label">Notas</label><input class="form-control" name="NOTAS" value="${esc(v.NOTAS)}"></div>
-      <div class="col-12 form-text">Con el primer y el último apellido, la aplicación sugiere automáticamente la carpeta al registrar un alumno.</div>
+      <div class="col-12 form-text">Con el primer y el último apellido, la aplicación sugiere automáticamente la caja al registrar un alumno.</div>
     </form>`,
     `${c ? '<button class="btn btn-outline-danger me-auto" id="btn-borrar-carpeta"><i class="bi bi-trash me-1"></i>Borrar</button>' : ''}
      <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-carpeta">Guardar</button>`, '');
@@ -4130,26 +4147,26 @@ function editarCarpeta(c, lista) {
     const datos = Object.fromEntries(new FormData($('#form-carpeta')).entries());
     datos.original = c ? c.NUMERO : '';
     ocupado(ev.currentTarget, true);
-    try { await api('guardarCarpeta', datos); cerrarModal(); aviso('Carpeta guardada.'); vistaCarpetas(); }
+    try { await api('guardarCarpeta', datos); cerrarModal(); aviso('Caja guardada.'); vistaCarpetas(); }
     catch (e) { error(e); ocupado($('#btn-guardar-carpeta'), false); }
   });
   $('#btn-borrar-carpeta') && $('#btn-borrar-carpeta').addEventListener('click', async () => {
     cerrarModal();
-    if (!(await confirmar('Borrar carpeta', `<p>¿Borrar la carpeta ${esc(c.NUMERO)}? Sólo se puede si no tiene expedientes.</p>`, 'Borrar', true))) return;
-    try { await api('borrarCarpeta', { numero: c.NUMERO }); aviso('Carpeta borrada.'); vistaCarpetas(); } catch (e) { error(e); }
+    if (!(await confirmar('Borrar caja', `<p>¿Borrar la caja ${esc(c.NUMERO)}? Sólo se puede si no tiene expedientes.</p>`, 'Borrar', true))) return;
+    try { await api('borrarCarpeta', { numero: c.NUMERO }); aviso('Caja borrada.'); vistaCarpetas(); } catch (e) { error(e); }
   });
 }
 
 function crearVariasCarpetas(lista) {
   const siguiente = lista.reduce((m, x) => Math.max(m, parseInt(x.NUMERO, 10) || 0), 0) + 1;
-  abrirModal('Añadir varias carpetas', `
-    <p class="text-suave">Crea de golpe las carpetas numeradas que faltan. Después podrás definir el primer y el último apellido de cada una.</p>
+  abrirModal('Añadir varias cajas', `
+    <p class="text-suave">Crea de golpe las cajas numeradas que faltan. Después podrás definir el primer y el último apellido de cada una.</p>
     <div class="row g-3"><div class="col-6"><label class="form-label">Desde la nº</label><input type="number" class="form-control" id="cv-desde" value="${siguiente}" min="1"></div>
     <div class="col-6"><label class="form-label">Hasta la nº</label><input type="number" class="form-control" id="cv-hasta" value="${siguiente + 19}" min="1"></div></div>`,
-    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-cv">Crear carpetas</button>', '');
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-cv">Crear cajas</button>', '');
   $('#btn-cv').addEventListener('click', async (ev) => {
     ocupado(ev.currentTarget, true, 'Creando…');
-    try { await api('crearCarpetas', { desde: $('#cv-desde').value, hasta: $('#cv-hasta').value }); cerrarModal(); aviso('Carpetas creadas.'); vistaCarpetas(); }
+    try { await api('crearCarpetas', { desde: $('#cv-desde').value, hasta: $('#cv-hasta').value }); cerrarModal(); aviso('Cajas creadas.'); vistaCarpetas(); }
     catch (e) { error(e); ocupado($('#btn-cv'), false); }
   });
 }
@@ -4222,9 +4239,9 @@ function vistaProfesores() {
   $('#vista').innerHTML = cabecera('Profesores y permisos', 'Quién aparece en la lista de profesores y qué puede hacer cada persona en la aplicación.',
     '<button class="btn btn-primary" id="btn-nuevo-prof"><i class="bi bi-person-plus me-1"></i> Añadir persona</button>') + `
     <div class="row g-3 mb-3">
-      ${[['ADMIN', 'Coordinación', 'Todo: modificar cualquier expediente, papelera, campos, carpetas, profesores, ajustes e historial.'],
-        ['EDITOR', 'Editor/a', 'Crear expedientes y modificarlos. Asignarse carpetas.'],
-        ['LECTOR', 'Sólo consulta', 'Buscar y ver expedientes, índice y carpetas. No puede cambiar nada.']]
+      ${[['ADMIN', 'Coordinación', 'Todo: modificar cualquier expediente, papelera, campos, cajas, profesores, ajustes e historial.'],
+        ['EDITOR', 'Editor/a', 'Crear expedientes y modificarlos. Asignarse cajas.'],
+        ['LECTOR', 'Sólo consulta', 'Buscar y ver expedientes, índice y cajas. No puede cambiar nada.']]
         .map(([r, t, d]) => `<div class="col-md-4"><div class="panel h-100"><div class="panel-cuerpo"><span class="rol rol-${r}">${t}</span><div class="small text-suave mt-2">${d}</div></div></div></div>`).join('')}
     </div>
     <div class="panel"><div class="table-responsive"><table class="table tabla">
@@ -4376,7 +4393,7 @@ function vistaAjustes() {
   $('#btn-copia').addEventListener('click', async (ev) => {
     const b = ev.currentTarget;
     ocupado(b, true, 'Copiando…');
-    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver carpeta</a>`; }
+    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver caja</a>`; }
     catch (e) { error(e); } finally { ocupado(b, false); }
   });
   api('capacidad').then((c) => {
@@ -4426,7 +4443,7 @@ function campoDeTitulo(t) {
     'PROVINCIA': 'PROVINCIA', 'LOCALIDAD': 'LOCALIDAD', 'CIUDAD': 'LOCALIDAD', 'LUGAR': 'LOCALIDAD',
     'ANO NACIMIENTO': 'FECHA_NACIMIENTO', 'ANO DE NACIMIENTO': 'FECHA_NACIMIENTO', 'FECHA DE NACIMIENTO': 'FECHA_NACIMIENTO', 'NACIMIENTO': 'FECHA_NACIMIENTO',
     'ANO EXPEDIENTE': 'CURSO', 'ANO DEL EXPEDIENTE': 'CURSO', 'CURSO': 'CURSO',
-    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA'
+    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA', 'CAJA': 'CARPETA', 'CAJA DEL ARCHIVO': 'CARPETA'
   };
   for (const k of Object.keys(alias)) if (n === k || n.startsWith(k + ' ')) return alias[k];
   const c = S.campos.find((x) => sinAcentos(x.clave).replace(/_/g, ' ') === n || sinAcentos(x.etiqueta).replace(/[^A-Z0-9Ñ ]/g, ' ').replace(/\s+/g, ' ').trim() === n);
@@ -4451,7 +4468,7 @@ function vistaImportar() {
           <div class="col-md-4"><label class="form-label small">Profesor/a que registra</label><select class="form-select form-select-sm" id="imp-prof">${opcionesHtml(editores, editores.includes(S.usuario.nombre) ? S.usuario.nombre : '')}</select></div>
           <div class="col-md-4"><label class="form-label small">Estado</label><select class="form-select form-select-sm" id="imp-estado">${opcionesHtml((campoPorClave('ESTADO') || {}).opciones || ['PENDIENTE DE REVISIÓN'], 'PENDIENTE DE REVISIÓN')}</select></div>
           <div class="col-md-4 d-flex flex-column justify-content-end gap-1">
-            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-carpeta" checked><label class="form-check-label" for="imp-carpeta">Poner la carpeta según los apellidos</label></div>
+            <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-carpeta" checked><label class="form-check-label" for="imp-carpeta">Poner la caja según los apellidos</label></div>
             <div class="form-check small"><input class="form-check-input" type="checkbox" id="imp-dup"><label class="form-check-label" for="imp-dup">Importar también los posibles duplicados</label></div>
           </div>
         </div>
@@ -4499,7 +4516,7 @@ function revisarImportacion() {
       <button class="btn btn-primary" id="imp-ok"><i class="bi bi-cloud-upload me-1"></i> Importar ${numero(filas.length)} expedientes</button></div>
     ${ignoradas.length ? `<div class="alert alert-light border small m-3 mb-0">Columnas que no se importan: ${ignoradas.map(esc).join(', ')}.</div>` : ''}
     <div class="table-responsive"><table class="table tabla"><thead><tr><th>#</th>${ver.map((k) => `<th>${esc(CABECERAS_CORTAS[k] || etiquetaDe(k))}</th>`).join('')}</tr></thead>
-    <tbody>${filas.map((r, i) => `<tr><td class="text-suave small">${i + 1}</td>${ver.map((k) => `<td class="${k === 'APELLIDOS' ? 'ap' : 'small'}">${k === 'ILUSTRE' ? celda('ILUSTRE', r[k] || '') : k === 'CARPETA' && !r[k] ? '<span class="text-warning small">sin carpeta</span>' : esc(r[k] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+    <tbody>${filas.map((r, i) => `<tr><td class="text-suave small">${i + 1}</td>${ver.map((k) => `<td class="${k === 'APELLIDOS' ? 'ap' : 'small'}">${k === 'ILUSTRE' ? celda('ILUSTRE', r[k] || '') : k === 'CARPETA' && !r[k] ? '<span class="text-warning small">sin caja</span>' : esc(r[k] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
   $('#imp-ok').addEventListener('click', hacerImportacion);
 }
 
@@ -4536,12 +4553,12 @@ function vistaAyuda() {
       <div class="col-lg-7"><div class="panel"><div class="panel-cuerpo">
         <ol class="pasos">
           <li><strong>Elige la época</strong> en la que vas a trabajar (Siglo XIX, 1900–1930…) en el selector del menú o desde la <a href="#" data-ir="portada">Portada</a>.</li>
-          <li><strong>Asígnate una carpeta</strong> en <a href="#" data-ir="carpetas">Carpetas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
-          <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la carpeta.</li>
+          <li><strong>Asígnate una caja</strong> en <a href="#" data-ir="carpetas">Cajas</a> («Asignar» y eliges tu nombre). Así nadie más trabajará en ella a la vez.</li>
+          <li><strong>Registra los expedientes</strong> en <a href="#" data-ir="nuevo">Nuevo expediente</a>. Al pulsar «Guardar y siguiente» se mantienen tu nombre y la caja.</li>
           <li><strong>Mira el panel «Comprobación de duplicados»</strong> mientras escribes: avisa si el alumno ya existe, incluso con grafías antiguas (XIMÉNEZ/JIMÉNEZ, VIDAL/BIDAL, YGLESIAS/IGLESIAS…).</li>
           <li><strong>Si el expediente ya existe</strong>, ábrelo y complétalo en vez de crear otro. Sólo si es otra persona con el mismo nombre, confirma que es un homónimo.</li>
           <li><strong>Marca el estado</strong>: EN PROCESO mientras falten datos, TERMINADO cuando esté completo.</li>
-          <li><strong>Al acabar la carpeta</strong>, márcala como «Terminada».</li>
+          <li><strong>Al acabar la caja</strong>, márcala como «Terminada».</li>
         </ol>
       </div></div></div>
       <div class="col-lg-5"><div class="panel"><div class="panel-cab"><h2>Consejos de escritura</h2></div><div class="panel-cuerpo small">
@@ -4578,7 +4595,7 @@ function pintarPortada(lista) {
         ${e.DESCRIPCION ? `<div class="small text-suave">${esc(e.DESCRIPCION)}</div>` : ''}
         <div class="cifras">
           <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
-          <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>carpetas terminadas</span></div>
+          <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>cajas terminadas</span></div>
           <div><strong>${numero(e.ilustres)}<small class="fs-6 text-suave"> · ${numero(e.destacados || 0)}</small></strong><span>ilustres · destacados</span></div>
         </div>
         <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
@@ -4609,7 +4626,7 @@ function pintarPortada(lista) {
 
 function vistaEpocas() {
   $('#vista').innerHTML = cabecera('Épocas del archivo',
-    'Cada época guarda sus alumnos y carpetas en su propio archivo de Google (con su propia capacidad). Profesorado, campos y ajustes son comunes a todas.',
+    'Cada época guarda sus alumnos y cajas en su propio archivo de Google (con su propia capacidad). Profesorado, campos y ajustes son comunes a todas.',
     '<button class="btn btn-primary" id="btn-nueva"><i class="bi bi-plus-lg me-1"></i> Nueva época</button>') + `
     <div class="panel"><div class="table-responsive"><table class="table tabla">
       <thead><tr><th>Código</th><th>Nombre</th><th>Años</th><th>Prefijo del nº</th><th>Estado</th><th>Consulta pública</th><th></th></tr></thead>
@@ -4643,14 +4660,14 @@ function editarEpoca(e) {
       <div class="col-md-6"><label class="form-label">Prefijo del número de orden</label><input class="form-control font-monospace" name="PREFIJO" value="${esc(v.PREFIJO)}" placeholder="GOYA1900-">
         <div class="form-text">Ejemplo de número: <span class="id-exp">${esc(v.PREFIJO || 'GOYA')}000001</span></div></div>
       <div class="col-12"><label class="form-label">Descripción</label><input class="form-control" name="DESCRIPCION" value="${esc(v.DESCRIPCION)}" placeholder="Expedientes de los alumnos que ingresaron entre…"></div>
-      ${nueva ? `<div class="col-md-6"><label class="form-label">Crear carpetas numeradas</label><input type="number" class="form-control" name="carpetas" value="40" min="0" max="2000">
+      ${nueva ? `<div class="col-md-6"><label class="form-label">Crear cajas numeradas</label><input type="number" class="form-control" name="carpetas" value="40" min="0" max="2000">
         <div class="form-text">Se pueden añadir más después.</div></div>`
         : `<div class="col-md-6"><label class="form-label">Estado</label><select class="form-select" name="ESTADO">${opcionesHtml([{ v: 'ABIERTA', t: 'Abierta (se puede trabajar)' }, { v: 'CERRADA', t: 'Cerrada (sólo coordinación)' }], v.ESTADO)}</select></div>
         <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="PUBLICA" value="SÍ" id="ep-pub" ${v.PUBLICA ? 'checked' : ''}>
           <label class="form-check-label fw-semibold" for="ep-pub">Consulta pública: cualquier persona puede ver (no editar) los expedientes de esta época</label></div>
           <div class="alert alert-warning small mt-2 mb-0"><i class="bi bi-shield-exclamation me-1"></i>Actívala sólo en épocas antiguas (p. ej. el siglo XIX).
           Los datos de personas que pueden estar vivas están protegidos por el RGPD y <strong>no deben publicarse</strong>.
-          El público nunca ve correos del profesorado, historial ni carpetas.</div></div>`}
+          El público nunca ve correos del profesorado, historial ni cajas.</div></div>`}
       ${nueva ? '<div class="col-12"><div class="alert alert-info small mb-0"><i class="bi bi-info-circle me-1"></i>Se creará un archivo de Google nuevo para esta época, en la misma carpeta de Drive que la hoja central, con su propia capacidad. Tarda unos segundos.</div></div>' : ''}
     </form>`,
     `<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="btn-guardar-epoca">${nueva ? 'Crear época' : 'Guardar'}</button>`, '');

@@ -1,5 +1,5 @@
 import json, re, sys
-CARPETA = sys.argv[1] if len(sys.argv) > 1 else ''  # carpeta del archivo donde están estos expedientes
+CARPETA = sys.argv[1] if len(sys.argv) > 1 else ''  # caja del archivo donde están estos expedientes
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -55,7 +55,7 @@ norm = lambda s: re.sub(r'[^A-ZÑ ]', '', s.upper().translate(str.maketrans('Á�
 filas.sort(key=lambda r: (norm(r['APELLIDOS']), r['NOMBRE']))
 
 wb = Workbook(); ws = wb.active; ws.title = 'Para revisar'
-ws.append(['APELLIDOS', 'Nombre', 'País', 'Provincia', 'Localidad', 'Año nacimiento', 'Año expediente', 'Destacado o ilustre', 'Observaciones', 'Carpeta'])
+ws.append(['APELLIDOS', 'Nombre', 'País', 'Provincia', 'Localidad', 'Año nacimiento', 'Año expediente', 'Destacado o ilustre', 'Observaciones', 'Caja'])
 colores = {'ILUSTRE': 'F3E7C9', 'DESTACADO': 'E3ECF6', 'SIN COMPROBAR': 'EEEEEE'}
 for r in filas:
     ws.append([r['APELLIDOS'], r['NOMBRE'], r['PAIS'], r['PROVINCIA'], r['LOCALIDAD'], r['NAC'], str(r['ANIO_EXPEDIENTE']), r['ILUSTRE'], r['OBS'], CARPETA])
