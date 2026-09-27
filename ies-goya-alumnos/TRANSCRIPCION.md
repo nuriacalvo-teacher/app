@@ -18,6 +18,7 @@ cada alumno fue **destacado** o **ilustre**. Primera tanda hecha: 3 PDFs, 53 pá
 |---|---|
 | APELLIDOS | MAYÚSCULAS, tal como vienen, con la «y» entre apellidos (ABADÍA Y CORTINA). Grafía histórica respetada. |
 | Nombre | Solo inicial en mayúscula (Juan Manuel, Francisco de Paula). |
+| Sexo | HOMBRE o MUJER (por el nombre y el expediente; en el s. XIX casi siempre HOMBRE). |
 | País | España salvo que conste otro. |
 | Provincia | Nombre actual, como en la app (Lleida, Guipúzcoa, Navarra, La Rioja…). «idem» = la de la localidad. |
 | Localidad | Como está escrita; forma actual entre paréntesis si difiere: «Agreda (Ágreda)». |

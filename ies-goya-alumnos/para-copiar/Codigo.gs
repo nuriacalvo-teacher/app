@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-04';
+const VERSION_APP = '2026-10-05';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -73,6 +73,7 @@ const CAMPOS_INICIALES = [
   ['CARPETA', 'Caja del archivo', 'carpeta', '', true, 'Registro', 'La app te sugiere la caja según los apellidos.', true, true],
   ['APELLIDOS', 'Apellidos', 'texto', '', true, 'Identificación del alumno', 'Tal como aparecen en el expediente. Ej.: ABADÍA Y CORTINA', true, true],
   ['NOMBRE', 'Nombre de pila', 'texto', '', true, 'Identificación del alumno', 'Ej.: Juan Manuel', true, true],
+  ['SEXO', 'Sexo', 'seleccion', 'HOMBRE\nMUJER', false, 'Identificación del alumno', 'Hombre o mujer.', false, false],
   ['PAIS', 'País de nacimiento', 'pais', '', false, 'Lugar y fecha de nacimiento', '', true, true],
   ['PROVINCIA', 'Provincia', 'provincia', '', false, 'Lugar y fecha de nacimiento', '', true, true],
   ['LOCALIDAD', 'Localidad', 'localidad', '', false, 'Lugar y fecha de nacimiento', 'Elígela de la lista o escríbela si no aparece (nombres antiguos, pedanías…).', true, true],
@@ -703,8 +704,47 @@ function campos_() {
     };
   });
   lista.sort(function (a, b) { return a.orden - b.orden; });
+  if (!MEMO.migrandoCampos && anadirCamposNuevos_(lista)) return campos_();
   MEMO.campos = lista;
   return lista;
+}
+
+/**
+ * Instalaciones ya en marcha: añade solo (una vez) a la hoja «Campos» los campos nuevos de la app,
+ * como «Sexo», sin tener que volver a ejecutar «instalar». Devuelve true si ha añadido alguno.
+ */
+function anadirCamposNuevos_(lista) {
+  const nuevos = [{ clave: 'SEXO', despuesDe: 'NOMBRE' }].filter(function (n) {
+    return !lista.some(function (c) { return c.clave === n.clave; });
+  });
+  if (!nuevos.length || !lista.length) return false;
+  const props = PropertiesService.getScriptProperties();
+  const hechos = String(props.getProperty('CAMPOS_ANADIDOS') || '').split(',');
+  const pendientes = nuevos.filter(function (n) { return hechos.indexOf(n.clave) < 0; }); // si alguien lo borró a mano, no se repone
+  if (!pendientes.length) return false;
+  MEMO.migrandoCampos = true;
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const h = hoja_(HOJA.CAMPOS);
+    const ya = h.getRange(1, 1, Math.max(h.getLastRow(), 1), 1).getDisplayValues().map(function (r) { return String(r[0]).trim(); });
+    pendientes.forEach(function (n) {
+      if (ya.indexOf(n.clave) < 0) {
+        const c = CAMPOS_INICIALES.find(function (x) { return x[0] === n.clave; });
+        const ant = lista.find(function (x) { return x.clave === n.despuesDe; });
+        const orden = ant ? ant.orden + 0.5 : 999;
+        h.appendRow([c[0], c[1], c[2], c[3], c[4] ? 'SÍ' : 'NO', c[5], String(orden), c[6], c[7] ? 'SÍ' : 'NO', 'SÍ', c[8] ? 'SÍ' : 'NO']);
+      }
+      hechos.push(n.clave);
+    });
+    props.setProperty('CAMPOS_ANADIDOS', hechos.filter(String).join(','));
+    invalidarConfig_();
+    delete MEMO.campos;
+  } finally {
+    lock.releaseLock();
+    MEMO.migrandoCampos = false;
+  }
+  return true;
 }
 
 function camposActivos_() {
@@ -1654,9 +1694,9 @@ function portada_(d, u) {
 function portadaCalcular_() {
   return enCadaEpoca_(function (e) {
     const h = hojaAlumnos_();
-    const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', '_BORRADO', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE']);
+    const c = leerColumnas_(h, mapaColumnas_(h), ['_UID', '_BORRADO', 'ESTADO', 'DIGITALIZADO', 'ILUSTRE', 'SEXO']);
     const r = { CODIGO: e.CODIGO, NOMBRE: e.NOMBRE, DESDE: e.DESDE, HASTA: e.HASTA, ESTADO: e.ESTADO, DESCRIPCION: e.DESCRIPCION,
-      total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0 };
+      total: 0, terminados: 0, digitalizados: 0, ilustres: 0, destacados: 0, hombres: 0, mujeres: 0 };
     for (let i = 0; i < c._n; i++) {
       if (!c._UID[i] || si_(c._BORRADO[i])) continue;
       r.total++;
@@ -1664,6 +1704,9 @@ function portadaCalcular_() {
       if (si_(c.DIGITALIZADO[i])) r.digitalizados++;
       if (nivelIlustre_(c.ILUSTRE[i]) === 'ILUSTRE') r.ilustres++;
       if (nivelIlustre_(c.ILUSTRE[i]) === 'DESTACADO') r.destacados++;
+      const sx = sinAcentos_(c.SEXO ? c.SEXO[i] : '');
+      if (sx === 'HOMBRE') r.hombres++;
+      else if (sx === 'MUJER') r.mujeres++;
     }
     const cp = carpetasLista_();
     r.carpetas = cp.length;

@@ -84,7 +84,7 @@
   .tarjeta-epoca.actual { border-color: var(--granate); box-shadow: inset 0 0 0 1px var(--granate); }
   .tarjeta-epoca .anos { font-family: 'Source Serif 4', Georgia, serif; color: var(--granate); font-weight: 700; font-size: 15px; letter-spacing: .03em; }
   .tarjeta-epoca h2 { font-size: 21px; font-weight: 700; color: var(--tinta); margin: 2px 0 6px; }
-  .tarjeta-epoca .cifras { display: flex; gap: 22px; margin: 14px 0; }
+  .tarjeta-epoca .cifras { display: flex; flex-wrap: wrap; gap: 12px 22px; margin: 14px 0; }
   .tarjeta-epoca .cifras strong { display: block; font-size: 22px; font-family: 'Source Serif 4', Georgia, serif; color: var(--tinta); line-height: 1.1; }
   .tarjeta-epoca .cifras span { font-size: 12px; color: var(--suave); }
   .tarjeta-epoca.nueva { border-style: dashed; align-items: center; justify-content: center; text-align: center; color: var(--suave); cursor: pointer; min-height: 220px; }
@@ -1780,7 +1780,8 @@ function campoDeTitulo(t) {
     'PROVINCIA': 'PROVINCIA', 'LOCALIDAD': 'LOCALIDAD', 'CIUDAD': 'LOCALIDAD', 'LUGAR': 'LOCALIDAD',
     'ANO NACIMIENTO': 'FECHA_NACIMIENTO', 'ANO DE NACIMIENTO': 'FECHA_NACIMIENTO', 'FECHA DE NACIMIENTO': 'FECHA_NACIMIENTO', 'NACIMIENTO': 'FECHA_NACIMIENTO',
     'ANO EXPEDIENTE': 'CURSO', 'ANO DEL EXPEDIENTE': 'CURSO', 'CURSO': 'CURSO',
-    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA', 'CAJA': 'CARPETA', 'CAJA DEL ARCHIVO': 'CARPETA'
+    'DESTACADO O ILUSTRE': 'ILUSTRE', 'ILUSTRE': 'ILUSTRE', 'OBSERVACIONES': 'OBSERVACIONES', 'CARPETA': 'CARPETA',
+    'SEXO': 'SEXO', 'HOMBRE O MUJER': 'SEXO', 'GENERO': 'SEXO', 'CAJA': 'CARPETA', 'CAJA DEL ARCHIVO': 'CARPETA'
   };
   for (const k of Object.keys(alias)) if (n === k || n.startsWith(k + ' ')) return alias[k];
   const c = S.campos.find((x) => sinAcentos(x.clave).replace(/_/g, ' ') === n || sinAcentos(x.etiqueta).replace(/[^A-Z0-9Ñ ]/g, ' ').replace(/\s+/g, ' ').trim() === n);
@@ -1800,7 +1801,7 @@ function vistaImportar() {
           <li>Abre la tabla en Google Sheets o Excel, <strong>selecciónala entera con los títulos</strong> (⌘A / Ctrl+A) y cópiala (⌘C / Ctrl+C).</li>
           <li>Pégala aquí debajo (⌘V / Ctrl+V) y pulsa <strong>Revisar</strong>. Todavía no se guarda nada.</li>
         </ol>
-        <textarea class="form-control font-monospace small" id="imp-texto" rows="9" placeholder="APELLIDOS	Nombre	País	Provincia	Localidad	Año nacimiento	Año expediente	Destacado o ilustre	Observaciones"></textarea>
+        <textarea class="form-control font-monospace small" id="imp-texto" rows="9" placeholder="APELLIDOS	Nombre	Sexo	País	Provincia	Localidad	Año nacimiento	Año expediente	Destacado o ilustre	Observaciones"></textarea>
         <div class="row g-3 mt-1">
           <div class="col-md-4"><label class="form-label small">Profesor/a que registra</label><select class="form-select form-select-sm" id="imp-prof">${opcionesHtml(editores, editores.includes(S.usuario.nombre) ? S.usuario.nombre : '')}</select></div>
           <div class="col-md-4"><label class="form-label small">Estado</label><select class="form-select form-select-sm" id="imp-estado">${opcionesHtml((campoPorClave('ESTADO') || {}).opciones || ['PENDIENTE DE REVISIÓN'], 'PENDIENTE DE REVISIÓN')}</select></div>
@@ -1813,7 +1814,7 @@ function vistaImportar() {
         <div class="text-end mt-3"><button class="btn btn-primary" id="imp-revisar"><i class="bi bi-eye me-1"></i> Revisar</button></div>
       </div></div></div>
       <div class="col-xl-4"><div class="panel"><div class="panel-cab"><h2>Cómo funciona</h2></div><div class="panel-cuerpo small text-suave">
-        <p>La primera fila debe tener los títulos de las columnas: <em>APELLIDOS, Nombre, País, Provincia, Localidad, Año nacimiento, Año expediente, Destacado o ilustre, Observaciones</em>. Las columnas que no reconozca se ignoran.</p>
+        <p>La primera fila debe tener los títulos de las columnas: <em>APELLIDOS, Nombre, Sexo, País, Provincia, Localidad, Año nacimiento, Año expediente, Destacado o ilustre, Observaciones, Caja</em>. Las columnas que no reconozca se ignoran.</p>
         <p>Cada alumno pasa por la <strong>comprobación de duplicados</strong> (también frente a los demás de la lista). Los que ya existan no se importan: aparecerán en una lista para revisarlos a mano.</p>
         <p>Para <strong>corregir</strong> alumnos ya importados (por ejemplo, ponerles la caja o cambiar las observaciones), vuelve a pegar la tabla corregida y marca <em>«Actualizar los que ya existen»</em>: se cambian sólo las columnas que traiga la tabla y cada cambio queda en el historial.</p>
         <p class="mb-0">Los importados quedan en el historial y con el estado elegido, para que alguien los compare con el original.</p>
@@ -1845,12 +1846,17 @@ function revisarImportacion() {
     });
     if (notas.length) r.OBSERVACIONES = [r.OBSERVACIONES, notas.join(' ')].filter(Boolean).join('\n');
     if (r.APELLIDOS) r.APELLIDOS = r.APELLIDOS.toUpperCase();
+    if (r.SEXO) {
+      const sx = sinAcentos(r.SEXO);
+      if (/^(H|V|HOMBRE|VARON|MASCULINO)\b/.test(sx)) r.SEXO = 'HOMBRE';
+      else if (/^(M|MUJER|FEMENINO)\b/.test(sx)) r.SEXO = 'MUJER';
+    }
     if (conCarpeta && !r.CARPETA) { const c = carpetaSugerida(r.APELLIDOS || ''); if (c) r.CARPETA = c.NUMERO; }
     return r;
   }).filter((r) => r.APELLIDOS || r.NOMBRE);
   importacion = filas;
   const ignoradas = titulos.filter((t, i) => !cols[i] && t.trim());
-  const ver = ['APELLIDOS', 'NOMBRE', 'PAIS', 'PROVINCIA', 'LOCALIDAD', 'FECHA_NACIMIENTO', 'CURSO', 'CARPETA', 'ILUSTRE'];
+  const ver = ['APELLIDOS', 'NOMBRE', 'SEXO', 'PAIS', 'PROVINCIA', 'LOCALIDAD', 'FECHA_NACIMIENTO', 'CURSO', 'CARPETA', 'ILUSTRE'];
   caja.innerHTML = `<div class="panel"><div class="panel-cab"><h2>${numero(filas.length)} expedientes para importar</h2>
       <button class="btn btn-primary" id="imp-ok"><i class="bi bi-cloud-upload me-1"></i> Importar ${numero(filas.length)} expedientes</button></div>
     ${ignoradas.length ? `<div class="alert alert-light border small m-3 mb-0">Columnas que no se importan: ${ignoradas.map(esc).join(', ')}.</div>` : ''}
@@ -1937,6 +1943,7 @@ function pintarPortada(lista) {
           <div><strong>${numero(e.total)}</strong><span>expedientes</span></div>
           <div><strong>${numero(e.carpetasTerminadas)}<small class="fs-6 text-suave">/${numero(e.carpetas)}</small></strong><span>cajas terminadas</span></div>
           <div><strong>${numero(e.ilustres)}<small class="fs-6 text-suave"> · ${numero(e.destacados || 0)}</small></strong><span>ilustres · destacados</span></div>
+          <div><strong>${numero(e.hombres || 0)}<small class="fs-6 text-suave"> · ${numero(e.mujeres || 0)}</small></strong><span>hombres · mujeres</span></div>
         </div>
         <div class="barra-prog mb-1"><div style="width:${pct(e.terminados, e.total)}%"></div></div>
         <div class="small text-suave mb-3">${pct(e.terminados, e.total)} % de expedientes terminados · ${numero(e.digitalizados)} digitalizados</div>
