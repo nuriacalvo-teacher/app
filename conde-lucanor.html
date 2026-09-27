@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Los 15 exemplos de Lucanor</title>
+<meta name="description" content="App de repaso autocorregible de 15 cuentos de El conde Lucanor: fichas, enseñanzas, aplicación actual, ejercicios, respuestas escritas corregidas y simulacro de examen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#f1f0ea; --surface:#fbfaf6; --surface2:#f5f3ec; --ink:#1c2130; --muted:#5a5f6d; --line:#d8d4c8;
+  --lapis:#27449a; --lapis-ink:#ffffff; --lapis-soft:#e2e7f5;
+  --rubric:#ae3127; --rubric-soft:#f7e3df;
+  --gold:#9c7118; --gold-soft:#f3ead3;
+  --ok:#2a7648; --ok-soft:#dff0e5;
+  --warn:#8a5a00; --warn-soft:#fbefd2;
+  --shadow:0 1px 2px rgba(28,33,48,.06),0 6px 20px rgba(28,33,48,.06);
+  --f-display:"IM Fell English","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --f-sc:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --f-body:"Literata",Georgia,"Times New Roman",serif;
+  --f-ui:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11141b; --surface:#191d27; --surface2:#1f2430; --ink:#e8e5dc; --muted:#a4a8b4; --line:#2e3441;
+    --lapis:#8fa7ee; --lapis-ink:#0f1320; --lapis-soft:#1f2946;
+    --rubric:#ee8175; --rubric-soft:#3a201e;
+    --gold:#d9b25f; --gold-soft:#342a17;
+    --ok:#72d19a; --ok-soft:#16301f;
+    --warn:#e8bf62; --warn-soft:#352914;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11141b; --surface:#191d27; --surface2:#1f2430; --ink:#e8e5dc; --muted:#a4a8b4; --line:#2e3441;
+  --lapis:#8fa7ee; --lapis-ink:#0f1320; --lapis-soft:#1f2946;
+  --rubric:#ee8175; --rubric-soft:#3a201e;
+  --gold:#d9b25f; --gold-soft:#342a17;
+  --ok:#72d19a; --ok-soft:#16301f;
+  --warn:#e8bf62; --warn-soft:#352914;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.5;margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--lapis);outline-offset:2px;border-radius:6px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+
+/* Barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.top-in{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-sc);font-size:1.25rem;letter-spacing:.02em;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;margin-right:auto;display:flex;align-items:baseline;gap:8px}
+.brand b{color:var(--rubric);font-weight:400}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:1px solid transparent;border-radius:999px;padding:6px 12px;cursor:pointer;color:var(--muted);font-weight:700;font-size:.92rem}
+nav button:hover{color:var(--ink);background:var(--surface2)}
+nav button[aria-current="page"]{color:var(--lapis);border-color:var(--lapis);background:var(--lapis-soft)}
+
+main{max-width:960px;margin:0 auto;padding-inline:16px;padding-block:24px 64px}
+.view{display:grid;gap:22px}
+
+/* Tipos de texto */
+.eyebrow{font-family:var(--f-ui);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--rubric);font-weight:700}
+.h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.05}
+.h2{font-family:var(--f-display);font-weight:400;font-size:clamp(1.6rem,4vw,2.1rem);line-height:1.15}
+.h3{font-family:var(--f-ui);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.lead{font-family:var(--f-body);font-size:1.08rem;max-width:62ch;color:var(--ink)}
+.muted{color:var(--muted)}
+.serif{font-family:var(--f-body)}
+
+/* Botones */
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 18px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--lapis)}
+.btn.primary{background:var(--lapis);border-color:var(--lapis);color:var(--lapis-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 12px;font-size:.88rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Portada */
+.hero{display:grid;gap:14px;padding-block:8px 4px}
+.hero .h1 em{font-style:italic;color:var(--rubric)}
+.marco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px}
+.pasos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;counter-reset:p}
+.pasos li{counter-increment:p;background:var(--surface2);border-radius:8px;padding:12px;font-size:.92rem;display:grid;gap:4px}
+.pasos li::before{content:counter(p);font-family:var(--f-display);font-size:1.6rem;line-height:1;color:var(--rubric)}
+.pasos b{font-size:.95rem}
+
+.mapa{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.chip-c{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer}
+.chip-c:hover{border-color:var(--lapis)}
+.chip-c .rn{grid-row:span 2;font-family:var(--f-sc);font-size:1.05rem;color:var(--rubric);min-width:3.4ch;text-align:center}
+.chip-c .nm{font-size:.86rem;font-weight:700;line-height:1.2}
+.bar{height:5px;border-radius:9px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:9px;transition:width .4s}
+.bar.mid i{background:var(--gold)}
+.bar.low i{background:var(--rubric)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* Tarjetas de modos */
+.modos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.modo{display:grid;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.modo:hover{border-color:var(--lapis);box-shadow:var(--shadow)}
+.modo .t{font-family:var(--f-display);font-size:1.3rem;line-height:1.15}
+.modo .d{font-size:.9rem;color:var(--muted)}
+.modo .k{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.modo.destacado{background:var(--lapis-soft);border-color:var(--lapis)}
+
+/* Lista de cuentos */
+.lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card-c{display:grid;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;align-content:start}
+.card-c:hover{border-color:var(--lapis);box-shadow:var(--shadow)}
+.card-c .rn{font-family:var(--f-sc);color:var(--rubric);font-size:.95rem;letter-spacing:.04em}
+.card-c .nm{font-family:var(--f-display);font-size:1.35rem;line-height:1.15}
+.card-c .en{font-family:var(--f-body);font-size:.92rem;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:700;color:var(--muted);font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.scroll-x{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.tabla{border-collapse:collapse;width:100%;min-width:760px;font-size:.9rem}
+.tabla th,.tabla td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.tabla th{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surface2)}
+.tabla td.rn{font-family:var(--f-sc);color:var(--rubric);white-space:nowrap}
+.tabla td.mor{font-family:var(--f-body);font-style:italic}
+.tabla tr:last-child td{border-bottom:0}
+
+/* Ficha */
+.ficha{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,4vw,36px);display:grid;gap:26px}
+.ficha-head{display:grid;gap:8px;border-bottom:1px solid var(--line);padding-bottom:18px}
+.ficha-head .orig{font-family:var(--f-body);font-style:italic;color:var(--muted)}
+.sec{display:grid;gap:10px}
+.sec p,.sec li{font-family:var(--f-body);font-size:1.02rem;max-width:66ch}
+.sec ul{margin:0;padding-left:1.2em;display:grid;gap:8px}
+.relato p+p{margin-top:10px}
+.relato p:first-of-type::first-letter{font-family:var(--f-display);float:left;font-size:3.4em;line-height:.8;padding:6px 8px 0 0;color:var(--rubric)}
+.problema{background:var(--surface2);border-radius:8px;padding:14px 16px}
+.problema p{font-family:var(--f-body)}
+.personajes{display:flex;flex-wrap:wrap;gap:6px}
+.personajes span{background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem}
+.verso{font-family:var(--f-display);font-style:italic;font-size:clamp(1.25rem,3.4vw,1.6rem);line-height:1.35;color:var(--ink);border-left:3px solid var(--rubric);padding:4px 0 4px 18px}
+.verso+.verso{margin-top:6px}
+.clave{background:var(--lapis-soft);border-radius:8px;padding:16px}
+.clave p{font-size:1.08rem}
+.ojo{background:var(--gold-soft);border-radius:8px;padding:14px 16px}
+.ojo .h3{color:var(--gold)}
+.piensa{border:1px dashed var(--line);border-radius:8px;padding:14px 16px}
+.ficha-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+
+/* Quiz */
+.quiz{display:grid;gap:16px}
+.qhead{display:grid;gap:8px}
+.progress{height:8px;border-radius:9px;background:var(--surface2);overflow:hidden;border:1px solid var(--line)}
+.progress i{display:block;height:100%;background:var(--lapis);transition:width .3s}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,4vw,28px);display:grid;gap:16px;box-shadow:var(--shadow)}
+.qtag{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.qtag .t1{color:var(--rubric)}
+.qtag .t2{color:var(--muted)}
+.qtext{font-family:var(--f-body);font-size:1.15rem;line-height:1.45}
+.qtext .cita{display:block;margin-top:8px;font-family:var(--f-display);font-style:italic;font-size:1.25rem;color:var(--ink);border-left:3px solid var(--rubric);padding-left:14px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;font-family:var(--f-body);font-size:1rem}
+.opt:hover:not(:disabled){border-color:var(--lapis)}
+.opt .l{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);font-family:var(--f-ui);font-size:.8rem;font-weight:700;background:var(--surface)}
+.opt[aria-pressed="true"]{border-color:var(--lapis);background:var(--lapis-soft)}
+.opt[aria-pressed="true"] .l{background:var(--lapis);color:var(--lapis-ink);border-color:var(--lapis)}
+.opt.is-ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.is-ok .l{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.opt.is-bad{border-color:var(--rubric);background:var(--rubric-soft)}
+.opt.is-bad .l{background:var(--rubric);border-color:var(--rubric);color:var(--surface)}
+.opt:disabled{cursor:default}
+.tf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tf .opt{justify-content:center;font-family:var(--f-ui);font-weight:700}
+.field{width:100%;border:1.5px solid var(--line);border-radius:10px;background:var(--surface2);padding:12px 14px;font-family:var(--f-body);font-size:1.05rem}
+.field:focus{border-color:var(--lapis);outline:none}
+textarea.field{min-height:180px;resize:vertical;line-height:1.55}
+.counter{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.gap-verso{font-family:var(--f-display);font-style:italic;font-size:1.3rem;line-height:1.5;border-left:3px solid var(--rubric);padding-left:14px}
+.orden{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.orden li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--f-body)}
+.orden .n{font-family:var(--f-display);font-size:1.3rem;color:var(--rubric);width:1.6ch;text-align:center}
+.orden .mv{display:flex;gap:4px}
+.orden .mv button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700}
+.orden .mv button:disabled{opacity:.3;cursor:default}
+.orden li.is-ok{border-color:var(--ok);background:var(--ok-soft)}
+.orden li.is-bad{border-color:var(--rubric);background:var(--rubric-soft)}
+.match{display:grid;gap:10px}
+.match .mrow{display:grid;grid-template-columns:1fr minmax(0,240px);gap:10px;align-items:center;background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+.match .mrow p{font-family:var(--f-display);font-style:italic;font-size:1.08rem}
+.match select{width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface)}
+.match .mrow.is-ok{border-color:var(--ok);background:var(--ok-soft)}
+.match .mrow.is-bad{border-color:var(--rubric);background:var(--rubric-soft)}
+@media (max-width:560px){.match .mrow{grid-template-columns:1fr}}
+
+/* Feedback */
+.fb{border-radius:10px;padding:16px 18px;display:grid;gap:10px;font-family:var(--f-body)}
+.fb .ttl{font-family:var(--f-ui);font-weight:700;font-size:1.05rem}
+.fb.ok{background:var(--ok-soft);border:1px solid var(--ok)}
+.fb.ok .ttl{color:var(--ok)}
+.fb.bad{background:var(--rubric-soft);border:1px solid var(--rubric)}
+.fb.bad .ttl{color:var(--rubric)}
+.fb.mid{background:var(--gold-soft);border:1px solid var(--gold)}
+.fb.mid .ttl{color:var(--gold)}
+.fb .fix{border-left:3px solid var(--ok);padding-left:12px}
+.fb .tip{font-family:var(--f-ui);font-size:.92rem;background:var(--surface);border-radius:8px;padding:10px 12px}
+.ideas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ideas li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:var(--surface);border-radius:8px;padding:10px 12px;font-family:var(--f-ui);font-size:.95rem}
+.ideas .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.ideas .si .ic{background:var(--ok);color:var(--surface)}
+.ideas .no .ic{background:var(--rubric);color:var(--surface)}
+.ideas .why{color:var(--muted);font-size:.9rem;margin-top:2px}
+.ideas .link{background:none;border:0;color:var(--lapis);text-decoration:underline;cursor:pointer;padding:0;font-size:.85rem;margin-top:4px}
+.nota{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.nota .big{font-family:var(--f-display);font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.modelo{background:var(--surface);border-radius:8px;padding:12px 14px}
+.modelo summary{cursor:pointer;font-family:var(--f-ui);font-weight:700;color:var(--lapis)}
+.modelo p{margin-top:8px}
+.aviso{background:var(--warn-soft);color:var(--ink);border-radius:8px;padding:10px 12px;font-family:var(--f-ui);font-size:.92rem}
+
+/* Resultados */
+.result{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,4vw,32px);display:grid;gap:18px;text-align:left}
+.score{font-family:var(--f-display);font-size:clamp(3.2rem,12vw,5.5rem);line-height:.9;font-variant-numeric:tabular-nums}
+.score small{font-size:.35em;color:var(--muted)}
+.review{display:grid;gap:14px}
+.review .ritem{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;background:var(--surface2)}
+.review .rq{font-family:var(--f-body);font-weight:600}
+.pts{font-variant-numeric:tabular-nums;font-weight:700;font-size:.85rem;color:var(--muted)}
+
+/* Selector de cuentos */
+.picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.picker button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px;cursor:pointer;display:grid;gap:2px}
+.picker button:hover{border-color:var(--lapis)}
+.picker .rn{font-family:var(--f-sc);color:var(--rubric);font-size:.9rem}
+.picker .nm{font-size:.86rem;font-weight:700;line-height:1.2}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.55);display:grid;place-items:start center;overflow-y:auto;padding:max(16px,env(safe-area-inset-top,0px)) 16px 32px}
+.modal-in{width:min(820px,100%);display:grid;gap:10px;margin-top:10px}
+.modal-close{justify-self:end}
+
+.foot{font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.theme-t{background:none;border:1px solid var(--line);border-radius:999px;width:36px;height:36px;cursor:pointer;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes pop{from{transform:translateY(4px);opacity:.4}to{transform:none;opacity:1}}
+.fb{animation:pop .25s ease-out}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <button class="brand" id="brand" type="button">Lucanor <b>·</b> <span class="muted" style="font-family:var(--f-ui);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase">15 exemplos</span></button>
+    <nav aria-label="Secciones">
+      <button type="button" data-go="inicio">Inicio</button>
+      <button type="button" data-go="cuentos">Cuentos</button>
+      <button type="button" data-go="practicar">Practicar</button>
+      <button type="button" data-go="examen">Examen</button>
+    </nav>
+  </div>
+</header>
+<main id="app"></main>
+<div class="modal" id="modal" hidden><div class="modal-in"><button class="btn sm modal-close" id="modalClose" type="button">Cerrar ✕</button><div id="modalBody"></div></div></div>
+<script>
+/* =========================================================
+   DATOS: los 15 exemplos (según la edición del PDF de clase)
+   Patrones (p): se comparan con el texto del alumno en minúsculas
+   y SIN tildes (la ñ se convierte en n).
+   ========================================================= */
+const CUENTOS = [
+{
+  id:'I', corto:'El rey y su privado',
+  titulo:'Lo que sucedió a un rey y a un ministro suyo',
+  claves:'privad|ministr|cautiv|penitencia|desierto|harapo|mendig',
+  problema:'Un hombre ilustre, rico y amigo del conde le dice en secreto que quiere marcharse de sus tierras para siempre y dejarle todas sus posesiones (unas vendidas y otras a su cuidado). Al conde le parece un honor muy útil, pero pide consejo.',
+  personajes:['El rey','El privado (ministro de confianza)','Los otros privados, envidiosos','Un sabio filósofo, cautivo en casa del privado','La reina y el infante heredero'],
+  resumen:[
+    'Un rey confiaba muchísimo en su privado. Los demás consejeros, envidiosos, le acusan de querer quedarse con el reino: dicen que planea la muerte del infante para hacerse con el trono.',
+    'Para comprobarlo, el rey le pone una prueba: le cuenta que está cansado de la vanidad del mundo, que quiere irse al desierto a hacer penitencia y que le dejará a él el reino, la reina y la tutela del infante. El privado se pone muy contento, aunque no lo demuestra.',
+    'En casa, se lo cuenta a un sabio cautivo que le servía de consejero. El sabio le avisa: es una trampa del rey para probar su lealtad. Si se alegra de quedarse con el poder, peligra su vida.',
+    'Siguiendo el consejo, el privado se rapa la cabeza y la barba, se viste de mendigo con un bordón y cose doblas de oro en sus harapos. Antes del amanecer va a palacio y le dice al rey que quiere acompañarle en su penitencia, porque si el rey deja todo, él tampoco quiere nada.',
+    'El rey comprueba así que es leal, le cuenta cómo le habían acusado los envidiosos y el privado se salva gracias al buen consejo.'
+  ],
+  secuencia:[
+    'Los otros privados, envidiosos, acusan al ministro ante el rey.',
+    'El rey dice que se irá al desierto y le dejará el reino y la tutela del infante.',
+    'El sabio cautivo avisa al privado de que todo es una prueba.',
+    'El privado se rapa y se viste de mendigo con oro cosido en la ropa.',
+    'Se presenta al amanecer diciendo que acompañará al rey en su penitencia.',
+    'El rey comprueba su lealtad y le cuenta la trampa.'
+  ],
+  consejo:'Patronio dice al conde que ese amigo seguramente solo quiere probarle. Debe hablar con él y demostrarle que busca su honra y provecho, sin ambicionar sus bienes, porque «la amistad no puede durar mucho cuando se ambicionan las riquezas de un amigo».',
+  moraleja:['No penséis ni creáis que por un amigo','hacen algo los hombres que les sea un peligro.'],
+  moraleja2:['Con la ayuda de Dios y con buen consejo,','sale el hombre de angustias y cumple su deseo.'],
+  hueco:{txt:'No penséis ni creáis que por un ______ / hacen algo los hombres que les sea un peligro.', ans:['amigo']},
+  ensenanza:'Desconfía de las ofertas demasiado generosas: pueden ser una prueba o una trampa. No muestres ambición por lo que tienen tus amigos, y pide consejo a alguien sabio cuando algo te parezca demasiado bueno.',
+  ensenanzaCorta:'hay que desconfiar de ofertas demasiado generosas y no ambicionar los bienes de un amigo',
+  hoy:[
+    'Un compañero te dice «me borro del grupo del trabajo, quédate tú con toda la nota»: antes de frotarte las manos, pregúntate si no te está probando.',
+    'Un jefe comenta que se va y que «a lo mejor» te deja su puesto: mostrar demasiadas ganas de quitárselo puede costarte su confianza.',
+    'Cuando algo parece demasiado bueno para ser verdad, busca a tu «sabio cautivo»: alguien con experiencia que te dé una segunda opinión.'
+  ],
+  ojo:'Este cuento tiene DOS moralejas en verso (es el único de los 15). Y no confundas al privado con el sabio: el que da el consejo clave es el cautivo filósofo, no el privado.',
+  critica:'El privado no es del todo inocente: al principio sí se alegró de quedarse con el poder. Se salva por el consejo, no por su bondad. ¿Premia el cuento la lealtad o la astucia?',
+  ideasResumen:[
+    {t:'Un rey confiaba en su privado (ministro)', p:['privad|ministr|consejer|valido|mano derecha'], why:'Hay que presentar a los protagonistas: un rey y su privado, es decir, su ministro de máxima confianza.'},
+    {t:'Los otros privados, envidiosos, le acusan', p:['envidi|acus|celos|calumni|intrig|otros privados|otros consejeros|le odiaban'], why:'El conflicto empieza por la envidia: los demás privados le acusan de querer el trono. Sin eso, la prueba del rey no tiene sentido.'},
+    {t:'El rey le pone a prueba: dice que se irá al desierto y le dejará el reino', p:['prueb|probar|probarl|desierto|penitencia|retirar|dejar(le)? el reino|dejarle todo|le dejaria|tutela|irse del reino|abandonar el reino'], why:'El núcleo del cuento es la PRUEBA: el rey finge que se va a hacer penitencia y le deja el reino y al infante.'},
+    {t:'Un sabio cautivo le avisa de la trampa', p:['cautiv|sabio|filosof'], why:'El personaje clave es el sabio cautivo que vive en casa del privado: él descubre que todo es una prueba.'},
+    {t:'El privado se disfraza de mendigo y dice que acompañará al rey', p:['mendig|harapo|disfraz|rap(o|a|ó)|pobre|acompan|irse con el|ir con el|seguirle|seguirlo|bordon|doblas'], why:'El desenlace: el privado aparece vestido de mendigo, dispuesto a irse con el rey. Así demuestra que no quiere el poder.'},
+    {t:'El rey comprueba su lealtad', p:['leal|fiel|fidelidad|confia|se salva|salvo'], why:'Hay que cerrar el resumen: el rey queda convencido de su lealtad y el privado se salva.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Desconfiar de ofertas demasiado generosas (pueden ser una prueba)', p:['desconfi|sospech|cuidado|no te fies|no fiarse|prueba|probar|trampa|nadie (hace|arriesga)|demasiado bueno|peligro|enganar|engano'], why:'La idea central: nadie hace por un amigo algo que le perjudique, así que una oferta tan generosa puede ser una prueba.'},
+    {t:'No ambicionar los bienes del amigo', p:['ambici|codici|interes|bienes|riqueza|aprovech|poder'], why:'Patronio insiste: la amistad no dura cuando se ambicionan las riquezas del amigo.'},
+    {t:'El valor del buen consejo', p:['consej|sabio|ayuda de dios|pedir opinion|escuchar'], why:'La segunda moraleja: «con la ayuda de Dios y con buen consejo, sale el hombre de angustias».'}
+  ],
+  modeloResumen:'Un rey confiaba mucho en su privado, pero los otros privados, por envidia, le acusaron de querer quedarse con el reino. Para probarlo, el rey le dijo que quería irse al desierto a hacer penitencia y dejarle el reino y la tutela de su hijo. El privado se alegró, pero un sabio cautivo que vivía en su casa le advirtió de que era una prueba. Siguiendo su consejo, el privado se rapó, se vistió de mendigo y fue a palacio a decirle al rey que quería acompañarle en su penitencia. Así el rey comprobó su lealtad y el privado se salvó.',
+  modeloEnsenanza:'Enseña a desconfiar de las ofertas demasiado generosas, porque nadie hace por un amigo algo que le perjudique: pueden ser una prueba. No hay que mostrar ambición por los bienes del amigo, y un buen consejo nos saca de apuros.',
+  preguntas:[
+    {q:'¿Por qué el rey decide poner a prueba a su privado?', o:[
+      {t:'Porque los otros privados, envidiosos, le acusaban de querer el trono.', ok:1, why:'Exacto. La envidia de los demás consejeros es el motor del cuento.'},
+      {t:'Porque el privado le había robado doblas de oro.', why:'No. Las doblas de oro aparecen al final: el privado las cose en sus harapos para el supuesto viaje. No hay ningún robo.'},
+      {t:'Porque el sabio cautivo le había aconsejado hacerlo.', why:'¡Cuidado con los papeles! El sabio cautivo aconseja al PRIVADO, no al rey. El rey actúa por las acusaciones de los envidiosos.'},
+      {t:'Porque quería de verdad retirarse al desierto.', why:'No, lo del desierto es fingido: es precisamente la trampa para probarle.'}]},
+    {q:'¿Quién descubre que todo es una prueba?', o:[
+      {t:'Un sabio filósofo que vivía cautivo en casa del privado.', ok:1, why:'Sí. Por eso el conde Lucanor también necesita a su «sabio»: Patronio.'},
+      {t:'La reina.', why:'La reina solo se menciona como parte de lo que el rey dejaría al privado. No descubre nada.'},
+      {t:'El propio privado, que era muy listo.', why:'El privado se lo cree y se alegra. Sin el cautivo, habría caído en la trampa.'},
+      {t:'El guardia de la puerta de palacio.', why:'El guardia solo se asombra al ver al privado vestido de mendigo y avisa al rey.'}]},
+    {tf:1, q:'El privado se presenta en palacio vestido de mendigo, con la cabeza rapada y oro cosido en la ropa.', a:true, why:'Verdadero. Es el disfraz que le aconseja el sabio: parece un penitente dispuesto a acompañar al rey.'},
+    {tf:1, q:'Este cuento termina con una sola moraleja en verso, como todos los demás.', a:false, why:'Falso. Es el único de los 15 que tiene DOS pareados: «No penséis ni creáis…» y «Con la ayuda de Dios y con buen consejo…».'},
+    {q:'¿Qué le aconseja Patronio al conde Lucanor?', o:[
+      {t:'Que hable con su amigo y le demuestre que no ambiciona sus bienes.', ok:1, why:'Correcto: probablemente el amigo solo le está probando.'},
+      {t:'Que acepte enseguida las tierras antes de que el amigo cambie de idea.', why:'Justo lo contrario: mostrar ansia por los bienes del amigo sería caer en la trampa, como casi le pasa al privado.'},
+      {t:'Que se vista de mendigo como el privado.', why:'El disfraz es parte del cuento, no del consejo. Patronio aplica la idea, no copia la acción.'},
+      {t:'Que rompa la amistad porque ese amigo miente.', why:'Patronio no dice que mienta con maldad: dice que le está PROBANDO. La solución es demostrarle lealtad.'}]}
+  ]
+},
+{
+  id:'II', corto:'El padre, el hijo y la bestia',
+  titulo:'Lo que sucedió a un hombre bueno con su hijo',
+  claves:'bestia|cabalgadura|burro|asno|mercado|montad|a pie|critic',
+  problema:'El conde quiere hacer algo, pero sabe que si lo hace muchos le criticarán, y si no lo hace también. No sabe qué decidir.',
+  personajes:['Un buen hombre, labrador','Su hijo, listo pero sin experiencia','Varios grupos de gente por el camino','La bestia (cabalgadura)'],
+  resumen:[
+    'Un labrador tenía un hijo muy listo, pero sin experiencia, que siempre ponía pegas a lo que hacía su padre. Para enseñarle una lección, el padre lo lleva al mercado con una bestia de carga.',
+    'Primero van los dos a pie y la bestia sin carga: unos hombres dicen que son tontos. El hijo les da la razón y el padre le manda subir.',
+    'Luego critican que el joven vaya montado y el anciano a pie. Cambian: sube el padre, y otros critican que el viejo, acostumbrado a trabajar, vaya cómodo mientras el chico camina.',
+    'Suben los dos, y otros dicen que la bestia está tan flaca que es cruel ir montados en ella. Cada vez el hijo cree que tienen razón.',
+    'El padre le explica: han probado todas las combinaciones y siempre les han criticado. Nunca harás algo que todos aprueben, así que haz lo que te convenga, siempre que no sea malo.'
+  ],
+  secuencia:[
+    'Van los dos a pie y la bestia sin carga: les llaman poco juiciosos.',
+    'Sube el hijo y el padre va a pie: critican al joven.',
+    'Sube el padre y el hijo va a pie: critican la dureza del padre.',
+    'Suben los dos: critican que maltratan a la bestia flaca.',
+    'El padre explica al hijo que nunca harán algo que todos aprueben.'
+  ],
+  consejo:'Patronio aconseja al conde que mire el daño o provecho que le puede causar, que no se fíe solo de su juicio ni de su deseo y que pida consejo a personas inteligentes, leales y que guarden el secreto. Si no las encuentra, que deje pasar al menos un día y una noche antes de decidir. Y que no deje de hacer algo bueno por miedo a las críticas.',
+  moraleja:['Por críticas de gentes, mientras no hagáis mal,','buscad vuestro provecho y no os dejéis llevar.'],
+  hueco:{txt:'Por ______ de gentes, mientras no hagáis mal, / buscad vuestro provecho y no os dejéis llevar.', ans:['criticas']},
+  ensenanza:'Es imposible contentar a todo el mundo. Si lo que haces no es malo y te conviene, hazlo sin dejarte llevar por el «qué dirán». Eso sí: piénsalo bien y pide consejo antes.',
+  ensenanzaCorta:'es imposible contentar a todos, así que no hay que dejarse llevar por el qué dirán',
+  hoy:[
+    'Redes sociales: publiques lo que publiques, alguien lo criticará. Si no haces daño a nadie, no vivas pendiente de los comentarios.',
+    'Elegir optativa, bachillerato o deporte: unos te dirán que es muy difícil, otros que es de «flojos». Decide por lo que te conviene a ti.',
+    'El consejo práctico de Patronio sigue valiendo: si dudas, consúltalo con alguien de confianza y «consúltalo con la almohada» (un día y una noche).'
+  ],
+  ojo:'El texto dice «bestia» o «cabalgadura», no dice «burro» (aunque en otras versiones es un asno). Y la moraleja NO dice «haz lo que quieras»: dice «mientras no hagáis mal». Además, una nota del libro cuenta que don Juan Manuel aplicó esta idea a su vida: le criticaban por escribir libros y siguió escribiendo.',
+  critica:'¿Significa esto que nunca hay que escuchar las críticas? No: Patronio también dice que pidas consejo a gente leal e inteligente. La clave es distinguir críticas útiles de ruido.',
+  ideasResumen:[
+    {t:'Un padre y su hijo (listo pero sin experiencia)', p:['padre|hijo|labrador|buen hombre'], why:'Presenta a los personajes: un buen hombre y su hijo, listo pero inexperto, que siempre ponía pegas.'},
+    {t:'Van al mercado con una bestia', p:['bestia|cabalgadura|burro|asno|animal|mula|caballo|mercado'], why:'Menciona el viaje al mercado con la bestia de carga: es el escenario de la lección.'},
+    {t:'Prueban varias formas de ir (a pie, montado uno, el otro, los dos)', p:['a pie|montad|mont(a|o|an|aron)|subi|sube|los dos|ambos|combinacion|de todas las formas|todas las maneras'], why:'Tienes que contar que prueban TODAS las combinaciones: los dos a pie, el hijo montado, el padre montado y los dos montados.'},
+    {t:'Siempre alguien les critica', p:['critic|censur|murmur|comentar|opin|decian|reproch|quejab'], why:'Lo esencial: en cada caso la gente que encuentran les critica.'},
+    {t:'El padre enseña que nunca se contenta a todos', p:['nunca|todos|contentar|aprueb|imposible|leccion|ensen|explica'], why:'El final: el padre explica al hijo que haga lo que haga siempre le criticarán, así que no debe guiarse por eso.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Es imposible contentar a todos / siempre te criticarán', p:['todos|todo el mundo|contentar|siempre (te )?critic|nunca.*aprueb|imposible|siempre habra'], why:'La base de la enseñanza: haga lo que haga, alguien criticará.'},
+    {t:'No dejarse llevar por el qué dirán', p:['que diran|opinion de los demas|criticas|no (te )?dej(es|arse)|no hacer caso|no importa lo que|ignorar|presion'], why:'La moraleja dice «no os dejéis llevar» por las críticas de la gente.'},
+    {t:'Siempre que no hagas mal / pensarlo y pedir consejo', p:['no (hag|sea|haga).* mal|malo|no hacer dano|consej|pensar|reflexion|provecho|convenga|beneficie'], why:'Matiz importante: solo vale si lo que haces no es malo y te conviene. Patronio además aconseja pensarlo y pedir consejo.'}
+  ],
+  modeloResumen:'Un buen hombre tenía un hijo listo pero sin experiencia que siempre le ponía pegas. Para enseñarle, lo llevó al mercado con una bestia. Primero fueron los dos a pie y la gente dijo que eran tontos; luego subió el hijo y criticaron que el padre anciano fuera andando; después subió el padre y criticaron su dureza con el chico; al final subieron los dos y dijeron que maltrataban al animal. El padre le explicó que, hagan lo que hagan, siempre les criticarán, así que deben hacer lo que les convenga mientras no sea malo.',
+  modeloEnsenanza:'Enseña que es imposible contentar a todo el mundo, así que no debemos dejarnos llevar por el qué dirán: si lo que hacemos no es malo y nos conviene, hay que hacerlo, pensándolo antes y pidiendo consejo.',
+  preguntas:[
+    {q:'¿Cuál es el defecto del hijo al principio del cuento?', o:[
+      {t:'Es listo pero inexperto y pone pegas a todo lo que hace su padre.', ok:1, why:'Sí. Patronio dice que los jóvenes agudos saben empezar las cosas, pero no terminarlas.'},
+      {t:'Es perezoso y no quiere ir al mercado.', why:'No se dice que sea perezoso. Su problema es que opina demasiado sin experiencia.'},
+      {t:'Es cruel con los animales.', why:'Eso es lo que la última gente dice de los DOS al ir montados. No es el defecto del hijo.'},
+      {t:'Es muy tímido y nunca da su opinión.', why:'¡Al revés! Da su opinión todo el rato y siempre le da la razón a quien critica.'}]},
+    {q:'¿Qué critica el ÚLTIMO grupo de gente?', o:[
+      {t:'Que la bestia es flaca y débil y los dos van montados en ella.', ok:1, why:'Correcto: es la cuarta y última combinación.'},
+      {t:'Que el padre anciano va a pie.', why:'Esa crítica la hace el segundo grupo, cuando el hijo va montado.'},
+      {t:'Que los dos van a pie con la bestia sin carga.', why:'Esa es la primera crítica, al principio del camino.'},
+      {t:'Que el hijo joven va a pie.', why:'Esa es la tercera crítica, cuando el padre va montado.'}]},
+    {tf:1, q:'El padre organiza la situación a propósito para dar una lección a su hijo.', a:true, why:'Verdadero. El texto dice que actuó así «para aconsejar y mostrar a su hijo cómo debía obrar en futuras empresas».'},
+    {q:'Si no encuentra un buen consejero, ¿qué recomienda Patronio?', o:[
+      {t:'Dejar pasar al menos un día y una noche antes de decidir.', ok:1, why:'Eso es. Un consejo práctico: no precipitarse.'},
+      {t:'Hacer lo que diga la mayoría de la gente.', why:'Eso es justo lo que el cuento critica: la mayoría habla «a su antojo».'},
+      {t:'No hacer nada para no ser criticado.', why:'No hacer nada también se critica. El conde ya sabe que le censurarán tanto si actúa como si no.'},
+      {t:'Preguntar a su hijo.', why:'No, en el cuento el hijo es precisamente el que se deja llevar.'}]},
+    {tf:1, q:'La moraleja anima a hacer cualquier cosa sin importar las críticas.', a:false, why:'Falso. Dice «mientras no hagáis mal». Si algo es malo, las críticas de los buenos sí son justas.'}
+  ]
+},
+{
+  id:'V', corto:'La zorra y el cuervo',
+  titulo:'Lo que sucedió a una zorra con un cuervo que tenía un pedazo de queso en el pico',
+  claves:'zorra|cuervo|queso|pico|cantar|canto|plumas',
+  problema:'Un hombre que dice ser amigo del conde le alaba mucho, le hace creer que tiene gran poder y muchas cualidades, y después le propone un negocio que parece muy provechoso.',
+  personajes:['El cuervo','La zorra'],
+  resumen:[
+    'Un cuervo encontró un gran pedazo de queso y se subió a un árbol para comérselo tranquilo. Pasó una zorra por debajo y pensó cómo quitárselo.',
+    'La zorra empezó a halagarle: que había oído hablar de su nobleza, que sus plumas negras tenían un tono azulado como las del pavo real, que sus ojos negros eran los mejores para ver, que su pico y sus uñas eran fuertes y volaba contra el viento. Incluso le dijo que le contaría «los defectos» que le atribuían, para parecer sincera.',
+    'Todo eso era verdad a medias. Al final le dijo que, siendo tan perfecto, seguro que cantaba mejor que ninguna otra ave, y que le haría muy feliz oírle.',
+    'El cuervo, convencido, abrió el pico para cantar. El queso cayó al suelo, la zorra lo cogió y escapó.'
+  ],
+  secuencia:[
+    'El cuervo sube a un árbol con un pedazo de queso.',
+    'La zorra pasa por debajo y planea quitárselo.',
+    'La zorra alaba sus plumas, sus ojos, su pico y su vuelo.',
+    'Le pide que cante, porque seguro que canta mejor que nadie.',
+    'El cuervo abre el pico, cae el queso y la zorra escapa con él.'
+  ],
+  consejo:'Patronio advierte al conde que ese hombre le quiere engañar: le dice que su poder y su estado son mayores de lo que son en realidad. Debe estar prevenido y actuar con buen juicio.',
+  moraleja:['Quien te encuentra bellezas que no tienes,','siempre busca quitarte algunos bienes.'],
+  hueco:{txt:'Quien te encuentra ______ que no tienes, / siempre busca quitarte algunos bienes.', ans:['bellezas']},
+  ensenanza:'Desconfía de quien te halaga en exceso o te atribuye cualidades que no tienes: normalmente quiere sacarte algo. Una verdad a medias puede ser el peor engaño.',
+  ensenanzaCorta:'hay que desconfiar de los aduladores, que nos halagan para quitarnos algo',
+  hoy:[
+    '«¡Enhorabuena, eres el ganador de un iPhone!»: estafas por mensaje o email que empiezan halagándote para que des tus datos.',
+    'El compañero que solo te dice lo guapo y listo que eres… justo antes de pedirte los deberes.',
+    'Anuncios e influencers que te dicen «tú te lo mereces» para que compres. Detectar el halago interesado es pensamiento crítico.'
+  ],
+  ojo:'Clave de examen: la zorra dice VERDADES A MEDIAS (sus plumas sí son negras con tono azulado, etc.). Patronio dice que «una verdad engañosa producirá los peores males». Esto conecta con la «mentira triple» del árbol de la Mentira (exemplo XXVI).',
+  critica:'¿Todo elogio es interesado? No. La pista está en si el halago va seguido de una petición y en si te atribuye cosas que no tienes.',
+  ideasResumen:[
+    {t:'Un cuervo con un queso en un árbol', p:['cuervo'], why:'Empieza presentando al cuervo, que tiene un pedazo de queso subido a un árbol.'},
+    {t:'La zorra quiere el queso', p:['zorra|zorro'], why:'Falta la zorra, la que trama el engaño para quitarle el queso.'},
+    {t:'La zorra le halaga (plumas, ojos, pico, vuelo…)', p:['halag|alab|adul|lisonj|piropo|elogi|bonito|hermoso|belleza|plumas|cumplido'], why:'¡Lo más importante! La zorra le llena de halagos. Sin halagos no hay engaño.'},
+    {t:'Le pide que cante', p:['cant'], why:'La trampa final: la zorra le pide que cante porque seguro que canta mejor que nadie.'},
+    {t:'Abre el pico, cae el queso y la zorra se lo lleva', p:['cae|cay|se le cae|abre el pico|abrio el pico|se lo lleva|se lo llevo|escap|se lo quit|lo coge|lo cogio|se lo come|robo|roba'], why:'El desenlace: al abrir el pico, se le cae el queso y la zorra escapa con él.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Desconfiar de los halagos / aduladores', p:['halag|adul|alab|lisonj|elogi|piropo|cumplido|bellezas'], why:'La enseñanza gira en torno al halago: quien te adula en exceso suele buscar algo.'},
+    {t:'Quieren quitarte algo / engañarte', p:['quitar|engan|aprovech|interes|sacar|robar|bienes|conseguir algo'], why:'Hay que decir el objetivo del adulador: quitarte algún bien o engañarte.'},
+    {t:'Te atribuyen cualidades que no tienes / verdades a medias', p:['que no tienes|no tienes|mas de lo que|verdad(es)? a medias|exager|falso|mayor de lo que|creerse'], why:'Matiz para el 10: el adulador te atribuye virtudes que no tienes o usa verdades a medias.'}
+  ],
+  modeloResumen:'Un cuervo tenía un pedazo de queso en el pico, subido a un árbol. Una zorra que pasaba quiso quitárselo y empezó a halagarle: le alabó sus plumas, sus ojos, su pico y su vuelo, y le dijo que seguro que cantaba mejor que ninguna otra ave. El cuervo, creyéndose tan perfecto, abrió el pico para cantar, se le cayó el queso y la zorra lo cogió y escapó.',
+  modeloEnsenanza:'Enseña a desconfiar de quienes nos halagan en exceso y nos atribuyen cualidades que no tenemos, porque normalmente quieren engañarnos y quitarnos algo.',
+  preguntas:[
+    {q:'¿Qué dice Patronio sobre lo que le cuenta la zorra al cuervo?', o:[
+      {t:'Que siempre le dijo verdades a medias, y una verdad engañosa produce los peores males.', ok:1, why:'Eso es. Es un matiz que muchos olvidan y puede caer en el examen.'},
+      {t:'Que todo lo que dijo era mentira.', why:'No exactamente: sus plumas sí son negras con tono azulado, sus ojos sí son negros… Usa verdades para engañar.'},
+      {t:'Que la zorra era sincera pero el cuervo no la entendió.', why:'La zorra no era sincera: su intención era quitarle el queso desde el principio.'},
+      {t:'Que la zorra tenía razón en que el cuervo cantaba muy bien.', why:'El cuento nunca dice que el cuervo cante bien. Esa es la exageración final que le hace caer.'}]},
+    {q:'¿Con qué ave compara la zorra las plumas del cuervo?', o:[
+      {t:'Con el pavo real.', ok:1, why:'Sí: dice que sus plumas negras tienen un tono azulado como las del pavo real, «la más bella de las aves».'},
+      {t:'Con la golondrina.', why:'La golondrina es la protagonista del exemplo VI (el lino). No aparece aquí.'},
+      {t:'Con el águila.', why:'No sale el águila. La comparación de los ojos es con la gacela y la de las plumas con el pavo real.'},
+      {t:'Con el ruiseñor.', why:'No aparece. Ojo con inventar detalles en el examen.'}]},
+    {tf:1, q:'La zorra, para parecer sincera, dice que también le contará los defectos que le atribuyen al cuervo.', a:true, why:'Verdadero. Es una táctica muy astuta: fingir sinceridad para que el halago parezca creíble.'},
+    {q:'¿Qué situación del conde se parece a la del cuervo?', o:[
+      {t:'Un «amigo» le alaba mucho y luego le propone un negocio.', ok:1, why:'Justo. El halago va seguido de la propuesta: igual que la zorra con el canto.'},
+      {t:'Unos vecinos poderosos se unen contra él.', why:'Ese es el problema del exemplo VI (la golondrina y el lino).'},
+      {t:'Un hombre le pide guardar un secreto.', why:'Ese es el problema del exemplo XXXII (el paño).'},
+      {t:'Le quieren criticar haga lo que haga.', why:'Ese es el problema del exemplo II (padre, hijo y bestia).'}]}
+  ]
+},
+{
+  id:'VI', corto:'La golondrina y el lino',
+  titulo:'Lo que sucedió a la golondrina con los otros pájaros cuando vio sembrar el lino',
+  claves:'golondrina|lino|pajar|aves|redes|lazos|sembr|arranc',
+  problema:'Le han dicho al conde que unos nobles vecinos, más fuertes que él, se están juntando para hacerle daño. Él no se lo cree ni tiene miedo, pero pregunta si debe prepararse.',
+  personajes:['La golondrina','Los demás pájaros','Los hombres que siembran lino'],
+  resumen:[
+    'La golondrina vio a un hombre sembrar lino y comprendió que, cuando creciera, los hombres harían con él redes y lazos para cazar pájaros.',
+    'Reunió a las demás aves y les aconsejó arrancar el lino antes de que naciera, porque es más fácil atacar los males en su raíz.',
+    'Los pájaros no le hicieron caso. El lino fue creciendo (encañando) y ya no podían arrancarlo con sus picos y patas. Entonces se arrepintieron, pero era tarde.',
+    'La golondrina, al ver que no la escuchaban, se puso bajo la protección de los hombres. Desde entonces las golondrinas viven seguras entre las personas, mientras que las demás aves son cazadas con redes y lazos.'
+  ],
+  secuencia:[
+    'La golondrina ve a un hombre sembrando lino.',
+    'Avisa a los pájaros de que con el lino harán redes y lazos.',
+    'Les aconseja arrancarlo antes de que nazca, pero no le hacen caso.',
+    'El lino crece y ya no pueden arrancarlo.',
+    'La golondrina se pone bajo la protección de los hombres; las demás aves son cazadas.'
+  ],
+  consejo:'Patronio aconseja al conde estar precavido y tomar medidas antes de que sea tarde, porque no es prudente quien ve las cosas cuando ya han ocurrido, sino quien por un simple indicio descubre el peligro y lo evita.',
+  moraleja:['Los males al comienzo debemos arrancar,','porque una vez crecidos, ¿quién los atajará?'],
+  hueco:{txt:'Los males al ______ debemos arrancar, / porque una vez crecidos, ¿quién los atajará?', ans:['comienzo']},
+  ensenanza:'Los problemas hay que cortarlos de raíz, al principio, cuando todavía es fácil. Ser prudente es ver el peligro por pequeñas señales y actuar antes de que crezca.',
+  ensenanzaCorta:'hay que atajar los problemas al principio, antes de que crezcan',
+  hoy:[
+    'Estudiar desde el primer día del trimestre en vez de dejarlo todo para la víspera del examen.',
+    'Si ves que empiezan a meterse con un compañero, pararlo al principio. Cuando el acoso crece, es mucho más difícil.',
+    'Salud y dinero: una caries pequeña, una deuda pequeña o un pequeño enganche al móvil se arreglan mejor al principio.'
+  ],
+  ojo:'No confundas: la golondrina NO arranca el lino ella sola; al ver que nadie la escucha, se alía con los hombres. Y los pájaros no mueren en el cuento: son cazados «todos los días» desde entonces. Palabra útil: «atajar» = cortar o interrumpir algo.',
+  critica:'La golondrina, cuando la mayoría no la escucha, busca su propia seguridad. ¿Es egoísmo o sentido común? Piensa si harías lo mismo.',
+  ideasResumen:[
+    {t:'La golondrina ve sembrar lino', p:['golondrina'], why:'La protagonista es la golondrina: hay que nombrarla.'},
+    {t:'Sabe que con el lino harán redes y lazos', p:['lino'], why:'Clave: el lino, porque con él se harán redes y lazos para cazar pájaros.'},
+    {t:'Aconseja a los pájaros arrancarlo al principio', p:['arranc|quitar|avis|aconsej|advirt|propus|propone'], why:'La golondrina avisa a los pájaros y les propone arrancar el lino antes de que crezca.'},
+    {t:'No le hacen caso y el lino crece', p:['no (le )?hic|no (le )?hacen caso|ignor|no (le )?escuch|no quisieron|crec|demasiado tarde|tarde'], why:'El nudo: los pájaros no le hacen caso y el lino crece; ya es tarde.'},
+    {t:'Ella se protege con los hombres; los demás son cazados', p:['hombres|protec|proteg|segur|caz|redes|lazos|atrap'], why:'El desenlace: la golondrina se pone bajo la protección de los hombres y las demás aves son cazadas.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Atajar los males al principio / de raíz', p:['principio|comienzo|raiz|antes de que|a tiempo|pronto|al inicio|cuanto antes|empiez'], why:'La idea central: los males hay que arrancarlos al comienzo.'},
+    {t:'Después es más difícil o imposible', p:['crec|dificil|tarde|imposible|no se puede|grande|mas grave|empeor'], why:'Explica por qué: una vez crecidos, nadie los ataja.'},
+    {t:'Prudencia: prever el peligro por pequeñas señales', p:['preven|prever|previs|precav|pruden|indicio|senal|anticip|preparar'], why:'Para el 10: Patronio dice que prudente es quien por un simple indicio descubre el peligro.'}
+  ],
+  modeloResumen:'Una golondrina vio sembrar lino y comprendió que con él los hombres harían redes y lazos para cazar pájaros. Aconsejó a las demás aves arrancarlo antes de que creciera, pero no le hicieron caso. Cuando el lino creció ya no pudieron arrancarlo. La golondrina se puso bajo la protección de los hombres y vive segura, mientras que las demás aves son cazadas con redes y lazos.',
+  modeloEnsenanza:'Enseña que los problemas hay que atajarlos al principio, cuando todavía es fácil, porque cuando crecen ya no se pueden solucionar. Es prudente quien ve el peligro por pequeñas señales y actúa a tiempo.',
+  preguntas:[
+    {q:'¿Por qué la golondrina teme al lino?', o:[
+      {t:'Porque con él los hombres harían redes y lazos para cazar pájaros.', ok:1, why:'Correcto. Ve el peligro futuro en una simple semilla.'},
+      {t:'Porque el lino es venenoso para las aves.', why:'No se dice nada de veneno. El peligro es su USO: redes y lazos.'},
+      {t:'Porque el lino les quitaba sitio para hacer nidos.', why:'Nada de eso aparece en el texto. Ojo con inventar.'},
+      {t:'Porque los hombres quemarían los campos.', why:'No. El problema son las redes y lazos que se harían con él.'}]},
+    {q:'¿Qué hace la golondrina cuando ve que los pájaros no la escuchan?', o:[
+      {t:'Se pone bajo la protección de los hombres.', ok:1, why:'Eso es. Por eso, según el cuento, las golondrinas viven entre las personas sin que las persigan.'},
+      {t:'Arranca el lino ella sola.', why:'No podría: es una sola ave. Además, el cuento dice que busca la protección humana.'},
+      {t:'Se marcha a otro país.', why:'No emigra en el cuento (aunque las golondrinas lo hagan en la realidad).'},
+      {t:'Convence al final a los pájaros.', why:'No lo consigue: los pájaros se arrepienten cuando ya es tarde.'}]},
+    {tf:1, q:'El conde está muy asustado porque cree que sus vecinos le atacarán.', a:false, why:'Falso. El conde dice que «no lo cree ni tiene miedo», pero consulta por si debe prepararse. Por eso Patronio le habla de prevenir.'},
+    {q:'Según Patronio, ¿quién es de verdad prudente?', o:[
+      {t:'Quien por un simple indicio descubre el peligro y pone soluciones.', ok:1, why:'Exacto: prevenir, no lamentar.'},
+      {t:'Quien ve las cosas cuando ya han ocurrido.', why:'Justo lo contrario: Patronio dice que ese NO es prudente.'},
+      {t:'Quien nunca se fía de nadie.', why:'No es eso lo que dice. La prudencia aquí es anticiparse.'},
+      {t:'Quien hace lo mismo que la mayoría.', why:'La mayoría (los pájaros) es la que se equivoca en este cuento.'}]}
+  ]
+},
+{
+  id:'VII', corto:'Doña Truhana',
+  titulo:'Lo que sucedió a una mujer que se llamaba doña Truhana',
+  claves:'truhana|miel|olla|huevos|gallinas|ovejas|lechera',
+  problema:'Un hombre le propone al conde un negocio y le explica cómo conseguirlo. Tiene tantas ventajas encadenadas que, si sale bien, los beneficios al final serán enormes.',
+  personajes:['Doña Truhana, «más pobre que rica»'],
+  resumen:[
+    'Doña Truhana, una mujer más pobre que rica, iba al mercado con una olla de miel en la cabeza.',
+    'Por el camino empezó a imaginar: vendería la miel, compraría huevos, de los huevos nacerían gallinas, con las gallinas compraría ovejas… y así hasta ser más rica que todas sus vecinas.',
+    'Siguió soñando: casaría muy bien a sus hijos e hijas, iría por la calle con yernos y nueras y todos comentarían su buena suerte.',
+    'Pensando en esto se puso a reír de alegría, se dio una palmada en la frente, la olla cayó y se rompió. Al ver la miel por el suelo, lloró amargamente por todas las riquezas que había perdido.'
+  ],
+  secuencia:[
+    'Doña Truhana va al mercado con una olla de miel en la cabeza.',
+    'Imagina que venderá la miel y comprará huevos.',
+    'Sueña con gallinas, ovejas y ser más rica que sus vecinas.',
+    'Imagina que casará bien a sus hijos y todos admirarán su suerte.',
+    'Ríe, se da una palmada en la frente y se le cae la olla.',
+    'Llora al ver la miel por el suelo.'
+  ],
+  consejo:'Patronio aconseja al conde que confíe en cosas razonables y no en fantasías, y que no arriesgue algo muy suyo, cuya pérdida le causaría dolor, por un provecho basado solo en la imaginación.',
+  moraleja:['En realidades ciertas podéis confiar,','mas de las fantasías os debéis alejar.'],
+  hueco:{txt:'En realidades ciertas podéis confiar, / mas de las ______ os debéis alejar.', ans:['fantasias']},
+  ensenanza:'Hay que tener los pies en la tierra: confiar en lo real y no en fantasías. No arriesgues lo que tienes por ganancias que solo existen en tu imaginación.',
+  ensenanzaCorta:'hay que confiar en la realidad y no en fantasías o ilusiones',
+  hoy:[
+    'Apuestas online y criptomonedas «que te harán rico»: arriesgar tus ahorros por beneficios imaginados.',
+    'Gastar el dinero de la paga antes de cobrarla, o de un premio que aún no te han dado.',
+    'Soñar con ser youtuber o futbolista famoso está bien; lo peligroso es descuidar los estudios dando por hecho que ocurrirá.'
+  ],
+  ojo:'¡No es la lechera! La versión famosa de Samaniego es «La lechera» con un cántaro de leche. En este libro es doña Truhana con una OLLA DE MIEL. Cadena exacta: miel → huevos → gallinas → ovejas → riqueza → casar a hijos e hijas.',
+  critica:'¿Soñar es malo? No. El problema es confundir el sueño con la realidad y arriesgar lo que tienes por él. Hacer planes realistas no es lo mismo que fantasear.',
+  ideasResumen:[
+    {t:'Doña Truhana, una mujer pobre', p:['truhana|mujer'], why:'Presenta a la protagonista: doña Truhana, una mujer más pobre que rica.'},
+    {t:'Lleva una olla de miel al mercado', p:['miel|olla|mercado'], why:'Detalle clave: lleva una olla de miel en la cabeza para venderla. ¡No es un cántaro de leche!'},
+    {t:'Imagina que se hará rica (huevos, gallinas, ovejas…)', p:['imagin|pens|sonab|sonar|fantas|huevos|gallinas|ovejas|rica|riqueza|ilusion'], why:'El nudo: va imaginando cómo se hará rica paso a paso (huevos, gallinas, ovejas…).'},
+    {t:'Ríe, se da una palmada y se le cae la olla', p:['cae|cay|romp|rompi|rota|palmada|se le cayo|se le cae'], why:'El desenlace: de la alegría se da una palmada en la frente y la olla se cae y se rompe.'},
+    {t:'Pierde todo y llora', p:['llor|lament|pierde|perdio|perdi|nada|triste'], why:'Cierra el resumen: llora porque ha perdido todo lo que imaginaba.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Confiar en la realidad', p:['realidad|real|pies en la tierra|realista|cierto|seguro|razonable'], why:'La moraleja dice: «en realidades ciertas podéis confiar».'},
+    {t:'Alejarse de las fantasías', p:['fantas|ilusion|imagin|sonar|suenos|castillos en el aire|cuento de la lechera'], why:'La otra mitad: «de las fantasías os debéis alejar».'},
+    {t:'No arriesgar lo que tienes por algo imaginado', p:['arriesg|perder|lo que tienes|riesgo|apost|jugar'], why:'Matiz de Patronio: no arriesgar algo tuyo por un provecho basado solo en la imaginación.'}
+  ],
+  modeloResumen:'Doña Truhana, una mujer pobre, iba al mercado con una olla de miel en la cabeza. Por el camino imaginó que vendería la miel, compraría huevos, tendría gallinas y ovejas y sería más rica que sus vecinas, y que casaría muy bien a sus hijos. De la alegría se dio una palmada en la frente, la olla se cayó y se rompió, y ella lloró por todas las riquezas que había perdido.',
+  modeloEnsenanza:'Enseña que debemos confiar en la realidad y alejarnos de las fantasías, y no arriesgar lo que tenemos por ganancias que solo existen en nuestra imaginación.',
+  preguntas:[
+    {q:'¿Qué llevaba doña Truhana en la cabeza?', o:[
+      {t:'Una olla de miel.', ok:1, why:'Sí. Este detalle distingue el cuento de «La lechera».'},
+      {t:'Un cántaro de leche.', why:'¡Trampa clásica! Eso es «La lechera» de Samaniego, una versión posterior. En El conde Lucanor es una olla de MIEL.'},
+      {t:'Una cesta de huevos.', why:'Los huevos son lo que ella IMAGINA comprar con el dinero de la miel.'},
+      {t:'Un saco de altramuces.', why:'Los altramuces son del exemplo X, el del hombre pobre.'}]},
+    {q:'¿Cuál es el orden correcto de lo que imagina?', o:[
+      {t:'Miel → huevos → gallinas → ovejas → riqueza.', ok:1, why:'Correcto: cada cosa se vende para comprar la siguiente.'},
+      {t:'Miel → gallinas → huevos → vacas → riqueza.', why:'Casi: primero son huevos (de los que nacen gallinas) y luego ovejas, no vacas.'},
+      {t:'Leche → huevos → cerdos → riqueza.', why:'La leche y los cerdos son de otras versiones. Aquí: miel, huevos, gallinas, ovejas.'},
+      {t:'Miel → ovejas → gallinas → casa.', why:'El orden no es ese. Repasa: huevos → gallinas → ovejas.'}]},
+    {q:'¿Qué provoca que se rompa la olla?', o:[
+      {t:'Se ríe de alegría y se da una palmada en la frente.', ok:1, why:'Eso es: su propia fantasía le hace perder lo real.'},
+      {t:'Tropieza con una piedra.', why:'No tropieza. Es su propio gesto de alegría lo que tira la olla. Ahí está la ironía.'},
+      {t:'Un ladrón se la quita.', why:'No aparece ningún ladrón.'},
+      {t:'Se la tira una vecina envidiosa.', why:'Las vecinas solo aparecen en su imaginación.'}]},
+    {tf:1, q:'Patronio aconseja no arriesgar algo muy propio por un provecho basado solo en la imaginación.', a:true, why:'Verdadero. Es la aplicación práctica al negocio que le proponen al conde.'}
+  ]
+},
+{
+  id:'X', corto:'El hombre de los altramuces',
+  titulo:'Lo que sucedió a un hombre que por pobreza y falta de otro alimento comía altramuces',
+  claves:'altramuc|pieles|escudilla|pobreza|pobre',
+  problema:'El conde sabe que Dios le ha dado muchos bienes y que sus tierras son ricas, pero a veces se siente tan agobiado por la pobreza (falta de dinero) que le da igual morir.',
+  personajes:['Un hombre que había sido rico','Otro hombre, que había sido aún más rico'],
+  resumen:[
+    'Un hombre que había sido rico llegó a ser tan pobre que no tenía nada que comer. Solo encontró una escudilla de altramuces, que son muy amargos.',
+    'Recordando lo rico que había sido, se puso a llorar, pero, como tenía hambre, se los comía llorando y tiraba las pieles detrás de él.',
+    'Entonces vio que otro hombre le seguía y se comía las pieles que él tiraba. Era otro que había sido aún más rico que él.',
+    'Al ver que había alguien más pobre, se sintió consolado, luchó por salir de la pobreza y, con la ayuda de Dios, volvió a ser rico.'
+  ],
+  secuencia:[
+    'Un hombre antes rico se queda sin nada que comer.',
+    'Solo encuentra una escudilla de altramuces amargos.',
+    'Los come llorando y tira las pieles detrás.',
+    'Descubre a otro hombre, antes aún más rico, comiéndose sus pieles.',
+    'Se consuela, lucha y vuelve a ser rico.'
+  ],
+  consejo:'Patronio explica que Dios no ha permitido que nadie lo posea todo. Si alguna vez al conde le falta dinero, que no se desanime: otros más ricos que él están tan apurados que serían felices de poder ayudar a sus vasallos aunque fuera menos de lo que él hace.',
+  moraleja:['Por padecer pobreza nunca os desaniméis,','porque otros más pobres un día encontraréis.'],
+  hueco:{txt:'Por padecer ______ nunca os desaniméis, / porque otros más pobres un día encontraréis.', ans:['pobreza']},
+  ensenanza:'No te desanimes ante las dificultades: siempre hay alguien en peor situación. Valorar lo que tienes te da fuerzas para esforzarte y salir adelante.',
+  ensenanzaCorta:'no hay que desanimarse en la pobreza o los problemas, porque siempre hay quien está peor',
+  hoy:[
+    'Suspendes un examen y crees que es el fin del mundo; pensar en quien lo tiene mucho más difícil ayuda a relativizar y a volver a intentarlo.',
+    'Instagram muestra vidas «perfectas». El cuento invita a mirar también a quien tiene menos y a valorar lo que tienes.',
+    'La gratitud como motor: el hombre no se queda quieto consolándose, sino que lucha y sale adelante.'
+  ],
+  ojo:'El hombre no se consuela quedándose quieto: el texto dice que «luchó por salir de su pobreza» y volvió a ser rico. Los dos personajes habían sido ricos, y el segundo MÁS rico que el primero. El conde, al final, también sale de su penuria «con su esfuerzo y la ayuda de Dios».',
+  critica:'¿Es bueno consolarse con que otros están peor? Sirve para relativizar, pero no para alegrarse del mal ajeno ni para conformarse con las injusticias. En el cuento el consuelo lleva al esfuerzo.',
+  ideasResumen:[
+    {t:'Un hombre antes rico se vuelve muy pobre', p:['pobre|pobreza|rico|hambre|nada que comer|miseria'], why:'Presenta la situación: un hombre que había sido rico está en la miseria.'},
+    {t:'Solo tiene altramuces para comer', p:['altramu'], why:'Detalle imprescindible: los altramuces, amargos, son su única comida.'},
+    {t:'Come llorando y tira las pieles', p:['llor|pieles|piel|cascara|tira|tiraba|echaba'], why:'Cuenta que come llorando y tira las pieles detrás de sí.'},
+    {t:'Otro hombre (más rico antes) se come sus pieles', p:['otro|segundo|detras|le segu|come(ba)? las pieles|mas pobre'], why:'El giro: descubre a otro, que había sido más rico, comiéndose las pieles que él tira.'},
+    {t:'Se consuela y sale adelante', p:['consol|anim|lucha|luch|salio|sale|volvio a ser rico|esfuerz|supera'], why:'El desenlace: se consuela, lucha y vuelve a ser rico.'}
+  ],
+  ideasEnsenanza:[
+    {t:'No desanimarse ante la pobreza / los problemas', p:['desanim|animo|rendir|no perder|esperanza|consol|triste|deprim|quejar'], why:'La moraleja empieza: «por padecer pobreza nunca os desaniméis».'},
+    {t:'Siempre hay alguien en peor situación', p:['peor|mas pobre|otros|mas problemas|mas dificil|alguien'], why:'La razón: siempre encontraremos a otros más pobres.'},
+    {t:'Valorar lo que se tiene / esforzarse para salir adelante', p:['valor|agradec|aprecia|esfuer|luch|salir adelante|supera'], why:'Para el 10: valorar lo que tienes y esforzarte, como hace el protagonista.'}
+  ],
+  modeloResumen:'Un hombre que había sido rico se volvió tan pobre que solo tenía una escudilla de altramuces para comer. Se los comía llorando y tiraba las pieles detrás de él, hasta que vio que otro hombre, que había sido aún más rico, se comía esas pieles. Al ver que había alguien más pobre que él, se consoló, luchó por salir de la pobreza y volvió a ser rico.',
+  modeloEnsenanza:'Enseña que no debemos desanimarnos por la pobreza o los problemas, porque siempre hay alguien que está peor que nosotros. Hay que valorar lo que tenemos y esforzarnos por salir adelante.',
+  preguntas:[
+    {q:'¿Quién se come las pieles de los altramuces?', o:[
+      {t:'Otro hombre que había sido aún más rico que el protagonista.', ok:1, why:'Sí. El detalle «más rico» refuerza la idea: nadie está libre de caer.'},
+      {t:'Un perro hambriento.', why:'No hay animales en este cuento. Es otra persona.'},
+      {t:'El conde Lucanor.', why:'El conde no está dentro del cuento, solo lo escucha de Patronio.'},
+      {t:'Un mendigo que siempre había sido pobre.', why:'No: el texto insiste en que el segundo hombre también había sido rico, incluso más.'}]},
+    {q:'¿Qué problema tiene el conde en este exemplo?', o:[
+      {t:'A veces se siente tan agobiado por la falta de dinero que le da igual morir.', ok:1, why:'Correcto. Es rico en tierras, pero a veces le falta dinero y se desespera.'},
+      {t:'Es completamente pobre y no tiene tierras.', why:'No: el conde reconoce que sus propiedades «son ricas y extensas».'},
+      {t:'Quiere hacer un negocio arriesgado.', why:'Eso se parece más al exemplo VII (doña Truhana) o al XXXVIII.'},
+      {t:'Un amigo no le devuelve un favor.', why:'Ese es el problema del exemplo XI (don Illán).'}]},
+    {tf:1, q:'Después de consolarse, el protagonista se queda pobre pero feliz.', a:false, why:'Falso. Con ese consuelo, luchó por salir de su pobreza y, ayudado por Dios, volvió a ser rico.'},
+    {q:'¿Qué son los altramuces según la nota del texto?', o:[
+      {t:'Granos de una planta, buen alimento para el ganado, que las personas comen quitándoles el amargor.', ok:1, why:'Exacto. Por eso son un símbolo de comida pobre y amarga.'},
+      {t:'Un tipo de pescado seco.', why:'No. Son las semillas de una planta de flores blancas.'},
+      {t:'Pan duro.', why:'No. Es una legumbre amarga.'},
+      {t:'Frutas dulces muy caras.', why:'Todo lo contrario: son amargos y de poco valor.'}]}
+  ]
+},
+{
+  id:'XI', corto:'El deán de Santiago y don Illán',
+  titulo:'Lo que sucedió a un deán de Santiago con don Illán, el mago de Toledo',
+  claves:'illan|dean|toledo|santiago|perdices|nigromancia|mago|papa|arzobisp|cardenal|tolosa',
+  problema:'Un hombre pidió ayuda al conde prometiéndole favores. El conde le ayudó, pero cada vez que le pidió algo a cambio, el otro se excusó. Y aún necesita la ayuda del conde.',
+  personajes:['El deán de Santiago','Don Illán, el mago de Toledo','La criada de don Illán','El hijo de don Illán'],
+  resumen:[
+    'Un deán de Santiago quería aprender nigromancia (magia) y fue a Toledo a casa de don Illán, el mago más sabio. Don Illán dudaba: quienes llegan alto suelen olvidar los favores. El deán prometió que siempre haría lo que él le mandara.',
+    'Don Illán pidió a su criada que preparase perdices para la cena, pero que no las asara hasta que él lo ordenara. Luego bajaron por una escalera de piedra a una sala bajo el río Tajo.',
+    'Empezaron a llegar noticias: el deán fue nombrado arzobispo de Santiago, luego obispo de Tolosa, después cardenal y por fin papa. Cada vez que don Illán le pedía un cargo para su hijo, el deán se lo daba a un familiar suyo y le prometía «el siguiente».',
+    'Ya siendo papa, cuando don Illán le recordó sus promesas, lo amenazó con encarcelarlo por hereje y mago y no le quiso dar ni comida para el camino.',
+    'Entonces don Illán dijo que cenaría las perdices y mandó asarlas. En ese momento el papa se encontró de nuevo en Toledo, siendo deán: todo había sido magia. Avergonzado, no supo qué decir, y don Illán lo despidió sin invitarle a comer.'
+  ],
+  secuencia:[
+    'El deán va a Toledo a aprender magia con don Illán y promete no olvidarle.',
+    'Don Illán encarga a la criada perdices, pero que no las ase hasta que él lo diga.',
+    'El deán es nombrado arzobispo y da el deanato a su hermano, no al hijo de don Illán.',
+    'Como obispo de Tolosa y como cardenal sigue dando los cargos a sus tíos.',
+    'Siendo papa, amenaza a don Illán con encarcelarlo por hereje y mago.',
+    'Don Illán manda asar las perdices y el deán se descubre en Toledo: todo era un encantamiento.'
+  ],
+  consejo:'Patronio aconseja al conde que, si la persona a quien tanto ha ayudado no se lo agradece, no se esfuerce más por ella, porque puede esperar el mismo trato que recibió don Illán del deán.',
+  moraleja:['Cuanto más alto suba aquel a quien ayudéis,','menos apoyo os dará cuando lo necesitéis.'],
+  hueco:{txt:'Cuanto más ______ suba aquel a quien ayudéis, / menos apoyo os dará cuando lo necesitéis.', ans:['alto']},
+  ensenanza:'Cuidado con los desagradecidos: hay personas que prometen mucho mientras te necesitan y, cuando consiguen lo que querían, se olvidan de ti. Por sus actos (no por sus promesas) se sabe si alguien es de fiar.',
+  ensenanzaCorta:'hay que desconfiar de los ingratos que olvidan los favores cuando ya no nos necesitan',
+  hoy:[
+    'El compañero que te pide los apuntes todo el curso y, cuando tú le pides un favor, siempre tiene excusa.',
+    'Alguien que te promete mil cosas para que le votes de delegado y, una vez elegido, ni te saluda.',
+    'Don Illán hace una «prueba» antes de invertir años en el deán: hoy diríamos «comprueba cómo trata a los demás antes de confiar».'
+  ],
+  ojo:'Datos que caen en examen: las PERDICES (que se asan al final) demuestran que todo ocurrió en muy poco tiempo, era una ilusión mágica. Orden de cargos: deán → arzobispo (de Santiago) → obispo de Tolosa → cardenal → papa. Toledo era considerada la capital de la nigromancia.',
+  critica:'Don Illán es mago, pero es el personaje honrado; el hombre de Iglesia es el ingrato. ¿Qué crítica social puede esconder esto en la Edad Media?',
+  ideasResumen:[
+    {t:'Un deán de Santiago va a Toledo a aprender magia con don Illán', p:['dean|illan|toledo|magia|nigromancia|mago'], why:'Presenta a los personajes: el deán de Santiago y don Illán, el mago de Toledo, y el motivo del viaje (aprender magia).'},
+    {t:'El deán promete que no olvidará a don Illán', p:['promet|promesa|jur|no olvid|agradec|haria lo que'], why:'Clave: el deán promete que siempre hará lo que don Illán le pida.'},
+    {t:'Las perdices que no se deben asar hasta que él lo diga', p:['perdic|cena|criada'], why:'No olvides las perdices: don Illán manda que no se asen hasta su orden. Son la clave del final.'},
+    {t:'El deán asciende (arzobispo, obispo, cardenal, papa) y nunca cumple', p:['arzobisp|obispo|cardenal|papa|ascien|sube|cargos|no cumpl|nunca cumpl|excusa|familiar|herman|tio'], why:'El nudo: el deán sube de cargo en cargo y siempre da los puestos a sus familiares en vez de al hijo de don Illán.'},
+    {t:'Siendo papa, le amenaza y no le da ni comida', p:['amenaz|carcel|encarcel|hereje|no le (da|dio)|ni comida|despid|ingrat'], why:'El clímax: ya papa, amenaza a don Illán con la cárcel y no le da ni comida para el camino.'},
+    {t:'Se asan las perdices y todo era una ilusión: vuelve a ser deán', p:['ilusion|hechizo|encant|magia|era falso|todo era|sueno|vuelve a ser dean|en toledo|asar|vergu'], why:'El desenlace: al mandar asar las perdices, el deán se descubre en Toledo; todo había sido un encantamiento.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Hay personas desagradecidas que olvidan los favores', p:['desagradec|ingrat|agradec|olvid|favor|no devuelv|aprovech'], why:'La idea central: el ingrato olvida los favores recibidos.'},
+    {t:'Cuanto más alto suben, menos te ayudan', p:['alto|sube|poder|consigu|ascien|cuando ya no|necesit'], why:'La moraleja: cuanto más alto suba aquel a quien ayudas, menos apoyo te dará.'},
+    {t:'No seguir ayudando a quien no lo agradece / fijarse en sus actos', p:['no (seguir|ayudar|esforz)|dejar de ayudar|no merece|actos|hechos|promesas|no fiarse|desconfi|comprobar|prueba'], why:'El consejo práctico: si no te lo agradece, no sigas esforzándote por él; fíjate en lo que hace, no en lo que promete.'}
+  ],
+  modeloResumen:'Un deán de Santiago fue a Toledo para que don Illán, un mago, le enseñara magia, y le prometió que nunca olvidaría el favor. Don Illán mandó a su criada preparar unas perdices, pero no asarlas hasta que él lo ordenase. Después, el deán fue ascendiendo: arzobispo, obispo, cardenal y papa, y cada vez que don Illán le pedía un cargo para su hijo, se lo daba a un familiar. Siendo papa, lo amenazó con encarcelarlo por mago y no le dio ni comida. Entonces don Illán mandó asar las perdices y el deán se encontró en Toledo: todo había sido un encantamiento para probarle. Don Illán lo despidió sin darle de cenar.',
+  modeloEnsenanza:'Enseña a desconfiar de los desagradecidos, que prometen mucho mientras nos necesitan y se olvidan de nosotros cuando llegan alto. Si alguien no agradece nuestra ayuda, no debemos seguir esforzándonos por él.',
+  preguntas:[
+    {q:'¿Para qué sirven las perdices en el cuento?', o:[
+      {t:'Demuestran que todo pasó en muy poco tiempo: era una ilusión mágica.', ok:1, why:'Exacto. Mientras «pasan años» en la mente del deán, las perdices siguen sin asar.'},
+      {t:'Son el regalo que el deán le hace a don Illán.', why:'No, el deán nunca le regala nada: ¡ese es justo el problema!'},
+      {t:'Son la comida que el papa le da a don Illán para el camino.', why:'Al revés: el papa no le quiere dar NI comida para el camino.'},
+      {t:'Son un símbolo de la riqueza de la Iglesia.', why:'Es una interpretación, pero no su función: marcan el tiempo real y cierran el encantamiento.'}]},
+    {q:'¿Cuál es el orden de cargos del deán?', o:[
+      {t:'Deán → arzobispo → obispo de Tolosa → cardenal → papa.', ok:1, why:'Correcto. Apréndetelo, es un clásico de examen.'},
+      {t:'Deán → obispo → arzobispo → papa.', why:'Falta el cardenal y el orden no es ese: primero arzobispo de Santiago, luego obispo de Tolosa.'},
+      {t:'Deán → cardenal → papa.', why:'Te saltas el arzobispado y el obispado de Tolosa.'},
+      {t:'Deán → rey → papa.', why:'No llega a rey. Todos los cargos son eclesiásticos.'}]},
+    {q:'¿Con qué amenaza el papa a don Illán?', o:[
+      {t:'Con encarcelarlo por hereje y por mago.', ok:1, why:'Sí. El colmo de la ingratitud: usar contra él lo que le enseñó.'},
+      {t:'Con quitarle su casa de Toledo.', why:'No aparece eso en el texto.'},
+      {t:'Con matar a su hijo.', why:'No. Le amenaza con la cárcel.'},
+      {t:'Con echarle de Roma sin más.', why:'Le despide sin comida, pero la amenaza es la cárcel por hereje y mago.'}]},
+    {tf:1, q:'Don Illán no tenía ningún hijo y pedía los cargos para sí mismo.', a:false, why:'Falso. Don Illán pedía los cargos siempre para su HIJO, y el deán se los daba a sus parientes (hermano, tío paterno, tío materno).'},
+    {tf:1, q:'Don Illán y el deán bajan por una escalera de piedra tan honda que parecía que el río Tajo pasaba por encima.', a:true, why:'Verdadero. Es el lugar secreto donde supuestamente iban a estudiar magia.'}
+  ]
+},
+{
+  id:'XXIV', corto:'El rey moro y sus tres hijos',
+  titulo:'Lo que sucedió a un rey que quería probar a sus tres hijos',
+  claves:'tres hijos|hijo menor|infante|heredero|trono|camarero|aljuba|tambores|timbales|murallas',
+  problema:'En casa del conde se crían muchos jóvenes (mancebos). Quiere saber cuáles de ellos llegarán a ser hombres «cabales», es decir, valiosos.',
+  personajes:['Un rey moro anciano','Sus tres hijos (infantes)','Los nobles del reino','El camarero y el caballerizo'],
+  resumen:[
+    'Patronio explica primero que las señales externas (cara, cuerpo, apostura) sirven poco para conocer a los jóvenes: son mejores las señales interiores. Y cuenta el caso de un rey moro que tenía que elegir heredero entre sus tres hijos.',
+    'El rey llama al hijo mayor para salir a caballo de madrugada. El infante llega tarde y, para vestirle, va y viene preguntando al rey prenda por prenda (la aljuba, el manto…) y lo mismo con el caballo, la silla, la espada… El rey decide no salir y le manda pasear por la ciudad. Al volver, el infante solo opina que todo estaba bien menos los tambores, que hacían mucho ruido.',
+    'El segundo hijo hace y dice exactamente lo mismo que el mayor.',
+    'El hijo menor madruga, espera a que su padre despierte, pregunta de una vez todo lo que necesita y lo trae él mismo. En su paseo visita las calles, el tesoro, las mezquitas, cuenta la población, hace que los soldados le muestren su habilidad y revisa murallas y torres.',
+    'Al volver, le dice con sinceridad que su padre no es tan buen rey, porque con tanto poder ya podría haber conquistado el mundo. Al rey le gusta su crítica sincera y lo elige heredero por su prudencia.'
+  ],
+  secuencia:[
+    'Los nobles piden al rey que diga quién le sucederá.',
+    'El hijo mayor llega tarde y va y viene preguntando prenda por prenda.',
+    'El mayor solo critica el ruido de los tambores y timbales.',
+    'El segundo hijo actúa igual que el mayor.',
+    'El menor lo prepara todo de una vez y revisa ciudad, tesoro, soldados y murallas.',
+    'El menor critica con sinceridad a su padre y es elegido heredero.'
+  ],
+  consejo:'Patronio le dice al conde que, si quiere saber qué joven será más valioso, se fije en estas cosas (cómo actúan y lo que dicen), y así podrá intuir bastante de lo que cada uno llegará a ser.',
+  moraleja:['Por palabras y hechos bien podrás conocer,','en jóvenes mancebos, qué llegarán a ser.'],
+  hueco:{txt:'Por palabras y ______ bien podrás conocer, / en jóvenes mancebos, qué llegarán a ser.', ans:['hechos']},
+  ensenanza:'A las personas se las conoce por lo que hacen y dicen, no por su aspecto. La iniciativa, la previsión, el interés por lo importante y la sinceridad muestran quién vale de verdad.',
+  ensenanzaCorta:'a las personas se las conoce por sus palabras y sus hechos, no por su apariencia',
+  hoy:[
+    'En un trabajo en grupo se ve enseguida quién organiza, se anticipa y se fija en lo importante, y quién pregunta cada paso.',
+    'Una entrevista de trabajo o las prácticas: la iniciativa y la capacidad de decir la verdad con respeto valen más que la ropa o el físico.',
+    'Seguidores o fotos en redes no dicen quién es alguien: sus actos sí.'
+  ],
+  ojo:'El elegido es el MENOR (no el mayor, aunque en Europa heredaba el primogénito: por eso Patronio aclara que el rey moro puede elegir). Los dos mayores solo se fijan en el ruido de tambores y timbales; el menor se fija en lo importante para gobernar: tesoro, gente, ejército y defensas.',
+  critica:'El menor critica a su padre y… ¡le premian! ¿Qué dice esto sobre el valor de la crítica sincera y respetuosa frente al peloteo?',
+  ideasResumen:[
+    {t:'Un rey moro debe elegir heredero entre tres hijos', p:['tres hijos|heredero|sucesor|trono|hijos|infantes|rey moro'], why:'Presenta la situación: un rey moro anciano tiene que elegir cuál de sus tres hijos heredará el trono.'},
+    {t:'Les pone una prueba (vestirle, preparar el caballo, pasear por la ciudad)', p:['prueba|probar|vestir|ropa|caballo|pasear|paseo|ciudad'], why:'Explica la prueba: vestir al rey, prepararle el caballo y luego pasear por la ciudad.'},
+    {t:'Los dos mayores lo hacen mal (preguntan cada cosa, solo ven el ruido)', p:['mayor|dos primeros|mayores|segundo|pregunt|tambor|timbal|ruido|tarde|va y viene'], why:'Cuenta cómo fallan los dos mayores: llegan tarde, preguntan cada prenda y solo se fijan en el ruido de los tambores.'},
+    {t:'El menor lo hace todo con iniciativa y se fija en lo importante', p:['menor|pequeno|tercero|ultimo|iniciativa|de una vez|murallas|tesoro|soldados|ejercito|torres'], why:'La clave: el hijo menor lo prepara todo de una vez y revisa lo importante (tesoro, soldados, murallas).'},
+    {t:'Dice la verdad (critica a su padre) y es elegido', p:['verdad|sincer|critic|conquist|elegid|elige|escog|nombra'], why:'El final: el menor critica con sinceridad a su padre y por su prudencia es elegido heredero.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Se conoce a las personas por sus palabras y hechos', p:['palabras|hechos|actos|obras|como actua|lo que hace|comportamiento|acciones|actitud'], why:'La moraleja: «por palabras y hechos bien podrás conocer».'},
+    {t:'No por la apariencia externa', p:['apariencia|aspecto|fisico|exterior|cara|cuerpo|guapo|fuera'], why:'Patronio insiste: las señales externas (cara, cuerpo) son poco fiables.'},
+    {t:'Valoran la iniciativa, la prudencia o la sinceridad', p:['iniciativa|pruden|previs|sincer|responsab|interes|inteligen|valor|cabal|llegaran a ser|futuro'], why:'Para el 10: di qué cualidades demuestra el menor (iniciativa, prudencia, sinceridad) o que así se ve lo que llegarán a ser.'}
+  ],
+  modeloResumen:'Un rey moro anciano tenía que elegir heredero entre sus tres hijos y los puso a prueba. Les pidió que le ayudaran a vestirse y a preparar el caballo, y luego que pasearan por la ciudad. Los dos mayores llegaron tarde, preguntaban cada cosa una por una y al volver solo criticaron el ruido de los tambores. El menor madrugó, lo preparó todo de una vez y en su paseo revisó el tesoro, los soldados y las murallas. Al volver, le dijo con sinceridad que no era tan buen rey porque podría haber conquistado el mundo. El rey lo eligió heredero por su prudencia.',
+  modeloEnsenanza:'Enseña que a las personas, sobre todo a los jóvenes, se las conoce por sus palabras y sus hechos, no por su apariencia. La iniciativa, la prudencia y la sinceridad muestran lo que alguien llegará a ser.',
+  preguntas:[
+    {q:'¿Qué critican los dos hijos mayores tras su paseo?', o:[
+      {t:'Que los tambores y timbales hacían mucho ruido.', ok:1, why:'Sí. Una crítica sin importancia: no se fijaron en nada útil para gobernar.'},
+      {t:'Que las murallas estaban mal defendidas.', why:'No: el que revisa murallas y torres es el hijo MENOR.'},
+      {t:'Que su padre no era tan buen rey.', why:'Esa crítica sincera y aguda la hace el menor, y por eso le eligen.'},
+      {t:'Que la ciudad estaba sucia.', why:'No aparece en el texto.'}]},
+    {q:'¿Por qué el rey elige al hijo menor?', o:[
+      {t:'Por su prudencia: muestra iniciativa, se fija en lo importante y dice la verdad.', ok:1, why:'Exacto. El texto dice que «eligió al menor por su prudencia».'},
+      {t:'Porque era su favorito desde siempre.', why:'Al contrario: el texto dice que el rey hubiera preferido a cualquiera de los otros dos.'},
+      {t:'Porque era el más guapo y fuerte.', why:'Patronio explica justo que el aspecto físico es una señal poco fiable.'},
+      {t:'Porque la ley obligaba a elegir al menor.', why:'No hay tal ley. El rey moro podía elegir libremente.'}]},
+    {tf:1, q:'Patronio dice que la cara, el cuerpo y la apostura son señales muy seguras para saber cómo será un joven.', a:false, why:'Falso. Dice que son señales externas «poco fiables»; las interiores (cómo actúan) son mucho más indicativas.'},
+    {q:'¿Qué es una «aljuba»?', o:[
+      {t:'Una vestidura morisca con faldón hasta la rodilla.', ok:1, why:'Correcto, según la nota del texto.'},
+      {t:'Un tipo de espada.', why:'No, es una prenda de ropa. La espada aparece entre los aparejos del caballo.'},
+      {t:'El criado que cuida los caballos.', why:'Ese es el «caballerizo».'},
+      {t:'Una torre de la muralla.', why:'No. Es una vestidura.'}]}
+  ]
+},
+{
+  id:'XXVI', corto:'El árbol de la Mentira',
+  titulo:'Lo que sucedió al árbol de la mentira',
+  claves:'arbol|mentira|verdad|raices|raiz|ramas|flores|sombra',
+  problema:'El conde está en continua pelea con unos hombres mentirosos que, con mentiras muy parecidas a la verdad, aumentan su poder y ponen a la gente contra él. Él nunca miente.',
+  personajes:['La Verdad','La Mentira','Las gentes'],
+  resumen:[
+    'La Verdad y la Mentira vivían juntas. La Mentira propuso plantar un árbol y, al repartirlo, convenció a la Verdad con bonitos argumentos de que se quedara con las raíces (la parte que da vida y está protegida) mientras ella se quedaba con las ramas.',
+    'La Verdad, confiada y sin malicia, aceptó y se fue a vivir bajo tierra. El árbol de la Mentira creció con grandes ramas, hojas y flores preciosas, y la gente acudía a su sombra.',
+    'La Mentira les enseñaba su «ciencia»: mentiras sencillas, dobles y triples. Todos querían aprender de ella, y al que no sabía mentir lo despreciaban.',
+    'Mientras, la Verdad, escondida y sin otro alimento, se fue comiendo las raíces. Un día sopló el viento y el árbol, sin raíces, cayó sobre la Mentira y sus seguidores, que acabaron muertos o malheridos. Entonces la Verdad salió por el hueco del tronco.'
+  ],
+  secuencia:[
+    'La Mentira propone a la Verdad plantar un árbol.',
+    'La Mentira convence a la Verdad para que se quede con las raíces.',
+    'El árbol de la Mentira florece y la gente acude a su sombra.',
+    'La Mentira enseña mentiras sencillas, dobles y triples.',
+    'La Verdad, bajo tierra, se come las raíces.',
+    'El viento derriba el árbol sobre la Mentira y la Verdad sale a la superficie.'
+  ],
+  consejo:'Patronio dice que la Mentira tiene ramas y flores muy agradables (palabras, halagos), pero nunca da buenos frutos. Aconseja al conde no imitar a sus enemigos ni envidiar lo que consiguen mintiendo, porque les durará poco. Aunque la verdad sea despreciada, que la abrace y la estime.',
+  moraleja:['Evitad la mentira y abrazad la verdad,','que su daño consigue el que vive en el mal.'],
+  hueco:{txt:'Evitad la mentira y abrazad la ______, / que su daño consigue el que vive en el mal.', ans:['verdad']},
+  ensenanza:'La mentira puede parecer atractiva y dar éxito rápido, pero no tiene raíces: tarde o temprano se derrumba y hace daño a quien la sigue. La verdad acaba saliendo a la luz.',
+  ensenanzaCorta:'la mentira triunfa un tiempo pero acaba cayendo; la verdad termina saliendo a la luz',
+  hoy:[
+    'Bulos y fake news: se viralizan porque son llamativos («flores de colores»), pero cuando se descubren arrastran a quien los compartió.',
+    'La «mentira triple» (engañar diciendo verdades) es muy actual: titulares ciertos pero sacados de contexto, fotos reales con pies de foto falsos.',
+    'Copiar en un examen o mentir en el currículum: funciona un tiempo, pero no tiene raíces.'
+  ],
+  ojo:'Aprende los tres tipos de mentira: SENCILLA («Don Fulano, yo haré tal cosa por vos», sabiendo que es falso); DOBLE (promesas solemnes, juramentos y garantías mientras planea el engaño); TRIPLE, la más dañina (mentir y engañar diciendo la verdad). ¿Quién se queda con las raíces? La VERDAD.',
+  critica:'En el cuento la Verdad destruye el árbol casi sin querer, por hambre. ¿Crees que en la vida real la verdad siempre acaba saliendo a la luz? ¿Qué hace falta para que ocurra?',
+  ideasResumen:[
+    {t:'La Verdad y la Mentira plantan un árbol juntas', p:['verdad'], why:'Menciona a las dos protagonistas: la Verdad y la Mentira, que plantan un árbol.'},
+    {t:'La Mentira engaña a la Verdad en el reparto', p:['mentira'], why:'La Mentira es la otra protagonista, la que engaña en el reparto del árbol.'},
+    {t:'La Verdad se queda con las raíces y la Mentira con las ramas', p:['raic|raiz|ramas|bajo tierra|debajo'], why:'Clave del cuento: la Verdad se queda con las raíces (bajo tierra) y la Mentira con las ramas.'},
+    {t:'El árbol florece y la gente sigue a la Mentira', p:['flor|sombra|gente|gentes|crec|hermoso|ensen|seguidores|admir'], why:'El nudo: el árbol de la Mentira es precioso y la gente acude a su sombra para aprender a mentir.'},
+    {t:'La Verdad se come las raíces, el árbol cae y la Verdad sale', p:['come|comi|roe|royo|cae|cay|derrib|viento|sale|salio|aplast|muer|herid'], why:'El desenlace: la Verdad se come las raíces, el árbol cae sobre la Mentira y sus seguidores, y la Verdad sale.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Evitar la mentira y quedarse con la verdad', p:['verdad|mentir|mentira|sincer|honest'], why:'La moraleja: «Evitad la mentira y abrazad la verdad».'},
+    {t:'La mentira dura poco / acaba cayendo', p:['cae|dura poco|no dura|corto|acaba|termina|derrumb|pierde|tarde o temprano|fracas|frutos'], why:'Explica por qué: la mentira no tiene raíces y acaba cayendo.'},
+    {t:'La verdad sale a la luz / no envidiar a los mentirosos', p:['sale a la luz|se descubre|triunfa|gana|envidi|imitar|al final|perjudic|dano'], why:'Para el 10: la verdad acaba saliendo y no hay que envidiar ni imitar a los mentirosos; quien vive en el mal acaba dañado.'}
+  ],
+  modeloResumen:'La Verdad y la Mentira plantaron un árbol. La Mentira convenció a la Verdad de que se quedara con las raíces, diciendo que eran lo mejor, y ella se quedó con las ramas. El árbol de la Mentira creció lleno de flores y la gente acudía a su sombra para aprender a mentir. Mientras, la Verdad, bajo tierra, se comió las raíces para alimentarse. Un día el viento derribó el árbol sobre la Mentira y sus seguidores, y la Verdad salió a la luz.',
+  modeloEnsenanza:'Enseña que hay que evitar la mentira y quedarse con la verdad. La mentira puede parecer atractiva y triunfar un tiempo, pero no tiene raíces y acaba cayendo, mientras que la verdad termina saliendo a la luz.',
+  preguntas:[
+    {q:'¿Qué es la «mentira triple»?', o:[
+      {t:'Mentir y engañar diciendo la verdad.', ok:1, why:'Sí, la más dañina. Es lo que hizo la zorra con el cuervo (verdades a medias).'},
+      {t:'Decir la misma mentira tres veces.', why:'No. El número indica lo sutil y dañina que es, no las repeticiones.'},
+      {t:'Hacer promesas solemnes y juramentos mientras se planea el engaño.', why:'Esa es la mentira DOBLE.'},
+      {t:'Decir «yo haré tal cosa por vos» sabiendo que es falso.', why:'Esa es la mentira SENCILLA.'}]},
+    {q:'¿Con qué parte del árbol se queda la Verdad?', o:[
+      {t:'Con las raíces.', ok:1, why:'Correcto. La Mentira la convence de que es la mejor parte… para quitarla de en medio.'},
+      {t:'Con las ramas.', why:'No, las ramas son de la Mentira. La Verdad queda escondida bajo tierra.'},
+      {t:'Con los frutos.', why:'¡El árbol nunca llega a dar fruto! Cae antes.'},
+      {t:'Con las flores.', why:'Las flores (halagos, palabras bonitas) son de la Mentira.'}]},
+    {tf:1, q:'La Verdad destruye el árbol a propósito para vengarse.', a:false, why:'Falso. Se come las raíces porque no tiene otro alimento. Es la consecuencia natural del engaño de la Mentira.'},
+    {q:'Según Patronio, ¿qué representan las flores del árbol de la Mentira?', o:[
+      {t:'Sus palabras, pensamientos o halagos, agradables pero efímeros.', ok:1, why:'Eso es: atraen mucho pero nunca dan buenos frutos.'},
+      {t:'Las personas buenas que la siguen.', why:'No; las personas son las «gentes» que se cobijan bajo su sombra.'},
+      {t:'Las riquezas de la Verdad.', why:'La Verdad no tiene flores: está bajo tierra.'},
+      {t:'Los años que dura la mentira.', why:'No es esa la interpretación del texto.'}]},
+    {tf:1, q:'Bajo el árbol de la Mentira, a quien no sabía mentir lo despreciaban.', a:true, why:'Verdadero. Incluso «él mismo se tenía en poco». Es una crítica a una sociedad que premia al mentiroso.'}
+  ]
+},
+{
+  id:'XXXII', corto:'El paño de los burladores',
+  titulo:'Lo que sucedió a un rey con los burladores que hicieron el paño',
+  claves:'pano|tela|tejedor|burlador|picaro|desnudo|traje|hijo de su padre|palafrenero',
+  problema:'Un hombre propone al conde un asunto muy provechoso, pero le exige que no se lo cuente a nadie, ni a las personas de su máxima confianza: si lo cuenta, podría perder su hacienda y su vida.',
+  personajes:['Un rey moro','Tres pícaros que dicen ser tejedores','Los criados, el gobernador y el valido','Un palafrenero negro'],
+  resumen:[
+    'Tres pícaros dijeron a un rey moro que tejían un paño que solo podían ver los que eran hijos de quien pasaba por ser su padre. Al rey le encantó: así sabría quién no era hijo legítimo y se quedaría con sus bienes (entre los moros no heredaban).',
+    'Les dio una sala, oro, plata y seda. Ellos fingían tejer. El rey envió a un criado, que no veía nada pero dijo que la tela era preciosa por miedo; luego a otro. Cuando fue el propio rey, tampoco vio nada, pero temió perder el reino y la alabó.',
+    'Lo mismo les pasó al gobernador y al valido: nadie se atrevía a decir que no veía la tela, por miedo a la deshonra.',
+    'En las fiestas, los pícaros «vistieron» al rey, que salió a caballo por la ciudad totalmente desnudo. Todos callaban. Hasta que un palafrenero negro, «que no tenía honra que perder», le dijo: «O yo soy ciego, o vais desnudo».',
+    'El rey le insultó, pero otro repitió lo mismo, y luego otro, hasta que todos perdieron el miedo y reconocieron la verdad. Los pícaros ya habían huido con todo lo que habían estafado.'
+  ],
+  secuencia:[
+    'Tres pícaros ofrecen al rey un paño que solo ven los hijos legítimos.',
+    'El rey les da sala, oro, plata y seda, y ellos fingen tejer.',
+    'Los criados, el rey, el gobernador y el valido fingen ver la tela por miedo.',
+    'El rey sale desnudo a caballo en las fiestas.',
+    'Un palafrenero dice: «O yo soy ciego, o vais desnudo».',
+    'Todos reconocen la verdad, pero los pícaros ya han huido.'
+  ],
+  consejo:'Patronio advierte al conde que, si alguien le pide que las personas de su confianza no sepan lo que le propone, está seguro de que quiere engañarle: quien apenas le conoce no tiene motivos para buscar su bien, mientras que quienes han vivido con él siempre le servirán y favorecerán.',
+  moraleja:['A quien te aconseja encubrir de tus amigos','más le gusta engañarte que los higos.'],
+  hueco:{txt:'A quien te aconseja encubrir de tus amigos / más le gusta engañarte que los ______.', ans:['higos']},
+  ensenanza:'Desconfía de quien te pide que ocultes algo a tus amigos o familia: suele querer engañarte. Además, el miedo al qué dirán puede hacer que todos callen ante una mentira evidente; hace falta valor para decir la verdad.',
+  ensenanzaCorta:'hay que desconfiar de quien nos pide ocultar algo a nuestros amigos, y atreverse a decir la verdad',
+  hoy:[
+    'Un desconocido en internet que te dice «no se lo cuentes a tus padres»: esa frase es una señal de alarma clarísima (grooming, estafas).',
+    'Presión de grupo: todos dicen que algo mola o que es verdad y nadie se atreve a llevar la contraria. Hace falta un «palafrenero».',
+    'Estafas que piden secreto: «esta inversión es solo para ti, no se lo digas a nadie».'
+  ],
+  ojo:'Este cuento inspiró «El traje nuevo del emperador» de Andersen (siglo XIX). En examen: el paño solo lo ven los hijos «de quien pasaba por ser su padre». El que dice la verdad es el palafrenero (criado que lleva el caballo por el freno), que no tiene honra que perder.',
+  critica:'Una nota del libro explica que en la Edad Media la honra se consideraba un privilegio de la gente de alta posición. Por eso se presenta al palafrenero como alguien «sin honra que perder»: refleja los prejuicios de clase y de raza de la época. Hoy, justo él es el más valiente y honesto del cuento.',
+  ideasResumen:[
+    {t:'Tres pícaros engañan a un rey', p:['picaro|burlador|tejedor|estafador|enganador|granuja|tres'], why:'Presenta a los tres pícaros que se hacen pasar por tejedores.'},
+    {t:'Un paño que solo ven los hijos legítimos', p:['pano|tela|traje|tejido|hijo|legitim|padre'], why:'La trampa: un paño que solo pueden ver los que son hijos de quien pasa por ser su padre.'},
+    {t:'Nadie se atreve a decir que no lo ve (miedo a la deshonra)', p:['miedo|temor|honra|deshonra|no se atrev|nadie (se atrev|dec)|callan|callad|fing|alab|mient'], why:'El nudo: todos (criados, rey, gobernador, valido) fingen verla por miedo a perder la honra.'},
+    {t:'El rey sale desnudo', p:['desnud|sin ropa|sale|fiesta|caballo'], why:'El clímax: el rey sale desnudo a caballo en las fiestas.'},
+    {t:'Un palafrenero dice la verdad y se descubre el engaño', p:['palafrenero|negro|criado|mozo|ciego|verdad|descubr|dice que va desnudo'], why:'El desenlace: un palafrenero dice «o yo soy ciego, o vais desnudo» y todos pierden el miedo; los pícaros ya han huido.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Desconfiar de quien pide ocultar algo a tus amigos', p:['secreto|ocult|encubr|escond|no (se lo )?cuent|no (se lo )?dig|amigos|confianza'], why:'La moraleja: «A quien te aconseja encubrir de tus amigos…».'},
+    {t:'Quiere engañarte', p:['engan|estaf|aprovech|burla|mentir|trampa'], why:'…«más le gusta engañarte que los higos». Hay que decir que busca engañarte.'},
+    {t:'El miedo al qué dirán nos hace callar / valor de decir la verdad', p:['miedo|que diran|honra|verdad|valor|atrever|presion|callar|opinion'], why:'Para el 10: el cuento también muestra que el miedo a la deshonra hace callar, y que hace falta valor para decir la verdad.'}
+  ],
+  modeloResumen:'Tres pícaros dijeron a un rey que sabían tejer un paño que solo podían ver quienes eran hijos de quien pasaba por ser su padre. El rey les dio oro, plata y seda y ellos fingieron tejer. Nadie veía la tela, pero todos, empezando por el rey, dijeron que era preciosa por miedo a perder la honra. En las fiestas el rey salió a caballo desnudo, y nadie decía nada, hasta que un palafrenero le dijo: «O yo soy ciego, o vais desnudo». Entonces todos reconocieron la verdad, pero los pícaros ya habían huido con lo robado.',
+  modeloEnsenanza:'Enseña que debemos desconfiar de quien nos pide que ocultemos algo a nuestros amigos, porque quiere engañarnos. También muestra que el miedo al qué dirán nos hace callar ante una mentira, y que hace falta valor para decir la verdad.',
+  preguntas:[
+    {q:'¿Quiénes pueden ver el paño, según los pícaros?', o:[
+      {t:'Solo los hijos de quien pasaba por ser su padre.', ok:1, why:'Exacto. Por eso nadie se atreve a decir que no lo ve: sería reconocer que no es hijo legítimo.'},
+      {t:'Solo las personas inteligentes.', why:'Esa es la versión de Andersen («El traje nuevo del emperador»). En El conde Lucanor el paño lo ven los hijos legítimos.'},
+      {t:'Solo los que tienen honra.', why:'Relacionado, pero no: la condición es ser hijo de quien pasa por su padre.'},
+      {t:'Solo el rey.', why:'No. Los pícaros dicen que cualquier hijo legítimo puede verlo.'}]},
+    {q:'¿Por qué le interesa al rey el paño al principio?', o:[
+      {t:'Para descubrir quién no era hijo legítimo y quedarse con sus bienes.', ok:1, why:'Sí: entre los moros no heredaban los que no eran verdaderos hijos. La codicia del rey le hace caer.'},
+      {t:'Para regalárselo a la reina.', why:'No se menciona a la reina.'},
+      {t:'Para venderlo en el mercado.', why:'No. Quiere usarlo como detector de hijos ilegítimos.'},
+      {t:'Porque tenía frío.', why:'¡Al contrario! El texto dice que por suerte era verano y no pasó frío.'}]},
+    {q:'¿Quién se atreve a decir la verdad primero?', o:[
+      {t:'Un palafrenero negro del rey, que «no tenía honra que perder».', ok:1, why:'Correcto. Una nota del libro explica que entonces la honra se veía como privilegio de la gente de alta posición.'},
+      {t:'El gobernador.', why:'El gobernador también fingió ver la tela, incluso la alabó más que el rey.'},
+      {t:'Un niño.', why:'El niño es de la versión de Andersen. Aquí es un palafrenero.'},
+      {t:'El valido.', why:'Al valido «le ocurrió lo mismo»: fingió verla.'}]},
+    {tf:1, q:'Los pícaros fueron castigados cuando se descubrió el engaño.', a:false, why:'Falso. Cuando fueron a buscarlos, ya habían huido con todo lo que habían estafado.'},
+    {q:'¿Qué señal de alarma ve Patronio en la propuesta que le hacen al conde?', o:[
+      {t:'Que le piden que no lo sepa nadie de su confianza.', ok:1, why:'Eso es. El secreto frente a los tuyos es la trampa.'},
+      {t:'Que el negocio es demasiado caro.', why:'No se habla del precio. La clave es el secreto.'},
+      {t:'Que le halagan mucho.', why:'Eso sería el exemplo V (la zorra y el cuervo).'},
+      {t:'Que es un negocio basado en fantasías.', why:'Eso sería el exemplo VII (doña Truhana).'}]}
+  ]
+},
+{
+  id:'XXXIV', corto:'Los dos ciegos',
+  titulo:'Lo que sucedió a un ciego que llevaba a otro',
+  claves:'ciego|guia|barranco|pozos|limosna',
+  problema:'Un familiar del conde, en quien confía totalmente y cuyo cariño es seguro, le aconseja ir a un lugar que le da miedo. Insiste en que no tema, porque antes perdería él la vida que consentir su daño.',
+  personajes:['Un hombre que se quedó ciego','Otro ciego de la misma ciudad'],
+  resumen:[
+    'Un hombre perdió la vista y quedó ciego y pobre. Otro ciego de la misma ciudad le propuso ir juntos a una villa cercana para pedir limosna.',
+    'El primero tenía miedo: sabía que el camino tenía pozos, barrancos profundos y puertos de montaña difíciles.',
+    'El otro le insistió en que no temiera, que él le acompañaría y le guiaría seguro, y le contó tantas ventajas que al final lo convenció.',
+    'Al llegar a los lugares más peligrosos, el ciego que guiaba cayó en un barranco, y con él cayó también el que había sospechado los peligros.'
+  ],
+  secuencia:[
+    'Un hombre se queda ciego y pobre.',
+    'Otro ciego le propone ir a otra villa a pedir limosna.',
+    'El primero teme los pozos, barrancos y puertos de montaña.',
+    'El segundo insiste en que él le guiará seguro y le convence.',
+    'Los dos caen en un barranco.'
+  ],
+  consejo:'Patronio aconseja al conde que, si siente un recelo justificado y la aventura es peligrosa, no corra el riesgo aunque su pariente le diga que morirá él antes; porque de poco le servirá la muerte del pariente si él también muere.',
+  moraleja:['Nunca te metas donde corras peligro','aunque te asista un verdadero amigo.'],
+  hueco:{txt:'Nunca te metas donde corras ______ / aunque te asista un verdadero amigo.', ans:['peligro']},
+  ensenanza:'No te metas en un peligro aunque te lo proponga alguien que te quiere y te asegura que te protegerá. Tener buena intención no significa saber o poder ayudarte. Si tu miedo tiene motivos, hazle caso.',
+  ensenanzaCorta:'no hay que meterse en peligros aunque un amigo nos prometa protegernos',
+  hoy:[
+    '«Tranqui, yo controlo»: subirte al coche o a la moto con alguien que ha bebido, aunque sea tu mejor amigo.',
+    'Retos virales peligrosos que te propone un amigo que dice que «no pasa nada».',
+    'Pedir ayuda con los deberes a quien sabe lo mismo que tú: «un ciego guiando a otro ciego».'
+  ],
+  ojo:'Se inspira en una parábola de la Biblia: «Si un ciego guía a otro ciego, los dos caerán en el hoyo» (Mateo 15,14; Lucas 6,39), y en un cuadro famoso de Pieter Brueghel. Ojo: el que da el consejo en el caso del conde es un FAMILIAR suyo, de total confianza. La moraleja insiste en ello: «aunque te asista un verdadero amigo».',
+  critica:'¿Significa que nunca hay que arriesgarse? El cuento habla de un recelo «justificado». Distingue entre miedo con motivos y miedo a salir de tu zona de confort.',
+  ideasResumen:[
+    {t:'Un hombre se queda ciego y pobre', p:['ciego|vista'], why:'Presenta al protagonista: un hombre que se quedó ciego y pobre.'},
+    {t:'Otro ciego le propone viajar a otra villa (a pedir limosna)', p:['otro|segundo|propon|propus|villa|ciudad|limosna|viaj|camino'], why:'Falta la propuesta: otro ciego le invita a ir juntos a otra villa a pedir limosna.'},
+    {t:'El primero tiene miedo por los peligros del camino', p:['miedo|tem|peligro|pozo|barranc|montan|recel'], why:'Importante: el primero teme el camino, con pozos, barrancos y montañas.'},
+    {t:'El otro insiste en que le guiará seguro', p:['guia|guiar|insist|convenc|acompan|segur|proteg|llevar'], why:'El nudo: el segundo ciego insiste en que le guiará y le convence.'},
+    {t:'Los dos caen en un barranco', p:['cae|cay|barranc|hoyo|los dos|ambos|mueren'], why:'El desenlace: los dos caen al barranco.'}
+  ],
+  ideasEnsenanza:[
+    {t:'No meterse en peligros', p:['peligro|riesgo|arriesg|meterse|peligros'], why:'La moraleja: «Nunca te metas donde corras peligro».'},
+    {t:'Aunque te lo proponga o te ayude un amigo / alguien de confianza', p:['amigo|familiar|pariente|confianza|quiere|aunque'], why:'…«aunque te asista un verdadero amigo». Esta parte es imprescindible.'},
+    {t:'Hacer caso al miedo justificado / su ayuda no te salva', p:['miedo|recelo|intuicion|sospech|no sirve|no puede|tambien|los dos|no sabe'], why:'Para el 10: si tu recelo tiene motivos, hazle caso; la buena intención del amigo no te salvará si él tampoco puede.'}
+  ],
+  modeloResumen:'Un hombre se quedó ciego y pobre. Otro ciego le propuso ir juntos a otra villa a pedir limosna. El primero tenía miedo, porque sabía que el camino tenía pozos, barrancos y montañas, pero el otro le insistió en que le guiaría seguro y lo convenció. Al llegar a un lugar peligroso, el ciego que guiaba cayó en un barranco y arrastró con él al otro.',
+  modeloEnsenanza:'Enseña que no debemos meternos en peligros aunque nos lo proponga un amigo que nos quiere y promete protegernos, porque su buena intención no nos salvará. Si nuestro miedo está justificado, hay que hacerle caso.',
+  preguntas:[
+    {q:'¿Quién aconseja al conde ir al lugar que le da miedo?', o:[
+      {t:'Un familiar suyo en quien confía totalmente.', ok:1, why:'Sí: por eso el cuento es tan interesante; el consejo peligroso viene de alguien que le quiere.'},
+      {t:'Un enemigo que quiere tenderle una trampa.', why:'No. La clave es que es alguien de total confianza, con buena intención.'},
+      {t:'Patronio.', why:'Patronio es el consejero que le dice que NO vaya.'},
+      {t:'Un desconocido que le pide secreto.', why:'Eso se parece al exemplo XXXII (el paño).'}]},
+    {q:'¿Qué le pasa al final a los dos ciegos?', o:[
+      {t:'Caen los dos en un barranco.', ok:1, why:'Correcto: el guía cae y arrastra al que ya sospechaba el peligro.'},
+      {t:'Llegan a la villa y se hacen ricos.', why:'No llegan: caen por el camino.'},
+      {t:'Solo cae el que guiaba.', why:'Caen los dos. Por eso Patronio dice que de poco sirve que el amigo muera antes si tú también mueres.'},
+      {t:'Se pierden en el bosque.', why:'No hay bosque: hay pozos, barrancos y puertos de montaña.'}]},
+    {tf:1, q:'El primer ciego no sospechaba nada del peligro del camino.', a:false, why:'Falso. Él sabía que había pozos, barrancos y puertos difíciles, pero se dejó convencer. ¡Tenía razón en su miedo!'},
+    {tf:1, q:'Este cuento se inspira en una parábola de la Biblia.', a:true, why:'Verdadero: «Si un ciego guía a otro ciego, los dos caerán en el hoyo» (Mateo 15,14; Lucas 6,39).'}
+  ]
+},
+{
+  id:'XXXV', corto:'El mancebo que casó con mujer brava',
+  titulo:'Lo que sucedió a un mancebo que casó con mujer brava',
+  claves:'brava|perro|gato|caballo|agua para las manos|boda|casar|casó|suegro|gallo|novia',
+  problema:'A un pariente del conde le quieren casar con una mujer muy rica y más ilustre que él, pero dicen que es muy violenta y colérica. El conde pregunta si debe aconsejarle que se case.',
+  personajes:['Un mancebo (joven) bueno pero pobre','Su padre','Una joven de carácter muy violento («brava»)','El padre de ella (y su mujer)'],
+  resumen:[
+    'Un joven bueno y emprendedor, pero pobre, quería casarse bien para salir adelante. Pidió casarse con la hija de un hombre rico, una muchacha de carácter tan malo que nadie la quería por esposa. Su padre y el de ella le advirtieron que acabaría muerto, pero él insistió.',
+    'La noche de bodas, al quedarse solos, antes de que ella pudiera hablar, el joven ordenó a un perro que le trajera agua para las manos. Como no lo hizo, lo persiguió y lo hizo pedazos con la espada. Hizo lo mismo con un gato y, finalmente, con su único caballo.',
+    'Luego, lleno de sangre y furioso, ordenó a su mujer: «Levantaos y dadme agua para las manos». Ella, aterrada, obedeció al instante, y le sirvió en todo lo que pedía.',
+    'Por la mañana, cuando las familias se acercaron temiendo lo peor, ella les mandó callar para no despertarle. Desde entonces fue obediente y «llevaron muy buena vida».',
+    'El suegro quiso imitarle matando un gallo, pero su mujer le dijo: «Os decidís muy tarde… ahora nos conocemos de sobra».'
+  ],
+  secuencia:[
+    'El joven pobre decide casarse con la muchacha rica de mal carácter.',
+    'En la cena de bodas ordena a un perro que le traiga agua y lo mata.',
+    'Hace lo mismo con un gato y con su único caballo.',
+    'Ordena a su mujer que le traiga agua y ella obedece aterrada.',
+    'Por la mañana, ella manda callar a las familias.',
+    'El suegro intenta imitarle matando un gallo, pero ya es tarde.'
+  ],
+  consejo:'Patronio aconseja que, si el pariente tiene el carácter de aquel mancebo, se case, porque sabrá «mandar en su casa»; si no, que deje pasar la oportunidad. Y al conde le aconseja que, cuando trate con otros, les dé a entender desde el principio cómo tienen que comportarse con él.',
+  moraleja:['Si desde un principio no muestras quién eres,','nunca podrás después, cuando quisieres.'],
+  hueco:{txt:'Si desde un ______ no muestras quién eres, / nunca podrás después, cuando quisieres.', ans:['principio']},
+  ensenanza:'La idea de fondo es que hay que mostrar desde el principio quién eres y cómo quieres que te traten, porque después es mucho más difícil cambiarlo. OJO: el método del cuento (violencia, miedo, sumisión de la mujer) es propio de la mentalidad medieval y hoy es inaceptable.',
+  ensenanzaCorta:'hay que mostrar desde el principio quién eres, porque después no se puede',
+  hoy:[
+    'El primer día en un grupo, un equipo o un trabajo: deja claro con respeto qué aceptas y qué no. Poner límites desde el principio (sin violencia) es asertividad.',
+    'Si al principio dejas que te traten mal («bueno, no pasa nada»), luego cuesta mucho cambiar esa dinámica.',
+    'Una relación basada en el miedo y la obediencia, como la del cuento, es hoy violencia de género. Las relaciones sanas se basan en el respeto mutuo, no en «mandar».'
+  ],
+  ojo:'En el examen puedes resumirlo sin dramatizar, pero SIN omitir lo esencial: mata a un perro, un gato y su único caballo porque no le traen agua para las manos. El suegro mata un GALLO. La frase final de la suegra («ahora nos conocemos de sobra») explica la moraleja. Este cuento inspiró «La fierecilla domada» de Shakespeare.',
+  critica:'Este es el cuento que MÁS criterio exige. Refleja una sociedad medieval en la que la mujer debía obedecer al marido y se aceptaba la violencia. Para sacar nota: explica la moraleja, reconoce que su método es hoy inaceptable (maltrato animal, violencia, miedo) y rescata lo válido: marcar límites desde el principio con respeto.',
+  ideasResumen:[
+    {t:'Un joven pobre se casa con una mujer rica de muy mal carácter', p:['brava|mal caracter|violent|coleric|mala|caracter|rica'], why:'Presenta la situación: un joven bueno y pobre se casa con una muchacha rica de carácter muy violento.'},
+    {t:'Todos le advierten del peligro, pero él insiste', p:['advirt|avis|morir|nadie|insist|queria casarse|se casa|boda|casar|caso'], why:'Menciona la boda (y, si puedes, que todos le advierten que acabará mal).'},
+    {t:'En la cena pide agua a un perro, un gato y un caballo y los mata', p:['perro|gato|caballo|animales|agua para las manos|mata|mato'], why:'El nudo: ordena a un perro, un gato y su caballo que le traigan agua para las manos y, como no obedecen, los mata.'},
+    {t:'Se lo pide a la mujer y ella obedece por miedo', p:['obedec|miedo|asust|aterr|le trae|le trajo|ella (se|le)'], why:'El clímax: pide agua a su mujer y ella, aterrada, obedece.'},
+    {t:'El suegro intenta imitarle (gallo) pero es tarde', p:['suegro|gallo|tarde|conocemos|padre de ella|imitar'], why:'Para el 10: el final del suegro con el gallo y la respuesta «os decidís muy tarde» explica la moraleja.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Mostrar desde el principio quién eres', p:['principio|inicio|desde el comienzo|primer momento|desde el primer|al empezar|desde un principio'], why:'La moraleja: «Si desde un principio no muestras quién eres…».'},
+    {t:'Después ya no se puede cambiar', p:['despues|luego|tarde|no podras|no se puede|cuesta|dificil'], why:'…«nunca podrás después, cuando quisieres».'},
+    {t:'Hoy: poner límites con respeto; la violencia del cuento es inaceptable', p:['limite|respeto|asertiv|violencia|maltrato|machis|epoca|edad media|inaceptable|hoy|mentalidad'], why:'Para el 10: demuestra criterio. Di que hoy se aplica marcando límites con respeto y que la violencia y la sumisión del cuento son inaceptables.'}
+  ],
+  modeloResumen:'Un joven bueno pero pobre se casó con una muchacha rica de carácter muy violento, aunque todos le advirtieron del peligro. En la cena de bodas ordenó a un perro, a un gato y a su caballo que le trajeran agua para las manos y, como no obedecieron, los mató. Después se lo ordenó a su mujer, que, aterrada, obedeció. Desde entonces ella fue obediente. Su suegro quiso hacer lo mismo matando un gallo, pero su mujer le dijo que ya era tarde, porque ya se conocían.',
+  modeloEnsenanza:'Enseña que hay que mostrar desde el principio quién eres y cómo quieres que te traten, porque después es muy difícil cambiarlo. Hoy lo aplicaríamos poniendo límites con respeto, ya que la violencia y la sumisión de la mujer que muestra el cuento son inaceptables.',
+  preguntas:[
+    {q:'¿Qué ordena el mancebo a los animales?', o:[
+      {t:'Que le traigan agua para las manos.', ok:1, why:'Sí. Una orden imposible a propósito: no quiere agua, quiere dar miedo.'},
+      {t:'Que se callen.', why:'No. Pide agua para las manos.'},
+      {t:'Que le sirvan la cena.', why:'La cena se la pide luego a la mujer. A los animales les pide agua.'},
+      {t:'Que se vayan de la casa.', why:'No. La orden es traer agua para las manos.'}]},
+    {q:'¿Qué animal mata el suegro para imitar a su yerno?', o:[
+      {t:'Un gallo.', ok:1, why:'Correcto. Y su mujer le responde que ya es tarde: «ahora nos conocemos de sobra».'},
+      {t:'Un perro.', why:'El perro es el primer animal que mata el YERNO.'},
+      {t:'Un caballo.', why:'El caballo (el único que tenía) lo mata el yerno.'},
+      {t:'Un gato.', why:'El gato también lo mata el yerno.'}]},
+    {tf:1, q:'Patronio aconseja que el pariente se case solo si tiene el carácter de aquel mancebo.', a:true, why:'Verdadero. «Si no es así… debe dejar pasar esa oportunidad».'},
+    {q:'Desde una mirada actual, ¿cuál es la valoración MÁS acertada del cuento?', o:[
+      {t:'La moraleja (mostrar desde el principio quién eres) puede ser útil, pero el método violento y la sumisión de la mujer son inaceptables hoy.', ok:1, why:'Eso es tener criterio: separar la idea útil del contexto medieval que la envuelve.'},
+      {t:'Es un buen modelo de pareja: el marido debe mandar en casa.', why:'No. Es la mentalidad del siglo XIV. Hoy una relación basada en el miedo es violencia de género.'},
+      {t:'Es un cuento que no enseña nada y no hay que estudiarlo.', why:'Sí enseña algo (la importancia de los comienzos) y además sirve para ver cómo pensaba la sociedad medieval.'},
+      {t:'La mujer es la villana y merece lo que le pasa.', why:'Esa lectura justifica la violencia. Un buen análisis crítico reconoce el contexto y no lo aplaude.'}]}
+  ]
+},
+{
+  id:'XXXVIII', corto:'El hombre de las piedras preciosas',
+  titulo:'Lo que sucedió a un hombre que iba cargado con piedras preciosas y se ahogó en el río',
+  claves:'piedras preciosas|piedras|rio|ahog|tesoro|hundi|carga',
+  problema:'El conde desea quedarse en una villa donde le darán mucho dinero, con el que espera grandes beneficios, pero teme que, si se queda, su vida corra peligro.',
+  personajes:['Un hombre cargado de piedras preciosas','Un hombre en la orilla del río'],
+  resumen:[
+    'Un hombre llevaba a cuestas una gran cantidad de piedras preciosas que pesaban mucho.',
+    'Tuvo que cruzar un río y, por el peso, se hundía cada vez más, sobre todo en la parte más honda.',
+    'Un hombre desde la orilla le gritaba que soltara la carga o se ahogaría.',
+    'Pero, por codicia, pensando en lo que valían las piedras, no quiso soltarlas. Murió ahogado y perdió la vida y el tesoro.'
+  ],
+  secuencia:[
+    'Un hombre lleva a cuestas muchas piedras preciosas.',
+    'Al cruzar un río se hunde por el peso.',
+    'Un hombre en la orilla le grita que suelte la carga.',
+    'Por codicia no las suelta.',
+    'Muere ahogado y pierde la vida y el tesoro.'
+  ],
+  consejo:'Patronio aconseja al conde que no se quede donde peligra su vida por conseguir dinero. Solo se debe arriesgar la vida por un asunto de honra o para evitar un daño grave. Quien se estima en poco arriesga la vida por codicia; quien vale mucho se valora en su justo precio y solo la arriesga cuando de verdad merece la pena.',
+  moraleja:['A quien por codicia su vida aventura,','sabed que sus bienes muy poco le duran.'],
+  hueco:{txt:'A quien por ______ su vida aventura, / sabed que sus bienes muy poco le duran.', ans:['codicia']},
+  ensenanza:'La vida vale más que cualquier riqueza. La codicia nos puede hacer perderlo todo: el dinero y la vida. Hay que saber soltar a tiempo.',
+  ensenanzaCorta:'no hay que arriesgar la vida por codicia, porque se pierde todo',
+  hoy:[
+    'Hacerse un selfie peligroso o un reto viral por conseguir «likes».',
+    'Volver a por la mochila o el móvil en un incendio o una inundación.',
+    'Trabajar sin descanso ni dormir por ganar más dinero hasta enfermar: el tesoro no sirve de nada sin salud.'
+  ],
+  ojo:'No lo confundas con el XXXIV (los ciegos): allí el peligro viene de fiarse de un amigo; aquí viene de la CODICIA. Detalle: sí hay un hombre en la orilla que le avisa; el protagonista no le hace caso. Patronio sí admite arriesgar la vida por honra o para evitar un daño grave.',
+  critica:'Patronio dice que el que «se estima en poco» es quien arriesga la vida por dinero. ¿Qué relación ves entre autoestima y codicia?',
+  ideasResumen:[
+    {t:'Un hombre carga muchas piedras preciosas', p:['piedras|preciosas|tesoro|joyas|riquezas|carga'], why:'Presenta al protagonista y su carga: muchas piedras preciosas que pesan mucho.'},
+    {t:'Cruza un río y se hunde por el peso', p:['rio|agua|cruz|hund|peso|pesa'], why:'El problema: al cruzar un río, el peso le hunde.'},
+    {t:'Alguien le avisa de que suelte la carga', p:['orilla|avis|grit|voces|le dice|le decia|solt|abandon|dejar'], why:'Un hombre desde la orilla le avisa de que suelte las piedras.'},
+    {t:'Por codicia no las suelta', p:['codici|avar|no quiso|no quiere|no las suelta|no solto|valor|valian'], why:'Clave: por codicia no quiere soltarlas.'},
+    {t:'Muere ahogado y lo pierde todo', p:['ahog|muer|muri|pierde|perdio|todo'], why:'El desenlace: muere ahogado y pierde la vida y el tesoro.'}
+  ],
+  ideasEnsenanza:[
+    {t:'No arriesgar la vida', p:['vida|arriesg|aventur|peligro|morir'], why:'La moraleja habla de quien «su vida aventura», es decir, la pone en peligro.'},
+    {t:'Por codicia / dinero', p:['codici|dinero|riqueza|avar|bienes|ambici|tesoro'], why:'…«por codicia». Hay que nombrar la causa.'},
+    {t:'Se pierde todo / la vida vale más', p:['pierde|perder|poco le duran|todo|vale mas|mas importante|no sirve'], why:'Para el 10: quien lo hace pierde los bienes (y la vida); la vida vale más que el dinero.'}
+  ],
+  modeloResumen:'Un hombre llevaba a cuestas muchas piedras preciosas. Al cruzar un río, el peso le hacía hundirse. Un hombre desde la orilla le gritó que soltara la carga para no ahogarse, pero él, por codicia, no quiso desprenderse de las piedras. Murió ahogado y perdió la vida y el tesoro.',
+  modeloEnsenanza:'Enseña que no hay que arriesgar la vida por codicia, porque quien lo hace acaba perdiendo la vida y también sus bienes. La vida vale más que cualquier riqueza.',
+  preguntas:[
+    {q:'¿Por qué el hombre no suelta las piedras?', o:[
+      {t:'Por codicia: pensaba en cuánto valían.', ok:1, why:'Exacto. La codicia le ciega.'},
+      {t:'Porque no oía al hombre de la orilla.', why:'El texto dice que «no comprendió» que perdería vida y tesoro, pero la causa es la codicia.'},
+      {t:'Porque estaban atadas y no podía.', why:'No se dice. Él «no quiso» desprenderse de ellas.'},
+      {t:'Porque eran de su señor y debía entregarlas.', why:'No aparece ningún señor.'}]},
+    {q:'¿Cuándo sí se puede arriesgar la vida, según Patronio?', o:[
+      {t:'En asuntos de honra o si no hacerlo causaría un daño grave.', ok:1, why:'Correcto. No es un «nunca arriesgues»: es no arriesgarla por codicia o por poca cosa.'},
+      {t:'Nunca, bajo ninguna circunstancia.', why:'No. Patronio admite excepciones: la honra o evitar un daño grave.'},
+      {t:'Cuando la ganancia es muy grande.', why:'¡Justo lo contrario! Eso es la codicia que critica.'},
+      {t:'Cuando un amigo te lo pide.', why:'Eso lo desaconseja el exemplo XXXIV (los ciegos).'}]},
+    {tf:1, q:'Nadie avisó al hombre del peligro.', a:false, why:'Falso. Un hombre desde la orilla le gritaba que soltara la carga. Él no hizo caso.'},
+    {tf:1, q:'Según Patronio, quien se valora en su justo valor no arriesga la vida por cosas pequeñas.', a:true, why:'Verdadero. Quien «se estima en poco» es el que la arriesga por codicia.'}
+  ]
+},
+{
+  id:'XLII', corto:'El diablo y la falsa devota',
+  titulo:'Lo que sucedió al diablo con una falsa devota',
+  claves:'diablo|demonio|beguina|devota|navaja|barba|matrimonio|calumni|degoll',
+  problema:'El conde y sus amigos discuten cómo puede un hombre muy perverso causar más daño: ¿encabezando revueltas, peleando contra todos, cometiendo crímenes o calumniando y difamando?',
+  personajes:['Un matrimonio joven y feliz','El diablo','Una beguina (falsa devota)','Las familias de los esposos'],
+  resumen:[
+    'Un matrimonio joven se llevaba muy bien. El diablo intentó durante mucho tiempo meter cizaña entre ellos, sin conseguirlo. Triste, se encontró con una beguina (una mujer que aparentaba ser muy religiosa), que se ofreció a lograrlo.',
+    'La beguina se ganó la confianza de la esposa diciéndole que la había educado su madre y se instaló en la casa. Luego le dijo a la esposa que su marido amaba a otra, y al marido que su mujer lo sabía y buscaría a otro hombre. A cada uno le decía que el otro estaba enfadado.',
+    'Después convenció a la esposa de que un mago haría un remedio con unos pelos de la barba del marido, cerca de la garganta, y le dio una navaja para cortarlos mientras él dormía en su regazo. Al marido le dijo que su mujer y su amante planeaban degollarle así.',
+    'El marido fingió dormir, vio a su mujer con la navaja junto a su cuello y, creyendo la calumnia, la mató. La familia de ella mató al marido, y la de él se vengó: murieron casi todos los habitantes de la villa.',
+    'Al final se supo que todo fue por las calumnias de la falsa devota, a la que torturaron hasta la muerte.'
+  ],
+  secuencia:[
+    'El diablo no consigue separar a un matrimonio feliz.',
+    'Una beguina se ofrece a ayudarle y se gana la confianza de la esposa.',
+    'Dice a cada esposo que el otro le engaña o está enfadado.',
+    'Da a la esposa una navaja para cortar pelos de la barba del marido.',
+    'Dice al marido que su mujer quiere degollarle; él la mata.',
+    'Las familias se matan entre sí y la beguina es castigada.'
+  ],
+  consejo:'Patronio responde que el peor hombre del mundo es el que finge ser buen cristiano, honrado y leal, pero tiene el corazón falso y se dedica a sembrar calumnias que enemistan a las personas. Aconseja evitar a los hipócritas y reconocerlos por sus obras: «A fructibus eorum cognoscetis eos» («Por sus obras los conoceréis»). Nadie puede ocultar para siempre sus secretos.',
+  moraleja:['Si deseas evitar tan grandes desventuras','no te dejes convencer por las falsas criaturas.'],
+  hueco:{txt:'Si deseas evitar tan grandes desventuras / no te dejes convencer por las ______ criaturas.', ans:['falsas']},
+  ensenanza:'La calumnia y la hipocresía son lo que más daño hace: pueden destruir incluso lo que el diablo no pudo. Desconfía de quien siembra chismes y enfrenta a las personas, aunque parezca muy buena persona; júzgala por sus obras.',
+  ensenanzaCorta:'la calumnia de los hipócritas es lo más dañino; hay que juzgar a la gente por sus obras',
+  hoy:[
+    'Chismes en el grupo de WhatsApp: «me han dicho que ha dicho que…». Antes de creerlo, habla directamente con la persona.',
+    'Ciberacoso y difamación: un rumor falso puede destrozar la vida de alguien.',
+    'Si los esposos hubieran hablado entre ellos, nada habría pasado: la comunicación directa desactiva la calumnia.'
+  ],
+  ojo:'En el índice del PDF aparece como «XLIII», pero en el texto el título es EXEMPLO XLII (la numeración correcta). La mala es una «beguina»: mujeres que vivían como religiosas sin serlo y que acabaron teniendo mala fama. Detalle clave: la navaja y los pelos de la barba «cerca de la garganta».',
+  critica:'Fíjate en la ironía: el DIABLO fracasa y una persona que parece piadosa lo consigue. ¿Qué dice el autor sobre las apariencias y la hipocresía religiosa de su época?',
+  ideasResumen:[
+    {t:'El diablo no consigue separar a un matrimonio feliz', p:['diablo|demonio'], why:'Empieza por el diablo, que no logra separar a un matrimonio que se lleva muy bien.'},
+    {t:'Una falsa devota (beguina) le ayuda', p:['beguina|devota|mujer|vieja|falsa'], why:'Presenta a la falsa devota (beguina) que se ofrece a ayudar al diablo.'},
+    {t:'Engaña a cada esposo con mentiras sobre el otro', p:['mient|calumni|engan|dice (a la|al)|otra mujer|amante|enfad|celos|sospech|cizana'], why:'El nudo: siembra calumnias, diciendo a cada esposo que el otro le engaña o está enfadado.'},
+    {t:'La navaja: ella va a cortarle la barba y él cree que quiere matarle', p:['navaja|barba|pelos|degoll|cuello|garganta'], why:'La trampa final: la navaja para cortar pelos de la barba, que el marido interpreta como intento de degollarle.'},
+    {t:'El marido la mata y las familias se matan entre sí', p:['mata|mato|muer|muri|venganza|famil|villa|todos'], why:'El desenlace: el marido mata a su mujer, las familias se vengan y muere casi toda la villa. La beguina es castigada.'}
+  ],
+  ideasEnsenanza:[
+    {t:'La calumnia / los chismes causan el mayor daño', p:['calumni|chism|difam|mentir|rumor|mentiras|enemist'], why:'Respuesta a la pregunta del conde: lo que más daño hace es la calumnia.'},
+    {t:'Desconfiar de los hipócritas / falsas criaturas', p:['hipocr|falso|falsa|apariencia|parece|finge|fingen|no te dejes convencer'], why:'La moraleja: «no te dejes convencer por las falsas criaturas».'},
+    {t:'Se les conoce por sus obras / la verdad sale a la luz', p:['obras|hechos|actos|frutos|conoceras|conocereis|sale a la luz|se descubre|hablar|comunic'], why:'Para el 10: «Por sus obras los conoceréis»; nadie oculta para siempre sus secretos.'}
+  ],
+  modeloResumen:'El diablo no conseguía separar a un matrimonio que se llevaba muy bien, y una falsa devota se ofreció a ayudarle. Se ganó la confianza de la esposa y empezó a decir a cada uno que el otro le engañaba. Luego dio a la mujer una navaja para cortar unos pelos de la barba de su marido mientras dormía, y al marido le dijo que su mujer quería degollarle. Cuando él la vio con la navaja junto a su cuello, la mató. Las familias se vengaron y murieron casi todos en la villa. Al final se descubrió la calumnia y la falsa devota fue castigada.',
+  modeloEnsenanza:'Enseña que la calumnia es lo que más daño hace y que debemos desconfiar de los hipócritas que aparentan ser buenos pero siembran mentiras. A las personas hay que juzgarlas por sus obras.',
+  preguntas:[
+    {q:'¿Qué conclusión saca Patronio sobre cómo se causa más daño?', o:[
+      {t:'Con calumnias, fingiendo ser buena persona.', ok:1, why:'Sí. La hipocresía unida a la calumnia supera incluso al diablo.'},
+      {t:'Encabezando revueltas.', why:'Es una de las opciones que discutían el conde y sus amigos, pero Patronio elige la calumnia.'},
+      {t:'Peleando contra todos.', why:'Otra opción de la tertulia, pero no es la respuesta de Patronio.'},
+      {t:'Cometiendo crímenes con las propias manos.', why:'La beguina no mata a nadie con sus manos y, aun así, provoca decenas de muertes.'}]},
+    {q:'¿Para qué le da la beguina una navaja a la esposa?', o:[
+      {t:'Para cortar unos pelos de la barba del marido para un supuesto remedio mágico.', ok:1, why:'Correcto: la trampa perfecta, porque el marido cree que va a degollarle.'},
+      {t:'Para que se defienda del marido.', why:'No. Le dice que es para un remedio de un mago.'},
+      {t:'Para matar al diablo.', why:'No. La esposa ni sabe que el diablo está detrás.'},
+      {t:'Para cortar el pan de la cena.', why:'No. Son los pelos «de los que nacen cerca de la garganta».'}]},
+    {tf:1, q:'El diablo consigue él solo separar al matrimonio.', a:false, why:'Falso. Fracasa durante mucho tiempo. Lo consigue la falsa devota: ¡la calumnia es peor que el diablo!'},
+    {q:'¿Qué significa «A fructibus eorum cognoscetis eos»?', o:[
+      {t:'«Por sus obras (frutos) los conoceréis».', ok:1, why:'Correcto. Viene del Evangelio de san Mateo (7,16).'},
+      {t:'«Evitad la mentira y abrazad la verdad».', why:'Esa es la moraleja del árbol de la Mentira (XXVI).'},
+      {t:'«No hay mejor amigo que Dios».', why:'Esa idea es del exemplo XLVIII.'},
+      {t:'«El diablo sabe más por viejo».', why:'Refrán popular, pero no es eso.'}]}
+  ]
+},
+{
+  id:'XLVIII', corto:'El amigo y medio',
+  titulo:'Lo que sucedió a uno que probaba a sus amigos',
+  claves:'cerdo|saco|coles|huerta|medio amigo|amigo y medio|bofetada|amigos',
+  problema:'El conde cree tener muchos amigos que le prometen arriesgar vida y hacienda por él. Quiere saber cómo comprobar si harán lo que dicen.',
+  personajes:['Un hombre honrado (el padre)','Su hijo, que presume de muchos amigos','Los amigos del hijo','El «medio amigo» del padre','El amigo «entero» (cabal) del padre y su hijo'],
+  resumen:[
+    'Un padre aconsejaba a su hijo tener buenos amigos. El hijo presumía de tener muchos, y diez que nunca le abandonarían. El padre, anciano, decía que él solo tenía «un amigo y medio».',
+    'Para probarlos, el padre le mandó matar un cerdo, meterlo en un saco y decir a sus amigos que era un hombre al que había matado, pidiéndoles que le ayudaran a esconderlo. Todos se negaron; como mucho le prometieron pedir clemencia o enterrarle con solemnidad si le ejecutaban.',
+    'El «medio amigo» del padre, aunque no tenía trato con el joven, lo ayudó por aprecio al padre: enterró el saco en su huerta bajo un surco de coles. Luego el joven, por orden de su padre, le dio una bofetada en público, y aun así el hombre le dijo que nunca descubriría «las coles de la huerta».',
+    'Por último probó al amigo «entero» del padre. Por casualidad había aparecido un hombre asesinado en la ciudad y culparon al joven. El amigo, para salvarle, declaró que el asesino era su único hijo, que se declaró culpable y fue ejecutado en su lugar.',
+    'Patronio añade una interpretación espiritual: los amigos del mundo nos abandonan ante la muerte, los santos son como «medio amigos» y Dios es el amigo verdadero, que entregó a su Hijo por nosotros.'
+  ],
+  secuencia:[
+    'El hijo presume de muchos amigos; el padre solo tiene un amigo y medio.',
+    'El hijo mata un cerdo, lo mete en un saco y dice que es un hombre muerto.',
+    'Todos los amigos del hijo se niegan a ayudarle.',
+    'El medio amigo lo entierra en la huerta bajo las coles.',
+    'Tras recibir una bofetada en público, el medio amigo sigue guardando el secreto.',
+    'El amigo entero entrega a su propio hijo para salvar al joven.'
+  ],
+  consejo:'Patronio dice al conde que así se prueba a los amigos: hay algunos verdaderos, pero muchos más que solo lo son en la prosperidad y desaparecen en la desgracia. Además, el mejor amigo es Dios.',
+  moraleja:['No hay mejor amigo que Nuestro Señor','que, por redimirnos, su vida entregó.'],
+  hueco:{txt:'No hay mejor ______ que Nuestro Señor / que, por redimirnos, su vida entregó.', ans:['amigo']},
+  ensenanza:'Los amigos de verdad se conocen en los momentos difíciles: muchos lo son solo cuando todo va bien. Hay que valorar a los pocos amigos verdaderos. En su sentido religioso, el mejor amigo es Dios, que dio su vida por nosotros.',
+  ensenanzaCorta:'los verdaderos amigos se conocen en la desgracia, y son muy pocos',
+  hoy:[
+    'Tener 800 seguidores no es tener 800 amigos. ¿Quién estaría contigo si tuvieras un problema serio?',
+    'El amigo que te defiende cuando no estás delante, aunque le hayas fallado alguna vez, es un «medio amigo» al menos.',
+    '¿Está bien poner a prueba a los amigos con engaños? Hoy lo veríamos como manipulación: la amistad se demuestra en la vida real, sin montajes.'
+  ],
+  ojo:'No confundas: el que prueba a los amigos es el HIJO, por consejo del PADRE. El padre tiene «un amigo y medio»: el medio amigo entierra el cerdo bajo las COLES y aguanta la bofetada; el amigo entero sacrifica a su hijo. Es el único cuento con interpretación religiosa explícita (Dios = amigo verdadero; santos = medio amigos).',
+  critica:'El amigo «entero» sacrifica a un hijo inocente. Literalmente es terrible; tiene sentido como alegoría del sacrificio de Cristo. Explicar esa doble lectura es muy buena nota.',
+  ideasResumen:[
+    {t:'Un hijo presume de muchos amigos; su padre solo tiene amigo y medio', p:['amigos|amigo y medio|presum|padre'], why:'Presenta la situación: el hijo presume de muchos amigos y el padre dice tener solo «un amigo y medio».'},
+    {t:'Prueba: un cerdo en un saco, fingiendo que es un hombre muerto', p:['cerdo|saco|muerto|cadaver|asesin|matado|prueba'], why:'La prueba es imprescindible: un cerdo muerto en un saco, diciendo que es un hombre al que ha matado.'},
+    {t:'Los amigos del hijo le abandonan', p:['niegan|negaron|abandon|no le ayud|nadie|ninguno|fallan|rechaz'], why:'Todos los amigos del hijo se niegan a ayudarle.'},
+    {t:'El medio amigo lo esconde (coles) y guarda el secreto tras la bofetada', p:['medio amigo|coles|huerta|enterr|bofetada|secreto'], why:'El medio amigo del padre entierra el saco bajo las coles y guarda el secreto incluso tras la bofetada.'},
+    {t:'El amigo entero sacrifica a su hijo para salvar al joven', p:['amigo entero|cabal|verdadero|su hijo|sacrific|ejecut|en su lugar|salva'], why:'El desenlace: el amigo entero entrega a su propio hijo para salvar al joven.'}
+  ],
+  ideasEnsenanza:[
+    {t:'Los amigos verdaderos se conocen en los momentos difíciles', p:['dificil|desgracia|problema|necesit|malos momentos|adversidad|peligro|apuro'], why:'La idea clave: la amistad se demuestra cuando las cosas van mal.'},
+    {t:'Hay pocos amigos verdaderos / muchos solo en la prosperidad', p:['pocos|verdadero|falsos|prosperidad|cuando todo va bien|interes|muchos'], why:'Patronio: hay algunos amigos verdaderos, pero muchos más que solo lo son en la prosperidad.'},
+    {t:'El mejor amigo es Dios (lectura religiosa)', p:['dios|senor|cristo|jesus|religios|redimir|espiritual'], why:'Para el 10: la moraleja en verso es religiosa: «No hay mejor amigo que Nuestro Señor».'}
+  ],
+  modeloResumen:'Un joven presumía de tener muchos amigos, mientras que su padre decía tener solo un amigo y medio. Para probarlos, el padre le mandó meter un cerdo muerto en un saco y decir a sus amigos que era un hombre al que había matado. Todos sus amigos se negaron a ayudarle. En cambio, el medio amigo del padre lo enterró en su huerta bajo las coles y guardó el secreto aunque el joven le dio una bofetada en público. Y cuando el joven fue condenado por un crimen que no había cometido, el amigo entero del padre entregó a su propio hijo para salvarle.',
+  modeloEnsenanza:'Enseña que los amigos verdaderos se conocen en los momentos difíciles y que son muy pocos; muchos solo son amigos cuando todo va bien. En su lectura religiosa, el mejor amigo es Dios, que dio su vida por nosotros.',
+  preguntas:[
+    {q:'¿Qué lleva el hijo en el saco?', o:[
+      {t:'Un cerdo muerto, diciendo que es un hombre al que ha matado.', ok:1, why:'Sí. Es una prueba fingida.'},
+      {t:'El cadáver de un hombre de verdad.', why:'No, es un cerdo. La confusión llega luego, cuando le culpan de un asesinato real que no cometió.'},
+      {t:'Piedras preciosas.', why:'Las piedras preciosas son del exemplo XXXVIII (el río).'},
+      {t:'Altramuces.', why:'Los altramuces son del exemplo X.'}]},
+    {q:'¿Dónde entierra el medio amigo el saco?', o:[
+      {t:'En su huerta, bajo un surco de coles.', ok:1, why:'Correcto. Por eso dice: «no descubriré las coles de la huerta».'},
+      {t:'En el cementerio.', why:'No. Lo esconde en su propia huerta.'},
+      {t:'En el río.', why:'No hay río en este cuento.'},
+      {t:'Bajo el árbol de la Mentira.', why:'¡Ese es otro cuento! (XXVI).'}]},
+    {q:'¿Qué hace el amigo «entero» del padre?', o:[
+      {t:'Declara que el asesino es su único hijo, que es ejecutado en lugar del joven.', ok:1, why:'Eso es. Según la lectura espiritual, representa a Dios entregando a su Hijo.'},
+      {t:'Esconde al joven en su casa para siempre.', why:'Intenta ayudarle a escapar, pero al final hace algo mucho más extremo: sacrificar a su hijo.'},
+      {t:'Le da una bofetada al joven.', why:'La bofetada la da el JOVEN al medio amigo, por orden de su padre.'},
+      {t:'Le denuncia a la justicia.', why:'Todo lo contrario: le salva.'}]},
+    {tf:1, q:'La moraleja en verso de este cuento tiene sentido religioso.', a:true, why:'Verdadero: «No hay mejor amigo que Nuestro Señor / que, por redimirnos, su vida entregó».'},
+    {tf:1, q:'El padre presume de tener diez amigos que nunca le abandonarían.', a:false, why:'Falso. Quien presume es el HIJO. El padre, anciano, dice que solo tiene un amigo y medio.'}
+  ]
+}
+];
+
+/* Preguntas generales sobre el libro */
+const LIBRO = [
+  {q:'¿Quién escribió El conde Lucanor?', o:[
+    {t:'Don Juan Manuel.', ok:1, why:'Sí: noble castellano del siglo XIV, sobrino de Alfonso X el Sabio. En los cuentos aparece como «don Juan».'},
+    {t:'Alfonso X el Sabio.', why:'Era su tío. Don Juan Manuel es su sobrino.'},
+    {t:'El conde Lucanor.', why:'El conde Lucanor es un personaje del libro, no el autor.'},
+    {t:'Patronio.', why:'Patronio es el consejero, personaje del libro.'}]},
+  {q:'¿En qué siglo se escribió?', o:[
+    {t:'En el siglo XIV (se terminó hacia 1335).', ok:1, why:'Correcto: Edad Media, prosa castellana.'},
+    {t:'En el siglo XVI.', why:'Eso ya es Renacimiento (Siglo de Oro). El conde Lucanor es medieval.'},
+    {t:'En el siglo XII.', why:'Demasiado pronto. Es del siglo XIV.'},
+    {t:'En el siglo XIX.', why:'No. En el XIX escribió Andersen su versión del paño («El traje nuevo del emperador»).'}]},
+  {q:'¿Cuál es la estructura que se repite en cada exemplo?', o:[
+    {t:'El conde plantea un problema → Patronio cuenta un cuento → lo aplica al caso → el conde actúa y le va bien → don Juan resume la moraleja en verso.', ok:1, why:'Perfecto. Es una estructura fija que conviene saber de memoria.'},
+    {t:'Patronio cuenta un cuento → el conde opina → fin.', why:'Faltan partes: el problema inicial, la aplicación, el resultado y los versos finales de don Juan.'},
+    {t:'Don Juan cuenta un cuento → el conde escribe la moraleja.', why:'Quien cuenta el cuento es Patronio, y quien escribe los versos es don Juan.'},
+    {t:'El conde cuenta un cuento a Patronio para que aprenda.', why:'Al revés: el conde pide consejo y Patronio le enseña con un cuento.'}]},
+  {q:'¿Qué papel tiene Patronio?', o:[
+    {t:'Es el consejero sabio del conde: responde a sus problemas con cuentos.', ok:1, why:'Sí. Es el «sabio cautivo» del conde, por así decirlo.'},
+    {t:'Es el autor del libro.', why:'El autor es don Juan Manuel.'},
+    {t:'Es el enemigo del conde.', why:'No, es su consejero de confianza.'},
+    {t:'Es un personaje que solo aparece en el exemplo I.', why:'Aparece en TODOS: es parte del marco del libro.'}]},
+  {q:'¿Qué forma tiene casi siempre la moraleja final?', o:[
+    {t:'Dos versos que riman (un pareado).', ok:1, why:'Correcto. Resumen la enseñanza de forma fácil de recordar.'},
+    {t:'Un soneto.', why:'Un soneto tiene 14 versos. Aquí son 2.'},
+    {t:'Una frase en latín.', why:'Solo en el XLII Patronio cita una frase en latín, pero la moraleja final está en castellano y en verso.'},
+    {t:'Un refrán en prosa.', why:'Son versos rimados.'}]},
+  {q:'¿Cuál es la finalidad principal del libro?', o:[
+    {t:'Enseñar y aconsejar entreteniendo (didáctica).', ok:1, why:'Sí: enseñar deleitando. Por eso usa cuentos.'},
+    {t:'Contar la historia de España.', why:'No es un libro de historia.'},
+    {t:'Criticar a la Iglesia.', why:'Hay críticas puntuales (el deán, la beguina), pero la finalidad es didáctica y moral.'},
+    {t:'Entretener sin ninguna enseñanza.', why:'Cada cuento acaba con una enseñanza explícita: es literatura didáctica.'}]},
+  {tf:1, q:'La palabra «exemplo» significa cuento con una enseñanza moral.', a:true, why:'Verdadero. Los «exemplos» (del latín exemplum) son relatos breves para enseñar una lección.'},
+  {tf:1, q:'Al final de cada cuento, el conde rechaza el consejo de Patronio.', a:false, why:'Falso. Siempre le parece bueno, lo sigue y «le fue muy bien».'},
+  {q:'¿De dónde proceden muchos de estos cuentos?', o:[
+    {t:'De fuentes muy variadas: fábulas antiguas, cuentos orientales y árabes, la Biblia…', ok:1, why:'Sí. Por eso aparecen reyes moros, un deán de Santiago o fábulas con animales.'},
+    {t:'Todos los inventó don Juan Manuel sin influencias.', why:'No; recoge y adapta tradiciones anteriores, como indican las notas del texto (p. ej., la parábola de los ciegos).'},
+    {t:'De novelas francesas del siglo XVIII.', why:'Imposible: el libro es del siglo XIV.'},
+    {t:'De leyendas vikingas.', why:'No. Las fuentes son orientales, clásicas y bíblicas.'}]}
+];
+
+/* Situaciones de hoy: ¿qué cuento aplicarías? */
+const SITUACIONES = [
+  {s:'Un chico que acabas de conocer por internet te dice que tiene un plan genial para ganar dinero, pero que no se lo cuentes a tus padres ni a tus amigos.', c:'XXXII', why:'Pedirte que lo ocultes a tu gente de confianza es la señal de engaño del paño de los burladores.'},
+  {s:'Recibes un SMS: «¡Eres una persona excepcional! Has sido seleccionado entre millones. Solo tienes que introducir los datos de tu tarjeta».', c:'V', why:'Te halagan con cualidades que no tienes para quitarte algo: la zorra y el cuervo.'},
+  {s:'Tu amiga decide cortarse el pelo muy corto. Unas le dicen que parece un chico, otras que antes estaba peor… Haga lo que haga, alguien opina.', c:'II', why:'Es imposible contentar a todos: el padre, el hijo y la bestia.'},
+  {s:'Notas que un compañero empieza a recibir comentarios burlones cada día. Aún son pocos, pero van a más.', c:'VI', why:'Hay que cortar el problema al principio, antes de que crezca: la golondrina y el lino.'},
+  {s:'Tu primo ya ha decidido cómo gastará los 1.000 € que «seguro» ganará con las apuestas deportivas de este fin de semana.', c:'VII', why:'Planes basados en fantasías que arriesgan lo que tienes: doña Truhana.'},
+  {s:'Estás hundido porque tu móvil es antiguo y tus amigos tienen el último modelo. Luego conoces a alguien que no tiene ni para comprar libros.', c:'X', why:'Siempre hay quien está peor; eso ayuda a relativizar y seguir adelante: los altramuces.'},
+  {s:'Le pasaste los apuntes todo el curso a un compañero que te prometía ayudarte en mates. Ahora que ha aprobado, cada vez que le pides ayuda tiene una excusa.', c:'XI', why:'Ingratitud de quien sube y olvida los favores: el deán de Santiago y don Illán.'},
+  {s:'En las prácticas, la empresa elige a la chica que se anticipa, pregunta lo necesario de una vez y se fija en lo importante, aunque no sea la que mejor viste.', c:'XXIV', why:'Se conoce a la gente por sus palabras y hechos: el rey moro y sus tres hijos.'},
+  {s:'Un bulo se hace viral y miles de personas lo comparten. Una semana después se descubre que era falso y los que lo difundieron quedan en ridículo.', c:'XXVI', why:'La mentira florece rápido pero no tiene raíces y acaba cayendo: el árbol de la Mentira.'},
+  {s:'Tu mejor amigo, que te quiere mucho, insiste en que subas en su moto sin casco: «Tranquilo, yo controlo, antes me pasa algo a mí que a ti».', c:'XXXIV', why:'Aunque sea un amigo leal, no te metas en un peligro: los dos ciegos.'},
+  {s:'Empiezas en un equipo nuevo y desde el primer día dejas claro, con buenas maneras, que no vas a hacer tú solo el trabajo de todos.', c:'XXXV', why:'Mostrar desde el principio quién eres (hoy, con respeto y sin violencia): el mancebo y la mujer brava.'},
+  {s:'Durante un incendio, un hombre vuelve a entrar en su casa en llamas para recuperar su colección de monedas de oro.', c:'XXXVIII', why:'Arriesgar la vida por codicia: el hombre de las piedras preciosas.'},
+  {s:'Una compañera que parece muy simpática va diciendo a cada una de tus amigas que las otras hablan mal de ella, hasta que el grupo se rompe.', c:'XLII', why:'La calumnia de alguien con apariencia de bueno: el diablo y la falsa devota.'},
+  {s:'Tenías cientos de «amigos» en redes, pero cuando tuviste un problema serio solo te apoyó una persona de verdad.', c:'XLVIII', why:'Los amigos verdaderos se conocen en la desgracia: el amigo y medio.'},
+  {s:'Un socio de tu padre le dice que se retira y que le deja toda su cartera de clientes. Tu padre sospecha que puede ser una forma de comprobar si es leal.', c:'I', why:'Una oferta demasiado generosa puede ser una prueba de lealtad: el rey y su privado.'},
+  {s:'Todos en clase dicen que la nueva serie es buenísima. A ti te parece aburrida, pero no lo dices por miedo a quedar raro… hasta que alguien se atreve y resulta que a muchos les pasaba igual.', c:'XXXII', why:'Por miedo al qué dirán nadie dice la verdad, hasta que uno se atreve: como el palafrenero ante el rey desnudo.'},
+  {s:'Un vendedor te dice que tienes «un gusto exquisito, digno de alguien de tu categoría» justo antes de ofrecerte el producto más caro.', c:'V', why:'Halago interesado antes de pedir algo: la zorra y el cuervo.'},
+  {s:'Dejas de ir al dentista porque la caries «es pequeñita». Seis meses después necesitas una endodoncia.', c:'VI', why:'Los males hay que atajarlos al comienzo: la golondrina y el lino.'},
+  {s:'Decides presentarte a delegado aunque algunos se rían. Lo piensas un día, lo consultas con tu tutora y te presentas.', c:'II', why:'No dejarse llevar por las críticas si no haces mal, pensándolo y pidiendo consejo, como aconseja Patronio en el exemplo II.'},
+  {s:'Un amigo te pide que le ayudes en algo arriesgado «porque, total, si nos pillan, la culpa me la echo yo». Pero a ti también te pillarían.', c:'XXXIV', why:'De nada sirve que el amigo «muera antes» si tú también caes: los dos ciegos.'}
+];
+
+/* Preguntas de reflexión (pensamiento crítico) */
+const REFLEXION = [
+  {c:'XXXV', q:'¿Sigue siendo válida hoy la enseñanza del exemplo XXXV (el mancebo que casó con mujer brava)? Justifica tu respuesta.',
+   ideas:[
+    {t:'Explicas la moraleja (mostrar desde el principio quién eres)', p:['principio|desde el comienzo|quien eres|desde el primer'], why:'Empieza explicando qué dice la moraleja: hay que mostrar desde el principio quién eres.'},
+    {t:'Rechazas la violencia / maltrato / sumisión', p:['violen|maltrat|machis|sumis|miedo|abuso|inaceptable|no esta bien|\\bmal\\b|obedec'], why:'Un buen juicio crítico reconoce que la violencia (con los animales y el miedo a la mujer) es inaceptable.'},
+    {t:'Tienes en cuenta la época (Edad Media, otra mentalidad)', p:['epoca|edad media|medieval|siglo|mentalidad|antes|entonces|contexto'], why:'Situar el texto en su época (siglo XIV) demuestra criterio: no se juzga igual que un texto actual.'},
+    {t:'Propones una aplicación actual (límites, respeto, asertividad)', p:['limite|respeto|asertiv|dialog|hablar|hoy|actual|igualdad'], why:'Rescata lo útil: hoy lo aplicaríamos poniendo límites con respeto, sin violencia.'}]},
+  {c:'XXXII', q:'En el exemplo XXXII todos fingen ver la tela. ¿Por qué nadie dice la verdad? ¿Conoces situaciones actuales parecidas?',
+   ideas:[
+    {t:'Identificas la causa: miedo a perder la honra / al qué dirán', p:['miedo|honra|que diran|verguenza|quedar mal|deshonra|presion'], why:'La causa es el miedo a la deshonra: reconocer que no ves la tela sería admitir que no eres hijo legítimo.'},
+    {t:'Mencionas que se dejan llevar por lo que dicen los demás', p:['los demas|todos|grupo|mayoria|nadie se atreve|seguir|imitar'], why:'Cada uno cree que los demás sí la ven: se dejan arrastrar por el grupo.'},
+    {t:'Das un ejemplo actual', p:['redes|moda|clase|instituto|amigos|internet|serie|grupo|trabajo|politic|hoy|ahora|actual'], why:'Añade un ejemplo de hoy: presión de grupo, modas, opiniones en redes…'},
+    {t:'Valoras la valentía de decir la verdad', p:['valent|valor|atrev|verdad|sincer|palafrenero'], why:'Valora al palafrenero: hace falta valor para decir la verdad.'}]},
+  {c:'X', q:'El exemplo X consuela diciendo que «siempre hay alguien más pobre». ¿Te parece una buena forma de afrontar los problemas? Da tu opinión razonada.',
+   ideas:[
+    {t:'Reconoces lo positivo: relativizar, valorar lo que tienes', p:['relativ|valor|agradec|aprecia|perspectiva|consuel|animo'], why:'Lo positivo: ayuda a relativizar y a valorar lo que tienes.'},
+    {t:'Señalas un límite: no alegrarse del mal ajeno ni conformarse', p:['conform|resign|mal ajeno|injust|no (es|esta) bien|pero|sin embargo|aunque|limite'], why:'Un matiz crítico: no debe servir para conformarse con las injusticias ni alegrarse de que otros estén peor.'},
+    {t:'Destacas que el protagonista se esfuerza y sale adelante', p:['esfuer|luch|salir adelante|trabaj|supera|volvio a ser rico'], why:'Clave: en el cuento, el consuelo le da fuerzas para luchar y volver a ser rico.'}]},
+  {c:'XLVIII', q:'¿Te parece bien poner a prueba a los amigos como en el exemplo XLVIII? ¿Cómo se demuestra hoy la amistad?',
+   ideas:[
+    {t:'Das tu opinión sobre la prueba (engaño, manipulación, confianza)', p:['engan|manipul|confianza|mentir|no esta bien|esta bien|justo|injusto|opino|creo|me parece'], why:'Da tu opinión clara sobre si es correcto probar a alguien con un engaño.'},
+    {t:'Explicas que los amigos se conocen en los momentos difíciles', p:['dificil|problema|malos momentos|desgracia|necesit|apoy|ayud'], why:'Recuerda la idea del cuento: los amigos se ven en los malos momentos.'},
+    {t:'Das un ejemplo actual (redes, seguidores, apoyo real)', p:['redes|seguidores|instagram|tiktok|whatsapp|hoy|actual|escuchar|estar ahi|lealtad'], why:'Pon un ejemplo actual: seguidores frente a amigos reales, estar ahí cuando hace falta…'}]},
+  {c:'XXVI', q:'Relaciona el árbol de la Mentira (XXVI) con la zorra y el cuervo (V). ¿Qué tipo de mentira usa la zorra?',
+   ideas:[
+    {t:'Identificas la mentira triple', p:['triple'], why:'La zorra usa la mentira TRIPLE: engañar diciendo verdades.'},
+    {t:'Explicas qué es: engañar diciendo la verdad / verdades a medias', p:['verdad(es)? a medias|diciendo (la )?verdad|con verdades|medias verdades|verdad enganosa|verdades'], why:'Explica que consiste en engañar con verdades (o verdades a medias), como las plumas «azuladas» del cuervo.'},
+    {t:'Pones un ejemplo del cuento o actual', p:['plumas|pavo|ojos|cantar|queso|titular|fake|bulo|redes|contexto'], why:'Pon un ejemplo: los halagos de la zorra, o un titular real sacado de contexto.'}]}
+];
+</script>
+<script>
+/* =========================================================
+   MOTOR DE LA APP
+   ========================================================= */
+const byId = Object.fromEntries(CUENTOS.map(c => [c.id, c]));
+const IDS = CUENTOS.map(c => c.id);
+const app = document.getElementById('app');
+
+/* ---------- utilidades ---------- */
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a, n) => shuffle(a).slice(0, n);
+const rand = a => a[Math.floor(Math.random() * a.length)];
+const words = s => (s.trim().match(/\S+/g) || []).length;
+const lev = (a, b) => { const m = a.length, n = b.length, d = Array.from({length: m + 1}, (_, i) => [i, ...Array(n).fill(0)]); for (let j = 1; j <= n; j++) d[0][j] = j; for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)); return d[m][n]; };
+const fmt = n => (Math.round(n * 10) / 10).toString().replace('.', ',');
+const cName = id => `«${byId[id].corto}» (${id})`;
+
+const PRAISE = ['¡Bien visto!', '¡Exacto!', '¡Eso es!', '¡Patronio estaría orgulloso!', '¡Muy bien!', '¡Correcto!', '¡Así se hace!'];
+const OOPS = ['¡Uy! Aquí te has liado.', 'Casi, pero no.', 'Ojo, que esta tenía trampa.', 'No pasa nada: de los errores se aprende.', 'Vamos a verlo con calma.'];
+
+/* ---------- memoria del alumno (solo en este navegador) ---------- */
+let store = {};
+try { store = JSON.parse(localStorage.getItem('lucanor.v1')) || {}; } catch (e) { store = {}; }
+store.stats = store.stats || {}; store.fallos = store.fallos || []; store.vistos = store.vistos || {}; store.examenes = store.examenes || [];
+function save() { try { localStorage.setItem('lucanor.v1', JSON.stringify(store)); } catch (e) {} }
+function record(item, frac) {
+  if (item.cid) { const s = store.stats[item.cid] || {ok: 0, tot: 0}; s.ok += frac; s.tot += 1; store.stats[item.cid] = s; }
+  if (item.key) {
+    const i = store.fallos.indexOf(item.key);
+    if (frac < 0.7 && i < 0) store.fallos.push(item.key);
+    if (frac >= 0.7 && i >= 0) store.fallos.splice(i, 1);
+  }
+  save();
+}
+function mastery(id) { const s = store.stats[id]; return s && s.tot ? s.ok / s.tot : null; }
+function barClass(m) { return m === null ? '' : m >= 0.8 ? '' : m >= 0.5 ? 'mid' : 'low'; }
+
+/* ---------- navegación ---------- */
+let current = 'inicio';
+function go(view, arg) {
+  current = view;
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.go === view || (view === 'ficha' && b.dataset.go === 'cuentos') || (view === 'run' && b.dataset.go === 'practicar') ? 'page' : 'false'));
+  ({inicio: vInicio, cuentos: vCuentos, ficha: vFicha, practicar: vPracticar, examen: vExamen, escribir: vEscribir, pensar: vPensar, elegir: vElegir})[view](arg);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+document.getElementById('brand').addEventListener('click', () => go('inicio'));
+
+/* ---------- modal (ficha rápida durante un ejercicio) ---------- */
+const modal = document.getElementById('modal');
+function openFicha(id) { document.getElementById('modalBody').innerHTML = fichaHTML(byId[id], true); modal.hidden = false; modal.scrollTop = 0; document.getElementById('modalClose').focus(); }
+document.getElementById('modalClose').addEventListener('click', () => modal.hidden = true);
+modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true; });
+
+/* =========================================================
+   VISTAS
+   ========================================================= */
+function vInicio() {
+  const vistos = Object.keys(store.vistos).length;
+  const dominados = IDS.filter(id => (mastery(id) || 0) >= 0.8).length;
+  app.innerHTML = `
+  <div class="view">
+    <section class="hero">
+      <span class="eyebrow">Don Juan Manuel · siglo XIV</span>
+      <h1 class="h1">El conde Lucanor,<br><em>quince exemplos</em> para el examen</h1>
+      <p class="lead">Aquí tienes los 15 cuentos de tu PDF: de qué va cada uno, qué enseña y para qué te sirve hoy. Luego practica con preguntas que se corrigen solas, escribe resúmenes que la app te corrige y haz simulacros de examen. Cuando te equivoques, te explico por qué.</p>
+      <div class="row">
+        <button class="btn primary" data-a="cuentos" type="button">Empezar por las fichas</button>
+        <button class="btn" data-a="practicar" type="button">Ir a practicar</button>
+        <button class="btn" data-a="examen" type="button">Simulacro de examen</button>
+      </div>
+    </section>
+
+    <section class="marco" aria-labelledby="m1">
+      <h2 class="h3" id="m1">Así funciona cada exemplo (apréndetelo: cae seguro)</h2>
+      <ol class="pasos">
+        <li><b>El conde plantea un problema</b><span class="muted">Pide consejo a Patronio.</span></li>
+        <li><b>Patronio cuenta un cuento</b><span class="muted">El «exemplo» propiamente dicho.</span></li>
+        <li><b>Lo aplica al caso</b><span class="muted">«Y vos, señor conde…»</span></li>
+        <li><b>El conde actúa</b><span class="muted">Sigue el consejo y le va bien.</span></li>
+        <li><b>Don Juan pone la moraleja</b><span class="muted">En dos versos que riman.</span></li>
+      </ol>
+    </section>
+
+    <section class="view" style="gap:12px" aria-labelledby="m2">
+      <div class="row" style="justify-content:space-between">
+        <h2 class="h2" id="m2">Tu mapa de dominio</h2>
+        <span class="muted" style="font-size:.9rem">${vistos}/15 fichas leídas · ${dominados}/15 dominados</span>
+      </div>
+      <div class="legend"><span style="--c:var(--ok)">Lo dominas (80 % o más)</span><span style="--c:var(--gold)">Vas bien</span><span style="--c:var(--rubric)">A repasar</span><span style="--c:var(--line)">Sin practicar</span></div>
+      <div class="mapa">${CUENTOS.map(c => { const m = mastery(c.id); return `
+        <button class="chip-c" data-f="${c.id}" type="button" aria-label="Exemplo ${c.id}, ${esc(c.corto)}${m === null ? ', sin practicar' : ', ' + Math.round(m * 100) + ' por ciento'}">
+          <span class="rn">${c.id}</span><span class="nm">${esc(c.corto)}</span>
+          <span class="bar ${barClass(m)}"><i style="width:${m === null ? 0 : Math.max(6, Math.round(m * 100))}%"></i></span>
+        </button>`; }).join('')}</div>
+      ${store.fallos.length ? `<div class="row"><button class="btn primary" id="gofallos" type="button">Repasar mis ${store.fallos.length} fallos pendientes</button></div>` : ''}
+    </section>
+
+    <section class="marco" aria-labelledby="m3">
+      <h2 class="h3" id="m3">Plan para sacar un 10</h2>
+      <ol class="pasos">
+        <li><b>Lee las 15 fichas</b><span class="muted">Fíjate en la moraleja y en «Ojo en el examen».</span></li>
+        <li><b>Practica cuento a cuento</b><span class="muted">Hasta que el mapa esté en verde.</span></li>
+        <li><b>Escribe</b><span class="muted">Resúmenes y enseñanzas: la app te dice qué te falta.</span></li>
+        <li><b>Piensa</b><span class="muted">Opina con criterio: sube nota.</span></li>
+        <li><b>Simulacro</b><span class="muted">Repite hasta pasar del 9.</span></li>
+      </ol>
+    </section>
+    <p class="foot">Tu progreso se guarda solo en este navegador. Texto de referencia: el PDF «El conde Lucanor» de clase (versión modernizada).</p>
+  </div>`;
+  app.querySelectorAll('[data-a]').forEach(b => b.onclick = () => go(b.dataset.a));
+  app.querySelectorAll('[data-f]').forEach(b => b.onclick = () => go('ficha', b.dataset.f));
+  const gf = document.getElementById('gofallos'); if (gf) gf.onclick = startFallos;
+}
+
+let listaModo = 'fichas';
+function vCuentos() {
+  app.innerHTML = `
+  <div class="view">
+    <div class="view" style="gap:8px">
+      <span class="eyebrow">Los 15 exemplos</span>
+      <h1 class="h2">Elige un cuento para estudiarlo</h1>
+      <p class="lead">Cada ficha tiene el problema del conde, el cuento, el consejo de Patronio, la moraleja, la enseñanza explicada y cómo aplicarla hoy.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Vista"><button type="button" data-m="fichas" aria-pressed="${listaModo === 'fichas'}">Fichas</button><button type="button" data-m="tabla" aria-pressed="${listaModo === 'tabla'}">Tabla resumen</button></div>
+    ${listaModo === 'fichas' ? `<div class="lista">${CUENTOS.map(c => `
+      <button class="card-c" data-f="${c.id}" type="button">
+        <span class="rn">Exemplo ${c.id}${store.vistos[c.id] ? ' · leído ✓' : ''}</span>
+        <span class="nm">${esc(c.corto)}</span>
+        <span class="en">${esc(c.moraleja[0])} ${esc(c.moraleja[1])}</span>
+      </button>`).join('')}</div>`
+    : `<div class="scroll-x"><table class="tabla"><thead><tr><th>Nº</th><th>Cuento</th><th>Qué enseña</th><th>Moraleja</th></tr></thead><tbody>${CUENTOS.map(c => `<tr><td class="rn">${c.id}</td><td><b>${esc(c.corto)}</b></td><td>${esc(c.ensenanzaCorta.charAt(0).toUpperCase() + c.ensenanzaCorta.slice(1))}.</td><td class="mor">${esc(c.moraleja.join(' / '))}</td></tr>`).join('')}</tbody></table></div>`}
+  </div>`;
+  app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { listaModo = b.dataset.m; vCuentos(); });
+  app.querySelectorAll('[data-f]').forEach(b => b.onclick = () => go('ficha', b.dataset.f));
+}
+
+function fichaHTML(c, compact) {
+  return `
+  <article class="ficha">
+    <header class="ficha-head">
+      <span class="eyebrow">Exemplo ${c.id}</span>
+      <h2 class="h1" style="font-size:clamp(1.9rem,5vw,2.8rem)">${esc(c.corto)}</h2>
+      <p class="orig">«${esc(c.titulo)}»</p>
+    </header>
+    <section class="sec problema"><h3 class="h3">1 · El problema del conde</h3><p>${esc(c.problema)}</p></section>
+    <section class="sec relato"><h3 class="h3">2 · El cuento que cuenta Patronio</h3>${c.resumen.map(p => `<p>${esc(p)}</p>`).join('')}</section>
+    <section class="sec"><h3 class="h3">Personajes</h3><div class="personajes">${c.personajes.map(p => `<span>${esc(p)}</span>`).join('')}</div></section>
+    <section class="sec"><h3 class="h3">3 · El consejo de Patronio al conde</h3><p>${esc(c.consejo)}</p></section>
+    <section class="sec"><h3 class="h3">4 · La moraleja de don Juan</h3>
+      <p class="verso">${esc(c.moraleja[0])}<br>${esc(c.moraleja[1])}</p>
+      ${c.moraleja2 ? `<p class="verso">${esc(c.moraleja2[0])}<br>${esc(c.moraleja2[1])}</p>` : ''}
+    </section>
+    <section class="sec clave"><h3 class="h3">La enseñanza, en claro</h3><p>${esc(c.ensenanza)}</p></section>
+    <section class="sec"><h3 class="h3">Y hoy, ¿para qué me sirve?</h3><ul>${c.hoy.map(h => `<li>${esc(h)}</li>`).join('')}</ul></section>
+    <section class="sec ojo"><h3 class="h3">Ojo en el examen</h3><p>${esc(c.ojo)}</p></section>
+    <section class="sec piensa"><h3 class="h3">Para pensar (y opinar con criterio)</h3><p>${esc(c.critica)}</p></section>
+    ${compact ? '' : `
+    <div class="row">
+      <button class="btn primary" data-p="${c.id}" type="button">Practicar este cuento</button>
+      <button class="btn" data-w="wr:${c.id}" type="button">Escribir su resumen</button>
+      <button class="btn" data-w="we:${c.id}" type="button">Escribir su enseñanza</button>
+    </div>
+    <nav class="ficha-nav" aria-label="Otros cuentos">
+      ${IDS.indexOf(c.id) > 0 ? `<button class="btn ghost sm" data-f="${IDS[IDS.indexOf(c.id) - 1]}" type="button">← ${esc(byId[IDS[IDS.indexOf(c.id) - 1]].corto)}</button>` : '<span></span>'}
+      ${IDS.indexOf(c.id) < IDS.length - 1 ? `<button class="btn ghost sm" data-f="${IDS[IDS.indexOf(c.id) + 1]}" type="button">${esc(byId[IDS[IDS.indexOf(c.id) + 1]].corto)} →</button>` : ''}
+    </nav>`}
+  </article>`;
+}
+function vFicha(id) {
+  const c = byId[id]; store.vistos[id] = 1; save();
+  app.innerHTML = `<div class="view"><div><button class="btn ghost sm" id="back" type="button">← Todos los cuentos</button></div>${fichaHTML(c)}</div>`;
+  document.getElementById('back').onclick = () => go('cuentos');
+  app.querySelectorAll('[data-f]').forEach(b => b.onclick = () => go('ficha', b.dataset.f));
+  app.querySelector('[data-p]').onclick = () => startCuento(id);
+  app.querySelectorAll('[data-w]').forEach(b => b.onclick = () => runQuiz({title: b.textContent, items: [buildKey(b.dataset.w)]}));
+}
+
+function vPracticar() {
+  const modos = [
+    {k: 'Por cuento', t: 'Practica un cuento', d: 'Todas sus preguntas, ordenar la historia, completar el verso y escribir.', f: () => go('elegir')},
+    {k: '10 preguntas', t: 'Mezcla rápida', d: 'Preguntas variadas de los 15 cuentos. Ideal para repasar en 5 minutos.', f: startMezcla},
+    {k: 'Aplicar', t: '¿Qué cuento te aconsejaría?', d: 'Situaciones de hoy: descubre qué exemplo encaja con cada una.', f: startSituaciones},
+    {k: 'Moralejas', t: 'Versos y moralejas', d: 'Relaciona cada moraleja con su cuento y completa los versos.', f: startMoralejas},
+    {k: 'Secuencias', t: 'Ordena la historia', d: 'Pon en orden los hechos de cada cuento. Perfecto para preparar resúmenes.', f: startOrden},
+    {k: 'Escribir', t: 'Resúmenes y enseñanzas', d: 'Escribe como en el examen. La app te dice qué ideas has puesto y cuáles te faltan.', f: () => go('escribir')},
+    {k: 'Criterio', t: 'Piensa y opina', d: 'Preguntas de reflexión para demostrar pensamiento crítico.', f: () => go('pensar')},
+    {k: 'Teoría', t: 'El libro y su estructura', d: 'Autor, época, Patronio, estructura de los exemplos…', f: startLibro},
+  ];
+  app.innerHTML = `
+  <div class="view">
+    <div class="view" style="gap:8px"><span class="eyebrow">Practicar</span><h1 class="h2">¿Qué quieres entrenar?</h1>
+    <p class="lead">Todo se corrige al momento. Si fallas, te explico qué ha pasado y cómo es. Lo que falles se guarda para repasarlo después.</p></div>
+    ${store.fallos.length ? `<button class="modo destacado" id="mf" type="button"><span class="k">Tus errores</span><span class="t">Repasar mis ${store.fallos.length} fallos</span><span class="d">Vuelven las preguntas que fallaste. Si las aciertas, desaparecen de la lista.</span></button>` : ''}
+    <div class="modos">${modos.map((m, i) => `<button class="modo" data-i="${i}" type="button"><span class="k">${m.k}</span><span class="t">${m.t}</span><span class="d">${m.d}</span></button>`).join('')}</div>
+  </div>`;
+  app.querySelectorAll('[data-i]').forEach(b => b.onclick = modos[+b.dataset.i].f);
+  const mf = document.getElementById('mf'); if (mf) mf.onclick = startFallos;
+}
+
+function pickerHTML() {
+  return `<div class="picker">${CUENTOS.map(c => { const m = mastery(c.id); return `<button data-c="${c.id}" type="button"><span class="rn">${c.id}</span><span class="nm">${esc(c.corto)}</span><span class="bar ${barClass(m)}"><i style="width:${m === null ? 0 : Math.max(6, Math.round(m * 100))}%"></i></span></button>`; }).join('')}</div>`;
+}
+function vElegir() {
+  app.innerHTML = `<div class="view"><div class="view" style="gap:8px"><span class="eyebrow">Practicar por cuento</span><h1 class="h2">Elige el cuento</h1><p class="lead">Empieza por los que tengas en rojo o sin practicar.</p></div>${pickerHTML()}</div>`;
+  app.querySelectorAll('[data-c]').forEach(b => b.onclick = () => startCuento(b.dataset.c));
+}
+function vEscribir() {
+  app.innerHTML = `<div class="view">
+    <div class="view" style="gap:8px"><span class="eyebrow">Escribir</span><h1 class="h2">Resúmenes y enseñanzas</h1>
+    <p class="lead">Así serán algunas preguntas del examen. La app busca las ideas clave que un profesor espera encontrar y te dice cuáles faltan. Si has dicho algo con otras palabras, puedes marcarlo tú.</p></div>
+    <div class="marco"><h2 class="h3">Cómo escribir un buen resumen</h2>
+      <ol class="pasos"><li><b>Quién y dónde</b><span class="muted">Presenta a los personajes.</span></li><li><b>Qué problema hay</b><span class="muted">El planteamiento.</span></li><li><b>Qué pasa</b><span class="muted">Los hechos clave, en orden.</span></li><li><b>Cómo acaba</b><span class="muted">El desenlace.</span></li><li><b>En tercera persona</b><span class="muted">Con tus palabras, sin diálogos. 5-8 líneas.</span></li></ol>
+    </div>
+    <div class="row"><button class="btn primary" id="wr-rand" type="button">Resumen de un cuento al azar</button><button class="btn" id="we-rand" type="button">Enseñanzas de 3 cuentos al azar</button></div>
+    <h2 class="h3">O elige un cuento</h2>
+    <div class="row"><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-t="wr" aria-pressed="true">Resumen</button><button type="button" data-t="we" aria-pressed="false">Enseñanza</button></div></div>
+    ${pickerHTML()}
+  </div>`;
+  let t = 'wr';
+  app.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { t = b.dataset.t; app.querySelectorAll('[data-t]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+  app.querySelectorAll('[data-c]').forEach(b => b.onclick = () => runQuiz({title: (t === 'wr' ? 'Resumen: ' : 'Enseñanza: ') + byId[b.dataset.c].corto, items: [buildKey(t + ':' + b.dataset.c)]}));
+  document.getElementById('wr-rand').onclick = () => runQuiz({title: 'Resumen al azar', items: [buildKey('wr:' + rand(IDS))]});
+  document.getElementById('we-rand').onclick = () => runQuiz({title: 'Enseñanzas', items: pick(IDS, 3).map(id => buildKey('we:' + id))});
+}
+function vPensar() {
+  app.innerHTML = `<div class="view">
+    <div class="view" style="gap:8px"><span class="eyebrow">Criterio</span><h1 class="h2">Piensa y opina</h1>
+    <p class="lead">Un 10 no es solo repetir: es entender y valorar. Aquí no hay una única respuesta correcta, pero sí ideas que hacen que tu opinión esté bien argumentada.</p></div>
+    <div class="modos">${REFLEXION.map((r, i) => `<button class="modo" data-r="${i}" type="button"><span class="k">Exemplo ${r.c}</span><span class="t" style="font-size:1.1rem">${esc(r.q)}</span></button>`).join('')}</div>
+    <div class="row"><button class="btn primary" id="rf-all" type="button">Hacer las ${REFLEXION.length} seguidas</button></div>
+  </div>`;
+  app.querySelectorAll('[data-r]').forEach(b => b.onclick = () => runQuiz({title: 'Piensa y opina', items: [buildKey('rf:' + b.dataset.r)]}));
+  document.getElementById('rf-all').onclick = () => runQuiz({title: 'Piensa y opina', items: REFLEXION.map((_, i) => buildKey('rf:' + i))});
+}
+
+/* =========================================================
+   GENERADORES DE PREGUNTAS
+   Cada pregunta tiene una "clave" para poder repetirla en el repaso de fallos.
+   ========================================================= */
+function othersOf(id, n) { return pick(IDS.filter(x => x !== id), n); }
+function buildKey(k) {
+  const [t, a] = k.split(':');
+  const c = byId[a];
+  switch (t) {
+    case 'b': { const [, id, idx] = k.split(':'); const p = byId[id].preguntas[+idx];
+      return p.tf ? {type: 'tf', key: k, cid: id, q: p.q, a: p.a, why: p.why} : {type: 'mc', key: k, cid: id, q: p.q, opts: shuffle(p.o)}; }
+    case 'l': { const p = LIBRO[+a];
+      return p.tf ? {type: 'tf', key: k, tag: 'El libro', q: p.q, a: p.a, why: p.why} : {type: 'mc', key: k, tag: 'El libro', q: p.q, opts: shuffle(p.o)}; }
+    case 's': { const s = SITUACIONES[+a];
+      return {type: 'mc', key: k, cid: s.c, tag: 'Aplícalo a hoy', hideCid: 1, q: s.s, sub: '¿Qué exemplo le serviría de consejo?',
+        opts: shuffle([s.c, ...othersOf(s.c, 3)].map(id => id === s.c ? {t: cName(id), ok: 1, why: s.why}
+          : {t: cName(id), why: `Ese cuento enseña que ${byId[id].ensenanzaCorta}. Aquí no encaja: ${s.why}`}))}; }
+    case 'mo':
+      return {type: 'mc', key: k, cid: a, tag: 'Moraleja', hideCid: 1, q: '¿De qué cuento es esta moraleja?', cita: c.moraleja.join(' / '),
+        opts: shuffle([a, ...othersOf(a, 3)].map(id => id === a ? {t: cName(id), ok: 1, why: `Sí: ${c.ensenanza}`}
+          : {t: cName(id), why: `No. «${byId[id].corto}» enseña que ${byId[id].ensenanzaCorta}, y su moraleja es: «${byId[id].moraleja.join(' ')}».`}))};
+    case 'pr':
+      return {type: 'mc', key: k, cid: a, tag: 'El problema del conde', hideCid: 1, q: 'El conde le plantea a Patronio este problema. ¿Qué cuento le cuenta Patronio?', cita: c.problema,
+        opts: shuffle([a, ...othersOf(a, 3)].map(id => id === a ? {t: cName(id), ok: 1, why: `Correcto. Patronio le aconseja: ${c.consejo}`}
+          : {t: cName(id), why: `En «${byId[id].corto}» el problema era otro: ${byId[id].problema}`}))};
+    case 'en':
+      return {type: 'mc', key: k, cid: a, tag: 'Enseñanza', hideCid: 1, q: `¿Qué cuento enseña que ${c.ensenanzaCorta}?`,
+        opts: shuffle([a, ...othersOf(a, 3)].map(id => id === a ? {t: cName(id), ok: 1, why: c.ensenanza}
+          : {t: cName(id), why: `No: «${byId[id].corto}» enseña que ${byId[id].ensenanzaCorta}.`}))};
+    case 'g':
+      return {type: 'gap', key: k, cid: a, tag: 'Completa el verso', q: `Completa la moraleja de «${c.corto}» (${a}):`, txt: c.hueco.txt, ans: c.hueco.ans, full: c.moraleja.join(' / ')};
+    case 'o':
+      return {type: 'order', key: k, cid: a, tag: 'Ordena la historia', q: `Ordena los hechos de «${c.corto}» (${a}):`, items: c.secuencia};
+    case 'wr':
+      return {type: 'write', key: k, cid: a, kind: 'resumen', tag: 'Escribe', q: `Resume el cuento «${c.corto}» (exemplo ${a}).`, ideas: c.ideasResumen, modelo: c.modeloResumen, min: 45};
+    case 'we':
+      return {type: 'write', key: k, cid: a, kind: 'enseñanza', tag: 'Escribe', q: `¿Qué enseña el cuento «${c.corto}» (exemplo ${a})?`, ideas: c.ideasEnsenanza, modelo: c.modeloEnsenanza, min: 14};
+    case 'rf': { const r = REFLEXION[+a];
+      return {type: 'write', key: k, cid: r.c, kind: 'reflexión', tag: 'Piensa y opina', q: r.q, ideas: r.ideas, modelo: null, min: 35}; }
+    case 'mm': {
+      const ids = pick(IDS, 5);
+      return {type: 'match', tag: 'Relaciona', q: 'Relaciona cada moraleja con su cuento.', rows: ids.map(id => ({l: byId[id].moraleja.join(' / '), id})), choices: shuffle(ids)}; }
+  }
+}
+const bankKeys = id => byId[id].preguntas.map((_, i) => `b:${id}:${i}`);
+const allObjectiveKeys = () => [
+  ...IDS.flatMap(bankKeys), ...LIBRO.map((_, i) => 'l:' + i), ...SITUACIONES.map((_, i) => 's:' + i),
+  ...IDS.flatMap(id => ['mo:' + id, 'pr:' + id, 'en:' + id])
+];
+
+function startCuento(id) {
+  const keys = [...shuffle(bankKeys(id)), 'pr:' + id, 'g:' + id, 'o:' + id, 'we:' + id, 'wr:' + id];
+  runQuiz({title: `Exemplo ${id} · ${byId[id].corto}`, items: keys.map(buildKey)});
+}
+function startMezcla() { runQuiz({title: 'Mezcla rápida', items: pick(allObjectiveKeys(), 8).concat(['g:' + rand(IDS), 'o:' + rand(IDS)]).map(buildKey)}); }
+function startSituaciones() { runQuiz({title: '¿Qué cuento te aconsejaría?', items: pick(SITUACIONES.map((_, i) => 's:' + i), 10).map(buildKey)}); }
+function startMoralejas() { runQuiz({title: 'Versos y moralejas', items: [buildKey('mm'), ...pick(IDS, 5).map(id => buildKey('g:' + id)), buildKey('mm'), ...pick(IDS, 3).map(id => buildKey('mo:' + id))]}); }
+function startOrden() { runQuiz({title: 'Ordena la historia', items: pick(IDS, 6).map(id => buildKey('o:' + id))}); }
+function startLibro() { runQuiz({title: 'El libro y su estructura', items: shuffle(LIBRO.map((_, i) => 'l:' + i)).map(buildKey)}); }
+function startFallos() {
+  if (!store.fallos.length) { go('practicar'); return; }
+  runQuiz({title: 'Repaso de mis fallos', items: shuffle(store.fallos).slice(0, 15).map(buildKey).filter(Boolean)});
+}
+
+/* =========================================================
+   CORRECCIÓN
+   ========================================================= */
+function tagHTML(item) {
+  const tipo = {mc: 'Elige la respuesta', tf: 'Verdadero o falso', gap: 'Completa', order: 'Ordena', match: 'Relaciona', write: 'Respuesta escrita'}[item.type];
+  const cid = item.hideCid ? null : item.cid;
+  return `<div class="qtag"><span class="t1">${cid ? 'Exemplo ' + cid : esc(item.tag || 'Los 15 cuentos')}</span><span class="t2">· ${item.tag && cid ? esc(item.tag) : tipo}</span></div>`;
+}
+function fichaLink(cid) { return cid ? `<div><button class="btn sm" data-ficha="${cid}" type="button">Repasar la ficha de «${esc(byId[cid].corto)}»</button></div>` : ''; }
+
+function checkMC(item, sel) {
+  const o = item.opts[sel], ok = item.opts.find(x => x.ok);
+  if (o.ok) return {frac: 1, html: `<div class="fb ok"><p class="ttl">${rand(PRAISE)}</p><p>${esc(o.why)}</p></div>`};
+  return {frac: 0, html: `<div class="fb bad"><p class="ttl">${rand(OOPS)}</p>
+    <p><b>Has elegido:</b> «${esc(o.t)}». ${esc(o.why)}</p>
+    <p class="fix"><b>La correcta es:</b> «${esc(ok.t)}». ${esc(ok.why)}</p>${fichaLink(item.cid)}</div>`};
+}
+function checkTF(item, v) {
+  const good = v === item.a;
+  if (good) return {frac: 1, html: `<div class="fb ok"><p class="ttl">${rand(PRAISE)}</p><p>${esc(item.why)}</p></div>`};
+  return {frac: 0, html: `<div class="fb bad"><p class="ttl">${rand(OOPS)}</p>
+    <p>Has dicho <b>${v ? 'Verdadero' : 'Falso'}</b>, pero es <b>${item.a ? 'Verdadero' : 'Falso'}</b>.</p>
+    <p class="fix">${esc(item.why)}</p>
+    <p class="tip">Truco: en las de verdadero o falso, busca la palabra que lo cambia todo (quién lo hace, qué objeto, «siempre», «nunca», «solo»…).</p>${fichaLink(item.cid)}</div>`};
+}
+function checkGap(item, val) {
+  const v = norm(val), best = item.ans.map(a => [a, lev(v, norm(a))]).sort((x, y) => x[1] - y[1])[0];
+  if (best[1] === 0) return {frac: 1, html: `<div class="fb ok"><p class="ttl">${rand(PRAISE)}</p><p class="verso" style="font-size:1.15rem">${esc(item.full)}</p></div>`};
+  if (best[1] === 1 && best[0].length >= 4) return {frac: 1, html: `<div class="fb mid"><p class="ttl">¡Bien, aunque revisa la ortografía!</p><p>Has escrito «${esc(val)}» y es «<b>${esc(best[0])}</b>». Te lo doy por bueno, pero en el examen cuidado.</p><p class="verso" style="font-size:1.15rem">${esc(item.full)}</p></div>`};
+  const otro = CUENTOS.find(c => c.id !== item.cid && c.hueco.ans.some(a => norm(a) === v));
+  return {frac: 0, html: `<div class="fb bad"><p class="ttl">${rand(OOPS)}</p>
+    <p>${v ? `Has escrito «${esc(val)}».` : 'Lo has dejado en blanco.'} La palabra que falta es «<b>${esc(item.ans[0])}</b>».${otro ? ` Esa palabra es la que falta en la moraleja de «${esc(otro.corto)}»: ¡no mezcles los versos!` : ''}</p>
+    <p class="verso" style="font-size:1.15rem">${esc(item.full)}</p>
+    <p class="tip">Para memorizarla: la moraleja resume la enseñanza. Aquí: ${esc(byId[item.cid].ensenanzaCorta)}.</p></div>`};
+}
+function checkOrder(item, order) {
+  let good = 0; order.forEach((txt, i) => { if (txt === item.items[i]) good++; });
+  const frac = good / item.items.length;
+  const list = `<ol class="orden">${item.items.map((t, i) => `<li class="${order[i] === t ? 'is-ok' : 'is-bad'}"><span class="n">${i + 1}</span><span>${esc(t)}</span><span>${order[i] === t ? '✓' : '✗'}</span></li>`).join('')}</ol>`;
+  if (frac === 1) return {frac, html: `<div class="fb ok"><p class="ttl">¡Orden perfecto!</p><p>Con estos pasos ya tienes el esqueleto de un resumen de 10.</p></div>`};
+  return {frac, html: `<div class="fb ${frac >= .5 ? 'mid' : 'bad'}"><p class="ttl">${good} de ${item.items.length} en su sitio.</p>
+    <p>Este es el orden correcto (✗ marca dónde te habías liado). Fíjate en la lógica: planteamiento → nudo → desenlace.</p>${list}${fichaLink(item.cid)}</div>`};
+}
+function checkMatch(item, vals) {
+  let good = 0;
+  const rows = item.rows.map((r, i) => { const ok = vals[i] === r.id; if (ok) good++;
+    return `<li class="${ok ? 'si' : 'no'}"><span class="ic">${ok ? '✓' : '✗'}</span><div><i class="serif">«${esc(r.l)}»</i><div class="why">${ok ? 'Correcto: ' + esc(byId[r.id].corto) + '.' : `Es de <b>${esc(byId[r.id].corto)}</b> (${r.id})${vals[i] ? `, no de «${esc(byId[vals[i]].corto)}»` : ''}. Pista: ${esc(byId[r.id].ensenanzaCorta)}.`}</div></div></li>`; }).join('');
+  const frac = good / item.rows.length;
+  return {frac, html: `<div class="fb ${frac === 1 ? 'ok' : frac >= .6 ? 'mid' : 'bad'}"><p class="ttl">${frac === 1 ? rand(PRAISE) + ' Todas bien.' : `${good} de ${item.rows.length} bien.`}</p><ul class="ideas">${rows}</ul></div>`};
+}
+
+/* Respuesta escrita: busca ideas clave */
+function analyzeWrite(item, text) {
+  const t = norm(text);
+  const matched = item.ideas.map(idea => idea.p.some(p => new RegExp(p).test(t)));
+  // ¿mezcla con otro cuento?
+  const own = new RegExp(byId[item.cid].claves).test(t);
+  let mezcla = null;
+  if (item.kind !== 'reflexión') for (const c of CUENTOS) {
+    if (c.id === item.cid) continue;
+    const m = t.match(new RegExp('\\b(' + c.claves + ')'));
+    if (m && !own) { mezcla = {c, w: m[1]}; break; }
+    if (m && ['queso', 'cuervo', 'zorra', 'lino', 'golondrina', 'miel', 'altramuces', 'perdices', 'illan', 'beguina', 'cerdo', 'coles', 'ciego'].some(w => m[0].startsWith(w))) { mezcla = {c, w: m[1]}; break; }
+  }
+  return {matched, n: words(text), mezcla, text};
+}
+function writeScore(item, a) {
+  const ratio = a.matched.filter(Boolean).length / item.ideas.length;
+  let f = 1; if (a.n < item.min * 0.5) f = 0.6; else if (a.n < item.min) f = 0.85;
+  return Math.min(1, ratio * f);
+}
+function writeFeedbackHTML(item, a, idx) {
+  const frac = writeScore(item, a), nota = frac * 10;
+  const cls = nota >= 8 ? 'ok' : nota >= 5 ? 'mid' : 'bad';
+  const ttl = nota >= 9 ? '¡Respuesta de sobresaliente!' : nota >= 8 ? '¡Muy bien! Estás cerca del 10.' : nota >= 5 ? 'Aprobado, pero te faltan ideas importantes.' : 'Faltan muchas ideas clave.';
+  return `<div class="fb ${cls}" data-wf="${idx}">
+    <div class="nota"><span class="big">${fmt(nota)}</span><span class="muted">/ 10 · ${a.n} palabras</span></div>
+    <p class="ttl">${ttl}</p>
+    ${a.mezcla ? `<p class="aviso">⚠️ Cuidado: has escrito «${esc(a.mezcla.w)}», que es del cuento «${esc(a.mezcla.c.corto)}» (${a.mezcla.c.id}). ¿Estás mezclando cuentos?</p>` : ''}
+    ${a.n < item.min ? `<p class="aviso">Tu respuesta es corta (${a.n} palabras). ${item.kind === 'resumen' ? 'Un resumen de examen suele tener entre 60 y 120 palabras: planteamiento, nudo y desenlace.' : item.kind === 'enseñanza' ? 'Explica la enseñanza con al menos una o dos frases completas.' : 'Desarrolla tu opinión con argumentos y algún ejemplo.'}</p>` : ''}
+    <p>Esto es lo que un profesor buscará en tu respuesta:</p>
+    <ul class="ideas">${item.ideas.map((idea, i) => `<li class="${a.matched[i] ? 'si' : 'no'}"><span class="ic">${a.matched[i] ? '✓' : '✗'}</span><div><b>${esc(idea.t)}</b>${a.matched[i] ? '' : `<div class="why">${esc(idea.why)}</div><button class="link" data-yes="${i}" type="button">Sí lo he dicho, con otras palabras</button>`}</div></li>`).join('')}</ul>
+    ${item.modelo ? `<details class="modelo" ${nota < 8 ? 'open' : ''}><summary>Ver una respuesta modelo</summary><p>${esc(item.modelo)}</p></details>` : `<p class="tip">No hay una única respuesta correcta: lo que cuenta es que tu opinión esté argumentada, tenga en cuenta la época del texto y ponga ejemplos.</p>`}
+    ${item.kind === 'resumen' ? `<p class="tip">Recuerda: en tercera persona, con tus palabras, sin diálogos y en orden (planteamiento → nudo → desenlace). La moraleja no hace falta en el resumen, salvo que te la pidan.</p>` : ''}
+  </div>`;
+}
+function bindWriteToggles(container, item, a, idx, onChange) {
+  container.querySelectorAll(`[data-wf="${idx}"] [data-yes]`).forEach(b => b.onclick = () => {
+    a.matched[+b.dataset.yes] = true;
+    const box = container.querySelector(`[data-wf="${idx}"]`);
+    box.outerHTML = writeFeedbackHTML(item, a, idx);
+    bindWriteToggles(container, item, a, idx, onChange);
+    bindFichaLinks(container);
+    onChange(writeScore(item, a));
+  });
+}
+function bindFichaLinks(root) { root.querySelectorAll('[data-ficha]').forEach(b => b.onclick = () => openFicha(b.dataset.ficha)); }
+
+/* =========================================================
+   REPRODUCTOR DE EJERCICIOS
+   ========================================================= */
+let Q = null;
+function runQuiz(cfg) {
+  Q = {title: cfg.title, items: cfg.items.filter(Boolean), i: 0, res: [], exam: !!cfg.exam, weights: cfg.weights || null, onEnd: cfg.onEnd};
+  current = 'run';
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', b.dataset.go === (Q.exam ? 'examen' : 'practicar') ? 'page' : 'false'));
+  renderQ();
+}
+function renderQ() {
+  const item = Q.items[Q.i], n = Q.items.length;
+  window.scrollTo(0, 0);
+  app.innerHTML = `
+  <div class="quiz">
+    <div class="qhead">
+      <div class="row" style="justify-content:space-between"><h1 class="h2" style="font-size:1.4rem">${esc(Q.title)}</h1><button class="btn ghost sm" id="salir" type="button">Salir</button></div>
+      <div class="row" style="justify-content:space-between;font-size:.88rem"><span class="muted">Pregunta ${Q.i + 1} de ${n}</span>${Q.exam ? '<span class="muted">Modo examen: la corrección, al final</span>' : ''}</div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${Q.i}"><i style="width:${Q.i / n * 100}%"></i></div>
+    </div>
+    <div class="qcard">
+      ${tagHTML(item)}
+      <p class="qtext">${esc(item.q)}${item.cita ? `<span class="cita">${esc(item.cita)}</span>` : ''}${item.sub ? `<br><b style="font-family:var(--f-ui);font-size:1rem">${esc(item.sub)}</b>` : ''}</p>
+      <div id="ans"></div>
+      <div class="row"><button class="btn primary" id="check" type="button" disabled>${Q.exam ? (Q.i === n - 1 ? 'Entregar examen' : 'Responder y seguir') : 'Comprobar'}</button><button class="btn" id="next" type="button" hidden>${Q.i === n - 1 ? 'Ver resultado' : 'Siguiente →'}</button></div>
+      <div id="fb" aria-live="polite"></div>
+    </div>
+  </div>`;
+  document.getElementById('salir').onclick = () => go(Q.exam ? 'examen' : 'practicar');
+  const ans = document.getElementById('ans'), check = document.getElementById('check'), next = document.getElementById('next'), fb = document.getElementById('fb');
+  let state = null;
+  const L = 'ABCD';
+
+  if (item.type === 'mc') {
+    ans.innerHTML = `<div class="opts">${item.opts.map((o, i) => `<button class="opt" data-o="${i}" aria-pressed="false" type="button"><span class="l">${L[i]}</span><span>${esc(o.t)}</span></button>`).join('')}</div>`;
+    ans.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { state = +b.dataset.o; ans.querySelectorAll('[data-o]').forEach(x => x.setAttribute('aria-pressed', x === b)); check.disabled = false; });
+  }
+  if (item.type === 'tf') {
+    ans.innerHTML = `<div class="tf"><button class="opt" data-v="1" aria-pressed="false" type="button">Verdadero</button><button class="opt" data-v="0" aria-pressed="false" type="button">Falso</button></div>`;
+    ans.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { state = b.dataset.v === '1'; ans.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', x === b)); check.disabled = false; });
+  }
+  if (item.type === 'gap') {
+    ans.innerHTML = `<p class="gap-verso">${esc(item.txt).replace('______', '<b style="color:var(--rubric)">______</b>')}</p><label class="counter" for="gapin">Escribe la palabra que falta:</label><input class="field" id="gapin" autocomplete="off" autocapitalize="off" spellcheck="false">`;
+    const inp = document.getElementById('gapin');
+    inp.oninput = () => { state = inp.value; check.disabled = !inp.value.trim(); };
+    inp.onkeydown = e => { if (e.key === 'Enter' && !check.disabled) check.click(); };
+    setTimeout(() => inp.focus(), 50);
+  }
+  if (item.type === 'order') {
+    let ord = shuffle(item.items); while (ord.every((t, i) => t === item.items[i])) ord = shuffle(item.items);
+    state = ord; check.disabled = false;
+    const draw = () => {
+      ans.innerHTML = `<p class="counter">Usa las flechas para mover cada hecho a su sitio.</p><ol class="orden">${state.map((t, i) => `<li><span class="n">${i + 1}</span><span>${esc(t)}</span><span class="mv"><button type="button" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-dn="${i}" ${i === state.length - 1 ? 'disabled' : ''} aria-label="Bajar">↓</button></span></li>`).join('')}</ol>`;
+      ans.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const i = +b.dataset.up; [state[i - 1], state[i]] = [state[i], state[i - 1]]; draw(); ans.querySelector(`[data-up="${i - 1}"]`)?.focus(); });
+      ans.querySelectorAll('[data-dn]').forEach(b => b.onclick = () => { const i = +b.dataset.dn; [state[i + 1], state[i]] = [state[i], state[i + 1]]; draw(); ans.querySelector(`[data-dn="${i + 1}"]`)?.focus(); });
+    };
+    draw();
+  }
+  if (item.type === 'match') {
+    state = item.rows.map(() => '');
+    ans.innerHTML = `<div class="match">${item.rows.map((r, i) => `<div class="mrow"><p>«${esc(r.l)}»</p><select id="m${i}" data-m="${i}" aria-label="Cuento de la moraleja ${i + 1}"><option value="">Elige el cuento…</option>${item.choices.map(id => `<option value="${id}">${esc(byId[id].corto)} (${id})</option>`).join('')}</select></div>`).join('')}</div>`;
+    ans.querySelectorAll('[data-m]').forEach(s => s.onchange = () => { state[+s.dataset.m] = s.value; check.disabled = state.some(v => !v); });
+  }
+  if (item.type === 'write') {
+    ans.innerHTML = `<textarea class="field" id="wta" placeholder="${item.kind === 'resumen' ? 'Escribe aquí tu resumen, con tus palabras…' : item.kind === 'enseñanza' ? 'Escribe aquí qué enseña el cuento…' : 'Escribe aquí tu opinión razonada…'}"></textarea><div class="row" style="justify-content:space-between"><span class="counter" id="wc">0 palabras</span><span class="counter">${item.kind === 'resumen' ? 'Objetivo: 60-120 palabras' : item.kind === 'enseñanza' ? 'Objetivo: 20-60 palabras' : 'Objetivo: 50-120 palabras'}</span></div>`;
+    const ta = document.getElementById('wta');
+    ta.oninput = () => { state = ta.value; const n = words(ta.value); document.getElementById('wc').textContent = n + (n === 1 ? ' palabra' : ' palabras'); check.disabled = n < 3; };
+    check.textContent = Q.exam ? check.textContent : 'Corregir';
+  }
+
+  check.onclick = () => {
+    let r;
+    if (item.type === 'mc') r = checkMC(item, state);
+    if (item.type === 'tf') r = checkTF(item, state);
+    if (item.type === 'gap') r = checkGap(item, state);
+    if (item.type === 'order') r = checkOrder(item, state.slice());
+    if (item.type === 'match') r = checkMatch(item, state.slice());
+    let a = null;
+    if (item.type === 'write') { a = analyzeWrite(item, state); r = {frac: writeScore(item, a), html: ''}; }
+    const res = {item, frac: r.frac, html: r.html, a, answer: state};
+    Q.res[Q.i] = res;
+    record(item, r.frac);
+    if (Q.exam) { advance(); return; }
+    check.hidden = true; next.hidden = false;
+    ans.querySelectorAll('button,input,textarea,select').forEach(el => el.disabled = true);
+    if (item.type === 'mc') { ans.querySelectorAll('[data-o]').forEach(b => { const o = item.opts[+b.dataset.o]; if (o.ok) b.classList.add('is-ok'); else if (+b.dataset.o === state) b.classList.add('is-bad'); }); }
+    if (item.type === 'tf') { ans.querySelectorAll('[data-v]').forEach(b => { const v = b.dataset.v === '1'; if (v === item.a) b.classList.add('is-ok'); else if (v === state) b.classList.add('is-bad'); }); }
+    if (item.type === 'match') { ans.querySelectorAll('.mrow').forEach((row, i) => row.classList.add(state[i] === item.rows[i].id ? 'is-ok' : 'is-bad')); }
+    if (item.type === 'write') {
+      fb.innerHTML = writeFeedbackHTML(item, a, 0);
+      bindWriteToggles(fb, item, a, 0, f => { res.frac = f; if (f >= 0.7) record({key: item.key}, f); });
+    } else fb.innerHTML = r.html;
+    bindFichaLinks(fb);
+    next.focus({preventScroll: true});
+    fb.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  };
+  next.onclick = advance;
+}
+function advance() { if (Q.i < Q.items.length - 1) { Q.i++; renderQ(); } else endQuiz(); }
+
+function endQuiz() {
+  if (Q.exam) { endExam(); return; }
+  const total = Q.res.reduce((s, r) => s + (r ? r.frac : 0), 0), n = Q.items.length, nota = total / n * 10;
+  const malos = Q.res.map((r, i) => ({r, i})).filter(x => x.r && x.r.frac < 0.7);
+  app.innerHTML = `<div class="view"><section class="result">
+    <span class="eyebrow">${esc(Q.title)}</span>
+    <div class="score">${fmt(nota)}<small> / 10</small></div>
+    <p class="lead">${nota >= 9 ? '¡Excelente! Patronio no lo habría explicado mejor.' : nota >= 7 ? 'Muy bien. Repasa los fallos y a por el 10.' : nota >= 5 ? 'Vas por buen camino, pero hay que repasar.' : 'Toca volver a las fichas y repetir. ¡Se aprende equivocándose!'}</p>
+    ${malos.length ? `<h2 class="h3">Lo que has fallado (se ha guardado para repasar)</h2><div class="review">${malos.map(x => `<div class="ritem"><p class="rq">${esc(x.r.item.q)}</p>${x.r.item.type === 'write' ? writeFeedbackHTML(x.r.item, x.r.a, 'e' + x.i) : x.r.html}</div>`).join('')}</div>` : ''}
+    <div class="row"><button class="btn primary" id="again" type="button">Repetir</button>${store.fallos.length ? `<button class="btn" id="fall" type="button">Repasar mis fallos (${store.fallos.length})</button>` : ''}<button class="btn ghost" id="back" type="button">Volver a practicar</button></div>
+  </section></div>`;
+  const items = Q.items.map(it => it.key ? buildKey(it.key) : buildKey('mm')), title = Q.title;
+  document.getElementById('again').onclick = () => runQuiz({title, items});
+  document.getElementById('back').onclick = () => go('practicar');
+  const f = document.getElementById('fall'); if (f) f.onclick = startFallos;
+  malos.forEach(x => { if (x.r.item.type === 'write') bindWriteToggles(app, x.r.item, x.r.a, 'e' + x.i, v => x.r.frac = v); });
+  bindFichaLinks(app);
+}
+
+/* =========================================================
+   SIMULACRO DE EXAMEN
+   ========================================================= */
+function vExamen() {
+  const hist = store.examenes.slice(-5).reverse();
+  app.innerHTML = `<div class="view">
+    <div class="view" style="gap:8px"><span class="eyebrow">Simulacro</span><h1 class="h2">Examen de prueba</h1>
+    <p class="lead">Diez preguntas como las del examen real, con nota sobre 10. No verás la corrección hasta entregarlo. Cada vez que lo hagas, las preguntas cambian.</p></div>
+    <div class="marco">
+      <h2 class="h3">Qué te vas a encontrar</h2>
+      <div class="scroll-x" style="border:0"><table class="tabla" style="min-width:0"><thead><tr><th>Pregunta</th><th>Tipo</th><th>Puntos</th></tr></thead><tbody>
+        <tr><td>1-4</td><td>Preguntas de elegir y verdadero/falso</td><td>2 (0,5 c/u)</td></tr>
+        <tr><td>5</td><td>Completar un verso de una moraleja</td><td>0,5</td></tr>
+        <tr><td>6</td><td>Relacionar moralejas con cuentos</td><td>1</td></tr>
+        <tr><td>7</td><td>Ordenar los hechos de un cuento</td><td>1</td></tr>
+        <tr><td>8</td><td>Resumir un cuento</td><td>2,5</td></tr>
+        <tr><td>9-10</td><td>Explicar la enseñanza de otros dos cuentos</td><td>3 (1,5 c/u)</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="row"><button class="btn primary" id="startEx" type="button">Empezar el examen</button></div>
+    ${hist.length ? `<div class="marco"><h2 class="h3">Tus últimos simulacros</h2><ul style="margin:0;padding-left:1.2em">${hist.map(h => `<li><b style="font-variant-numeric:tabular-nums">${fmt(h.nota)}</b> <span class="muted">· ${esc(h.fecha)}</span></li>`).join('')}</ul></div>` : ''}
+  </div>`;
+  document.getElementById('startEx').onclick = startExam;
+}
+function startExam() {
+  const ids = shuffle(IDS);
+  const [rId, e1, e2, oId, gId] = ids;
+  const obj = pick(allObjectiveKeys().filter(k => !k.startsWith('pr:')), 4);
+  const items = [...obj.map(buildKey), buildKey('g:' + gId), buildKey('mm'), buildKey('o:' + oId), buildKey('wr:' + rId), buildKey('we:' + e1), buildKey('we:' + e2)];
+  runQuiz({title: 'Simulacro de examen', items, exam: true, weights: [0.5, 0.5, 0.5, 0.5, 0.5, 1, 1, 2.5, 1.5, 1.5]});
+}
+function endExam() {
+  const W = Q.weights;
+  const total = () => Q.res.reduce((s, r, i) => s + (r ? r.frac * W[i] : 0), 0);
+  const d = new Date();
+  const entry = {nota: total(), fecha: d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})};
+  store.examenes.push(entry); save();
+  const itemHTML = (r, i) => {
+    const it = r.item;
+    let body = '';
+    if (it.type === 'write') body = `<details class="modelo"><summary>Tu respuesta</summary><p class="serif">${esc(r.answer || '')}</p></details>` + writeFeedbackHTML(it, r.a, 'x' + i);
+    else if (it.type === 'mc') { const ch = it.opts[r.answer]; body = (r.frac ? `<div class="fb ok"><p class="ttl">Bien: «${esc(ch.t)}»</p><p>${esc(ch.why)}</p></div>` : r.html); }
+    else body = r.html;
+    return `<div class="ritem"><div class="row" style="justify-content:space-between"><span class="pts" data-pts="${i}">${fmt(r.frac * W[i])} / ${fmt(W[i])} pts</span>${it.cid ? `<span class="pts">Exemplo ${it.cid}</span>` : ''}</div><p class="rq">${i + 1}. ${esc(it.q)}${it.cita ? ` <i>«${esc(it.cita)}»</i>` : ''}</p>${body}</div>`;
+  };
+  const render = () => {
+    const nota = total();
+    app.innerHTML = `<div class="view"><section class="result">
+      <span class="eyebrow">Simulacro de examen · corrección</span>
+      <div class="score" id="exNota">${fmt(nota)}<small> / 10</small></div>
+      <p class="lead" id="exMsg">${msgNota(nota)}</p>
+      <p class="muted" style="font-size:.9rem">En las preguntas escritas, si has dicho una idea con otras palabras, pulsa «Sí lo he dicho» y la nota se actualiza. Sé honesto: en el examen real no habrá botón.</p>
+      <div class="review">${Q.res.map(itemHTML).join('')}</div>
+      <div class="row"><button class="btn primary" id="again" type="button">Hacer otro simulacro</button><button class="btn ghost" id="back" type="button">Volver</button></div>
+    </section></div>`;
+    document.getElementById('again').onclick = startExam;
+    document.getElementById('back').onclick = () => go('examen');
+    Q.res.forEach((r, i) => { if (r.item.type === 'write') bindWriteToggles(app, r.item, r.a, 'x' + i, f => {
+      r.frac = f; const n = total(); entry.nota = n; save();
+      document.getElementById('exNota').innerHTML = `${fmt(n)}<small> / 10</small>`; document.getElementById('exMsg').textContent = msgNota(n);
+      app.querySelector(`[data-pts="${i}"]`).textContent = `${fmt(f * W[i])} / ${fmt(W[i])} pts`;
+    }); });
+    bindFichaLinks(app);
+  };
+  render(); window.scrollTo(0, 0);
+}
+function msgNota(n) { return n >= 9.5 ? '¡Matrícula! Estás listo para el examen.' : n >= 9 ? '¡Sobresaliente! Pule los detalles y será un 10.' : n >= 7 ? 'Notable. Revisa lo que falta en las respuestas escritas.' : n >= 5 ? 'Aprobado. Repasa las fichas de los cuentos que has fallado.' : 'Todavía no. Vuelve a las fichas y a practicar por cuento: ¡lo vas a conseguir!'; }
+
+go('inicio');
+</script>
+</body>
+</html>
