@@ -1328,6 +1328,11 @@ function vistaAjustes() {
             <label class="form-check-label" for="a-copia">Copia automática semanal (se conservan las ${esc(A.COPIAS_A_CONSERVAR || 12)} últimas)</label></div>
           <button class="btn btn-tinta" id="btn-copia"><i class="bi bi-cloud-arrow-up me-1"></i> Hacer una copia ahora</button>
           <div class="small mt-2" id="copia-res"></div>
+          <hr>
+          <div class="fw-semibold small mb-1">Copia en el ordenador o en un disco duro</div>
+          <div class="form-text mt-0 mb-2">Descarga un archivo .zip con todo el archivo (alumnos de todas las épocas, cajas, profesorado, ajustes e historial) en formato Excel. Guárdalo en el ordenador o en un disco duro externo, por si algún día se pierde lo de Google Drive.</div>
+          <button class="btn btn-tinta" id="btn-copia-pc"><i class="bi bi-hdd me-1"></i> Descargar copia al ordenador</button>
+          <div class="small mt-2" id="copia-pc-res"></div>
         </div></div>
         <div class="panel"><div class="panel-cab"><h2>Capacidad y orden</h2></div><div class="panel-cuerpo small">
           <div id="capacidad" class="mb-3 text-suave">Calculando…</div>
@@ -1357,8 +1362,24 @@ function vistaAjustes() {
   $('#btn-copia').addEventListener('click', async (ev) => {
     const b = ev.currentTarget;
     ocupado(b, true, 'Copiando…');
-    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver caja</a>`; }
+    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver la carpeta de copias</a>`; }
     catch (e) { error(e); } finally { ocupado(b, false); }
+  });
+  $('#btn-copia-pc').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Preparando la copia…');
+    try {
+      const r = await api('copiaOrdenador');
+      const bin = atob(r.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = r.nombre;
+      document.body.appendChild(a); a.click(); a.remove();
+      $('#copia-pc-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Descargada <strong>${esc(r.nombre)}</strong> (${numero(r.archivos)} archivos de Excel dentro). Búscala en la carpeta <em>Descargas</em> y cópiala a tu disco duro.
+        Si no se ha descargado, <a href="${url}" download="${esc(r.nombre)}">pulsa aquí</a>.`;
+    } catch (e) { error(e); } finally { ocupado(b, false); }
   });
   api('capacidad').then((c) => {
     $('#capacidad').innerHTML = c.epocas.map((e) => {

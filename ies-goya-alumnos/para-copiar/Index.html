@@ -90,13 +90,16 @@
   .tarjeta-epoca.nueva { border-style: dashed; align-items: center; justify-content: center; text-align: center; color: var(--suave); cursor: pointer; min-height: 220px; }
   .tarjeta-epoca.nueva i { font-size: 30px; color: var(--granate); }
   .e-EPOCA { background: #efe7f6; color: #5b3a86; }
-  .contenido { flex: 1; min-width: 0; padding: 26px 30px 90px; }
+  .columna-contenido { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
+  .contenido { flex: 1; min-width: 0; padding: 26px 30px 40px; }
+  .autoria { text-align: center; font-size: 12.5px; color: var(--suave); padding: 14px 16px 22px; border-top: 1px solid var(--borde); margin: 0 30px; }
   .velo { display: none; }
   @media (max-width: 991.98px) {
     .lateral { position: fixed; left: 0; top: 64px; z-index: 1040; transform: translateX(-100%); transition: transform .2s ease; box-shadow: 0 0 30px rgba(0, 0, 0, .15); }
     .lateral.abierto { transform: none; }
     .velo.visible { display: block; position: fixed; inset: 64px 0 0 0; background: rgba(0, 0, 0, .25); z-index: 1035; }
-    .contenido { padding: 18px 16px 90px; }
+    .contenido { padding: 18px 16px 40px; }
+    .autoria { margin: 0 16px; padding-bottom: 80px; }
     .barra-sup .subtitulo { display: none; }
   }
 
@@ -301,7 +304,10 @@
         <div class="pie">Los datos se guardan en una hoja de cálculo de Google. Cada cambio queda registrado con su autor y fecha.</div>
       </nav>
       <div class="velo" id="velo"></div>
-      <main class="contenido" id="vista"></main>
+      <div class="columna-contenido">
+        <main class="contenido" id="vista"></main>
+        <footer class="autoria">Aplicación creada por <strong>Nuria Calvo Domínguez</strong>, 2026</footer>
+      </div>
     </div>
   </div>
 
@@ -1674,6 +1680,11 @@ function vistaAjustes() {
             <label class="form-check-label" for="a-copia">Copia automática semanal (se conservan las ${esc(A.COPIAS_A_CONSERVAR || 12)} últimas)</label></div>
           <button class="btn btn-tinta" id="btn-copia"><i class="bi bi-cloud-arrow-up me-1"></i> Hacer una copia ahora</button>
           <div class="small mt-2" id="copia-res"></div>
+          <hr>
+          <div class="fw-semibold small mb-1">Copia en el ordenador o en un disco duro</div>
+          <div class="form-text mt-0 mb-2">Descarga un archivo .zip con todo el archivo (alumnos de todas las épocas, cajas, profesorado, ajustes e historial) en formato Excel. Guárdalo en el ordenador o en un disco duro externo, por si algún día se pierde lo de Google Drive.</div>
+          <button class="btn btn-tinta" id="btn-copia-pc"><i class="bi bi-hdd me-1"></i> Descargar copia al ordenador</button>
+          <div class="small mt-2" id="copia-pc-res"></div>
         </div></div>
         <div class="panel"><div class="panel-cab"><h2>Capacidad y orden</h2></div><div class="panel-cuerpo small">
           <div id="capacidad" class="mb-3 text-suave">Calculando…</div>
@@ -1703,8 +1714,24 @@ function vistaAjustes() {
   $('#btn-copia').addEventListener('click', async (ev) => {
     const b = ev.currentTarget;
     ocupado(b, true, 'Copiando…');
-    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver caja</a>`; }
+    try { const r = await api('copiaSeguridad'); $('#copia-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Copia creada: <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.nombre)}</a> · <a href="${esc(r.carpeta)}" target="_blank" rel="noopener">ver la carpeta de copias</a>`; }
     catch (e) { error(e); } finally { ocupado(b, false); }
+  });
+  $('#btn-copia-pc').addEventListener('click', async (ev) => {
+    const b = ev.currentTarget;
+    ocupado(b, true, 'Preparando la copia…');
+    try {
+      const r = await api('copiaOrdenador');
+      const bin = atob(r.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = r.nombre;
+      document.body.appendChild(a); a.click(); a.remove();
+      $('#copia-pc-res').innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Descargada <strong>${esc(r.nombre)}</strong> (${numero(r.archivos)} archivos de Excel dentro). Búscala en la carpeta <em>Descargas</em> y cópiala a tu disco duro.
+        Si no se ha descargado, <a href="${url}" download="${esc(r.nombre)}">pulsa aquí</a>.`;
+    } catch (e) { error(e); } finally { ocupado(b, false); }
   });
   api('capacidad').then((c) => {
     $('#capacidad').innerHTML = c.epocas.map((e) => {

@@ -78,13 +78,16 @@
   .tarjeta-epoca.nueva { border-style: dashed; align-items: center; justify-content: center; text-align: center; color: var(--suave); cursor: pointer; min-height: 220px; }
   .tarjeta-epoca.nueva i { font-size: 30px; color: var(--granate); }
   .e-EPOCA { background: #efe7f6; color: #5b3a86; }
-  .contenido { flex: 1; min-width: 0; padding: 26px 30px 90px; }
+  .columna-contenido { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 64px); }
+  .contenido { flex: 1; min-width: 0; padding: 26px 30px 40px; }
+  .autoria { text-align: center; font-size: 12.5px; color: var(--suave); padding: 14px 16px 22px; border-top: 1px solid var(--borde); margin: 0 30px; }
   .velo { display: none; }
   @media (max-width: 991.98px) {
     .lateral { position: fixed; left: 0; top: 64px; z-index: 1040; transform: translateX(-100%); transition: transform .2s ease; box-shadow: 0 0 30px rgba(0, 0, 0, .15); }
     .lateral.abierto { transform: none; }
     .velo.visible { display: block; position: fixed; inset: 64px 0 0 0; background: rgba(0, 0, 0, .25); z-index: 1035; }
-    .contenido { padding: 18px 16px 90px; }
+    .contenido { padding: 18px 16px 40px; }
+    .autoria { margin: 0 16px; padding-bottom: 80px; }
     .barra-sup .subtitulo { display: none; }
   }
 

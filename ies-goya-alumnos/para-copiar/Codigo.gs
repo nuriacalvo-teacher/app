@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-03';
+const VERSION_APP = '2026-10-04';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -267,6 +267,7 @@ const ACCIONES = {
   borrarCarpeta:       { rol: 'ADMIN',   fn: borrarCarpeta_ },
   guardarAjustes:      { rol: 'ADMIN',   fn: guardarAjustes_ },
   copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } },
+  copiaOrdenador:      { rol: 'ADMIN',   fn: copiaOrdenador_ },
   portada:             { rol: 'PUBLICO', fn: portada_ },
   crearEpoca:          { rol: 'ADMIN',   fn: crearEpoca_ },
   guardarEpoca:        { rol: 'ADMIN',   fn: guardarEpoca_ },
@@ -2028,6 +2029,45 @@ function copiaSeguridadManual() {
 
 function copiaSeguridadAutomatica() {
   crearCopia_(true);
+}
+
+/**
+ * Copia para guardar en el ordenador o en un disco duro (por si se pierde lo de Google Drive):
+ * un .zip con cada archivo de Google (hoja central, historial y épocas) en formato Excel (.xlsx),
+ * con todas sus pestañas. Se descarga desde «Ajustes y copias».
+ */
+function copiaOrdenador_(d, u) {
+  const ss = ss_();
+  const fecha = ahora_().replace(/:/g, '.').replace(' ', '_');
+  const limpio = function (t) { return String(t).replace(/[\\/:*?"<>|]/g, '-').trim(); };
+  const archivos = [{ id: ss.getId(), nombre: ss.getName() }];
+  const hist = hojaHistorial_().getParent();
+  if (hist.getId() !== ss.getId()) archivos.push({ id: hist.getId(), nombre: ss.getName() + ' · Historial' });
+  enCadaEpoca_(function (e) {
+    const id = libroEpoca_().getId();
+    if (archivos.every(function (a) { return a.id !== id; })) archivos.push({ id: id, nombre: ss.getName() + ' · ' + e.NOMBRE });
+  });
+  const token = ScriptApp.getOAuthToken();
+  const blobs = archivos.map(function (a) {
+    const r = UrlFetchApp.fetch('https://docs.google.com/spreadsheets/d/' + a.id + '/export?format=xlsx',
+      { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) throw new Error('No se pudo preparar la copia de «' + a.nombre + '» (error ' + r.getResponseCode() + ').');
+    return r.getBlob().setName(limpio(a.nombre) + '.xlsx');
+  });
+  const nombre = limpio('Copia ' + ss.getName() + ' ' + fecha) + '.zip';
+  const zip = Utilities.zip(blobs, nombre);
+  registrar_(u, 'COPIA', '', 'Copia descargada al ordenador: ' + nombre);
+  return { nombre: nombre, base64: Utilities.base64Encode(zip.getBytes()), archivos: archivos.length };
+}
+
+/**
+ * Ejecútala una vez desde el editor (▶ Ejecutar) después de actualizar el código, para que Google
+ * pida el permiso nuevo que necesita la copia al ordenador. No cambia nada de los datos.
+ */
+function permitirCopiaOrdenador() {
+  const r = UrlFetchApp.fetch('https://docs.google.com/spreadsheets/d/' + ss_().getId() + '/export?format=xlsx',
+    { headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+  Logger.log(r.getResponseCode() === 200 ? 'Todo listo: ya se puede descargar la copia desde la app.' : 'Respuesta ' + r.getResponseCode());
 }
 
 function carpetaCopias_() {

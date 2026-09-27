@@ -19,7 +19,7 @@ Aplicación web para que varios profesores registren, entre todos y en distintos
 | **Permisos por correo** | Tres roles: **Coordinación** (todo), **Editor/a** (crear y modificar) y **Sólo consulta**. Sólo entra quien tú des de alta. |
 | **Historial** | Cada alta, cambio, borrado y ajuste queda anotado con su autor, la fecha y qué ha cambiado (valor anterior → valor nuevo). |
 | **Papelera** | Nada se borra del todo: los expedientes borrados van a una papelera y se pueden recuperar. |
-| **Copias de seguridad** | Copia manual con un clic y copia automática semanal en Google Drive. |
+| **Copias de seguridad** | Copia manual con un clic y copia automática semanal en Google Drive. Además, **«Descargar copia al ordenador»** baja un .zip con todo el archivo en Excel para guardarlo en un disco duro (la primera vez hay que ejecutar `permitirCopiaOrdenador` en el editor para dar el permiso). |
 
 ## Un solo archivo histórico, organizado por épocas
 
