@@ -10,7 +10,13 @@
 - **Archivo:** `index.html` (un solo archivo; módulos × 3 niveles)
 - **Punto gramatical que evalúa el Level 3:** `<<p. ej. "elegir entre past simple / past continuous / past perfect">>`
 - **Ficha temática que aplica (sección 9):** `<<p. ej. 9.2 Past tenses>>` (puede ser más de una)
-- **¿Existe ya el motor común `L3-ENGINE` en otra app?** `<<sí: pego abajo la versión X / no: esta es la primera>>`
+- **Repositorio de la app:** `<<https://github.com/nuriacalvo-teacher/NOMBRE>>`
+
+> **Piezas comunes ya hechas** (repositorio `nuriacalvo-teacher/app`, carpeta `prompts/kit/`). Úsalas tal cual, no las reescribas:
+> - `L3-ENGINE-v1.js`: el motor común de corrección (sección 3).
+> - `retry_patch.py`: el parche para repetir solo las preguntas falladas (sección 13). Se aplica con `python3 retry_patch.py index.html`.
+> - `tests/load.js` y `tests/level3.test.js`: los tests genéricos. En cada app solo hay que escribir `tests/level3.cases.js`.
+> - Implementaciones de referencia ya publicadas: `present-tenses` y `past-tenses`.
 
 ---
 
@@ -42,7 +48,7 @@ Organiza el código en dos bloques claramente separados:
    ...normalizador, contracciones, números, ortografía GB/US, expansor de plantillas, comparador por orden, gradeTranslation, modelAnswer del L3...
    /* ===== L3-ENGINE v1 · END ===== */
    ```
-   Si en la ficha pego una versión existente del motor, **reutilízala** y solo amplíala si hace falta (subiendo la versión y anotando qué cambia, para llevar ese cambio al resto de apps).
+   Copia el de `prompts/kit/L3-ENGINE-v1.js` y solo amplíalo si hace falta, subiendo la versión y anotando qué cambia, para llevar ese cambio al resto de apps.
 2. **Datos propios de la app**: frases `tr` con sus plantillas, tabla de huecos `{T:...}` y cualquier regla temática (sección 9), pasados al motor como configuración (p. ej. `L3_CONFIG = { movable: [...], slots: {...}, extraSwaps: [...] }`).
 
 Las funciones antiguas que queden sin uso se eliminan, no se dejan muertas.
@@ -59,7 +65,7 @@ Las funciones antiguas que queden sin uso se eliminan, no se dejan muertas.
    - **WOULD / HAD:** I'd, you'd, he'd, she'd, it'd, we'd, they'd. Ambiguo: se prueban ambas lecturas (I'd go → would; I'd gone / I'd been → had; I'd better → had).
    - **DO:** don't, doesn't, didn't.
    - **MODALES:** can't / cannot / can not (canónico: can not o cannot, pero equivalentes), couldn't, shouldn't, wouldn't, mustn't, needn't, mightn't, shan't.
-   - **Otras:** let's = let us; y'all no; what're, who're, where're, there're si el alumno las usa; gonna/wanna/gotta **no** (registro informal: van a REVISAR.md, no se aceptan).
+   - **Otras:** let's = let us; y'all no; what're, who're, where're, there're si el alumno las usa; gonna/wanna/gotta **no** (registro informal: no se aceptan).
    - **'s ambiguo** (is / has / posesivo / us en let's): probar todas las lecturas; la respuesta es correcta si **alguna** coincide con una aceptada.
    - **Sin apóstrofo** (dont, doesnt, didnt, isnt, arent, wasnt, werent, havent, hasnt, hadnt, cant, couldnt, wouldnt, shouldnt, mustnt, im, ive, youre, youve, youll, youd, theyre, theyve, theyll, theyd, weve, wed, itll, thats, theres, whats, lets…): reconocerlas. Las que son **palabras inglesas reales** (ill, well, were, wed, its, hes, shes, shell, hell, wont, id, lets, cant, whore…) solo se expanden como **lectura alternativa**: primero se prueba la lectura literal; si no coincide con ninguna respuesta aceptada, se prueba la contraída.
    - Límite de combinatoria: si una frase tiene muchas formas ambiguas, genera las lecturas de forma perezosa y para en cuanto una coincida (tope razonable, p. ej. 256 lecturas por respuesta).
@@ -68,7 +74,7 @@ Las funciones antiguas que queden sin uso se eliminan, no se dejan muertas.
    - Cifras y letras equivalentes (0–100 al menos, decenas, "a hundred" / "one hundred" / "100", "a thousand"…). Años: "2020" = "twenty twenty" = "two thousand and twenty" = "two thousand twenty". Ordinales: "1st" = "first", "21st" = "twenty-first" (el guion ya es un espacio).
    - Fechas: "on 5 May" = "on May 5" = "on the fifth of May" = "on May the fifth".
 6. **Ortografía y léxico británico/americano equivalentes** (tabla en el motor, ampliable): travelling/traveling, cancelled/canceled, learnt/learned, dreamt/dreamed, burnt/burned, spelt/spelled, smelt/smelled, got/gotten (solo como participio US), programme/program, colour/color, favourite/favorite, centre/center, theatre/theater, realise/realize, organise/organize, grey/gray, mum/mom, maths/math, at the weekend/on the weekend, holiday/vacation, flat/apartment, film/movie, mobile/cell phone/phone, autumn/fall, lorry/truck, underground/subway, shop/store, rubbish/garbage/trash, biscuit/cookie, football/soccer (solo si no hay ambigüedad), timetable/schedule, lift/elevator, queue/line, post/mail, have got/have (posesión).
-7. **Nombres propios:** sin importar mayúsculas (lo cubre el paso a minúsculas). Nombres de ciudades/países con forma inglesa y española si ambas se usan en inglés (Saragossa/Zaragoza no: solo la usada habitualmente; lo dudoso → REVISAR.md).
+7. **Nombres propios:** sin importar mayúsculas (lo cubre el paso a minúsculas). Nombres de ciudades/países con forma inglesa y española si ambas se usan en inglés (Saragossa/Zaragoza no: solo la usada habitualmente).
 8. **Sin corrector difuso:** NO se aceptan erratas ni formas inexistentes ("studys", "goed", "writed", "childs", "informations"). La ortografía cuenta.
 
 ## 5 · TAREA B · Orden de palabras (eliminar la "bolsa de palabras")
@@ -113,9 +119,16 @@ Para **cada** frase (todas las de todos los módulos; cuéntalas y dilo en el re
 7. **Posición de los complementos movibles**: "This month we are living with my grandparents" = "We are living with my grandparents this month".
 8. **Cifras/letras y GB/US** donde aparezcan (lo resuelve el motor; compruébalo en los tests).
 
-**La pista entre paréntesis** (`verb`/hint) indica el verbo o la estructura esperada. Una traducción correcta con **otro verbo** distinto al de la pista no se acepta por defecto: va a REVISAR.md.
+**La pista entre paréntesis** (`verb`/hint) indica el verbo o la estructura esperada. Una traducción con **otro verbo** distinto al de la pista se acepta solo si es igual de natural y conserva el punto evaluado (criterio de abajo).
 
-**Criterio de prudencia:** una variante solo se acepta si es inglés correcto y natural Y significa lo mismo que el español Y **ejercita el punto gramatical que evalúa la app** (sección 0). Si una traducción es correcta pero **esquiva** el punto evaluado (p. ej. voz activa en la app de Passive Voice, estilo directo en Reported Speech, dos oraciones sueltas en Relative Clauses), **no la aceptes en silencio**: apúntala en `REVISAR.md`. Lo mismo con variantes dudosas (sinónimos que cambian el matiz, registros muy informales, usos solo americanos poco extendidos). Formato de `REVISAR.md`: tabla con `qid | frase española | variante | ¿aceptar? (propuesta) | razonamiento`.
+**Criterio (decide tú como lingüista, sin pedir revisión al profesor):** una variante se acepta si es inglés correcto y natural, significa lo mismo que el español y **ejercita el punto gramatical que evalúa la app** (sección 0). Por tanto:
+- **Se aceptan** los sinónimos y los verbos distintos al de la pista cuando son igual de naturales (*departs*, *watched a series*, *done my homework*).
+- **No se aceptan:**
+  - las traducciones que **esquivan** el punto evaluado: voz activa en Passive Voice, estilo directo en Reported Speech, pasado simple americano en lugar del present perfect;
+  - los registros muy informales (*gonna*);
+  - los calcos del español (*married with*, *lost the bus*).
+
+No hay que generar `REVISAR.md`.
 
 ## 8 · TAREA E · Tests obligatorios
 
@@ -133,18 +146,18 @@ Al final imprime una tabla: `qid | nº variantes | positivos OK/total | negativo
 
 ## 9 · FICHAS TEMÁTICAS (aplica la que indique la sección 0)
 
-Estas reglas completan las tareas B, D y E según el punto gramatical. Si la app no está aquí, aplica el mismo criterio: acepta todo lo correcto y equivalente, falla lo incorrecto y manda a REVISAR.md lo que esquiva el punto evaluado.
+Estas reglas completan las tareas B, D y E según el punto gramatical. Si la app no está aquí, aplica el mismo criterio: acepta todo lo correcto y equivalente, falla lo incorrecto y no aceptes lo que esquiva el punto evaluado.
 
-- **9.1 Present tenses:** simple/continuous según hábito/acción en curso; present continuous y going to para planes (y will si el sentido lo permite → REVISAR); present perfect simple/continuous con for/since; verbos de estado sin continuo; adverbios de frecuencia en su sitio; for ≠ since ≠ ago.
-- **9.2 Past tenses:** past simple / continuous / perfect (simple y continuous); "when/while" + subordinada movible; used to = would (hábitos, no estados) = past simple con adverbio de frecuencia (REVISAR si cambia el matiz); ago obligatorio donde lo pide el español; negativos: "didn't went", "was go", orden roto.
+- **9.1 Present tenses:** simple/continuous según hábito/acción en curso; present continuous y going to para planes (y will si el sentido lo permite); present perfect simple/continuous con for/since; verbos de estado sin continuo; adverbios de frecuencia en su sitio; for ≠ since ≠ ago.
+- **9.2 Past tenses:** past simple / continuous / perfect (simple y continuous); "when/while" + subordinada movible; used to = would (hábitos, no estados) = past simple con adverbio de frecuencia (solo si no cambia el matiz); ago obligatorio donde lo pide el español; negativos: "didn't went", "was go", orden roto.
 - **9.3 Irregular verbs:** acepta todas las formas **reales** y sus variantes GB/US (learnt/learned, dreamt/dreamed, burnt/burned, spelt/spelled, got/gotten, dived/dove, lit/lighted, knelt/kneeled, leant/leaned, spoilt/spoiled). Negativos: regularizaciones inexistentes (goed, writed, buyed, teached, catched, thinked, eated, drinked) y confundir pasado/participio (I have went, I seen).
-- **9.4 Future tenses:** will / going to / present continuous / present simple (horarios) según el significado; will para decisiones espontáneas, promesas y predicciones sin evidencia; going to para intención y predicción con evidencia; future continuous y future perfect (by + tiempo obligatorio). Acepta varias solo si todas son naturales para ese contexto; lo discutible → REVISAR. Contracciones 'll, won't, 're going to, gonna (no).
+- **9.4 Future tenses:** will / going to / present continuous / present simple (horarios) según el significado; will para decisiones espontáneas, promesas y predicciones sin evidencia; going to para intención y predicción con evidencia; future continuous y future perfect (by + tiempo obligatorio). Acepta varias solo si todas son naturales para ese contexto; lo discutible no se acepta. Contracciones 'll, won't, 're going to, gonna (no).
 - **9.5 Relative clauses:** who/that (personas) y which/that (cosas) en especificativas; **omisión del relativo** cuando es objeto en especificativas (the book I bought); whose, where = in which = which… in (y preposición al final); en explicativas (con comas en español) **no** se acepta "that" ni la omisión (las comas del alumno no se exigen porque la puntuación no cuenta, pero "that" en explicativa sí falla). Negativos: "who" para cosas, "which" para personas, pronombre duplicado (the man who I saw him), "what" como relativo.
-- **9.6 Passive voice:** acepta be + participio en el tiempo correcto (is made / was built / has been sold / is being repaired / will be sent / must be done), con o sin agente cuando el español lo permite, y "get"-passive → REVISAR. La voz activa correcta **no** se acepta por defecto (esquiva el punto evaluado) → REVISAR. "Se dice que…" → It is said that… = X is said to…. Negativos: falta "be", participio incorrecto, tiempo del auxiliar equivocado.
-- **9.7 Reported speech:** said (that) / told + objeto (that): "that" opcional; say ≠ tell (tell exige objeto; "said me" falla); backshift obligatorio por defecto y opcional cuando la situación sigue siendo cierta (acepta ambos solo si el español lo permite; si no, REVISAR); cambios de pronombres, tiempo y lugar (tomorrow → the next day / the following day, here → there, ago → before / earlier); preguntas indirectas con orden afirmativo (asked if/whether I was…; "asked where was I" falla); órdenes: told me to / asked me to / told me not to.
-- **9.8 Prepositions:** aquí **la preposición es lo evaluado**: solo se aceptan alternativas realmente equivalentes (on/at the weekend, in/on the street GB/US, different from/to/than según GB/US → REVISAR). Negativos: preposición española calcada (married with, depend of, arrive to + ciudad, think in = pensar en, interested on).
+- **9.6 Passive voice:** acepta be + participio en el tiempo correcto (is made / was built / has been sold / is being repaired / will be sent / must be done), con o sin agente cuando el español lo permite, y la "get"-passive cuando es natural. La voz activa **no** se acepta (esquiva el punto evaluado). "Se dice que…" → It is said that… = X is said to…. Negativos: falta "be", participio incorrecto, tiempo del auxiliar equivocado.
+- **9.7 Reported speech:** said (that) / told + objeto (that): "that" opcional; say ≠ tell (tell exige objeto; "said me" falla); backshift obligatorio por defecto y opcional cuando la situación sigue siendo cierta (acepta ambos solo si el español lo permite); cambios de pronombres, tiempo y lugar (tomorrow → the next day / the following day, here → there, ago → before / earlier); preguntas indirectas con orden afirmativo (asked if/whether I was…; "asked where was I" falla); órdenes: told me to / asked me to / told me not to.
+- **9.8 Prepositions:** aquí **la preposición es lo evaluado**: solo se aceptan alternativas realmente equivalentes (on/at the weekend, in/on the street GB/US, different from/to/than según GB/US). Negativos: preposición española calcada (married with, depend of, arrive to + ciudad, think in = pensar en, interested on).
 - **9.9 Adverbs:** posición (frecuencia: delante del verbo principal/tras be; modo: final; grado: delante del adjetivo; enough detrás del adjetivo); formación (-ly, irregulares: well, fast, hard ≠ hardly, late ≠ lately); adjetivo vs adverbio (she sings good → falla). Los adverbios que se pueden mover se declaran como huecos `{T:}` con sus posiciones legítimas.
-- **9.10 Conditionals / Modals / Comparatives / Gerunds & infinitives / Phrasal verbs (futuras):** oración con "if" movible (inicio/final; la coma no cuenta); unless = if… not (REVISAR si cambia el matiz); must/have to (equivalentes en obligación afirmativa, **no** en negativa: mustn't ≠ don't have to); can/be able to; comparativos irregulares (better, worse, further/farther); verbos + gerundio/infinitivo con sus alternativas reales (like doing/to do; stop doing ≠ stop to do); phrasal verbs: partícula antes o después del objeto nominal, obligatoriamente después si es pronombre (turn it off; "turn off it" falla).
+- **9.10 Conditionals / Modals / Comparatives / Gerunds & infinitives / Phrasal verbs (futuras):** oración con "if" movible (inicio/final; la coma no cuenta); unless = if… not (solo si no cambia el matiz); must/have to (equivalentes en obligación afirmativa, **no** en negativa: mustn't ≠ don't have to); can/be able to; comparativos irregulares (better, worse, further/farther); verbos + gerundio/infinitivo con sus alternativas reales (like doing/to do; stop doing ≠ stop to do); phrasal verbs: partícula antes o después del objeto nominal, obligatoriamente después si es pronombre (turn it off; "turn off it" falla).
 
 ## 10 · TAREA F · Textos de ayuda y pantalla de solución
 
@@ -163,5 +176,20 @@ Estas reglas completan las tareas B, D y E según el punto gramatical. Si la app
 
 1. `index.html` modificado e `index.backup.html` intacto.
 2. `tests/level3.test.js` y la salida completa de su ejecución (todo en verde).
-3. `REVISAR.md` con las variantes dudosas o que esquivan el punto evaluado.
-4. Resumen breve: cambios hechos, versión del bloque `L3-ENGINE`, nombres de funciones que eran distintos a los esperados, tiempo de expansión medido y tabla `qid | nº variantes aceptadas`.
+3. Resumen breve: cambios hechos, versión del bloque `L3-ENGINE`, nombres de funciones que eran distintos a los esperados, tiempo de expansión medido y tabla `qid | nº variantes aceptadas`.
+
+## 13 · REPETIR SOLO LAS PREGUNTAS FALLADAS (todos los niveles)
+
+Si el alumno **no llega al mínimo** de un módulo, puede repetir **solo las preguntas que ha fallado**, en vez del módulo entero. Se aplica igual en las 3 niveles y en todas las apps con el parche `prompts/kit/retry_patch.py` (bloque `RETRY-WRONG v1`):
+
+- En la pantalla de resultados de un módulo suspendido aparecen dos botones: **"🎯 Repeat only the N I got wrong"** y **"🔁 Try the whole module again"**.
+- En la ronda de repaso solo salen las falladas, y el título lo indica ("🎯 Only your mistakes"). Las acertadas se conservan.
+- La nota se calcula **siempre sobre el módulo entero**. Ejemplo: 6/10 → repite 4 → acierta 3 → 9/10 = 90 %.
+- Si vuelve a suspender, puede repetir otra vez solo las que siguen mal: ronda 3, 4…
+- **El tiempo suma todo el intento.** El resultado que se guarda en Firebase y en `localStorage` es el del módulo completo, más el campo `retryRound` (1 = a la primera).
+- Si cierra la pestaña a mitad de la ronda de repaso, al volver la continúa.
+- Empezar el módulo de cero borra la ronda de repaso.
+- Cada entrada de `attemptLog` guarda su `qid` para saber qué repetir. Los registros antiguos sin `qid` se emparejan por el enunciado.
+
+Si el parche no encaja (nombres o textos distintos en esa app), aplica los mismos cambios a mano y pruébalo en Chromium: suspender, repetir, cerrar a mitad, reanudar y aprobar.
+
