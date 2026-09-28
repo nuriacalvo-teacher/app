@@ -13,10 +13,11 @@
 - **Repositorio de la app:** `<<https://github.com/nuriacalvo-teacher/NOMBRE>>`
 
 > **Piezas comunes ya hechas** (repositorio `nuriacalvo-teacher/app`, carpeta `prompts/kit/`). Úsalas tal cual, no las reescribas:
-> - `L3-ENGINE-v1.js`: el motor común de corrección (sección 3).
+> - `L3-ENGINE-v1.1.js`: el motor común de corrección (sección 3).
 > - `retry_patch.py`: el parche para repetir solo las preguntas falladas (sección 13). Se aplica con `python3 retry_patch.py index.html`.
 > - `tests/load.js` y `tests/level3.test.js`: los tests genéricos. En cada app solo hay que escribir `tests/level3.cases.js`.
-> - Implementaciones de referencia ya publicadas: `present-tenses` y `past-tenses`.
+> - Implementaciones de referencia: `present-tenses`, `past-tenses` e `irregular-verbs`. Para apps con muchas frases (como irregular-verbs, con 210), usa `L3_CONFIG.auto` (v1.1): expresiones de tiempo movibles, sinónimos seguros y reglas fijas que se aplican solas a `en`/`alts`. Así solo se escriben a mano las alternativas propias de cada frase.
+> - Si el Level 1 pide formas verbales y hay verbos con dos formas obligatorias (*was / were*), usa una casilla para cada una y acepta cualquier separador (/, -, coma, espacio, "or") cuando se escriben dos formas en una sola casilla (irregular-verbs: `PAST_BOTH`, `formPieces`).
 
 ---
 
@@ -48,7 +49,7 @@ Organiza el código en dos bloques claramente separados:
    ...normalizador, contracciones, números, ortografía GB/US, expansor de plantillas, comparador por orden, gradeTranslation, modelAnswer del L3...
    /* ===== L3-ENGINE v1 · END ===== */
    ```
-   Copia el de `prompts/kit/L3-ENGINE-v1.js` y solo amplíalo si hace falta, subiendo la versión y anotando qué cambia, para llevar ese cambio al resto de apps.
+   Copia el de `prompts/kit/L3-ENGINE-v1.1.js` y solo amplíalo si hace falta, subiendo la versión y anotando qué cambia, para llevar ese cambio al resto de apps.
 2. **Datos propios de la app**: frases `tr` con sus plantillas, tabla de huecos `{T:...}` y cualquier regla temática (sección 9), pasados al motor como configuración (p. ej. `L3_CONFIG = { movable: [...], slots: {...}, extraSwaps: [...] }`).
 
 Las funciones antiguas que queden sin uso se eliminan, no se dejan muertas.

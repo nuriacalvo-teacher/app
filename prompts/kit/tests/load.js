@@ -40,7 +40,7 @@ function load(file) {
   };
   ctx.window = ctx; ctx.globalThis = ctx; ctx.self = ctx;
   vm.createContext(ctx);
-  const code = main + "\n;globalThis.__T = { MODULES, LEVELS, L3: (typeof L3 !== 'undefined' ? L3 : null), gradeTranslation, modelAnswer, saveResultLocally, " +
+  const code = main + "\n;globalThis.__T = { MODULES, LEVELS, L3: (typeof L3 !== 'undefined' ? L3 : null), L3_CONFIG: (typeof L3_CONFIG !== 'undefined' ? L3_CONFIG : null), VERBS: (typeof VERBS !== 'undefined' ? VERBS : null), gradeForms: (typeof gradeForms === 'function' ? gradeForms : null), gradeTranslation, modelAnswer, saveResultLocally, " +
     "localResults: (typeof localResults === 'function' ? localResults : null), normalize };";
   vm.runInContext(code, ctx, { filename: "index.html#script" });
   return Object.assign(ctx.__T, { warnings: warnings, store: store });

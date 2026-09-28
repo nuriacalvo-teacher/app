@@ -1,4 +1,4 @@
-    /* ===== L3-ENGINE v1 · START (motor común de corrección del Level 3: copiar igual en todas las apps) =====
+    /* ===== L3-ENGINE v1.1 · START (motor común de corrección del Level 3: copiar igual en todas las apps) =====
        Cómo corrige:
        1. Las respuestas aceptadas de cada pregunta (plantillas "pat" + "en" + "alts") se expanden
           UNA vez, la primera vez que se corrige esa pregunta, a un Set de frases canónicas (q.accepted,
@@ -9,6 +9,10 @@
           ('s = is / has / posesivo; 'd = would / had; were = were / we are; its = its / it is...).
           Es correcta si ALGUNA lectura coincide EXACTAMENTE, en el mismo orden, con una frase aceptada.
           No hay bolsa de palabras: el orden cuenta. Solo se mueve lo que la plantilla deja mover.
+       v1.1: L3_CONFIG.auto (opcional) convierte "en" y "alts" en plantillas automáticamente:
+          auto.move    = expresiones de tiempo que, al principio o al final, pueden ir en el otro extremo;
+          auto.syn     = nombres de grupos de sinónimos (L3_CONFIG.syn o del motor) que se aplican solos;
+          auto.rewrite = [regex, sustitución] para variantes fijas ("a week ago" -> "(a|one) week ago").
        ======================================================================================= */
     const L3 = (function () {
       const MAX_VARIANTS = 5000;
@@ -283,7 +287,48 @@
       }
       function slotDef(key) {
         const d = (cfg().slots || {})[key];
-        return d ? { forms: d.forms || key, pos: d.pos || ["start", "end"] } : { forms: key, pos: ["start", "end"] };
+        return d ? { forms: d.forms || key, pos: d.pos || ["start", "end"] } : { forms: autoText(key), pos: ["start", "end"] };
+      }
+
+      /* ---------- v1.1: plantillas automáticas a partir de frases normales ---------- */
+      let autoCache = null;
+      function autoRules() {
+        if (autoCache) return autoCache;
+        const a = cfg().auto || {}, members = [];
+        (a.syn || []).forEach(name => {
+          const g = synOf(name).trim();
+          if (!/^\([^()\[\]{}@]*\)$/.test(g)) throw new Error("L3 auto.syn: el grupo @" + name + " debe ser simple (a|b|c)");
+          g.slice(1, -1).split("|").forEach(m => { if (m.trim()) members.push({ m: m.trim().toLowerCase(), name: name }); });
+        });
+        members.sort((x, y) => y.m.length - x.m.length);
+        const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+        autoCache = {
+          synRx: members.length ? new RegExp("\\b(" + members.map(x => esc(x.m)).join("|") + ")\\b", "gi") : null,
+          synOf: m => (members.find(x => x.m === m.toLowerCase().replace(/\s+/g, " ")) || {}).name,
+          move: (a.move || []).length ? a.move.join("|") : null,
+          rewrite: (a.rewrite || []).map(([rx, to]) => [new RegExp(rx, "gi"), to])
+        };
+        return autoCache;
+      }
+      function autoText(s) {
+        if (!cfg().auto) return s;
+        const r = autoRules(), keep = [];
+        let t = s;
+        if (r.synRx) t = t.replace(r.synRx, m => { keep.push("@" + r.synOf(m)); return "\u0001" + (keep.length - 1) + "\u0002"; });
+        r.rewrite.forEach(([rx, to]) => { t = t.replace(rx, to); });
+        return t.replace(/\u0001(\d+)\u0002/g, (_, i) => keep[+i]);
+      }
+      function autoPattern(s) {
+        if (!cfg().auto) return s;
+        const r = autoRules();
+        let t = String(s).replace(/[()\[\]{}|@;]/g, " ").replace(/[.!?]+\s*$/, "").trim(), slot = "";
+        if (r.move) {
+          let m = new RegExp("(?:^|[ ,]+)(" + r.move + ")$", "i").exec(t);
+          if (m && m.index > 0) { slot = m[1]; t = t.slice(0, m.index); }
+          else if ((m = new RegExp("^(" + r.move + ")(?:[ ,]+)", "i").exec(t)) && m[0].length < t.length) { slot = m[1]; t = t.slice(m[0].length); }
+        }
+        t = autoText(t);
+        return slot ? t + " {T:" + slot.toLowerCase().replace(/\s+/g, " ") + "}" : t;
       }
       const OPEN = "⟦", SEP = "¦", CLOSE = "⟧";
       function expandParts(parts, st) {
@@ -340,7 +385,7 @@
           if (set.size >= MAX_VARIANTS) st.over = true; else set.add(c);
         });
         (q.pat ? [].concat(q.pat) : []).forEach(p => expandPattern(p, st).forEach(add));
-        (q.answers || []).concat(q.alts || []).forEach(add);
+        (q.answers || []).concat(q.alts || []).forEach(s => expandPattern(autoPattern(s), st).forEach(add));
         if (st.over) console.warn("[L3] " + (q.qid || "?") + ": more than " + MAX_VARIANTS + " variants; list truncated. Simplify its pattern.");
         const trie = new Map();
         set.forEach(s => {
@@ -376,8 +421,9 @@
 
       return { grade: grade, prepare: prepare, prepareModule: prepareModule, expandPattern: expandPattern,
                prep: prep, baseTokens: baseTokens, modelReadings: modelReadings, studentReadings: studentReadings,
+               autoPattern: autoPattern,
                MAX_VARIANTS: MAX_VARIANTS };
     })();
 
     function gradeTranslation(userValue, q) { return L3.grade(userValue, q); }
-    /* ===== L3-ENGINE v1 · END ===== */
+    /* ===== L3-ENGINE v1.1 · END ===== */

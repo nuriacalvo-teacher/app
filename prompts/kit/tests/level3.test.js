@@ -8,7 +8,8 @@ const { load } = require("./load.js");
 const T = load();
 const QS = T.MODULES.filter(m => m.level === 3).flatMap(m => m.questions);
 
-const CASES = require("./level3.cases.js");
+const CASES_SRC = require("./level3.cases.js");
+const CASES = typeof CASES_SRC === "function" ? CASES_SRC(T) : CASES_SRC;
 
 /* ---------- generadores de variantes ---------- */
 const CONTRACT = [
@@ -17,7 +18,8 @@ const CONTRACT = [
   [/\bis not\b/i, "isn't"], [/\bare not\b/i, "aren't"], [/\bhas not\b/i, "hasn't"], [/\bhave not\b/i, "haven't"],
   [/\bdo not\b/i, "don't"], [/\bdoes not\b/i, "doesn't"], [/\bwe will\b/i, "we'll"],
   [/\bdid not\b/i, "didn't"], [/\bwas not\b/i, "wasn't"], [/\bwere not\b/i, "weren't"], [/\bhad not\b/i, "hadn't"],
-  [/\bcould not\b/i, "couldn't"], [/\bcan not\b/i, "can't"], [/\b(I|we|they|he|she) had\b/i, "$1'd"]
+  [/\bcould not\b/i, "couldn't"], [/\bcan not\b/i, "can't"], [/\b(I|we|they|he|she) had\b/i, "$1'd"],
+  [/\bhe has\b/i, "he's"], [/\bshe has\b/i, "she's"], [/\byou have\b/i, "you've"]
 ];
 function sub(m, rx, to) { return keepCase(m, m.replace(new RegExp(rx.source, "i"), to)); }
 function contractAll(s) { let o = s; for (let k = 0; k < 3; k++) CONTRACT.forEach(([rx, to]) => { o = o.replace(rx, m => sub(m, rx, to)); }); return o; }
