@@ -120,7 +120,7 @@ Para **cada** frase (todas las de todos los módulos; cuéntalas y dilo en el re
 7. **Posición de los complementos movibles**: "This month we are living with my grandparents" = "We are living with my grandparents this month".
 8. **Cifras/letras y GB/US** donde aparezcan (lo resuelve el motor; compruébalo en los tests).
 
-**La pista entre paréntesis** (`verb`/hint) indica el verbo o la estructura esperada. Una traducción con **otro verbo** distinto al de la pista se acepta solo si es igual de natural y conserva el punto evaluado (criterio de abajo).
+**La pista entre paréntesis** (`verb`/hint) indica el verbo o la estructura esperada. **Si la traducción natural necesita una partícula o preposición que el alumno puede no conocer, o que es fácil calcar del español, la pista la incluye en infinitivo:** *(blow out)* para "soplar las velas", *(pay for)* para "pagar las entradas", *(dream about)* para "soñar con", *(fall off)*, *(lie to)*, *(smell of)*, *(think about)*, *(speak to)*… Así se puede exigir la preposición correcta sin pillar al alumno por vocabulario que no se ha enseñado. En irregular-verbs se hace con `L3_VERB_HINT`, por `qid`. Una traducción con **otro verbo** distinto al de la pista se acepta solo si es igual de natural y conserva el punto evaluado (criterio de abajo).
 
 **Criterio (decide tú como lingüista, sin pedir revisión al profesor):** una variante se acepta si es inglés correcto y natural, significa lo mismo que el español y **ejercita el punto gramatical que evalúa la app** (sección 0). Por tanto:
 - **Se aceptan** los sinónimos y los verbos distintos al de la pista cuando son igual de naturales (*departs*, *watched a series*, *done my homework*).
