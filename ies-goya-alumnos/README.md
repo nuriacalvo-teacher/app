@@ -91,8 +91,8 @@ A partir de entonces, **«Acceso profesorado»** muestra **«Entrar con mi cuent
 
 - La configuración (ajustes, campos, profesorado y épocas) y las columnas de alumnos se guardan unos minutos en la memoria rápida de Google (*CacheService*). Así, consultar, buscar y abrir fichas no lee la hoja entera cada vez.
 - Al guardar, la memoria se renueva al momento: nunca se ven datos antiguos después de un cambio hecho desde la app.
-- La portada llega en la misma petición que el arranque.
-- Si cambias algo **a mano en la hoja de cálculo** (por ejemplo, la pestaña *Épocas*), la app puede tardar **hasta 2 minutos** en verlo. Los datos de alumnos editados a mano se refrescan con **Ajustes y copias → Ordenar y renumerar la hoja ahora**.
+- La portada llega en la misma petición que el arranque, y nada más entrar la app pide en segundo plano los datos de Resumen, Buscar, Índice y Cajas: al abrir esas pestañas ya están listos.
+- Si cambias algo **a mano en la hoja de cálculo** (por ejemplo, la pestaña *Épocas*), la app puede tardar **hasta 10 minutos** en verlo. Los datos de alumnos editados a mano se refrescan con **Ajustes y copias → Ordenar y renumerar la hoja ahora**.
 - La primera carga de la página siempre tarda uno o dos segundos: es lo que tarda Google en arrancar la app.
 
 ## Capacidad: ¿cabe todo el archivo?

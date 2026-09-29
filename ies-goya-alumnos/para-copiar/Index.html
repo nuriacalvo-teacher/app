@@ -527,9 +527,45 @@ async function cambiarEpoca(codigo, navegar = true) {
   S.busqueda.pagina = 1;
   S.indice = { letra: 'A', pagina: 1 };
   S.localidades = {};
-  try { S.carpetas = (await api('carpetas')).map(({ EXPEDIENTES, TERMINADOS, ...c }) => c); } catch (e) { error(e); }
+  // Las cajas y el resumen de la nueva época se piden a la vez, no uno detrás de otro.
+  const cajas = api('carpetas').then((lista) => { guardarVista('carpetas|' + codigo, lista); return lista; });
+  if (navegar && puede('LECTOR')) api('inicio').then((d) => { if (!S.cacheVistas['inicio|' + codigo]) guardarVista('inicio|' + codigo, d); if (S.vista === 'inicio' && S.epoca === codigo) pintarInicio(d); }).catch(() => {});
+  try { S.carpetas = (await cajas).map(({ EXPEDIENTES, TERMINADOS, ...c }) => c); } catch (e) { error(e); }
   pintarCabecera();
   if (navegar) ir('inicio');
+  precargar();
+}
+
+const paramsBusqueda = (B = S.busqueda) => ({ q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 });
+const paramsIndice = (I = S.indice) => ({ letra: I.letra, pagina: I.pagina, tam: 100, orden: 'apellidos' });
+
+/** Guarda unos datos como «lo último visto» de una pantalla. */
+function guardarVista(clave, datos) {
+  S.cacheVistas[clave] = { datos, txt: JSON.stringify(datos), t: Date.now() };
+}
+
+/**
+ * Nada más entrar (o al cambiar de época), pide en segundo plano los datos de las pantallas
+ * principales. Así, al abrir Resumen, Buscar, Índice, Cajas o la Portada, ya están listas y se
+ * pintan al instante (y luego se comprueba en silencio si hay algo nuevo).
+ */
+function precargar() {
+  const epoca = S.epoca;
+  const pedir = (clave, fn) => {
+    if (S.cacheVistas[clave]) return;
+    fn().then((d) => { if (S.epoca === epoca || clave === 'portada') guardarVista(clave, d); }).catch(() => { /* ya se pedirá al abrirla */ });
+  };
+  setTimeout(() => {
+    if (puede('LECTOR')) {
+      pedir('inicio|' + epoca, () => api('inicio'));
+      pedir('carpetas|' + epoca, () => api('carpetas'));
+    }
+    const pb = paramsBusqueda();
+    pedir('buscar|' + epoca + '|' + JSON.stringify(pb), () => api('consultar', pb));
+    const pi = paramsIndice();
+    pedir('indice|' + epoca + '|' + JSON.stringify(pi), () => api('consultar', pi));
+    pedir('portada', () => api('portada'));
+  }, 400);
 }
 
 /**
@@ -619,6 +655,7 @@ async function arrancar() {
     pintarCabecera();
     mostrarPantalla('app');
     ir(destino);
+    precargar();
   } catch (e) {
     mostrarPantalla('carga');
     $('#pantalla-carga').innerHTML = `<div class="tarjeta-acceso text-center"><div class="sello grande mb-3">G</div>
@@ -877,12 +914,11 @@ async function vistaFormulario(id) {
     return;
   }
   if (id) {
-    const r = await api('obtener', { id });
-    if (!r.puedeEditar) { aviso('No puedes modificar este expediente.', 'aviso'); verFicha(id); ir('buscar'); return; }
+    // Se pide el expediente y se avisa de que se está editando a la vez (antes iba uno detrás de otro).
+    const [r, b] = await Promise.all([api('obtener', { id }), api('bloquear', { id }).catch(() => ({}))]);
+    if (!r.puedeEditar) { api('liberar', { id }).catch(() => {}); aviso('No puedes modificar este expediente.', 'aviso'); verFicha(id); ir('buscar'); return; }
     reg = r.registro;
-    bloqueo = r.bloqueo;
-    const b = await api('bloquear', { id });
-    bloqueo = b.bloqueo || bloqueo;
+    bloqueo = b.bloqueo || r.bloqueo;
     S.edicion = { id, version: reg._VERSION, registro: reg };
     S.latido = setInterval(() => api('bloquear', { id }).catch(() => {}), 4 * 60 * 1000);
   } else {
@@ -1274,7 +1310,7 @@ async function buscar() {
   const n = ++numBusqueda;
   const cont = $('#resultados');
   if (!cont) return;
-  const params = { q: B.q, filtros: B.filtros, orden: B.orden, pagina: B.pagina, tam: 50, papelera: B.papelera, soloMios: B.soloMios, todas: B.todas && S.epocas.length > 1 };
+  const params = paramsBusqueda();
   const clave = 'buscar|' + S.epoca + '|' + JSON.stringify(params);
   const pintar = (r) => {
     cont.innerHTML = tablaResultados(r) + paginacion(r.pagina, r.paginas, r.total, (p) => { B.pagina = p; buscar(); window.scrollTo(0, 0); });
@@ -1319,7 +1355,7 @@ async function cargarIndice() {
   const I = S.indice;
   const cont = $('#indice');
   if (!cont) return;
-  const params = { letra: I.letra, pagina: I.pagina, tam: 100, orden: 'apellidos' };
+  const params = paramsIndice();
   const clave = 'indice|' + S.epoca + '|' + JSON.stringify(params);
   cont.style.opacity = S.cacheVistas[clave] ? '' : '.55';
   try {

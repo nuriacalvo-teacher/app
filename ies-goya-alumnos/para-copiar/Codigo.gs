@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-05';
+const VERSION_APP = '2026-10-06';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -597,7 +597,7 @@ function ahora_() {
 //  cambia su «versión», así que nunca se sirven datos antiguos después de guardar.
 // ---------------------------------------------------------------------
 
-const SEG_CONFIG = 120;    // la configuración (ajustes, campos, profesorado, épocas) se relee cada 2 min
+const SEG_CONFIG = 600;    // la configuración (ajustes, campos, profesorado, épocas) se relee cada 10 min (y al momento si se cambia desde la app)
 const SEG_DATOS = 1800;    // columnas de alumnos: 30 min (se invalidan al guardar)
 const TROZO = 40000;       // caracteres por trozo (CacheService admite 100 KB por clave)
 
