@@ -23,9 +23,9 @@ cada alumno fue **destacado** o **ilustre**. Primera tanda hecha: 3 PDFs, 53 pá
 | Provincia | Nombre actual, como en la app (Lleida, Guipúzcoa, Navarra, La Rioja…). «idem» = la de la localidad. |
 | Localidad | Como está escrita; forma actual entre paréntesis si difiere: «Agreda (Ágreda)». |
 | Año nacimiento | Si consta. Si solo consta la edad: año del documento − edad (se anota en Observaciones que es calculado). |
-| Año expediente | Año de la portada; en hojas académicas, el de la fila de Ingreso/primera matrícula. |
+| Año expediente | El **primer año que consta en el Instituto** (el más antiguo de sus papeles del Instituto: ingreso, matrícula, instancia…; curso «1884 á 1885» → 1884). No cuentan estudios anteriores en otros centros (seminarios, colegios), que se anotan en Observaciones. |
 | Destacado o ilustre | ILUSTRE / DESTACADO solo con coincidencia sólida (nombre + lugar + fechas); SIN COMPROBAR si hay un posible candidato; NO si no aparece nada. |
-| Observaciones | Qué se encontró, fuente y enlace. Nada de enlaces inventados. |
+| Observaciones | 1) Datos del expediente; 2) solo hechos comprobados en fuentes, cada uno con enlace; 3) «Sugerencias:» al final (coincidencias fuertes, parentescos probables, lecturas dudosas, qué mirar en el papel), redactadas como posibilidad. Nada de enlaces inventados. |
 | Caja | Nº de la caja del archivo donde están esos expedientes (me lo dice la coordinación; la 1.ª tanda es la caja 1). |
 
 Lecturas dudosas: se marcan con **[?]** dentro del propio dato; lo ilegible, **[ilegible]**.
