@@ -38,7 +38,7 @@ abrir las páginas (en la primera tanda solo se vieron los resultados del buscad
 
 ## 4. Entrega
 Una hoja Excel ordenada por apellidos con estas 10 columnas (los títulos son los que reconoce la app):
-`APELLIDOS | Nombre | País | Provincia | Localidad | Año nacimiento | Año expediente | Destacado o ilustre | Observaciones | Caja`
+`APELLIDOS | Nombre | Sexo | País | Provincia | Localidad | Año nacimiento | Año expediente | Destacado o ilustre | Observaciones | Caja`
 (`python3 herramientas/generar_xlsx.py <nº de caja>` la genera a partir de los JSON de la transcripción.)
 
 ## 5. Importar a la app
