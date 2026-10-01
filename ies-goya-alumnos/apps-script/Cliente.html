@@ -211,12 +211,17 @@ function textoCarpeta(num) {
 }
 
 /** Caja cuyo rango de apellidos contiene los apellidos dados. */
+/** Orden tradicional del archivo para las cajas: CH y LL son letras propias (van después de C y de L). */
+function claveCaja(s) {
+  return claveOrden(s).replace(/CH/g, 'C{').replace(/LL/g, 'L{');
+}
+
 function carpetaSugerida(apellidos) {
-  const k = claveOrden(apellidos);
+  const k = claveCaja(apellidos);
   if (!k) return null;
   return S.carpetas.find((c) => {
     if (!c.DESDE || !c.HASTA) return false;
-    const d = claveOrden(c.DESDE), h = claveOrden(c.HASTA);
+    const d = claveCaja(c.DESDE), h = claveCaja(c.HASTA);
     return k >= d && (k <= h || k.startsWith(h));
   }) || null;
 }

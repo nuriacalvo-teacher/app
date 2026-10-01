@@ -901,6 +901,11 @@ function claveFonetica_(apellidos, nombre) {
   return fonetica_(apellidos) + '|' + fonetica_(nombre);
 }
 
+/** Orden tradicional del archivo para las cajas: CH y LL son letras propias (van después de C y de L). */
+function claveCaja_(s) {
+  return claveOrden_(s).replace(/CH/g, 'C{').replace(/LL/g, 'L{');
+}
+
 function letraIndice_(claveOrden) {
   const c = claveOrden.charAt(0);
   if (c === 'N' && claveOrden.charAt(1) === '{') return 'Ñ';
@@ -1793,7 +1798,7 @@ function guardarCarpeta_(d, u) {
     ASIGNADA_A: String(d.ASIGNADA_A || '').trim(),
     NOTAS: String(d.NOTAS || '').trim()
   };
-  if (c.DESDE && c.HASTA && claveOrden_(c.DESDE) > claveOrden_(c.HASTA)) {
+  if (c.DESDE && c.HASTA && claveCaja_(c.DESDE) > claveCaja_(c.HASTA)) {
     throw new Error('El primer apellido (' + c.DESDE + ') va alfabéticamente después del último (' + c.HASTA + ').');
   }
   const h = hojaCarpetas_();
@@ -1831,7 +1836,7 @@ function importarCajas_(d, u) {
       if (!numero) { saltadas.push({ fila: n + 1, caja: '', motivo: 'Falta el número de caja.' }); return; }
       // En el archivo se siguió a veces el orden antiguo (CH después de C, «SAN CRISTÓBAL» antes de «SÁNCHEZ»…):
       // se importa igual, sólo se avisa para revisarlo.
-      if (desde && hasta && claveOrden_(desde) > claveOrden_(hasta)) {
+      if (desde && hasta && claveCaja_(desde) > claveCaja_(hasta)) {
         avisos.push({ fila: n + 1, caja: numero, motivo: 'El primer apellido (' + desde + ') va alfabéticamente después del último (' + hasta + '): se ha importado igualmente; revísalo.' });
       }
       const c = porNumero[numero];
