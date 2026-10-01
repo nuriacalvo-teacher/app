@@ -1352,7 +1352,8 @@ function pintarCarpetas(lista) {
   const cuenta = (e) => lista.filter((c) => c.ESTADO === e).length;
   $('#vista').innerHTML = cabecera(`Cajas · ${esc(epocaActual().NOMBRE || '')}`,
     'Cada caja agrupa un tramo alfabético de apellidos. Asígnate una caja antes de empezar para no trabajar dos personas en la misma.',
-    admin ? `<button class="btn btn-light" id="btn-crear-varias"><i class="bi bi-folder-plus me-1"></i> Añadir varias</button>
+    admin ? `<button class="btn btn-light" id="btn-importar-cajas"><i class="bi bi-cloud-upload me-1"></i> Importar cajas</button>
+      <button class="btn btn-light" id="btn-crear-varias"><i class="bi bi-folder-plus me-1"></i> Añadir varias</button>
       <button class="btn btn-primary" id="btn-nueva-carpeta"><i class="bi bi-plus-lg me-1"></i> Nueva caja</button>` : '') + `
     <div class="row g-3 mb-3">
       <div class="col-lg-6"><div class="panel h-100"><div class="panel-cuerpo">
@@ -1411,6 +1412,7 @@ function pintarCarpetas(lista) {
   $$('[data-editar-c]').forEach((b) => b.addEventListener('click', () => editarCarpeta(lista.find((c) => c.NUMERO === b.dataset.editarC))));
   $('#btn-nueva-carpeta') && $('#btn-nueva-carpeta').addEventListener('click', () => editarCarpeta(null, lista));
   $('#btn-crear-varias') && $('#btn-crear-varias').addEventListener('click', () => crearVariasCarpetas(lista));
+  $('#btn-importar-cajas') && $('#btn-importar-cajas').addEventListener('click', importarCajas);
 }
 
 /** Profesorado que puede trabajar cajas (activo y con permiso de edición). */
@@ -1464,6 +1466,48 @@ function editarCarpeta(c, lista) {
     cerrarModal();
     if (!(await confirmar('Borrar caja', `<p>¿Borrar la caja ${esc(c.NUMERO)}? Sólo se puede si no tiene expedientes.</p>`, 'Borrar', true))) return;
     try { await api('borrarCarpeta', { numero: c.NUMERO }); aviso('Caja borrada.'); vistaCarpetas(); } catch (e) { error(e); }
+  });
+}
+
+/** Importar cajas de golpe: se pega una tabla con número, primer y último apellido (y notas). */
+function importarCajas() {
+  abrirModal(`Importar cajas · ${esc(epocaActual().NOMBRE || '')}`, `
+    <p class="small text-suave mb-2">Copia la tabla desde Google Sheets o Excel <strong>con la fila de títulos</strong> (⌘A, ⌘C) y pégala aquí (⌘V).
+      Títulos que se reconocen: <em>Caja</em> (o Número), <em>Primer apellido</em> (o Desde), <em>Último apellido</em> (o Hasta) y <em>Notas</em>.</p>
+    <textarea class="form-control font-monospace small" id="ic-texto" rows="8" placeholder="Caja	Primer apellido	Último apellido	Notas"></textarea>
+    <p class="small text-suave mt-2 mb-0">Si una caja ya existe, se actualizan su primer y último apellido; su estado y quién la trabaja no cambian.</p>
+    <div id="ic-vista" class="mt-3"></div>`,
+    '<button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-outline-primary" id="ic-revisar">Revisar</button><button class="btn btn-primary d-none" id="ic-ok">Importar</button>', 'lg');
+  let filas = [];
+  $('#ic-revisar').addEventListener('click', () => {
+    const t = leerTabla($('#ic-texto').value);
+    const norm = (x) => sinAcentos(x).replace(/Ñ/g, 'N').replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const que = (x) => { const n = norm(x); return /^(CAJA|CARPETA|N|NUMERO|NO)( |$)/.test(n) ? 'NUMERO' : /^(PRIMER|DESDE)/.test(n) ? 'DESDE' : /^(ULTIMO|HASTA)/.test(n) ? 'HASTA' : /^(NOTA|OBSERV)/.test(n) ? 'NOTAS' : ''; };
+    const cols = t.length ? t[0].map(que) : [];
+    if (t.length < 2 || !cols.includes('NUMERO')) { $('#ic-vista').innerHTML = '<div class="alert alert-warning small mb-0">Pega la tabla con la fila de títulos (al menos la columna <strong>Caja</strong>).</div>'; return; }
+    filas = t.slice(1).map((f) => { const r = {}; cols.forEach((k, i) => { if (k && f[i]) r[k] = f[i].trim(); }); return r; }).filter((r) => r.NUMERO);
+    const existe = (n) => S.carpetas.some((c) => c.NUMERO === String(n).replace(/^caja\s*/i, ''));
+    $('#ic-vista').innerHTML = `<div class="table-responsive" style="max-height:320px"><table class="table tabla"><thead><tr><th>Caja</th><th>Primer apellido</th><th>Último apellido</th><th>Notas</th><th></th></tr></thead><tbody>
+      ${filas.map((r) => `<tr><td class="fw-bold">${esc(r.NUMERO)}</td><td class="ap">${esc((r.DESDE || '').toUpperCase())}</td><td class="ap">${esc((r.HASTA || '').toUpperCase())}</td><td class="small">${esc(r.NOTAS || '')}</td>
+        <td class="small text-suave">${existe(r.NUMERO) ? 'se actualiza' : 'nueva'}</td></tr>`).join('')}</tbody></table></div>`;
+    $('#ic-ok').textContent = `Importar ${filas.length} cajas`;
+    $('#ic-ok').classList.remove('d-none');
+  });
+  $('#ic-ok').addEventListener('click', async (ev) => {
+    ocupado(ev.currentTarget, true, 'Importando…');
+    try {
+      const r = await api('importarCajas', { filas });
+      S.carpetas = r.lista;
+      if (r.saltadas.length) {
+        $('#ic-vista').innerHTML = `<div class="alert alert-warning small"><strong>${r.nuevas} nuevas, ${r.actualizadas} actualizadas.</strong> Sin importar:</div>
+          <ul class="small">${r.saltadas.map((x) => `<li>Fila ${x.fila}${x.caja ? ' (caja ' + esc(x.caja) + ')' : ''}: ${esc(x.motivo)}</li>`).join('')}</ul>`;
+        $('#ic-ok').classList.add('d-none');
+      } else {
+        cerrarModal();
+        aviso(`Cajas importadas: ${r.nuevas} nuevas y ${r.actualizadas} actualizadas.`);
+      }
+      vistaCarpetas();
+    } catch (e) { error(e); } finally { ocupado($('#ic-ok'), false); }
   });
 }
 

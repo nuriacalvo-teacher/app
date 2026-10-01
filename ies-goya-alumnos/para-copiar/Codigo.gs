@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-02';
+const VERSION_APP = '2026-10-03';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -264,6 +264,7 @@ const ACCIONES = {
   borrarProfesor:      { rol: 'ADMIN',   fn: borrarProfesor_ },
   guardarCarpeta:      { rol: 'ADMIN',   fn: guardarCarpeta_ },
   crearCarpetas:       { rol: 'ADMIN',   fn: crearCarpetas_ },
+  importarCajas:       { rol: 'ADMIN',   fn: importarCajas_ },
   borrarCarpeta:       { rol: 'ADMIN',   fn: borrarCarpeta_ },
   guardarAjustes:      { rol: 'ADMIN',   fn: guardarAjustes_ },
   copiaSeguridad:      { rol: 'ADMIN',   fn: function () { return crearCopia_(false); } },
@@ -1804,6 +1805,55 @@ function guardarCarpeta_(d, u) {
   }
   registrar_(u, 'CAJA', '', 'Caja ' + numero + ': ' + (c.DESDE || '…') + ' – ' + (c.HASTA || '…') + ' · ' + c.ESTADO);
   return carpetasLista_();
+}
+
+/**
+ * Importa de golpe las cajas de la época (número, primer y último apellido, notas). Si la caja ya existe,
+ * se actualizan su primer y último apellido (y las notas, si vienen); su estado y quién la trabaja no se tocan.
+ */
+function importarCajas_(d, u) {
+  const filas = Array.isArray(d.filas) ? d.filas.slice(0, 2000) : [];
+  if (!filas.length) throw new Error('No hay cajas para importar.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const h = hojaCarpetas_();
+    const lista = carpetasLista_();
+    const porNumero = {};
+    lista.forEach(function (c) { porNumero[c.NUMERO] = c; });
+    const nuevas = [], saltadas = [];
+    let actualizadas = 0;
+    filas.forEach(function (x, n) {
+      const numero = String(x.NUMERO || '').trim().replace(/^caja\s*/i, '');
+      const desde = String(x.DESDE || '').replace(/\s+/g, ' ').trim().toUpperCase();
+      const hasta = String(x.HASTA || '').replace(/\s+/g, ' ').trim().toUpperCase();
+      const notas = String(x.NOTAS || '').trim();
+      if (!numero) { saltadas.push({ fila: n + 1, caja: '', motivo: 'Falta el número de caja.' }); return; }
+      if (desde && hasta && claveOrden_(desde) > claveOrden_(hasta)) {
+        saltadas.push({ fila: n + 1, caja: numero, motivo: 'El primer apellido (' + desde + ') va alfabéticamente después del último (' + hasta + ').' }); return;
+      }
+      const c = porNumero[numero];
+      if (c) {
+        c.DESDE = desde || c.DESDE; c.HASTA = hasta || c.HASTA; if (notas) c.NOTAS = notas;
+        escribirCarpeta_(c);
+        actualizadas++;
+      } else {
+        const fila = [numero, desde, hasta, 'PENDIENTE', '', notas];
+        porNumero[numero] = { NUMERO: numero };
+        nuevas.push(fila);
+      }
+    });
+    if (nuevas.length) {
+      const f = h.getLastRow() + 1;
+      if (f + nuevas.length - 1 > h.getMaxRows()) h.insertRowsAfter(h.getMaxRows(), nuevas.length + 50);
+      h.getRange(f, 1, nuevas.length, 6).setNumberFormat('@').setValues(nuevas);
+    }
+    registrar_(u, 'CAJA', '', 'Importación de cajas en ' + epocaActual_().NOMBRE + ': ' + nuevas.length + ' nuevas, ' + actualizadas + ' actualizadas' +
+      (saltadas.length ? ', ' + saltadas.length + ' sin importar' : ''));
+    return { nuevas: nuevas.length, actualizadas: actualizadas, saltadas: saltadas, lista: carpetasLista_() };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function crearCarpetas_(d, u) {
