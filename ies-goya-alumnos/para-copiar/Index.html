@@ -1498,9 +1498,10 @@ function importarCajas() {
     try {
       const r = await api('importarCajas', { filas });
       S.carpetas = r.lista;
-      if (r.saltadas.length) {
-        $('#ic-vista').innerHTML = `<div class="alert alert-warning small"><strong>${r.nuevas} nuevas, ${r.actualizadas} actualizadas.</strong> Sin importar:</div>
-          <ul class="small">${r.saltadas.map((x) => `<li>Fila ${x.fila}${x.caja ? ' (caja ' + esc(x.caja) + ')' : ''}: ${esc(x.motivo)}</li>`).join('')}</ul>`;
+      const lista = (r.saltadas || []).concat(r.avisos || []);
+      if (lista.length) {
+        $('#ic-vista').innerHTML = `<div class="alert alert-warning small"><strong>${r.nuevas} nuevas, ${r.actualizadas} actualizadas.</strong> Para revisar:</div>
+          <ul class="small">${lista.map((x) => `<li>Fila ${x.fila}${x.caja ? ' (caja ' + esc(x.caja) + ')' : ''}: ${esc(x.motivo)}</li>`).join('')}</ul>`;
         $('#ic-ok').classList.add('d-none');
       } else {
         cerrarModal();

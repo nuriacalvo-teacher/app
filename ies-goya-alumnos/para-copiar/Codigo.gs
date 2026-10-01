@@ -28,7 +28,7 @@
 const ID_HOJA = '';
 
 /** Versión del código (aparece en la pantalla de acceso: sirve para comprobar qué versión está publicada). */
-const VERSION_APP = '2026-10-03';
+const VERSION_APP = '2026-10-04';
 
 const HOJA = {
   EPOCAS: 'Épocas',
@@ -1821,7 +1821,7 @@ function importarCajas_(d, u) {
     const lista = carpetasLista_();
     const porNumero = {};
     lista.forEach(function (c) { porNumero[c.NUMERO] = c; });
-    const nuevas = [], saltadas = [];
+    const nuevas = [], saltadas = [], avisos = [];
     let actualizadas = 0;
     filas.forEach(function (x, n) {
       const numero = String(x.NUMERO || '').trim().replace(/^caja\s*/i, '');
@@ -1829,8 +1829,10 @@ function importarCajas_(d, u) {
       const hasta = String(x.HASTA || '').replace(/\s+/g, ' ').trim().toUpperCase();
       const notas = String(x.NOTAS || '').trim();
       if (!numero) { saltadas.push({ fila: n + 1, caja: '', motivo: 'Falta el número de caja.' }); return; }
+      // En el archivo se siguió a veces el orden antiguo (CH después de C, «SAN CRISTÓBAL» antes de «SÁNCHEZ»…):
+      // se importa igual, sólo se avisa para revisarlo.
       if (desde && hasta && claveOrden_(desde) > claveOrden_(hasta)) {
-        saltadas.push({ fila: n + 1, caja: numero, motivo: 'El primer apellido (' + desde + ') va alfabéticamente después del último (' + hasta + ').' }); return;
+        avisos.push({ fila: n + 1, caja: numero, motivo: 'El primer apellido (' + desde + ') va alfabéticamente después del último (' + hasta + '): se ha importado igualmente; revísalo.' });
       }
       const c = porNumero[numero];
       if (c) {
@@ -1850,7 +1852,7 @@ function importarCajas_(d, u) {
     }
     registrar_(u, 'CAJA', '', 'Importación de cajas en ' + epocaActual_().NOMBRE + ': ' + nuevas.length + ' nuevas, ' + actualizadas + ' actualizadas' +
       (saltadas.length ? ', ' + saltadas.length + ' sin importar' : ''));
-    return { nuevas: nuevas.length, actualizadas: actualizadas, saltadas: saltadas, lista: carpetasLista_() };
+    return { nuevas: nuevas.length, actualizadas: actualizadas, saltadas: saltadas, avisos: avisos, lista: carpetasLista_() };
   } finally {
     lock.releaseLock();
   }
