@@ -240,12 +240,12 @@
   function resizeCanvases(w, h) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     // resolución WebGL limitada para que vaya fluido en cualquier equipo
-    const budget = window.innerWidth < 700 ? 0.9e6 : 1.6e6;
+    const budget = window.innerWidth < 700 ? 0.55e6 : 1.1e6;
     const glScale = Math.min(dpr, 1.25, Math.sqrt(budget / (w * h))) * state.quality;
     glCanvas.width = Math.round(w * glScale);
     glCanvas.height = Math.round(h * glScale);
     if (gl) gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-    const s2 = Math.min(dpr, 1.25, Math.sqrt(2.2e6 / (w * h)));
+    const s2 = Math.min(dpr, 1.25, Math.sqrt(1.2e6 / (w * h)));
     canvas2d.width = Math.round(w * s2);
     canvas2d.height = Math.round(h * s2);
   }
@@ -538,9 +538,9 @@
     if (state.running && state.visible) {
       // calidad adaptable: si el equipo no llega a ~40 fps, se baja la resolución
       state.frames++;
-      if (raw > 0.026) state.slow++;
-      if (state.frames >= 90) {
-        if (state.slow > 40 && state.quality > 0.5) {
+      if (raw > 0.021) state.slow++;
+      if (state.frames >= 60) {
+        if (state.slow > 20 && state.quality > 0.45) {
           state.quality *= 0.75;
           resizeCanvases(parseFloat(stage.style.width), parseFloat(stage.style.height));
         }
@@ -548,9 +548,8 @@
       }
       state.t += dt;
       state.wind += (state.windTarget - state.wind) * Math.min(1, dt * 1.6);
-      const hr = hero.getBoundingClientRect();
-      state.night = Math.min(1, Math.max(0, -hr.top / hr.height * 1.4));
-      dusk.style.opacity = state.night.toFixed(3);
+      const night = Math.min(1, Math.max(0, KF.y() / Math.max(1, KF.heroH) * 1.4));
+      if (night !== state.night) { state.night = night; dusk.style.opacity = night.toFixed(3); }
       state.titleBoost += ((state.titleHover ? 1 : 0) - state.titleBoost) * Math.min(1, dt * 3);
       state.sunVel *= Math.pow(0.35, dt);
       state.sunAngle += state.sunVel * dt;
@@ -558,9 +557,13 @@
         const rest = Math.round(state.sunAngle / (Math.PI * 2)) * Math.PI * 2;
         state.sunAngle += (rest - state.sunAngle) * Math.min(1, dt * 2);
       }
-      drawGL();
-      update2D(dt);
-      draw2D();
+      // cuando ya es de noche (la portada está casi tapada) no se dibuja: así
+      // la portada y el túnel 3D no compiten por la tarjeta gráfica
+      if (state.night < 0.97) {
+        drawGL();
+        update2D(dt);
+        draw2D();
+      }
     }
     requestAnimationFrame(frame);
   }

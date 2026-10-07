@@ -82,14 +82,26 @@
     }
   }
 
-  function uiLoop() {
+  // el ecualizador solo se dibuja cuando se ve y suena algo
+  let vizVisible = false;
+  new IntersectionObserver(([en]) => (vizVisible = en.isIntersecting)).observe(viz);
+  let lastText = 0, quiet = 0;
+  function uiLoop(now) {
     const a = B.audio;
-    if (a.duration) {
-      ring.style.strokeDashoffset = (150.8 * (1 - a.currentTime / a.duration)).toFixed(1);
-      if (!seeking) seek.value = Math.round((a.currentTime / a.duration) * 1000);
-      time.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`;
+    if (!a.paused || seeking) {
+      quiet = 0;
+      if (a.duration && now - lastText > 250) {
+        lastText = now;
+        ring.style.strokeDashoffset = (150.8 * (1 - a.currentTime / a.duration)).toFixed(1);
+        if (!seeking) seek.value = Math.round((a.currentTime / a.duration) * 1000);
+        time.textContent = `${fmt(a.currentTime)} / ${fmt(a.duration)}`;
+      }
+      if (vizVisible) drawViz();
+    } else if (quiet < 40) {
+      // unos fotogramas más para que las barras bajen suaves al pausar
+      quiet++;
+      if (vizVisible) drawViz();
     }
-    drawViz();
     requestAnimationFrame(uiLoop);
   }
   requestAnimationFrame(uiLoop);
@@ -97,7 +109,7 @@
   /* ---------- Barra superior ---------- */
   const topbar = $("#topbar");
   const hero = $("#inicio");
-  const onScroll = () => topbar.classList.toggle("is-on", window.scrollY > hero.offsetHeight * 0.6);
+  const onScroll = () => topbar.classList.toggle("is-on", window.scrollY > KF.heroH * 0.6);
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
@@ -133,10 +145,13 @@
   let holding = false;
   let vinylHome = null;           // posición de cada vinilo respecto al centro de la pantalla
 
-  function progress(sec) {
-    const r = sec.getBoundingClientRect();
-    return -r.top / Math.max(1, r.height - window.innerHeight);
-  }
+  // posición de cada sección, guardada (leerla en cada fotograma frena la página)
+  let secBox = [];
+  KF.onMeasure(() => {
+    secBox = nights.map((sec) => ({ sec, top: sec.offsetTop, h: sec.offsetHeight, disc: $(".disc", sec), music: $(".music", sec), shown: null }));
+    vinylHome = null;
+  });
+  KF.measure();
   // k < 0: llega; 0..1: fijada en pantalla
   function flight(k, inEnd, outStart) {
     if (k < inEnd) {
@@ -152,51 +167,68 @@
   function apply(el, f, spin) {
     el.style.transform = `${spin ? `rotate(${f.rot.toFixed(1)}deg) ` : ""}scale(${f.s.toFixed(4)})`;
     el.style.opacity = f.o.toFixed(3);
-    el.style.visibility = f.o < 0.02 ? "hidden" : "visible";
+  }
+  function show(box, on) {
+    if (box.shown === on) return;
+    box.shown = on;
+    box.sec.style.visibility = on ? "" : "hidden";
   }
 
   function measureVinyls() {
     const items = $$(".vinyls li");
-    items.forEach((li) => (li.style.transform = ""));
+    const music = $("#musica .music");
+    const keep = music.style.transform;
+    music.style.transform = "none";
+    items.forEach((li) => (li.style.transform = "none"));
     const pin = $("#musica .pin").getBoundingClientRect();
     vinylHome = items.map((li) => {
       const r = li.getBoundingClientRect();
-      return { li, x: r.left + r.width / 2 - (pin.left + pin.width / 2), y: r.top + r.width / 2 - (pin.top + pin.height / 2) };
+      const d = li.firstElementChild.getBoundingClientRect();
+      return { li, btn: li.firstElementChild, name: li.querySelector(".vinyl__name"), x: d.left + d.width / 2 - (pin.left + pin.width / 2), y: d.top + d.height / 2 - (pin.top + pin.height / 2) };
     });
+    music.style.transform = keep;
   }
 
   function travel() {
     holding = false;
-    nights.forEach((sec) => {
-      const k = progress(sec);
-      if (k < -0.9 || k > 1.1) { sec.style.visibility = "hidden"; return; }
-      sec.style.visibility = "";
-      if (sec.id === "musica") {
-        const f = flight(Math.min(k, 0.99), 0.05, 0.86);
-        const music = $(".music", sec);
-        // la cabecera y el reproductor llegan sin girar; los vinilos salen del centro uno a uno
-        const head = k < 0.05 ? { s: 0.6 + 0.4 * sm(-0.45, 0.05, k), o: sm(-0.45, 0.05, k), rot: 0 } : f;
-        apply(music, head, false);
+    const y = KF.y(), vh = KF.vh;
+    secBox.forEach((box) => {
+      const k = (y - box.top) / Math.max(1, box.h - vh);
+      if (k < -0.9 || k > 1.1) { show(box, false); return; }
+      show(box, true);
+      if (box.music) {
+        // primero llegan el título y el reproductor; con la sección ya fija,
+        // los vinilos salen uno tras otro del centro del túnel, girando
+        const f = flight(Math.min(k, 0.99), 0.0, 0.88);
+        const head = k < 0 ? { s: 0.7 + 0.3 * sm(-0.5, 0, k), o: sm(-0.5, 0, k), rot: 0 } : f;
+        apply(box.music, head, false);
         if (!vinylHome || !vinylHome.length) measureVinyls();
+        const n = vinylHome.length;
+        const step = Math.min(0.1, 0.5 / Math.max(1, n));
         vinylHome.forEach((v, j) => {
-          const e = sm(-0.25 + j * 0.08, 0.2 + j * 0.08, k);
-          v.li.style.transform = `translate(${(-v.x * (1 - e)).toFixed(1)}px, ${(-v.y * (1 - e)).toFixed(1)}px) rotate(${((1 - e) * 720).toFixed(0)}deg) scale(${(0.06 + 0.94 * e).toFixed(3)})`;
-          v.li.style.opacity = sm(0, 0.3, e).toFixed(3);
+          const e = sm(0.02 + j * step, 0.24 + j * step, k);
+          const p = e * e;                       // perspectiva: lejos se mueve poco, cerca se acelera
+          const sc = 0.02 + 0.98 * Math.pow(e, 1.5);
+          v.li.style.transform = `translate(${(-v.x * (1 - p)).toFixed(1)}px, ${(-v.y * (1 - p)).toFixed(1)}px) scale(${sc.toFixed(3)})`;
+          v.li.style.opacity = sm(0, 0.15, e).toFixed(3);
+          v.btn.style.transform = `rotate(${((1 - e) * 900).toFixed(0)}deg)`;   // gira el disco, no su nombre
+          v.name.style.opacity = sm(0.75, 1, e).toFixed(3);
         });
-        if (k > 0.45 && k < 0.86) holding = true;
+        if (k > 0.02 + n * step + 0.2 && k < 0.88) holding = true;
       } else {
         const f = flight(k, 0.28, 0.72);
-        apply($(".disc", sec), f, true);
+        apply(box.disc, f, true);
         if (f.hold) holding = true;
       }
     });
   }
+  window.KFTravel = () => travel();
 
   if (!reduce) {
     let queued = false;
     const kick = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; travel(); }); };
     window.addEventListener("scroll", kick, { passive: true });
-    window.addEventListener("resize", () => { vinylHome = null; kick(); });
+    KF.onMeasure(kick);
     setTimeout(travel, 0);
   }
 
@@ -240,6 +272,7 @@
   const meta = (a) => [a.tipo, a.año, a.sello].filter(Boolean).join(" · ");
   function renderVinyls() {
     D.discos.forEach((d) => { if (!d.portada || d._auto) { d.portada = makeCover(d); d._auto = true; } });
+    $("#vinyls").style.setProperty("--n", D.discos.length);
     $("#vinyls").innerHTML = D.discos.map((a, j) => `
       <li><button class="vinyl" type="button" data-album="${j}" style="--d:${(j * -1.3).toFixed(1)}s" aria-label="Abrir ${esc(a.titulo)}">
         <span class="vinyl__disc"><span class="vinyl__label" style="background-image:url('${esc(a.portada)}')"></span></span>
@@ -355,6 +388,7 @@
     auto.wait = 0;
     auto.pos = window.scrollY;
     auto.last = window.scrollY;
+    KF.autoY = on ? auto.pos : null;
     autoBtn.setAttribute("aria-pressed", String(on));
     autoBtn.querySelector("span").textContent = on ? "Parar recorrido" : "Recorrido automático";
     if (on && !B.playing && window.KFAudio.enabled) B.play();
@@ -380,7 +414,7 @@
     const dt = Math.min(0.05, (now - lt) / 1000);
     lt = now;
     if (auto.on && !$("#case").open) {
-      const vh = window.innerHeight, max = document.documentElement.scrollHeight - vh;
+      const vh = KF.vh, max = KF.docH - vh;
       if (Math.abs(window.scrollY - auto.last) > 3) setAuto(false);
       else {
         if (auto.mode === "down") {
@@ -400,8 +434,11 @@
           auto.wait -= dt;
           if (auto.wait <= 0) auto.mode = "down";
         }
+        // las animaciones siguen la posición exacta (con decimales); la página, la redondeada
+        KF.autoY = auto.pos;
         window.scrollTo(0, auto.pos);
         auto.last = window.scrollY;
+        if (!reduce) travel();
       }
     }
     requestAnimationFrame(autoLoop);

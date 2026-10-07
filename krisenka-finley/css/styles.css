@@ -265,8 +265,8 @@ body.entered .hero.can-pan .hero__pan-hint { display: block; }
 .deck__time { flex: none; font-size: .82rem; color: var(--lilac); font-variant-numeric: tabular-nums; }
 
 /* vinilos: salen del centro del túnel girando y se colocan en su sitio */
-.vinyls { grid-column: 1 / -1; list-style: none; margin: 0; padding: 6px 4px 10px; display: flex; justify-content: safe center; gap: clamp(.8rem, 2.6vw, 2.2rem); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--pink) transparent; }
-.vinyls li { flex: 0 0 clamp(110px, 15vw, 170px); scroll-snap-align: center; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .2rem; will-change: transform, opacity; }
+.vinyls { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(.8rem, 2.4vw, 2rem); }
+.vinyls li { flex: 0 0 clamp(84px, min(15vw, calc(88vw / var(--n, 5)), 18vh), 170px); transform-origin: 50% 40%; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .2rem; will-change: transform, opacity; }
 .vinyl {
   position: relative; display: block; width: 100%; max-width: 170px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none;
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .55)) drop-shadow(0 0 12px rgba(255, 79, 163, .5));
@@ -395,7 +395,7 @@ body.entered .hero.can-pan .hero__pan-hint { display: block; }
   .deck__title { font-size: 1.3rem; }
   .deck__viz { display: none; }
   .deck__time { display: none; }
-  .vinyls li { flex-basis: 104px; }
+  .vinyls li { flex-basis: clamp(80px, calc(84vw / min(var(--n, 5), 3)), 110px); }
   .vinyl__name { font-size: .9rem; }
   .player__tt { display: none; }
   .player { padding-right: .35rem; }

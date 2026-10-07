@@ -23,7 +23,7 @@
     tag.onerror = () => canvas.remove();
     document.head.appendChild(tag);
   }
-  const onScroll = () => { if (window.scrollY > hero.offsetHeight * 0.1) boot(); };
+  const onScroll = () => { if (window.scrollY > KF.heroH * 0.1) boot(); };
   window.addEventListener("scroll", onScroll, { passive: true });
   // al entrar, se descarga con calma mientras se ve la portada
   document.addEventListener("kf:entered", () => setTimeout(boot, 2500));
@@ -36,7 +36,7 @@
     R = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
   } catch (e) { canvas.remove(); return; }
   // resolución moderada: las líneas de neón y el polvo no necesitan más
-  let quality = Math.min(window.devicePixelRatio || 1, 1.25);
+  let quality = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 0.85 : 1);
   R.setPixelRatio(quality);
   R.setClearColor(0x1b0b2e, 1);
 
@@ -74,7 +74,7 @@
   // túnel de arcos de neón con los colores de la ilustración
   const rings = [];
   for (let i = 0; i < 80; i++) {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(9, 0.045, 6, 96, Math.PI * (1.1 + (i % 3) * 0.35)), additive(PALETTE[i % PALETTE.length], 0.5));
+    const m = new THREE.Mesh(new THREE.TorusGeometry(9, 0.045, 4, 72, Math.PI * (1.1 + (i % 3) * 0.35)), additive(PALETTE[i % PALETTE.length], 0.5));
     m.position.z = 12 - i * 1.8;
     m.userData.i = i;
     scene.add(m);
@@ -129,28 +129,28 @@
   const clock = new THREE.Clock();
   const Z0 = 8, ZL = 120;
 
-  let last = performance.now(), frames = 0, slow = 0;
+  let last = performance.now(), frames = 0, slow = 0, lastFade = "";
   function frame(now) {
     requestAnimationFrame(frame);
     const raw = (now - last) / 1000;
     last = now;
-    const vh = window.innerHeight;
-    const heroH = hero.offsetHeight;
-    const fade = sm(0.3, 0.85, window.scrollY / heroH);
-    canvas.style.opacity = fade.toFixed(3);
+    const vh = KF.vh, heroH = KF.heroH, y = KF.y();
+    const fade = sm(0.3, 0.85, y / heroH);
+    const fo = fade.toFixed(3);
+    if (fo !== lastFade) { lastFade = fo; canvas.style.opacity = fo; }
     visible = fade > 0.01;
     if (!visible || document.hidden) return;
     // calidad adaptable, igual que en la portada
     frames++;
-    if (raw > 0.026) slow++;
-    if (frames >= 90) {
-      if (slow > 40 && quality > 0.5) { quality *= 0.75; R.setPixelRatio(quality); resize(); }
+    if (raw > 0.021) slow++;
+    if (frames >= 60) {
+      if (slow > 20 && quality > 0.45) { quality *= 0.75; R.setPixelRatio(quality); resize(); }
       frames = 0; slow = 0;
     }
 
     const t = reduce ? 0 : clock.getElapsedTime();
-    const max = Math.max(1, document.documentElement.scrollHeight - vh - heroH * 0.5);
-    const target = Math.min(1, Math.max(0, (window.scrollY - heroH * 0.5) / max));
+    const max = Math.max(1, KF.docH - vh - heroH * 0.5);
+    const target = Math.min(1, Math.max(0, (y - heroH * 0.5) / max));
     p += (target - p) * (reduce ? 1 : 0.06);
     smx += (mx - smx) * 0.05; smy += (my - smy) * 0.05;
     // respiración prediseñada (no sigue a la música); solo el ecualizador la sigue
