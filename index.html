@@ -1,192 +1,745 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workshop: Build Your Own Passive Voice App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .step-card { transition: all 0.3s ease; border-left: 5px solid #e2e8f0; }
-        .step-card:hover { transform: translateX(5px); border-left-color: #4f46e5; background: #f8fafc; }
-        .copy-box { background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 8px; }
-        .checkpoint-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; }
-        .alert-manual { border: 2px solid #ef4444; background: #fff1f2; border-radius: 15px; }
-        .success-step { border: 2px solid #10b981; background: #f0fdf4; border-radius: 15px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deutsch Academy | Unregelmäßige Verben · Level 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #090d16 0%, #111827 50%, #14532d 100%); }
+    .neon-border { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+    .neon-border:hover { box-shadow: 0 0 25px rgba(52, 211, 153, 0.45); }
+
+    .gap-input {
+      display: block; width: 100%; min-width: 0;
+      background: #020617; color: #fff; font-weight: 800;
+      border: 2px solid #334155; border-radius: 14px;
+      padding: 12px 16px; outline: none; transition: all .15s ease;
+    }
+    .gap-input:focus { border-color: #34d399; background: #0b1220; }
+    .gap-input::placeholder { color: #475569; font-weight: 600; }
+    .gap-ok { border-color: #10b981 !important; color: #6ee7b7 !important; background: rgba(6,78,59,.45) !important; }
+    .gap-ko { border-color: #f43f5e !important; color: #fda4af !important; background: rgba(76,5,25,.45) !important; }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-card { border: 2px solid #000 !important; background: #fff !important; color: #000 !important; }
+      .print-card * { color: #000 !important; }
+    }
+  </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900">
+<body class="bg-slate-950 text-slate-100 min-h-screen gradient-bg flex flex-col selection:bg-emerald-500 selection:text-white">
 
-    <!-- Header Section -->
-    <header class="bg-indigo-700 text-white py-12 px-6 shadow-xl">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl font-black mb-2 uppercase tracking-tight italic">Passive Voice App Creation</h1>
-            <p class="text-lg opacity-90 font-medium">Follow this professional workflow to build your educational tool.</p>
+  <!-- NAVBAR -->
+  <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 py-4 no-print">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
+      <div class="flex items-center space-x-4 cursor-pointer" onclick="goHome()">
+        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-600 flex items-center justify-center font-black text-2xl md:text-3xl text-white shadow-lg shadow-emerald-500/40">D</div>
+        <div>
+          <h1 class="font-black text-2xl md:text-3xl text-white tracking-wider">DEUTSCH<span class="text-emerald-400">PRO</span></h1>
+          <p class="text-sm font-semibold text-slate-400">Unregelmäßige Verben · Level 1</p>
         </div>
-    </header>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleFullScreen()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 px-5 py-3 rounded-2xl font-black text-sm md:text-base transition flex items-center gap-2 shadow-lg shadow-emerald-600/30">
+          <i class="fa-solid fa-expand text-lg"></i> <span class="hidden md:inline">Pantalla completa</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <main class="max-w-4xl mx-auto py-10 px-6 pb-24">
+  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center">
 
-        <!-- Phase 1 -->
-        <section class="mb-12">
-            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 1: Research & Sources</h3>
-            <div class="space-y-4">
-                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
-                    <h4 class="font-bold text-lg mb-1">1. Sign In</h4>
-                    <p class="text-slate-600 text-sm">Sign in on Google with your Gmail account and open <a href="https://notebooklm.google.com/" target="_blank" class="text-indigo-600 font-bold underline">NotebookLM</a>.</p>
-                </div>
-                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
-                    <h4 class="font-bold text-lg mb-1">2. Search for Information</h4>
-                    <p class="text-slate-600 text-sm mb-3">Search the web for sites that explain these 5 topics:</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-bold">
-                        <span class="bg-slate-100 p-2 rounded">A) THE PASSIVE VOICE IN ENGLISH</span>
-                        <span class="bg-slate-100 p-2 rounded">B) TWO OBJECTS AS SUBJECT</span>
-                        <span class="bg-slate-100 p-2 rounded">C) WHEN TO OMIT THE AGENT</span>
-                        <span class="bg-slate-100 p-2 rounded">D) PASSIVE WITH REPORTING VERBS</span>
-                        <span class="bg-slate-100 p-2 rounded">E) THE CAUSATIVE (HAVE/GET DONE)</span>
-                    </div>
-                </div>
-                <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
-                    <h4 class="font-bold text-lg mb-1">3. Add Sources</h4>
-                    <p class="text-slate-600 text-sm">In NotebookLM, add these sites as <strong>SOURCES (FUENTES)</strong>. Make sure you select all of them.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Phase 2 -->
-        <section class="mb-12">
-            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 2: Training NotebookLM</h3>
-            <div class="success-step p-6 shadow-md">
-                <h4 class="font-bold text-green-800 text-xl mb-4 flex items-center gap-2">
-                    <i class="fas fa-paper-plane"></i> 4. Important Step: Send the Chat Instruction
-                </h4>
-                <p class="text-slate-700 text-sm mb-4">In the CHAT on NotebookLM, paste the text below. <strong>YOU MUST SEND THE MESSAGE AND WAIT FOR THE RESPONSE</strong> before moving to Gemini.</p>
-                
-                <div class="copy-box p-4 relative mb-4">
-                    <pre id="masterPrompt" class="text-[11px] text-slate-800 whitespace-pre-wrap leading-tight">Create a comprehensive educative interactive lesson for the passive voice. Explain every aspect:
-A) THE PASSIVE VOICE IN ENGLISH
-B) THE USE OF TWO OBJECTS AS SUBJECT OF THE PASSIVE
-C) WHEN TO OMIT THE AGENT
-D) THE PASSIVE VOICE WITH REPORTING VERBS (eg. He is said to ...)
-E) THE USE OF THE CAUSATIVE (HAVE/GET SOMETHING DONE)
-
-With every explanation there must be sentences in English as example and their translation into Spanish.
-
-All the sentences in English must have their native audio.
-There must be an EXERCISES SECTION with as many modules as the topics seen in the explanation. Each module of exercises must have 10 different sentences/exercises to do. Exercises must be fill-in the gaps. Only one answer is possible. If there are more than one possible answer, admit both. Exercises don’t have into account capital letters nor punctuation marks. Exercises are self-assessed with explanations when the student fails.
-
-This app must start with a field the student has to fill in with their name and surname.
-At the end of each module of exercises, there must be a partial score. When the student finishes all the modules, there must be a final score with the student’s name.
-The user interface must be professional, clean, and clear.</pre>
-                    <button onclick="copyText('masterPrompt')" class="absolute top-2 right-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs hover:bg-indigo-800 font-bold transition-all shadow-lg">COPY ALL TEXT</button>
-                </div>
-                <p class="text-xs font-black text-green-700 uppercase italic">Be sure you have selected all the sources before sending this chat!</p>
-            </div>
-        </section>
-
-        <!-- Phase 3 -->
-        <section class="mb-12">
-            <h3 class="text-indigo-600 font-black uppercase text-xs tracking-widest mb-4">Phase 3: Creating the App in Gemini</h3>
-            <div class="step-card bg-white p-6 rounded-r-xl shadow-sm mb-6">
-                <h4 class="font-bold text-lg mb-2">5. Create a NEW GEM</h4>
-                <p class="text-slate-600 text-sm mb-4">Open <a href="https://gemini.google.com/" target="_blank" class="text-indigo-600 underline font-bold">Gemini</a>. Click the 3 lines (Top Left) &gt; <strong>ADD A NEW GEM</strong>.</p>
-                <ol class="list-decimal ml-6 text-sm text-slate-700 space-y-2">
-                    <li>Name it (e.g., <strong>PASSIVE VOICE</strong>).</li>
-                    <li>Instructions: PASTE the same text you wrote in your NotebookLM chat.</li>
-                    <li>Start the CHAT.</li>
-                </ol>
-            </div>
-
-            <div class="alert-manual p-6 mb-6">
-                <h4 class="text-red-700 font-black mb-3 flex items-center gap-2">
-                    <i class="fas fa-exclamation-triangle"></i> IF YOU CAN'T CONNECT NOTEBOOKLM (Troubleshooting)
-                </h4>
-                <p class="text-sm text-slate-800 mb-4 font-medium">If Gemini doesn't show your sources automatically, use this manual method:</p>
-                <div class="bg-white/50 p-4 rounded-lg text-sm space-y-3 border border-red-200">
-                    <p><strong>1. Copy the Content:</strong> Copy the answer that NotebookLM gave you and the text from your research websites.</p>
-                    <p><strong>2. Create a Document:</strong> Paste everything into a Word or Google Doc and save it.</p>
-                    <p><strong>3. Upload to Gemini:</strong> In the Gemini chat, click <strong>"+" (Plus)</strong> &gt; <strong>"Upload from this device"</strong> and select your saved document.</p>
-                </div>
-            </div>
-
-            <div class="step-card bg-white p-6 rounded-r-xl shadow-sm">
-                <h4 class="font-bold text-lg mb-2">6. Generate and Preview</h4>
-                <p class="text-slate-600 text-sm">In Gemini: Select <strong>CANVAS</strong>. Paste the Master Prompt again and send. Wait for the code, then click <strong>"VISTA PREVIA"</strong>.</p>
-            </div>
-        </section>
-
-        <!-- Phase 4 -->
-        <section class="mb-12 bg-slate-200/50 p-8 rounded-3xl">
-            <h3 class="text-indigo-900 font-black uppercase text-sm tracking-widest text-center mb-8">Phase 4: Mandatory Testing & Verification</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-                
-                <div class="checkpoint-card">
-                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Identity & Scores</h5>
-                    <div class="space-y-2 text-xs">
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Student can write name/surname at start?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Name appears with the final score?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Partial score per module?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Final total score?</span></label>
-                    </div>
-                </div>
-
-                <div class="checkpoint-card">
-                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Content & Audio</h5>
-                    <div class="space-y-2 text-xs">
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Explanations are clear?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Enough examples per topic?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Native audio for all English sentences?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Spanish translations included?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>All 5 modules (A to E) covered?</span></label>
-                    </div>
-                </div>
-
-                <div class="checkpoint-card">
-                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Exercise Logic</h5>
-                    <div class="space-y-2 text-xs">
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>No ambiguous questions?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Admits multiple correct answers?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Ignores Caps/Punctuation?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Feedback provided on failure?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Exactly 10 exercises per module?</span></label>
-                    </div>
-                </div>
-
-                <div class="checkpoint-card">
-                    <h5 class="font-bold text-indigo-700 mb-3 border-b pb-1 text-sm">Interface</h5>
-                    <div class="space-y-2 text-xs">
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Professional and clean design?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Clear and easy to navigate?</span></label>
-                        <label class="flex items-start gap-2"><input type="checkbox"> <span>Do you like it?</span></label>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Footer Submission -->
-        <div class="bg-indigo-900 text-white p-10 rounded-3xl text-center shadow-2xl">
-            <h2 class="text-3xl font-black mb-4">READY TO SUBMIT?</h2>
-            <p class="mb-8 opacity-80 font-medium">When all aspects are OK, then your app is ready. CONGRATULATIONS!</p>
-            <div class="bg-white/10 p-6 rounded-xl text-left text-sm max-w-md mx-auto border border-white/20">
-                <p class="font-bold mb-2"><i class="fas fa-link mr-2"></i> How to share:</p>
-                <p>Click on <strong>COMPARTIR</strong> (next to Vista Previa) and send the link through <strong>CLASSROOM</strong>.</p>
-            </div>
+    <!-- PANEL -->
+    <section id="viewDashboard" class="hidden space-y-8 py-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-slate-900/90 border-2 border-slate-800 p-6 md:p-8 rounded-3xl">
+        <div>
+          <h2 class="text-3xl md:text-5xl font-black text-white">Hallo! 👋 Repasa los verbos irregulares</h2>
+          <p class="text-slate-300 text-lg md:text-xl mt-1">Haz los <strong>dos ejercicios</strong> de cada módulo: la app te corrige al momento. Repite los que no superes hasta conseguirlo.</p>
         </div>
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <button onclick="showReport()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg md:text-xl px-8 py-5 rounded-2xl transition flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30">
+            <i class="fa-solid fa-graduation-cap text-2xl"></i> MIS RESULTADOS
+          </button>
+          <button onclick="resetResults()" class="whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-5 py-3 rounded-2xl transition text-sm">
+            <i class="fa-solid fa-trash-can"></i> Borrar mis notas
+          </button>
+        </div>
+      </div>
+      <div class="space-y-12" id="modulesGrid"></div>
+    </section>
 
-    </main>
+    <!-- INSTRUCCIONES + TABLA -->
+    <section id="viewLesson" class="hidden space-y-6 py-4">
+      <div class="flex justify-between items-center no-print">
+        <button onclick="goHome()" class="text-base md:text-lg font-bold text-slate-400 hover:text-white flex items-center gap-2">
+          <i class="fa-solid fa-chevron-left"></i> Volver al panel
+        </button>
+        <span class="text-base font-black text-emerald-400 uppercase tracking-widest">Level 1</span>
+      </div>
+      <div class="bg-slate-900/95 border-2 border-slate-800 rounded-3xl p-6 md:p-10 space-y-8 text-slate-100 text-xl md:text-2xl leading-relaxed shadow-2xl" id="lessonContent"></div>
+      <div class="bg-emerald-950/40 border-2 border-emerald-500/40 rounded-3xl p-6 md:p-8 space-y-3">
+        <h3 class="text-emerald-300 font-black text-xl md:text-2xl flex items-center gap-3"><i class="fa-solid fa-pen-to-square"></i> Cómo contestar</h3>
+        <ul id="howToList" class="text-base md:text-xl text-slate-200 space-y-2 list-disc list-inside"></ul>
+      </div>
+      <div class="flex justify-end no-print">
+        <button onclick="startQuiz()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-10 py-5 rounded-2xl transition shadow-xl shadow-emerald-600/40 flex items-center justify-center gap-3">
+          Empezar <i class="fa-solid fa-play"></i>
+        </button>
+      </div>
+    </section>
 
-    <script>
-        function copyText(id) {
-            const text = document.getElementById(id).innerText;
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            alert("SUCCESS! Prompt copied. Remember: SEND the chat in NotebookLM before closing it!");
+    <!-- EJERCICIO -->
+    <section id="viewQuiz" class="hidden space-y-6 py-2">
+      <div class="flex justify-between items-center bg-slate-900 border-2 border-slate-800 p-5 md:p-6 rounded-2xl">
+        <div>
+          <span class="text-sm md:text-base text-emerald-400 font-extrabold uppercase tracking-wider" id="quizTitle">Ejercicio</span>
+          <h3 class="text-2xl md:text-4xl font-black text-white" id="quizCount">Verbo 1 de 21</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-sm md:text-base text-slate-400 font-bold">Tiempo</span>
+          <div id="quizTimer" class="font-mono font-black text-3xl md:text-5xl text-emerald-400">00:00</div>
+        </div>
+      </div>
+      <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+        <div id="quizProgressBar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width: 0%;"></div>
+      </div>
+      <div class="bg-slate-900/90 border-2 border-slate-800 p-6 md:p-10 rounded-3xl space-y-6 shadow-2xl">
+        <div id="quizBody"></div>
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <span class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider mr-1">Teclado:</span>
+          <button type="button" class="char-btn bg-slate-800 hover:bg-slate-700 text-white font-black text-xl w-12 h-12 rounded-xl" data-char="ä">ä</button>
+          <button type="button" class="char-btn bg-slate-800 hover:bg-slate-700 text-white font-black text-xl w-12 h-12 rounded-xl" data-char="ö">ö</button>
+          <button type="button" class="char-btn bg-slate-800 hover:bg-slate-700 text-white font-black text-xl w-12 h-12 rounded-xl" data-char="ü">ü</button>
+          <button type="button" class="char-btn bg-slate-800 hover:bg-slate-700 text-white font-black text-xl w-12 h-12 rounded-xl" data-char="ß">ß</button>
+        </div>
+        <div id="quizFeedback" class="hidden p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2"></div>
+        <div class="flex justify-end no-print">
+          <button id="checkBtn" onclick="checkAnswer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+            <i class="fa-solid fa-check mr-2"></i> Corregir
+          </button>
+        </div>
+      </div>
+      <div class="flex justify-between items-center pt-2 no-print">
+        <button onclick="quitQuiz()" class="text-base md:text-lg font-bold text-slate-400 hover:text-slate-200">Abandonar</button>
+        <button id="nextBtn" onclick="nextQuestion()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl md:text-2xl px-8 py-4 rounded-2xl transition shadow-lg shadow-emerald-600/30">
+          Siguiente <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- RESULTADO PARCIAL -->
+    <section id="viewResults" class="hidden space-y-6 py-6 max-w-3xl mx-auto w-full">
+      <div id="resultsCard" class="bg-slate-900 border-2 border-slate-800 p-8 md:p-10 rounded-3xl text-center space-y-6 shadow-2xl"></div>
+      <div id="reviewCard" class="bg-slate-900 border-2 border-slate-800 p-6 md:p-8 rounded-3xl space-y-3 shadow-2xl"></div>
+    </section>
+
+    <!-- MIS RESULTADOS -->
+    <section id="viewReport" class="hidden py-4 max-w-3xl mx-auto w-full">
+      <div class="bg-slate-900 border-4 border-emerald-500/50 p-6 md:p-8 rounded-3xl space-y-5 shadow-2xl relative overflow-hidden print-card">
+        <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-9xl font-black text-white select-none">DEUTSCH</div>
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-widest">Unregelmäßige Verben · Level 1</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white mt-1">Mis resultados</h2>
+          </div>
+          <div class="flex gap-2 no-print">
+            <button onclick="window.print()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl"><i class="fa-solid fa-print"></i></button>
+            <button onclick="goHome()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl"><i class="fa-solid fa-xmark"></i> Cerrar</button>
+          </div>
+        </div>
+        <div id="reportDetails" class="space-y-5"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800/80 py-4 text-center text-sm text-slate-500 font-semibold no-print">
+    DeutschPRO Academy • Unregelmäßige Verben · Level 1 • Autocorrección
+  </footer>
+
+  <!-- ============================================================
+       DATOS Y CORRECCION (sin acceso al DOM: lo prueban los tests)
+       ============================================================ -->
+  <script id="core">
+    /* ---------- CONFIGURACION ---------- */
+    const PASS_MARK = 80;              // % necesario para superar cada ejercicio
+    const ACCEPT_SS_FOR_ESZETT = false; // true = acepta "ass" por "aß"
+    const ACCEPT_AE_FOR_UMLAUT = false; // true = acepta "fahrt" -> no; "faehrt" por "fährt"
+
+    /* ---------- LISTA DE VERBOS (hoja "Die unregelmäßigen Verben") ----------
+       inf  = Infinitiv (tal como se muestra)
+       prat = Präteritum 3. Pers. Sing.
+       aux  = verbo auxiliar del Perfekt ("hat", "ist" o los dos)
+       part = Partizip II
+       es   = Bedeutung (tal como se muestra)
+       esOk = otras traducciones que también se aceptan
+       infOk / pratOk / partOk = otras grafías que también se aceptan
+       refl = verbo reflexivo: "sich" es opcional en las respuestas            */
+    const VERBS = [
+      { inf: "abheben", prat: "hob ab", aux: ["hat"], part: "abgehoben", es: "sacar dinero del banco", esOk: ["sacar dinero", "sacar", "retirar dinero", "retirar dinero del banco", "retirar"] },
+      { inf: "anrufen", prat: "rief an", aux: ["hat"], part: "angerufen", es: "llamar por teléfono", esOk: ["llamar", "telefonear"] },
+      { inf: "beginnen", prat: "begann", aux: ["hat"], part: "begonnen", es: "empezar", esOk: ["comenzar", "iniciar"], same: ["anfangen"] },
+      { inf: "beißen", prat: "biss", aux: ["hat"], part: "gebissen", es: "morder" },
+      { inf: "beweisen", prat: "bewies", aux: ["hat"], part: "bewiesen", es: "probar, demostrar", esOk: ["comprobar"] },
+      { inf: "sich bewerben", prat: "bewarb sich", aux: ["hat"], part: "sich beworben", es: "solicitar algo", refl: true, esOk: ["solicitar", "postularse", "presentarse", "presentar una solicitud", "solicitar un puesto", "solicitar un trabajo", "solicitar un empleo"] },
+      { inf: "bieten", prat: "bot", aux: ["hat"], part: "geboten", es: "ofrecer (general)" },
+      { inf: "anbieten", prat: "bot an", aux: ["hat"], part: "angeboten", es: "ofrecer (algo a alguien)", esOk: ["ofrecer algo", "ofrecer algo a alguien"] },
+      { inf: "verbieten", prat: "verbot", aux: ["hat"], part: "verboten", es: "prohibir" },
+      { inf: "bitten", prat: "bat", aux: ["hat"], part: "gebeten", es: "pedir, rogar", esOk: ["pedir algo", "solicitar"] },
+      { inf: "bleiben", prat: "blieb", aux: ["ist"], part: "geblieben", es: "permanecer", esOk: ["quedarse", "quedar"] },
+      { inf: "stehen bleiben", prat: "blieb stehen", aux: ["ist"], part: "stehen geblieben", es: "pararse, quedarse", infOk: ["stehenbleiben"], partOk: ["stehengeblieben"], esOk: ["detenerse", "parar", "quedarse parado", "quedarse quieto", "pararse quedarse"] },
+      { inf: "brechen", prat: "brach", aux: ["hat"], part: "gebrochen", es: "romper, partir", esOk: ["quebrar", "romperse"] },
+      { inf: "brennen", prat: "brannte", aux: ["hat"], part: "gebrannt", es: "arder", esOk: ["quemar", "quemarse"] },
+      { inf: "bringen", prat: "brachte", aux: ["hat"], part: "gebracht", es: "traer", esOk: ["llevar"] },
+      { inf: "mitbringen", prat: "brachte mit", aux: ["hat"], part: "mitgebracht", es: "traer (consigo)", esOk: ["traer consigo", "llevar", "llevar consigo"] },
+      { inf: "verbringen", prat: "verbrachte", aux: ["hat"], part: "verbracht", es: "pasar (tiempo)", esOk: ["pasar tiempo", "pasar el tiempo"] },
+      { inf: "denken", prat: "dachte", aux: ["hat"], part: "gedacht", es: "pensar", esOk: ["creer"] },
+      { inf: "nachdenken", prat: "dachte nach", aux: ["hat"], part: "nachgedacht", es: "reflexionar", esOk: ["pensar", "meditar", "pensar sobre algo", "pensarlo"] },
+      { inf: "(sich) entscheiden", prat: "(sich) entschied", aux: ["hat"], part: "(sich) entschieden", es: "decidir(se)", refl: true, esOk: ["decidir", "decidirse"] },
+      { inf: "empfehlen", prat: "empfahl", aux: ["hat"], part: "empfohlen", es: "recomendar", esOk: ["aconsejar"] },
+
+      { inf: "essen", prat: "aß", aux: ["hat"], part: "gegessen", es: "comer" },
+      { inf: "fressen", prat: "fraß", aux: ["hat"], part: "gefressen", es: "devorar (modo de comer de los animales)", esOk: ["devorar", "comer (animales)", "comer los animales", "comer animales", "zampar", "engullir"] },
+      { inf: "vergessen", prat: "vergaß", aux: ["hat"], part: "vergessen", es: "olvidar", esOk: ["olvidarse"] },
+      { inf: "fahren", prat: "fuhr", aux: ["ist", "hat"], part: "gefahren", es: "conducir", esOk: ["ir en coche", "ir en vehiculo", "viajar", "manejar", "ir (en vehiculo)", "ir"] },
+      { inf: "abfahren", prat: "fuhr ab", aux: ["ist"], part: "abgefahren", es: "salir (en un vehículo)", esOk: ["salir", "partir", "salir en un vehiculo", "irse"], same: ["losfahren"] },
+      { inf: "erfahren", prat: "erfuhr", aux: ["hat"], part: "erfahren", es: "enterarse", esOk: ["enterarse de", "enterarse de algo", "saber", "experimentar"] },
+      { inf: "herunterfahren", prat: "fuhr herunter", aux: ["hat"], part: "heruntergefahren", es: "apagar (ordenador)", esOk: ["apagar", "apagar el ordenador", "apagar un ordenador", "apagar ordenador", "apagar el ordenador"] },
+      { inf: "losfahren", prat: "fuhr los", aux: ["ist"], part: "losgefahren", es: "salir (medio de transporte)", esOk: ["salir", "partir", "arrancar", "ponerse en marcha", "salir en un vehiculo"], same: ["abfahren"] },
+      { inf: "fallen", prat: "fiel", aux: ["ist"], part: "gefallen", es: "caer", esOk: ["caerse"] },
+      { inf: "auffallen", prat: "fiel auf", aux: ["ist"], part: "aufgefallen", es: "llamar la atención (saltar a la vista)", esOk: ["llamar la atencion", "saltar a la vista", "destacar", "notarse", "llamar la atencion saltar a la vista"] },
+      { inf: "ausfallen", prat: "fiel aus", aux: ["ist"], part: "ausgefallen", es: "suspenderse (clase, función, concierto)", esOk: ["suspenderse", "cancelarse", "anularse", "suspender", "cancelar", "no tener lugar", "no celebrarse"] },
+      { inf: "einfallen", prat: "fiel ein", aux: ["ist"], part: "eingefallen", es: "venirle algo a alguien a la mente (idea, ...)", esOk: ["venirle algo a alguien a la mente", "venir a la mente", "venirle a la mente", "venirle algo a la mente", "venir a la cabeza", "venirle a la cabeza", "ocurrirse", "ocurrirsele", "ocurrirsele algo", "ocurrirsele algo a alguien", "tener una idea"] },
+      { inf: "gefallen", prat: "gefiel", aux: ["hat"], part: "gefallen", es: "gustar", esOk: ["agradar"] },
+      { inf: "fangen", prat: "fing", aux: ["hat"], part: "gefangen", es: "captar, coger", esOk: ["atrapar", "capturar", "pescar", "agarrar"] },
+      { inf: "anfangen", prat: "fing an", aux: ["hat"], part: "angefangen", es: "empezar", esOk: ["comenzar", "iniciar"], same: ["beginnen"] },
+      { inf: "empfangen", prat: "empfing", aux: ["hat"], part: "empfangen", es: "recibir", esOk: ["acoger"] },
+      { inf: "finden", prat: "fand", aux: ["hat"], part: "gefunden", es: "encontrar", esOk: ["hallar", "opinar"] },
+      { inf: "sich befinden", prat: "befand sich", aux: ["hat"], part: "sich befunden", es: "encontrarse, ubicarse", refl: true, esOk: ["hallarse", "estar", "situarse", "estar situado", "estar ubicado", "ubicarse encontrarse"] },
+      { inf: "empfinden", prat: "empfand", aux: ["hat"], part: "empfunden", es: "sentir", esOk: ["percibir", "experimentar"] },
+      { inf: "erfinden", prat: "erfand", aux: ["hat"], part: "erfunden", es: "inventar" }
+    ];
+
+    const MODULE_DEFS = [
+      { id: "m1", title: "Modul 1", icon: "fa-seedling", from: 0, to: 21 },
+      { id: "m2", title: "Modul 2", icon: "fa-tree", from: 21, to: VERBS.length }
+    ];
+
+    const MODES = {
+      es2de: {
+        tag: "A", name: "Español → Alemán", icon: "fa-language",
+        chip: "bg-sky-500/15 text-sky-300 border-sky-500/40",
+        desc: "Te damos el verbo en español: escribe el Infinitiv, el Präteritum, el auxiliar (ist / hat) y el Partizip II.",
+        fields: [
+          { key: "inf",  label: "Infinitiv",          cls: "text-emerald-300", ph: "" },
+          { key: "prat", label: "Präteritum",         cls: "text-sky-300",     ph: "" },
+          { key: "aux",  label: "Hilfsverb",          cls: "text-rose-300",    ph: "ist / hat" },
+          { key: "part", label: "Partizip II",        cls: "text-amber-300",   ph: "" }
+        ]
+      },
+      de2es: {
+        tag: "B", name: "Alemán → Español", icon: "fa-arrow-right-arrow-left",
+        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/40",
+        desc: "Te damos el Infinitiv en alemán: escribe el Präteritum, el auxiliar (ist / hat), el Partizip II y la traducción al español.",
+        fields: [
+          { key: "prat", label: "Präteritum",         cls: "text-sky-300",     ph: "" },
+          { key: "aux",  label: "Hilfsverb",          cls: "text-rose-300",    ph: "ist / hat" },
+          { key: "part", label: "Partizip II",        cls: "text-amber-300",   ph: "" },
+          { key: "es",   label: "Traducción",         cls: "text-fuchsia-300", ph: "en español" }
+        ]
+      }
+    };
+
+    const TESTS = [];
+    MODULE_DEFS.forEach(def => {
+      ["es2de", "de2es"].forEach(mode => {
+        TESTS.push({
+          id: `${def.id}_${mode}`, moduleId: def.id, moduleTitle: def.title, icon: def.icon,
+          mode: mode, verbs: VERBS.slice(def.from, def.to)
+        });
+      });
+    });
+
+    /* ---------- NORMALIZACION ---------- */
+    function baseClean(s) {
+      return (s || "").toString()
+        .replace(/[‘’ʼ`´]/g, "'")
+        .toLowerCase()
+        .replace(/[.,;:!?¡¿"]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function normDe(s) {
+      let v = baseClean(s);
+      if (ACCEPT_SS_FOR_ESZETT) v = v.replace(/ß/g, "ss");
+      if (ACCEPT_AE_FOR_UMLAUT) v = v.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue");
+      return v;
+    }
+    function stripSich(v) {
+      return v.replace(/\(\s*sich\s*\)/g, " ").replace(/(^|\s)sich(?=\s|$)/g, " ").replace(/\s+/g, " ").trim();
+    }
+    function cleanDe(s, refl) {
+      const v = normDe(s);
+      return refl ? stripSich(v) : v;
+    }
+    function normEs(s) {
+      return baseClean(s)
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/[()]/g, " ")
+        .replace(/\.\.\./g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    /* ---------- FORMAS ACEPTADAS DE CADA VERBO ---------- */
+    function accepted(v) {
+      const de = list => list.map(x => cleanDe(x, v.refl));
+      const es = new Set();
+      const addEs = x => { const n = normEs(x); if (n) es.add(n); };
+      addEs(v.es);
+      addEs(v.es.replace(/\([^)]*\)/g, ""));
+      v.es.replace(/\([^)]*\)/g, "").split(",").forEach(addEs);
+      (v.esOk || []).forEach(addEs);
+      return {
+        inf: de([v.inf].concat(v.infOk || [])),
+        prat: de([v.prat].concat(v.pratOk || [])),
+        aux: v.aux.slice(),
+        part: de([v.part].concat(v.partOk || [])),
+        es: Array.from(es)
+      };
+    }
+    function verbByInf(inf) { return VERBS.find(x => x.inf === inf); }
+
+    /* ---------- CORRECCION DE CADA HUECO ---------- */
+    function checkInf(value, v) {
+      return accepted(v).inf.indexOf(cleanDe(value, v.refl)) >= 0;
+    }
+    function checkPrat(value, v) {
+      // admite "er hob ab" (se quita el pronombre)
+      const u = cleanDe(value, v.refl).replace(/^(er|sie|es|ich|man)\s+/, "");
+      return !!u && accepted(v).prat.indexOf(u) >= 0;
+    }
+    function checkAux(value, v) {
+      const u = normDe(value).replace(/\s*(\/|\bo\b|\boder\b|\by\b|\bund\b)\s*/g, " ").replace(/(^|\s)sich(?=\s|$)/g, " ").trim();
+      if (!u) return false;
+      const map = { hat: "hat", haben: "hat", ist: "ist", sein: "ist" };
+      const words = u.split(" ").map(w => map[w] || "?");
+      return words.every(w => v.aux.indexOf(w) >= 0);
+    }
+    function checkPart(value, v) {
+      // admite "ist geblieben" / "hat gebissen" en el hueco del participio
+      const u = cleanDe(value, v.refl).replace(/^(hat|ist|haben|sein)(\s*\/\s*(hat|ist))?\s+/, "");
+      return !!u && cleanDe(u, v.refl) !== "" && accepted(v).part.indexOf(cleanDe(u, v.refl)) >= 0;
+    }
+    function checkEs(value, v) {
+      const ok = accepted(v).es;
+      const whole = normEs(value);
+      if (!whole) return false;
+      if (ok.indexOf(whole) >= 0) return true;
+      // varias traducciones separadas por comas / barras: todas tienen que valer
+      const pieces = (value || "").toString().toLowerCase().split(/\s*(?:[,\/;]|\bo\b|\by\b)\s*/).map(normEs).filter(Boolean);
+      return pieces.length > 0 && pieces.every(p => ok.indexOf(p) >= 0);
+    }
+
+    /* ---------- CORRECCION DE UNA PREGUNTA ----------
+       values: lo que el alumno ha escrito en cada hueco, en el orden de MODES[mode].fields
+       devuelve { ok, parts:[bool...], verb } (verb = el verbo con el que se ha corregido) */
+    function gradeQuestion(mode, v, values) {
+      if (mode === "es2de") {
+        // si el español es igual para dos verbos (empezar = beginnen / anfangen) vale cualquiera
+        let target = v;
+        if (!checkInf(values[0], v)) {
+          const alt = (v.same || []).map(verbByInf).find(o => o && checkInf(values[0], o));
+          if (alt) target = alt;
         }
-    </script>
+        const parts = [checkInf(values[0], target), checkPrat(values[1], target), checkAux(values[2], target), checkPart(values[3], target)];
+        return { ok: parts.every(Boolean), parts: parts, verb: target };
+      }
+      const parts = [checkPrat(values[0], v), checkAux(values[1], v), checkPart(values[2], v), checkEs(values[3], v)];
+      return { ok: parts.every(Boolean), parts: parts, verb: v };
+    }
+
+    function solutionValues(mode, v) {
+      const aux = v.aux.join(" / ");
+      return mode === "es2de" ? [v.inf, v.prat, aux, v.part] : [v.prat, aux, v.part, v.es];
+    }
+  </script>
+
+  <!-- ============================================================
+       INTERFAZ
+       ============================================================ -->
+  <script>
+    const STORAGE_RESULTS = "dv_l1_results";
+    let currentTest = null;
+    let quiz = null;
+    let timerId = null;
+    let lastFocused = null;
+
+    function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function storageDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+    function escapeHtml(s) {
+      return (s == null ? "" : String(s)).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function shuffle(a) {
+      const b = a.slice();
+      for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; }
+      return b;
+    }
+    function fmtTime(sec) {
+      const m = Math.floor(sec / 60), s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+    function passCount(n) { return Math.ceil(n * PASS_MARK / 100); }
+
+    /* ---------- RESULTADOS (solo en este navegador) ---------- */
+    function loadResults() {
+      try { return JSON.parse(storageGet(STORAGE_RESULTS) || "[]"); } catch (e) { return []; }
+    }
+    function saveResult(r) {
+      const all = loadResults().concat([r]).slice(-200);
+      storageSet(STORAGE_RESULTS, JSON.stringify(all));
+    }
+    function statsOf(testId) {
+      const rs = loadResults().filter(r => r.testId === testId);
+      if (!rs.length) return null;
+      const best = rs.reduce((a, b) => (b.pct > a.pct || (b.pct === a.pct && b.time < a.time) ? b : a));
+      return { attempts: rs.length, best: best, passed: rs.some(r => r.passed) };
+    }
+
+    /* ---------- NAVEGACION ---------- */
+    const VIEWS = ["viewDashboard", "viewLesson", "viewQuiz", "viewResults", "viewReport"];
+    function showView(id) {
+      VIEWS.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
+      window.scrollTo(0, 0);
+    }
+    function goHome() {
+      if (quiz && !quiz.finished && !confirm("¿Seguro que quieres salir? Se perderá este intento.")) return;
+      stopTimer(); quiz = null;
+      renderDashboard();
+      showView("viewDashboard");
+    }
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else if (document.exitFullscreen) document.exitFullscreen();
+    }
+
+    function resetResults() {
+      if (!confirm("¿Borrar todas tus notas guardadas en este dispositivo?")) return;
+      storageDel(STORAGE_RESULTS);
+      renderDashboard();
+    }
+
+    /* ---------- PANEL ---------- */
+    function renderDashboard() {
+      document.getElementById("modulesGrid").innerHTML = MODULE_DEFS.map(def => {
+        const tests = TESTS.filter(t => t.moduleId === def.id);
+        const verbs = tests[0].verbs;
+        return `
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300 text-xl"><i class="fa-solid ${def.icon}"></i></div>
+              <div>
+                <h3 class="text-2xl md:text-3xl font-black text-white">${def.title}</h3>
+                <p class="text-sm md:text-base text-slate-400">${verbs.length} verbos · de <em>${escapeHtml(verbs[0].inf)}</em> a <em>${escapeHtml(verbs[verbs.length - 1].inf)}</em></p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              ${tests.map(testCard).join("")}
+            </div>
+          </div>`;
+      }).join("");
+    }
+    function testCard(t) {
+      const m = MODES[t.mode], st = statsOf(t.id);
+      const badge = !st
+        ? `<span class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 text-sm font-bold">Sin hacer</span>`
+        : (st.passed
+          ? `<span class="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-sm font-black"><i class="fa-solid fa-circle-check"></i> Superado · ${st.best.pct}%</span>`
+          : `<span class="px-3 py-1 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 text-sm font-black"><i class="fa-solid fa-rotate-right"></i> Repetir · ${st.best.pct}%</span>`);
+      return `
+        <button onclick="openTest('${t.id}')" class="text-left bg-slate-900/90 border-2 border-slate-800 hover:border-emerald-500/60 neon-border rounded-3xl p-6 transition space-y-3">
+          <div class="flex justify-between items-start gap-3">
+            <span class="px-3 py-1 rounded-xl border text-sm font-black ${m.chip}"><i class="fa-solid ${m.icon}"></i> Ejercicio ${m.tag}</span>
+            ${badge}
+          </div>
+          <h4 class="text-xl md:text-2xl font-black text-white">${m.name}</h4>
+          <p class="text-base text-slate-400 leading-snug">${m.desc}</p>
+          ${st ? `<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">${st.attempts} intento${st.attempts > 1 ? "s" : ""}</p>` : ""}
+        </button>`;
+    }
+
+    /* ---------- INSTRUCCIONES ---------- */
+    function openTest(id) {
+      currentTest = TESTS.find(t => t.id === id);
+      const m = MODES[currentTest.mode];
+      const rows = currentTest.verbs.map(v => `
+        <tr class="border-b border-slate-800/80">
+          <td class="p-2 md:p-3 font-black text-white">${escapeHtml(v.inf)}</td>
+          <td class="p-2 md:p-3 font-bold text-sky-300">${escapeHtml(v.prat)}</td>
+          <td class="p-2 md:p-3 font-bold text-rose-300">${escapeHtml(v.aux.join(" / "))}</td>
+          <td class="p-2 md:p-3 font-bold text-amber-300">${escapeHtml(v.part)}</td>
+          <td class="p-2 md:p-3 text-slate-400 text-sm md:text-base" lang="es">${escapeHtml(v.es)}</td>
+        </tr>`).join("");
+      const example = currentTest.mode === "es2de"
+        ? `<p class="text-base md:text-xl text-slate-300">Ves: <strong lang="es">romper, partir</strong></p>
+           <p class="mt-2 text-base md:text-xl text-slate-200">Escribes: <strong class="text-emerald-300">brechen</strong> · <strong class="text-sky-300">brach</strong> · <strong class="text-rose-300">hat</strong> · <strong class="text-amber-300">gebrochen</strong></p>`
+        : `<p class="text-base md:text-xl text-slate-300">Ves: <strong>bleiben</strong></p>
+           <p class="mt-2 text-base md:text-xl text-slate-200">Escribes: <strong class="text-sky-300">blieb</strong> · <strong class="text-rose-300">ist</strong> · <strong class="text-amber-300">geblieben</strong> · <strong class="text-fuchsia-300">permanecer</strong></p>`;
+      document.getElementById("lessonContent").innerHTML = `
+        <h2 class="text-3xl md:text-4xl font-black text-emerald-400 mb-1">${currentTest.moduleTitle}</h2>
+        <p class="text-lg md:text-2xl font-black mb-4"><span class="px-3 py-1 rounded-xl border ${m.chip}">Ejercicio ${m.tag} · ${m.name}</span></p>
+        <p class="text-slate-200 text-lg md:text-2xl mb-6 leading-relaxed">${currentTest.verbs.length} verbos · ${m.desc}</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950 p-6 rounded-3xl border-2 border-slate-700">
+            <h3 class="text-white font-black text-xl md:text-2xl mb-3">Ejemplo</h3>${example}
+          </div>
+          <div class="bg-slate-950 p-6 rounded-3xl border-2 border-emerald-500/30">
+            <h3 class="text-emerald-300 font-black text-xl md:text-2xl mb-3">Nota para aprobar</h3>
+            <p class="text-base md:text-xl text-slate-300">Necesitas un <strong class="text-amber-300">${PASS_MARK}%</strong> (${passCount(currentTest.verbs.length)} de ${currentTest.verbs.length}) para superar este ejercicio.</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl md:text-2xl font-black text-white mb-3"><i class="fa-solid fa-book text-emerald-400 mr-2"></i>Los ${currentTest.verbs.length} verbos de este módulo</h3>
+          <p class="text-base text-slate-400 mb-3">Estúdialos bien: durante el ejercicio la tabla no se ve.</p>
+          <div class="bg-slate-950 p-3 md:p-6 rounded-3xl border-2 border-slate-800 overflow-x-auto">
+            <table class="w-full text-left text-base md:text-xl">
+              <thead class="text-xs md:text-sm uppercase tracking-wider text-slate-400">
+                <tr><th class="p-2 md:p-3">Infinitiv</th><th class="p-2 md:p-3">Präteritum</th><th class="p-2 md:p-3">Hilfsverb</th><th class="p-2 md:p-3">Partizip II</th><th class="p-2 md:p-3">Bedeutung</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+      const how = [
+        currentTest.mode === "es2de"
+          ? "Te damos el <strong>significado en español</strong>. Escribe el verbo en alemán y sus formas, <strong>cada una en su hueco</strong>."
+          : "Te damos el <strong>Infinitiv en alemán</strong>. Escribe sus formas, <strong>cada una en su hueco</strong>, y su <strong>traducción al español</strong>.",
+        "En el hueco del <strong class=\"text-rose-300\">auxiliar</strong> escribe solo <strong>ist</strong> o <strong>hat</strong>. Si el verbo admite los dos (<em>fahren</em>), vale cualquiera.",
+        "Los verbos separables se escriben como en la tabla: <em>hob <strong>ab</strong></em>, <em>rief <strong>an</strong></em>. Con los reflexivos, <em>sich</em> es opcional.",
+        "<strong>Las mayúsculas no cuentan</strong>, pero sí las <strong>diéresis y la ß</strong>: usa los botones <strong>ä ö ü ß</strong> si tu teclado no los tiene.",
+        currentTest.mode === "de2es"
+          ? "En la traducción no cuentan las tildes. Valen los significados de la tabla y otros sinónimos habituales."
+          : "Si dos verbos significan lo mismo (<em>empezar</em> = <em>beginnen / anfangen</em>), vale cualquiera de los dos.",
+        "Pulsa <strong>Intro</strong> para pasar al siguiente hueco. La respuesta cuenta como buena solo si <strong>todos los huecos</strong> están bien."
+      ];
+      document.getElementById("howToList").innerHTML = how.map(h => `<li>${h}</li>`).join("");
+      showView("viewLesson");
+    }
+
+    /* ---------- EJERCICIO ---------- */
+    function startQuiz() {
+      quiz = { test: currentTest, order: shuffle(currentTest.verbs), index: 0, answers: [], start: Date.now(), checked: false, finished: false };
+      document.getElementById("quizTitle").textContent = `${currentTest.moduleTitle} · Ejercicio ${MODES[currentTest.mode].tag} · ${MODES[currentTest.mode].name}`;
+      startTimer();
+      renderQuestion();
+      showView("viewQuiz");
+    }
+    function startTimer() {
+      stopTimer();
+      const el = document.getElementById("quizTimer");
+      el.textContent = "00:00";
+      timerId = setInterval(() => { if (quiz) el.textContent = fmtTime(Math.floor((Date.now() - quiz.start) / 1000)); }, 1000);
+    }
+    function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+    function renderQuestion() {
+      const v = quiz.order[quiz.index], m = MODES[quiz.test.mode], n = quiz.order.length;
+      quiz.checked = false;
+      document.getElementById("quizCount").textContent = `Verbo ${quiz.index + 1} de ${n}`;
+      document.getElementById("quizProgressBar").style.width = `${Math.round(quiz.index / n * 100)}%`;
+      const prompt = quiz.test.mode === "es2de"
+        ? `<p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Verbo en español</p>
+           <p class="text-2xl md:text-4xl font-extrabold text-white mb-6" lang="es">${escapeHtml(v.es)}</p>`
+        : `<p class="text-xs md:text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Infinitiv</p>
+           <p class="text-2xl md:text-4xl font-extrabold text-white mb-6" lang="de">${escapeHtml(v.inf)}</p>`;
+      const inp = 'autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"';
+      document.getElementById("quizBody").innerHTML = prompt + `
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          ${m.fields.map((f, i) => `
+            <div>
+              <label for="ans_${i}" class="block text-xs md:text-sm font-black uppercase tracking-wider ${f.cls} mb-2">${f.label}</label>
+              <input type="text" id="ans_${i}" class="quiz-input gap-input text-lg md:text-2xl" placeholder="${escapeHtml(f.ph)}" ${f.key === "es" ? 'lang="es"' : 'lang="de"'} ${inp}>
+              <p id="sol_${i}" class="hidden mt-2 text-sm md:text-base font-bold text-emerald-300"></p>
+            </div>`).join("")}
+        </div>`;
+      const fb = document.getElementById("quizFeedback");
+      fb.classList.add("hidden"); fb.innerHTML = "";
+      document.getElementById("checkBtn").classList.remove("hidden");
+      document.getElementById("nextBtn").classList.add("hidden");
+      const first = document.getElementById("ans_0");
+      if (first) first.focus();
+    }
+    function quizInputs() { return Array.prototype.slice.call(document.querySelectorAll(".quiz-input")); }
+
+    function checkAnswer() {
+      if (!quiz || quiz.checked) return;
+      const inputs = quizInputs();
+      const values = inputs.map(i => i.value);
+      if (values.every(x => !x.trim())) {
+        if (!confirm("No has escrito nada. ¿Corregir de todas formas?")) { inputs[0].focus(); return; }
+      }
+      const v = quiz.order[quiz.index], mode = quiz.test.mode;
+      const r = gradeQuestion(mode, v, values);
+      quiz.checked = true;
+      quiz.answers.push({ verb: v, values: values, ok: r.ok, parts: r.parts, used: r.verb });
+      const sol = solutionValues(mode, r.verb);
+      inputs.forEach((inp, i) => {
+        inp.classList.add(r.parts[i] ? "gap-ok" : "gap-ko");
+        inp.readOnly = true;
+        if (!r.parts[i]) {
+          const p = document.getElementById("sol_" + i);
+          p.innerHTML = `<i class="fa-solid fa-arrow-turn-up fa-rotate-90"></i> ${escapeHtml(sol[i])}`;
+          p.classList.remove("hidden");
+        }
+      });
+      const full = fullSolution(mode, r.verb);
+      const fb = document.getElementById("quizFeedback");
+      fb.className = "p-6 md:p-8 rounded-2xl text-lg md:text-2xl font-bold border-2 " +
+        (r.ok ? "bg-emerald-950/50 border-emerald-500/50 text-emerald-200" : "bg-rose-950/40 border-rose-500/50 text-rose-200");
+      const alt = mode === "es2de" && v.same && v.same.length && r.verb === v
+        ? `<p class="text-sm md:text-base text-slate-400 mt-2">También vale: ${v.same.map(escapeHtml).join(", ")}</p>` : "";
+      fb.innerHTML = (r.ok
+        ? `<p><i class="fa-solid fa-circle-check mr-2"></i> ¡Richtig! Muy bien.</p>`
+        : `<p><i class="fa-solid fa-circle-xmark mr-2"></i> No del todo. Mira los huecos en rojo.</p>`) +
+        `<p class="mt-3 text-base md:text-xl text-white font-extrabold">${full}</p>` + alt;
+      document.getElementById("checkBtn").classList.add("hidden");
+      const nb = document.getElementById("nextBtn");
+      nb.innerHTML = quiz.index + 1 < quiz.order.length ? `Siguiente <i class="fa-solid fa-arrow-right ml-2"></i>` : `Ver resultado <i class="fa-solid fa-flag-checkered ml-2"></i>`;
+      nb.classList.remove("hidden");
+      nb.focus();
+    }
+    function fullSolution(mode, v) {
+      return `<span class="text-emerald-300">${escapeHtml(v.inf)}</span> · <span class="text-sky-300">${escapeHtml(v.prat)}</span> · <span class="text-rose-300">${escapeHtml(v.aux.join(" / "))}</span> <span class="text-amber-300">${escapeHtml(v.part)}</span> <span class="text-slate-400">=</span> <span class="text-fuchsia-300" lang="es">${escapeHtml(v.es)}</span>`;
+    }
+    function nextQuestion() {
+      if (!quiz || !quiz.checked) return;
+      quiz.index++;
+      if (quiz.index >= quiz.order.length) finishQuiz();
+      else renderQuestion();
+    }
+    function quitQuiz() {
+      if (!confirm("¿Seguro que quieres abandonar? Se perderá este intento.")) return;
+      stopTimer(); quiz = null; goHome();
+    }
+
+    /* ---------- RESULTADO ---------- */
+    function finishQuiz() {
+      stopTimer();
+      quiz.finished = true;
+      const total = quiz.order.length;
+      const score = quiz.answers.filter(a => a.ok).length;
+      const pct = Math.round(score / total * 100);
+      const passed = score >= passCount(total);
+      const time = Math.floor((Date.now() - quiz.start) / 1000);
+      saveResult({ testId: quiz.test.id, score, total, pct, passed, time, date: new Date().toISOString() });
+      const m = MODES[quiz.test.mode];
+      document.getElementById("resultsCard").innerHTML = `
+        <div class="text-6xl">${passed ? "🏆" : "💪"}</div>
+        <p class="text-sm font-black uppercase tracking-widest text-slate-400">${quiz.test.moduleTitle} · Ejercicio ${m.tag} · ${m.name}</p>
+        <h2 class="text-3xl md:text-5xl font-black ${passed ? "text-emerald-400" : "text-rose-400"}">${passed ? "¡Superado!" : "Todavía no"}</h2>
+        <p class="text-6xl md:text-8xl font-black text-white">${pct}%</p>
+        <p class="text-lg md:text-2xl text-slate-300"><strong>${score}</strong> de <strong>${total}</strong> verbos correctos · tiempo ${fmtTime(time)}</p>
+        <p class="text-base md:text-lg text-slate-400">${passed ? "Muy bien. Sigue con el siguiente ejercicio." : `Necesitas un ${PASS_MARK}% (${passCount(total)} de ${total}). Repasa la tabla y vuelve a intentarlo.`}</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2 no-print">
+          <button onclick="openTest('${quiz.test.id}')" class="bg-slate-800 hover:bg-slate-700 text-white font-black text-lg px-6 py-4 rounded-2xl"><i class="fa-solid fa-rotate-right mr-2"></i> Repetir</button>
+          <button onclick="goHome()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg px-6 py-4 rounded-2xl"><i class="fa-solid fa-house mr-2"></i> Volver al panel</button>
+        </div>`;
+      const wrong = quiz.answers.filter(a => !a.ok);
+      document.getElementById("reviewCard").innerHTML = !wrong.length
+        ? `<p class="text-xl font-black text-emerald-300 text-center"><i class="fa-solid fa-star"></i> ¡Sin ningún fallo!</p>`
+        : `<h3 class="text-xl md:text-2xl font-black text-white mb-2"><i class="fa-solid fa-magnifying-glass text-rose-400 mr-2"></i>Repasa tus fallos (${wrong.length})</h3>` +
+          wrong.map(a => {
+            const fields = m.fields, sol = solutionValues(quiz.test.mode, a.used);
+            return `
+              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                <p class="text-lg font-black text-white mb-2">${escapeHtml(quiz.test.mode === "es2de" ? a.verb.es : a.verb.inf)}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm md:text-base">
+                  ${fields.map((f, i) => `
+                    <div>
+                      <p class="text-[11px] uppercase font-black tracking-wider ${f.cls}">${f.label}</p>
+                      ${a.parts[i]
+                        ? `<p class="font-bold text-emerald-300"><i class="fa-solid fa-check"></i> ${escapeHtml(a.values[i])}</p>`
+                        : `<p class="font-bold text-rose-300 line-through">${escapeHtml(a.values[i]) || "—"}</p><p class="font-bold text-emerald-300">${escapeHtml(sol[i])}</p>`}
+                    </div>`).join("")}
+                </div>
+              </div>`;
+          }).join("");
+      showView("viewResults");
+      quiz = null;
+    }
+
+    /* ---------- INFORME FINAL ---------- */
+    function showReport() {
+      const rows = TESTS.map(t => ({ t, st: statsOf(t.id) }));
+      const passedN = rows.filter(r => r.st && r.st.passed).length;
+      const done = rows.filter(r => r.st).length;
+      const avg = done ? Math.round(rows.filter(r => r.st).reduce((s, r) => s + r.st.best.pct, 0) / done) : 0;
+      const all = passedN === TESTS.length;
+      const now = new Date();
+      document.getElementById("reportDetails").innerHTML = `
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4"><div class="text-4xl font-black ${all ? "text-emerald-400" : "text-amber-300"}">${passedN}/${TESTS.length}</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Ejercicios superados</div></div>
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4"><div class="text-4xl font-black text-white">${avg}%</div><div class="text-xs text-slate-400 font-bold uppercase mt-1">Media (mejor nota)</div></div>
+        </div>
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+          <table class="w-full text-left text-sm md:text-base">
+            <thead class="bg-slate-900 text-slate-400 uppercase text-xs font-bold">
+              <tr><th class="p-3">Módulo</th><th class="p-3">Ejercicio</th><th class="p-3 text-center">Mejor nota</th><th class="p-3 text-center">Intentos</th><th class="p-3 text-center">Estado</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              ${rows.map(({ t, st }) => `
+                <tr>
+                  <td class="p-3 font-black text-white">${t.moduleTitle}</td>
+                  <td class="p-3 text-slate-300">${MODES[t.mode].tag} · ${MODES[t.mode].name}</td>
+                  <td class="p-3 text-center font-black text-white">${st ? `${st.best.pct}% <span class="text-slate-500 font-bold text-xs">(${st.best.score}/${st.best.total})</span>` : "—"}</td>
+                  <td class="p-3 text-center text-slate-300">${st ? st.attempts : 0}</td>
+                  <td class="p-3 text-center">${!st ? `<span class="text-slate-500 font-bold">Sin hacer</span>` : (st.passed ? `<span class="text-emerald-400 font-black"><i class="fa-solid fa-circle-check"></i> Superado</span>` : `<span class="text-rose-400 font-black"><i class="fa-solid fa-circle-xmark"></i> No superado</span>`)}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div class="${all ? "bg-emerald-950/50 border-emerald-500/50" : "bg-amber-950/30 border-amber-500/40"} border-2 rounded-2xl p-5 text-center">
+          ${all
+            ? `<p class="text-2xl font-black text-emerald-300">🏆 ¡Has superado los ${TESTS.length} ejercicios!</p><p class="text-slate-200 mt-1">¡Ya dominas estos verbos irregulares!</p>`
+            : `<p class="text-xl font-black text-amber-300">Has superado ${passedN} de ${TESTS.length} ejercicios.</p><p class="text-slate-200 mt-1">Repite los que te faltan hasta superarlos <strong>todos</strong>. ¡Tú puedes! 💪</p>`}
+        </div>
+        <p class="text-xs text-slate-500 text-right">${now.toLocaleDateString("es-ES")} · ${now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</p>`;
+      showView("viewReport");
+    }
+
+    /* ---------- TECLADO ---------- */
+    document.addEventListener("focusin", e => { if (e.target.classList && e.target.classList.contains("quiz-input")) lastFocused = e.target; });
+    document.querySelectorAll(".char-btn").forEach(b => {
+      b.addEventListener("mousedown", e => e.preventDefault());
+      b.addEventListener("click", () => {
+        const inp = lastFocused && document.body.contains(lastFocused) ? lastFocused : quizInputs()[0];
+        if (!inp || inp.readOnly) return;
+        const s = inp.selectionStart ?? inp.value.length, e2 = inp.selectionEnd ?? inp.value.length;
+        inp.value = inp.value.slice(0, s) + b.dataset.char + inp.value.slice(e2);
+        inp.focus();
+        inp.setSelectionRange(s + 1, s + 1);
+      });
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Enter" || !quiz || document.getElementById("viewQuiz").classList.contains("hidden")) return;
+      e.preventDefault();
+      if (quiz.checked) { nextQuestion(); return; }
+      const inputs = quizInputs(), i = inputs.indexOf(document.activeElement);
+      if (i >= 0 && i < inputs.length - 1) inputs[i + 1].focus();
+      else checkAnswer();
+    });
+
+    /* ---------- ARRANQUE ---------- */
+    goHome();
+  </script>
 </body>
 </html>
