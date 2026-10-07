@@ -19,7 +19,7 @@
   function enter(withSound) {
     gate.classList.add("is-out");
     document.body.classList.remove("lock");
-    document.body.classList.add("go");
+    document.body.classList.add("entered");   // aparecen el menú de nubes y las zonas interactivas
     player.hidden = false;
     window.KFAudio.setEnabled(withSound);
     if (withSound) B.play();
@@ -69,7 +69,7 @@
     for (let i = 0; i < n; i++) {
       const v = Math.max(0.04, B.bands[i]);
       const bh = v * h * 0.95;
-      c.fillStyle = `hsl(${350 + i * 4}, 95%, ${55 + v * 20}%)`;
+      c.fillStyle = `hsl(${330 + i * 9}, 95%, ${58 + v * 15}%)`;
       c.fillRect(i * bw + 1.5, (h - bh) / 2, bw - 3, bh);
     }
   }
@@ -103,7 +103,7 @@
   }, { rootMargin: "-45% 0px -50% 0px" });
   $$("main section[id]").forEach((s) => spy.observe(s));
 
-  /* ---------- Discos: borde con texto que gira y entrada al hacer scroll ---------- */
+  /* ---------- Discos: borde con texto que gira y rayos detrás ---------- */
   $$(".disc").forEach((d, i) => {
     d.setAttribute("data-beat", "");
     const rim = document.createElement("div");
@@ -114,32 +114,100 @@
     const face = document.createElement("i");
     face.className = "disc__face";
     d.prepend(face);
+    const burst = document.createElement("i");
+    burst.className = "disc__burst";
+    d.prepend(burst);
   });
 
-  const discs = $$(".disc");
-  function spin() {
-    const vh = window.innerHeight;
-    discs.forEach((d) => {
-      const r = d.parentElement.getBoundingClientRect();
-      const k = (r.top + r.height / 2 - vh / 2) / vh;     // 0 = centrado en pantalla
-      const a = Math.min(1.2, Math.abs(k));
-      const s = 1 - Math.min(a, 1) * 0.45;
-      const o = 1 - Math.max(0, (a - 0.45) / 0.5);
-      d.style.transform = `rotate(${(k * -35).toFixed(1)}deg) scale(${s.toFixed(3)})`;
-      d.style.opacity = Math.max(0, o).toFixed(3);
-      d.querySelector(".disc__copy").style.transform = `rotate(${(k * 35).toFixed(1)}deg)`;
+  /* ---------- Viaje por el túnel: cada sección se queda fija mientras su
+     disco sale del fondo girando, se para para leerlo y sale volando ---------- */
+  const sm = (a, b, x) => { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); };
+  const nights = $$(".night");
+  let holding = false;
+  let vinylHome = null;           // posición de cada vinilo respecto al centro de la pantalla
+
+  function progress(sec) {
+    const r = sec.getBoundingClientRect();
+    return -r.top / Math.max(1, r.height - window.innerHeight);
+  }
+  // k < 0: llega; 0..1: fijada en pantalla
+  function flight(k, inEnd, outStart) {
+    if (k < inEnd) {
+      const u = Math.min(1, (inEnd - k) / (inEnd + 0.45));
+      return { s: Math.pow(0.04, u), rot: u * u * 900, o: 1 - sm(0.55, 1, u), hold: false };
+    }
+    if (k > outStart) {
+      const v = Math.min(1, (k - outStart) / (1 - outStart));
+      return { s: 1.04 + v * 2.6, rot: -v * v * 600, o: 1 - sm(0, 0.85, v), hold: false };
+    }
+    return { s: 1 + (k - inEnd) * 0.1, rot: 0, o: 1, hold: true };
+  }
+  function apply(el, f, spin) {
+    el.style.transform = `${spin ? `rotate(${f.rot.toFixed(1)}deg) ` : ""}scale(${f.s.toFixed(4)})`;
+    el.style.opacity = f.o.toFixed(3);
+    el.style.visibility = f.o < 0.02 ? "hidden" : "visible";
+    const blur = spin ? Math.abs(f.rot) / 900 * 7 : 0;
+    el.style.filter = blur > 0.4 ? `blur(${blur.toFixed(1)}px)` : "";
+  }
+
+  function measureVinyls() {
+    const items = $$(".vinyls li");
+    items.forEach((li) => (li.style.transform = ""));
+    const pin = $("#musica .pin").getBoundingClientRect();
+    vinylHome = items.map((li) => {
+      const r = li.getBoundingClientRect();
+      return { li, x: r.left + r.width / 2 - (pin.left + pin.width / 2), y: r.top + r.width / 2 - (pin.top + pin.height / 2) };
     });
   }
+
+  function travel() {
+    holding = false;
+    nights.forEach((sec) => {
+      const k = progress(sec);
+      if (k < -0.9 || k > 1.1) { sec.style.visibility = "hidden"; return; }
+      sec.style.visibility = "";
+      if (sec.id === "musica") {
+        const f = flight(Math.min(k, 0.99), 0.05, 0.86);
+        const music = $(".music", sec);
+        // la cabecera y el reproductor llegan sin girar; los vinilos salen del centro uno a uno
+        const head = k < 0.05 ? { s: 0.6 + 0.4 * sm(-0.45, 0.05, k), o: sm(-0.45, 0.05, k), rot: 0 } : f;
+        apply(music, head, false);
+        if (!vinylHome || !vinylHome.length) measureVinyls();
+        vinylHome.forEach((v, j) => {
+          const e = sm(-0.25 + j * 0.08, 0.2 + j * 0.08, k);
+          v.li.style.transform = `translate(${(-v.x * (1 - e)).toFixed(1)}px, ${(-v.y * (1 - e)).toFixed(1)}px) rotate(${((1 - e) * 720).toFixed(0)}deg) scale(${(0.06 + 0.94 * e).toFixed(3)})`;
+          v.li.style.opacity = sm(0, 0.3, e).toFixed(3);
+        });
+        if (k > 0.45 && k < 0.86) holding = true;
+      } else {
+        const f = flight(k, 0.28, 0.72);
+        apply($(".disc", sec), f, true);
+        if (f.hold) holding = true;
+      }
+    });
+  }
+
   if (!reduce) {
     let queued = false;
-    window.addEventListener("scroll", () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(() => { queued = false; spin(); });
-    }, { passive: true });
-    window.addEventListener("resize", spin);
-    spin();
+    const kick = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; travel(); }); };
+    window.addEventListener("scroll", kick, { passive: true });
+    window.addEventListener("resize", () => { vinylHome = null; kick(); });
+    setTimeout(travel, 0);
   }
+
+  // los enlaces internos llevan al momento en que el disco está quieto y legible
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href").slice(1);
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    e.preventDefault();
+    const vh = window.innerHeight;
+    let top = sec.offsetTop;
+    if (sec.classList.contains("night")) top += (sec.offsetHeight - vh) * (sec.id === "musica" ? 0.6 : 0.48);
+    window.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
+  });
 
   /* ---------- Vinilos y caja de CD ---------- */
   $("#vinyls").innerHTML = D.albums.map((a, j) => `
@@ -227,9 +295,8 @@
       else {
         if (auto.wait > 0) auto.wait -= dt;
         else {
-          // más despacio cuando un disco está centrado, para poder leerlo
-          const centred = discs.some((d) => { const r = d.parentElement.getBoundingClientRect(); return Math.abs(r.top + r.height / 2 - vh / 2) < vh * 0.08; });
-          auto.pos += (vh / (centred ? 18 : 6)) * dt;
+          // más despacio mientras un disco está quieto, para poder leerlo
+          auto.pos += (vh / (holding ? 9 : 3.2)) * dt;
           if (auto.pos >= max) { auto.pos = 0; auto.wait = 3; }
         }
         window.scrollTo(0, auto.pos);

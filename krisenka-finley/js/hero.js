@@ -54,10 +54,6 @@
       el.style.setProperty("--y", y / IH);
       el.style.setProperty("--w", w / IW);
       el.style.setProperty("--h", h / IH);
-      if (el.classList.contains("cloud-btn")) {
-        el.style.backgroundSize = `${(IW / w) * 100}% ${(IH / h) * 100}%`;
-        el.style.backgroundPosition = `${(x / (IW - w)) * 100}% ${(y / (IH - h)) * 100}%`;
-      }
     });
   }
 
@@ -158,7 +154,7 @@
       col = mix(col, clamp(hueShift(col, t * (0.9 + uTitle * 3.0) + uHit * 1.5 + P.x * 0.012), 0.0, 1.0), k);
 
       // Atardecer: al bajar hacia el concierto la escena se vuelve noche
-      col = mix(col, col * vec3(0.62, 0.30, 0.45) + vec3(0.05, 0.0, 0.03), uNight * 0.85);
+      col = mix(col, col * vec3(0.50, 0.32, 0.72) + vec3(0.06, 0.02, 0.10), uNight * 0.8);
 
       // Rayos de sol proyectados desde el mandala y desde el sol
       vec2 cr = P - vec2(1000.0, 152.0); float cd = length(cr); float ca = atan(cr.y, cr.x);
@@ -170,7 +166,7 @@
       L += exp(-sd / 90.0) * 0.14 * (0.8 + 0.2 * sin(t * 2.0));
       L += exp(-length(P - uMouse) / 170.0) * 0.10;
       L *= 1.0 + uHit * 0.9 + uNight * 0.6;
-      vec3 light = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.18, 0.3), uNight) * L;
+      vec3 light = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.31, 0.64), uNight) * L;
       col = 1.0 - (1.0 - col) * (1.0 - light);
 
       gl_FragColor = vec4(col, 1.0);

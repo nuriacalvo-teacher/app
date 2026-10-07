@@ -16,14 +16,15 @@
     R = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
   } catch (e) { canvas.remove(); return; }
   R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-  R.setClearColor(0x0b0709, 1);
+  R.setClearColor(0x1b0b2e, 1);
 
   const scene = new THREE.Scene();
   const cam = new THREE.PerspectiveCamera(55, 1, 0.1, 160);
-  scene.fog = new THREE.FogExp2(0x0b0709, 0.022);
+  scene.fog = new THREE.FogExp2(0x1b0b2e, 0.022);
   scene.add(cam);
   const aniso = R.capabilities.getMaxAnisotropy();
-  const PALETTE = [0xff2e4d, 0xffb347, 0xff4fa3, 0x1fb8c9, 0x8a4bff];
+  // los colores de la ilustración
+  const PALETTE = [0xff4fa3, 0xff8a1f, 0xffd23f, 0x1fb8c9, 0x8a4bff];
 
   function tex(w, h, draw) {
     const c = document.createElement("canvas");
@@ -66,18 +67,18 @@
   }
   const dg = new THREE.BufferGeometry();
   dg.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ map: glowT, color: 0xff8a4a, size: 0.2, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
+  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ map: glowT, color: 0xffb0e0, size: 0.2, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(dust);
 
   // focos y luz que siguen a la cámara
   const beams = [-5, 0, 5].map((x, i) => {
-    const m = new THREE.Mesh(new THREE.ConeGeometry(2.6, 26, 48, 1, true), additive(i === 1 ? 0xffb347 : 0xff2e4d, 0.14, { map: beamT }));
+    const m = new THREE.Mesh(new THREE.ConeGeometry(2.6, 26, 48, 1, true), additive(i === 1 ? 0xffd23f : 0xff4fa3, 0.14, { map: beamT }));
     m.position.set(x, 7, -14);
     m.userData = { x, ph: i * 2 };
     cam.add(m);
     return m;
   });
-  const lamp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: 0xffb347, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const lamp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, color: 0xffd23f, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
   lamp.scale.set(5, 5, 1);
   cam.add(lamp);
 

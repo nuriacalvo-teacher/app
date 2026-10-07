@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Krisenka Finley</title>
   <meta name="description" content="Krisenka Finley, cantautora de Zaragoza. Folk, country-rock y raíces latinas. Escucha «Back Again» y sus cuatro discos.">
-  <meta name="theme-color" content="#0b0709">
+  <meta name="theme-color" content="#1b0b2e">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Krisenka Finley">
   <meta property="og:description" content="Cantautora de Zaragoza. Folk, country-rock y raíces latinas. Ahora suena «Back Again».">
@@ -15,24 +15,11 @@
   <link rel="preload" as="image" href="assets/krisenka-hero.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,0..100,0..1&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="lock">
   <a class="skip" href="#bio">Saltar al contenido</a>
-
-  <!-- Entrada: el clic desbloquea el sonido del navegador -->
-  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
-    <div class="gate__inner">
-      <p class="gate__kicker">Cantautora · Zaragoza</p>
-      <h1 class="gate__title" id="gate-title"><span>Krisenka</span><span>Finley</span></h1>
-      <p class="gate__text">Un paseo de día por su Zaragoza psicodélica y un concierto de noche al ritmo de «Back Again». Mejor con sonido y cascos.</p>
-      <div class="gate__actions">
-        <button class="btn" type="button" data-enter="sound">Entrar con sonido</button>
-        <button class="btn btn--ghost" type="button" data-enter="mute">Entrar sin sonido</button>
-      </div>
-    </div>
-  </div>
 
   <header class="topbar" id="topbar">
     <a class="topbar__logo" href="#inicio">Krisenka Finley</a>
@@ -68,10 +55,10 @@
 
         <!-- Las nubes de la ilustración son el menú -->
         <nav class="cloud-menu" aria-label="Menú de la portada">
-          <a class="cloud-btn" href="#musica"    data-rect="318,24,232,92"  style="--d:0s"><span class="sr">Música</span></a>
-          <a class="cloud-btn" href="#directo"   data-rect="566,14,226,102" style="--d:-1.3s"><span class="sr">Gira</span></a>
-          <a class="cloud-btn" href="#bio"       data-rect="1204,14,262,102" style="--d:-2.1s"><span class="sr">Biografía</span></a>
-          <a class="cloud-btn" href="#contacto"  data-rect="1506,14,270,102" style="--d:-0.7s"><span class="sr">Contacto</span></a>
+          <a class="cloud-btn" href="#musica"    data-rect="318,24,232,92"  style="--d:0s"><img src="assets/nube-musica.jpg" alt=""><span class="sr">Música</span></a>
+          <a class="cloud-btn" href="#directo"   data-rect="566,14,226,102" style="--d:-1.3s"><img src="assets/nube-gira.jpg" alt=""><span class="sr">Gira</span></a>
+          <a class="cloud-btn" href="#bio"       data-rect="1204,14,262,102" style="--d:-2.1s"><img src="assets/nube-biografia.jpg" alt=""><span class="sr">Biografía</span></a>
+          <a class="cloud-btn" href="#contacto"  data-rect="1506,14,270,102" style="--d:-0.7s"><img src="assets/nube-contacto.jpg" alt=""><span class="sr">Contacto</span></a>
         </nav>
 
         <button class="hot hot--guitar" data-rect="96,770,400,340" aria-label="Tocar la guitarra"><span class="hot__tip">¡Rasguea!</span></button>
@@ -79,12 +66,22 @@
         <button class="hot hot--title" data-rect="640,400,710,310" aria-label="Reproducir Back Again"><span class="hot__tip">▶ Back Again</span></button>
       </div>
       <div class="hero__dusk" id="dusk" aria-hidden="true"></div>
+
+      <!-- Entrada: sobre la propia ilustración. El clic desbloquea el sonido -->
+      <div class="enter" id="gate" role="group" aria-labelledby="enter-text">
+        <p class="enter__text" id="enter-text">Un paseo por su Zaragoza psicodélica que acaba en concierto. Mejor con sonido.</p>
+        <div class="enter__actions">
+          <button class="cloud-cta cloud-cta--pink" type="button" data-enter="sound"><svg viewBox="0 0 160 80" aria-hidden="true"><use href="#nube-cta"/></svg><span>Entrar con sonido</span></button>
+          <button class="cloud-cta cloud-cta--teal" type="button" data-enter="mute"><svg viewBox="0 0 160 80" aria-hidden="true"><use href="#nube-cta"/></svg><span>Entrar sin sonido</span></button>
+        </div>
+      </div>
       <p class="hero__pan-hint" id="pan-hint" aria-hidden="true">⟵ desliza para explorar ⟶</p>
       <a class="hero__scroll" href="#bio"><span>Entra al concierto</span><i aria-hidden="true"></i></a>
     </section>
 
     <!-- ============ DE NOCHE: el concierto ============ -->
     <section class="night" id="bio">
+      <div class="pin">
       <div class="disc" data-rim="CANTAUTORA · COMPOSITORA · ARREGLISTA · PRODUCTORA · ">
         <div class="disc__copy">
           <p class="tag">Cantautora de Zaragoza. Folk, country-rock y raíces latinas.</p>
@@ -92,9 +89,11 @@
           <p>Cantautora, compositora, arreglista y productora. Mezcla el folk celta, el country americano, el rock de los 70 y sus raíces latinas. Y es madre.</p>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="night" id="trayectoria">
+      <div class="pin">
       <div class="disc" data-rim="GIRA IBERCAJA 2003–2006 · NOMINADA A MEJOR SOLISTA 2007 · ">
         <div class="disc__copy">
           <h2>Del escenario<br>al <em>estudio.</em></h2>
@@ -105,9 +104,11 @@
           </ul>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="night night--wide" id="musica">
+      <div class="pin">
       <div class="music">
         <header class="music__head">
           <h2>Cuatro discos,<br><em>una voz.</em></h2>
@@ -129,22 +130,26 @@
         </div>
 
         <ul class="vinyls" id="vinyls" aria-label="Discos"></ul>
-        <a class="btn" href="https://krisenkafinley.bandcamp.com" target="_blank" rel="noopener">Escuchar en Bandcamp</a>
+      </div>
       </div>
     </section>
 
     <section class="night" id="directo">
+      <div class="pin">
       <div class="disc" data-rim="EN DIRECTO · NUEVAS FECHAS MUY PRONTO · ">
         <div class="disc__copy" id="gigs"></div>
+      </div>
       </div>
     </section>
 
     <section class="night" id="contacto">
+      <div class="pin">
       <div class="disc" data-rim="BANDCAMP · YOUTUBE · LINKEDIN · ">
         <div class="disc__copy">
           <h2>Escucha<br><em>más fuerte.</em></h2>
           <ul class="facts facts--links" id="links"></ul>
         </div>
+      </div>
       </div>
     </section>
   </main>
@@ -173,12 +178,13 @@
 
   <footer class="footer">
     <p>© 2026 Krisenka Finley · Zaragoza</p>
+    <p class="footer__links"><a href="https://krisenkafinley.bandcamp.com" target="_blank" rel="noopener">Bandcamp</a> · <a href="https://www.youtube.com/krisenka" target="_blank" rel="noopener">YouTube</a> · <a href="https://www.linkedin.com/in/krisenkafinley/" target="_blank" rel="noopener">LinkedIn</a></p>
   </footer>
 
   <!-- Reproductor flotante: vinilo con el progreso de la canción -->
   <button class="player" id="player" type="button" aria-label="Reproducir o pausar Back Again" hidden>
     <span class="player__lp"><span class="player__vinyl"></span>
-      <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" stroke="rgba(243,236,228,.18)" stroke-width="2"/><circle id="ring" cx="26" cy="26" r="24" fill="none" stroke="#ff2e4d" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 26 26)"/></svg>
+      <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" stroke="rgba(243,236,228,.18)" stroke-width="2"/><circle id="ring" cx="26" cy="26" r="24" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 26 26)"/></svg>
     </span>
     <span class="player__tt"><b>Back Again</b><small>Krisenka Finley</small></span>
   </button>
@@ -188,6 +194,16 @@
       <linearGradient id="nube-g" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#fff8e6"/><stop offset=".65" stop-color="#ffd9ec"/><stop offset="1" stop-color="#ff9fcf"/>
       </linearGradient>
+      <symbol id="nube-cta" viewBox="0 0 160 80">
+        <path d="M22 72 C 2 72 0 46 20 43 C 16 22 42 12 57 26 C 63 4 100 2 108 24 C 123 11 150 22 143 45 C 162 48 159 74 138 72 Z"
+              fill="currentColor" stroke="#2a1240" stroke-width="4" stroke-linejoin="round"/>
+      </symbol>
+      <filter id="melt" x="-10%" y="-20%" width="120%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="2" seed="3" result="n">
+          <animate attributeName="baseFrequency" dur="6s" values="0.012 0.03;0.02 0.05;0.012 0.03" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
       <symbol id="nube" viewBox="0 0 160 80">
         <path d="M22 70 C 4 70 2 46 22 44 C 18 24 44 14 58 28 C 64 6 100 4 108 26 C 122 14 148 24 142 46 C 160 50 156 72 138 70 Z"
               fill="url(#nube-g)" stroke="#3a1d5c" stroke-width="3.5" stroke-linejoin="round"/>
