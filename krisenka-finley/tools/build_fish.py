@@ -22,7 +22,7 @@ for b in SPLASH_BOXES:
 bbox = fish_sprite_a.getbbox()
 sprite = im.crop(bbox).convert('RGBA')
 sprite.putalpha(fish_sprite_a.crop(bbox))
-sprite.save(f'{out}/siluro.png', optimize=True)
+sprite.save(f'{out}/siluro.webp', quality=82, method=6)
 print('fish bbox', bbox)
 
 # Relleno: copia de franjas de río desplazadas (el río es un patrón de bandas)
@@ -39,5 +39,4 @@ for y in range(H):
                     break
 soft = hole.filter(ImageFilter.GaussianBlur(3))
 plate = Image.composite(fill, im, soft)
-plate.save(f'{out}/krisenka-hero.jpg', quality=88, optimize=True, progressive=True)
-hole.save('/tmp/hole.png')
+plate.save(f'{out}/krisenka-hero.webp', quality=78, method=6)

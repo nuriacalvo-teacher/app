@@ -1,6 +1,8 @@
 /* ==========================================================
    El concierto (de noche): túnel de neón en 3D con Three.js.
-   La cámara avanza con el scroll y todo late con «Back Again».
+   La cámara avanza con el scroll; los anillos giran y respiran solos
+   y el ecualizador sigue a la música. Three.js se descarga solo cuando
+   el visitante empieza a bajar, para que la portada cargue antes.
    ========================================================== */
 (function () {
   "use strict";
@@ -9,6 +11,24 @@
   const hero = document.getElementById("inicio");
   const beat = window.KFBeat;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sm = (a, b, x) => { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); };
+  let booted = false;
+  function boot() {
+    if (booted) return;
+    booted = true;
+    window.removeEventListener("scroll", onScroll);
+    const tag = document.createElement("script");
+    tag.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    tag.onload = start;
+    tag.onerror = () => canvas.remove();
+    document.head.appendChild(tag);
+  }
+  const onScroll = () => { if (window.scrollY > hero.offsetHeight * 0.1) boot(); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  // al entrar, se descarga con calma mientras se ve la portada
+  document.addEventListener("kf:entered", () => setTimeout(boot, 2500));
+
+  function start() {
   if (!window.THREE) { canvas.remove(); return; }
 
   let R;
@@ -106,7 +126,6 @@
   resize();
   window.addEventListener("pointermove", (e) => { mx = e.clientX / window.innerWidth - 0.5; my = e.clientY / window.innerHeight - 0.5; });
 
-  const sm = (a, b, x) => { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); };
   const clock = new THREE.Clock();
   const Z0 = 8, ZL = 120;
 
@@ -134,10 +153,11 @@
     const target = Math.min(1, Math.max(0, (window.scrollY - heroH * 0.5) / max));
     p += (target - p) * (reduce ? 1 : 0.06);
     smx += (mx - smx) * 0.05; smy += (my - smy) * 0.05;
-    const bass = beat.bass, hit = beat.hit, bands = beat.bands;
+    // respiración prediseñada (no sigue a la música); solo el ecualizador la sigue
+    const bass = 0.22 + 0.14 * Math.sin(t * 1.4) + 0.06 * Math.sin(t * 3.1), hit = 0, bands = beat.bands;
 
     const cz = Z0 - p * ZL + (1 - fade) * 10;
-    const sk = reduce ? 0 : bass * 0.05 + hit * 0.07;
+    const sk = 0;
     cam.position.set(Math.sin(p * 18) * 0.45 + smx * 1.4 + (Math.random() - 0.5) * sk, Math.sin(p * 12) * 0.3 - smy * 0.7 + (Math.random() - 0.5) * sk, cz);
     cam.rotation.z = Math.sin(p * 9) * 0.04 - smx * 0.03;
     cam.lookAt(smx * 1.2, -smy * 0.5, cz - 10);
@@ -166,4 +186,5 @@
     R.render(scene, cam);
   }
   requestAnimationFrame(frame);
+  }
 })();

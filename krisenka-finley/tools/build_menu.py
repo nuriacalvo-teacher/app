@@ -1,7 +1,7 @@
 """Quita las nubes del menú de la ilustración (rellenando el cielo) y las guarda
 como recortes aparte, para que el menú aparezca al entrar en la web.
 Uso: python3 build_menu.py <imagen_original.jpg> <carpeta_assets>
-(ejecutar después de build_fish.py: modifica assets/krisenka-hero.jpg)"""
+(ejecutar después de build_fish.py: modifica assets/krisenka-hero.webp)"""
 import sys
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -17,7 +17,7 @@ SHAPES = {
 
 src, out = sys.argv[1], sys.argv[2]
 orig = Image.open(src).convert("RGB")
-plate = Image.open(f"{out}/krisenka-hero.jpg").convert("RGB")
+plate = Image.open(f"{out}/krisenka-hero.webp").convert("RGB")
 W, H = plate.size
 
 for name, (x, y, w, h) in MENU.items():
@@ -68,4 +68,4 @@ for (x, y), c in fill.items():
 soft = plate.filter(ImageFilter.GaussianBlur(1.2))
 mask = hole.filter(ImageFilter.GaussianBlur(3))
 plate = Image.composite(soft, plate, mask)
-plate.save(f"{out}/krisenka-hero.jpg", quality=88, optimize=True, progressive=True)
+plate.save(f"{out}/krisenka-hero.webp", quality=78, method=6)

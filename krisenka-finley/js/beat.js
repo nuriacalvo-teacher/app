@@ -1,34 +1,28 @@
 /* ==========================================================
    Reproductor y pulso compartido.
    Suena la canción principal o cualquier canción de un disco.
-   El pulso (24 bandas de frecuencia + golpes) mueve portada,
-   concierto 3D y botones:
-   - si la canción trae su ritmo precalculado (bandas/golpes), se usa;
-   - si no, se calcula en directo mientras suena.
+   Solo el ecualizador sigue a la música (24 bandas de frecuencia
+   calculadas en directo); el resto de animaciones van solas.
    ========================================================== */
 (function () {
   "use strict";
 
   const D = window.KF_DATA;
   const audio = new Audio();
-  audio.preload = "auto";
+  audio.preload = "none";   // la canción solo se descarga al darle a escuchar
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const bands = new Float32Array(24);
   const listeners = [];
-  let targets = null;          // elementos con data-beat reciben --hit
-  let lastHit = "";
-  let BD = null, FX = null, NF = 0;   // ritmo precalculado de la canción actual
-  let ctx = null, analyser = null, freq = null, avgBass = 0;
+  let ctx = null, analyser = null, freq = null;
   let queue = [], qi = 0;
 
   const main = {
-    titulo: D.cancionPrincipal.titulo, archivo: D.cancionPrincipal.archivo, portada: D.cancionPrincipal.portada,
-    bandas: D.cancionPrincipal.bandas, golpes: D.cancionPrincipal.golpes, disco: null
+    titulo: D.cancionPrincipal.titulo, archivo: D.cancionPrincipal.archivo, portada: D.cancionPrincipal.portada, disco: null
   };
 
   const beat = {
-    bass: 0, hit: 0, bands, audio,
+    bands, audio,
     current: main,
     get playing() { return !audio.paused; },
     play() { ensureGraph(); return audio.play().catch(() => {}); },
@@ -58,13 +52,6 @@
     beat.current = song;
     audio.src = song.archivo;
     audio.loop = song === main;
-    BD = FX = null; NF = 0;
-    if (song.bandas && song.golpes) {
-      const decode = (txt) => Uint8Array.from(atob(txt.trim()), (c) => c.charCodeAt(0));
-      Promise.all([song.bandas, song.golpes].map((u) => fetch(u).then((r) => (r.ok ? r.text() : Promise.reject()))))
-        .then(([b, f]) => { if (beat.current === song) { BD = decode(b); FX = decode(f); NF = FX.length; } })
-        .catch(() => {});
-    }
     emit();
     if (autoplay) beat.play();
   }
@@ -92,13 +79,7 @@
   let t0 = performance.now();
   function tick(now) {
     const t = (now - t0) / 1000;
-    if (!audio.paused && BD) {
-      const fi = Math.min(NF - 1, (audio.currentTime * 30) | 0);
-      const o = fi * 24;
-      for (let k = 0; k < 24; k++) bands[k] += (BD[o + k] / 255 - bands[k]) * 0.5;
-      beat.bass += ((bands[0] + bands[1] + bands[2] + bands[3]) / 4 - beat.bass) * 0.45;
-      beat.hit = Math.max(beat.hit * 0.86, Math.pow(FX[fi] / 255, 1.3));
-    } else if (!audio.paused && analyser) {
+    if (!audio.paused && analyser) {
       analyser.getByteFrequencyData(freq);
       // 24 bandas en escala logarítmica, como el oído
       for (let k = 0; k < 24; k++) {
@@ -107,26 +88,11 @@
         for (let j = a; j < b; j++) m = Math.max(m, freq[j]);
         bands[k] += (m / 255 - bands[k]) * 0.5;
       }
-      const bass = (bands[0] + bands[1] + bands[2] + bands[3]) / 4;
-      beat.bass += (bass - beat.bass) * 0.45;
-      avgBass += (bass - avgBass) * 0.02;
-      beat.hit = Math.max(beat.hit * 0.86, Math.min(1, Math.max(0, (bass - avgBass) * 4)));
     } else if (!audio.paused) {
-      // sin análisis posible: pulso suave a 96 bpm
-      beat.bass = Math.pow(Math.max(0, Math.sin(t * Math.PI * 1.6)), 6) * 0.6;
-      beat.hit = Math.max(beat.hit * 0.86, beat.bass);
-      for (let k = 0; k < 24; k++) bands[k] = beat.bass * (1 - k / 30);
+      // sin análisis posible: ondas suaves
+      for (let k = 0; k < 24; k++) bands[k] = 0.35 + 0.3 * Math.sin(t * 6 + k * 0.7) * Math.sin(t * 2.3 + k);
     } else {
       for (let k = 0; k < 24; k++) bands[k] *= 0.9;
-      beat.bass = reduce ? 0 : Math.pow(Math.max(0, Math.sin(t * Math.PI * 1.6)), 6) * 0.15;
-      beat.hit *= 0.9;
-    }
-    // solo se toca el estilo cuando el valor cambia de verdad (menos recálculos)
-    const h = beat.hit.toFixed(2);
-    if (h !== lastHit) {
-      lastHit = h;
-      if (!targets) targets = document.querySelectorAll("[data-beat]");
-      targets.forEach((el) => el.style.setProperty("--hit", h));
     }
     requestAnimationFrame(tick);
   }

@@ -73,7 +73,7 @@
     precision highp float;
     varying vec2 vUv;
     uniform sampler2D uImg, uMask, uMask2;
-    uniform float uTime, uWind, uTitle, uSun, uNight, uBass, uHit;
+    uniform float uTime, uWind, uTitle, uSun, uNight;
     uniform vec2 uMouse;
     uniform vec4 uRip[4];
     const vec2 SZ = vec2(2000.0, 1116.0);
@@ -97,7 +97,7 @@
 
       // Flores mecidas por el viento (ráfagas que cruzan de izquierda a derecha)
       float ph = m2.r * 6.2831;
-      float gust = 0.65 + 0.35 * sin(t * 0.37 - P.x * 0.002) + uWind * 1.6 + uBass * 1.4;
+      float gust = 0.65 + 0.35 * sin(t * 0.37 - P.x * 0.002) + uWind * 1.6;
       off.x += m.r * (7.0 * sin(t * 1.4 + ph) + 2.5 * sin(t * 3.1 + ph * 2.0 + P.y * 0.02)) * gust - m.r * uWind * 6.0;
       off.y += m.r * 1.4 * sin(t * 1.4 + ph + 1.57);
 
@@ -151,7 +151,7 @@
       // Letras FINLEY: arcoíris que recorre el rótulo
       float mx = max(col.r, max(col.g, col.b)), mn = min(col.r, min(col.g, col.b));
       float k = m2.g * smoothstep(0.25, 0.45, mx - mn) * smoothstep(0.45, 0.6, mx);
-      col = mix(col, clamp(hueShift(col, t * (0.9 + uTitle * 3.0) + uHit * 1.5 + P.x * 0.012), 0.0, 1.0), k);
+      col = mix(col, clamp(hueShift(col, t * (0.9 + uTitle * 3.0) + P.x * 0.012), 0.0, 1.0), k);
 
       // Atardecer: al bajar hacia el concierto la escena se vuelve noche
       col = mix(col, col * vec3(0.50, 0.32, 0.72) + vec3(0.06, 0.02, 0.10), uNight * 0.8);
@@ -165,7 +165,7 @@
       L += pow(0.5 + 0.5 * sin(sa * 12.0 - t * 0.5), 4.0) * (0.6 + 0.4 * sin(sd * 0.03 - t * 2.2)) * exp(-sd / 380.0) * smoothstep(95.0, 140.0, sd) * 0.32;
       L += exp(-sd / 90.0) * 0.14 * (0.8 + 0.2 * sin(t * 2.0));
       L += exp(-length(P - uMouse) / 170.0) * 0.10;
-      L *= 1.0 + uHit * 0.9 + uNight * 0.6;
+      L *= 1.0 + uNight * 0.6;
       vec3 light = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.31, 0.64), uNight) * L;
       col = 1.0 - (1.0 - col) * (1.0 - light);
 
@@ -207,7 +207,7 @@
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
-    ["uImg", "uMask", "uMask2", "uTime", "uWind", "uTitle", "uSun", "uMouse", "uRip", "uNight", "uBass", "uHit"].forEach((n) => {
+    ["uImg", "uMask", "uMask2", "uTime", "uWind", "uTitle", "uSun", "uMouse", "uRip", "uNight"].forEach((n) => {
       uni[n] = gl.getUniformLocation(prog, n);
     });
 
@@ -240,7 +240,8 @@
   function resizeCanvases(w, h) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     // resolución WebGL limitada para que vaya fluido en cualquier equipo
-    const glScale = Math.min(dpr, 1.25, Math.sqrt(1.6e6 / (w * h))) * state.quality;
+    const budget = window.innerWidth < 700 ? 0.9e6 : 1.6e6;
+    const glScale = Math.min(dpr, 1.25, Math.sqrt(budget / (w * h))) * state.quality;
     glCanvas.width = Math.round(w * glScale);
     glCanvas.height = Math.round(h * glScale);
     if (gl) gl.viewport(0, 0, glCanvas.width, glCanvas.height);
@@ -262,8 +263,6 @@
     gl.uniform1f(uni.uTitle, state.titleBoost);
     gl.uniform1f(uni.uSun, state.sunAngle);
     gl.uniform1f(uni.uNight, state.night);
-    gl.uniform1f(uni.uBass, beat ? beat.bass : 0);
-    gl.uniform1f(uni.uHit, beat ? beat.hit : 0);
     gl.uniform2f(uni.uMouse, state.mouse[0], state.mouse[1]);
     const rip = new Float32Array(16);
     state.ripples.forEach((r, i) => rip.set(r, i * 4));
@@ -275,7 +274,7 @@
      CAPA 2D: siluro, salpicaduras, ondas, notas, pájaros, pétalos
      ====================================================== */
   const fishImg = new Image();
-  fishImg.src = "assets/siluro.png";
+  fishImg.src = "assets/siluro.webp";
   const FISH_BOX = [988, 814];          // posición original del recorte
   const PIVOT = [172, 126];             // centro del cuerpo dentro del recorte
   const WATER_Y = 1060;                 // línea del agua donde entra/sale
@@ -426,8 +425,6 @@
 
     noteTimer -= dt;
     if (noteTimer <= 0) { emitNotes(500, 585, 1, false); noteTimer = (beat && beat.playing ? 0.45 : 1.1) + Math.random() * 0.6; }
-    // con la música, el siluro salta en los golpes fuertes
-    if (beat && beat.playing && beat.hit > 0.8 && fish.phase === "under" && fish.under > 1.5) jumpNow();
     notes.forEach((n) => { n.life += dt; n.x += n.vx * dt + Math.sin(n.life * 3 + n.w) * 0.6; n.y += n.vy * dt; n.vy *= 0.995; });
     for (let i = notes.length - 1; i >= 0; i--) if (notes[i].life > notes[i].max) notes.splice(i, 1);
 

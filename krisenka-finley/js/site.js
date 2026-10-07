@@ -215,11 +215,52 @@
   });
 
   /* ---------- Vinilos y caja de CD ---------- */
-  $("#vinyls").innerHTML = D.discos.map((a, j) => `
-    <li><button class="vinyl" type="button" data-beat data-album="${j}" style="--d:${(j * -1.3).toFixed(1)}s" aria-label="Abrir ${esc(a.titulo)}">
-      <span class="vinyl__disc"><span class="vinyl__label" style="background-image:url('${esc(a.portada)}')"></span></span>
-      <span class="vinyl__sheen" aria-hidden="true"></span>
-    </button><span class="vinyl__name">${esc(a.titulo)}</span><span class="vinyl__kind">${esc(a.tipo)}</span></li>`).join("");
+  // del más nuevo al más antiguo
+  D.discos.sort((x, y) => (y.año || 0) - (x.año || 0));
+  // disco sin portada: se le dibuja una de colores con su título
+  function makeCover(d) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 600;
+    const g = c.getContext("2d");
+    const cols = ["#ff4fa3", "#ff8a1f", "#ffd23f", "#1fb8c9", "#8a4bff"];
+    for (let i = 0; i < 36; i++) {
+      g.fillStyle = cols[i % cols.length];
+      g.beginPath(); g.moveTo(300, 300); g.arc(300, 300, 520, (i / 36) * Math.PI * 2, ((i + 1) / 36) * Math.PI * 2); g.fill();
+    }
+    g.fillStyle = "#2a1240";
+    g.beginPath(); g.arc(300, 300, 210, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#fff3dc"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = "900 52px Fraunces, Georgia, serif";
+    const words = d.titulo.split(" "), lines = [];
+    words.forEach((w) => { const l = lines[lines.length - 1]; if (l && (l + " " + w).length < 14) lines[lines.length - 1] = l + " " + w; else lines.push(w); });
+    lines.slice(0, 3).forEach((l, i, arr) => g.fillText(l, 300, 300 + (i - (arr.length - 1) / 2) * 58 - (d.año ? 18 : 0)));
+    if (d.año) { g.fillStyle = "#ffd23f"; g.font = "700 34px Fredoka, sans-serif"; g.fillText(String(d.año), 300, 300 + lines.slice(0, 3).length * 29 + 20); }
+    return c.toDataURL("image/jpeg", 0.85);
+  }
+  const meta = (a) => [a.tipo, a.año, a.sello].filter(Boolean).join(" · ");
+  function renderVinyls() {
+    D.discos.forEach((d) => { if (!d.portada || d._auto) { d.portada = makeCover(d); d._auto = true; } });
+    $("#vinyls").innerHTML = D.discos.map((a, j) => `
+      <li><button class="vinyl" type="button" data-album="${j}" style="--d:${(j * -1.3).toFixed(1)}s" aria-label="Abrir ${esc(a.titulo)}">
+        <span class="vinyl__disc"><span class="vinyl__label" style="background-image:url('${esc(a.portada)}')"></span></span>
+        <span class="vinyl__sheen" aria-hidden="true"></span>
+      </button><span class="vinyl__name">${esc(a.titulo)}</span><span class="vinyl__kind">${esc([a.tipo, a.año].filter(Boolean).join(" · "))}</span></li>`).join("");
+  }
+  renderVinyls();
+  // las portadas dibujadas usan las fuentes de la web: se repintan cuando llegan
+  if (document.fonts && D.discos.some((d) => d._auto)) document.fonts.ready.then(() => { renderVinyls(); vinylHome = null; if (!reduce) travel(); });
+
+  /* ---------- Plataformas de streaming ---------- */
+  const ICONS = {
+    "Spotify": '<circle cx="12" cy="12" r="10"/><path d="M7 9.5c3.5-1 7-.6 10 1M7.6 12.6c2.8-.8 5.6-.4 8 .9M8.3 15.4c2.1-.5 4.2-.3 6 .7" fill="none" stroke="var(--plum)" stroke-width="1.6" stroke-linecap="round"/>',
+    "Apple Music": '<path d="M16 3v11.5a3 3 0 1 1-2-2.8V7l-6 1.5v8a3 3 0 1 1-2-2.8V5.5z"/>',
+    "YouTube": '<rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="var(--plum)"/>',
+    "Bandcamp": '<path d="M7 6h15l-5 12H2z"/>',
+    "Amazon Music": '<path d="M4 9c0-2 1.5-3.5 4-3.5S12 7 12 9v6H9.5v-1.2C8.8 14.6 7.9 15 6.8 15 5.1 15 4 14 4 12.4 4 10.3 6 9.6 9.4 9.4 9.4 8.3 8.9 7.7 8 7.7c-.9 0-1.4.5-1.5 1.3z"/><path d="M3 17.5c5 3 13 3 18 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    "Deezer": '<rect x="2" y="15" width="4" height="4"/><rect x="7" y="15" width="4" height="4"/><rect x="12" y="15" width="4" height="4"/><rect x="17" y="15" width="4" height="4"/><rect x="12" y="10" width="4" height="4"/><rect x="17" y="10" width="4" height="4"/><rect x="17" y="5" width="4" height="4"/>'
+  };
+  const platformLinks = (list) => list.map((p) => `<a class="platform" href="${esc(p.url)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">${ICONS[p.nombre] || '<circle cx="12" cy="12" r="8"/>'}</svg>${esc(p.nombre)}</a>`).join("");
+  $$(".platforms").forEach((el) => (el.innerHTML = platformLinks(D.plataformas || [])));
 
   const dlg = $("#case");
   let caseDisc = null;
@@ -230,8 +271,8 @@
     caseTracks.innerHTML = list.map((c, i) => {
       const on = B.current.disco === caseDisc && B.current.n === i && B.playing;
       return c.archivo
-        ? `<li class="${on ? "is-on" : ""}"><button type="button" data-track="${i}" aria-label="${on ? "Pausar" : "Escuchar"} ${esc(c.titulo)}"><span class="case__num">${on ? "❚❚" : "▶"}</span>${esc(c.titulo)}</button></li>`
-        : `<li class="is-off"><span><span class="case__num">${i + 1}</span>${esc(c.titulo)}</span></li>`;
+        ? `<li class="${on ? "is-on" : ""}"><button type="button" data-track="${i}" aria-label="${on ? "Pausar" : "Escuchar"} ${esc(c.titulo)}"><span class="case__num">${on ? "❚❚" : "▶"}</span><span class="case__song">${esc(c.titulo)}</span><span class="case__dur">${esc(c.duracion || "")}</span></button></li>`
+        : `<li class="is-off"><span><span class="case__num">${i + 1}</span><span class="case__song">${esc(c.titulo)}</span><span class="case__dur">${esc(c.duracion || "")}</span></span></li>`;
     }).join("");
   }
   caseTracks.addEventListener("click", (e) => {
@@ -251,12 +292,16 @@
     $("#case-cover").alt = `Portada de «${a.titulo}»`;
     $("#case-cd").style.setProperty("--cover", `url("${new URL(a.portada, location.href).href}")`);
     $("#case-booklet").textContent = `Krisenka Finley · ${a.titulo}`;
-    $("#case-kind").textContent = a.tipo;
+    $("#case-kind").textContent = meta(a);
     $("#case-title").textContent = a.titulo;
     $("#case-note").textContent = a.nota || "";
     $("#case-note").hidden = !a.nota;
-    $("#case-link").href = a.enlace;
-    $("#case-link").textContent = a.enlace.includes("bandcamp") ? "Escuchar en Bandcamp" : "Escuchar entero";
+    // botón al disco entero si tiene enlace; si no, las plataformas de la artista
+    $("#case-link").hidden = !a.enlace;
+    if (a.enlace) {
+      $("#case-link").href = a.enlace;
+      $("#case-link").textContent = a.enlace.includes("bandcamp") ? "Escuchar en Bandcamp" : "Escuchar entero";
+    }
     caseDisc = a;
     renderTracks();
     // la caja sale desde el vinilo pulsado
@@ -296,7 +341,7 @@
        <a class="btn" href="https://www.youtube.com/krisenka" target="_blank" rel="noopener">Ver directos</a>`;
 
   /* ---------- Enlaces ---------- */
-  $("#links").innerHTML = D.enlaces.map((l) => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.nombre)}</a><i>${esc(l.nota || "")}</i></li>`).join("");
+  $("#links").innerHTML = (D.enlaces || []).map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.nombre)}</a>`).join(" · ");
 
   /* ---------- Recorrido automático: empieza solo al entrar y se para en
      cuanto el visitante toca la rueda, la pantalla o el teclado ---------- */
@@ -315,12 +360,19 @@
     if (on && !B.playing && window.KFAudio.enabled) B.play();
   }
   autoBtn.addEventListener("click", () => setAuto(!auto.on));
+  let userStopped = false;       // si lo para con el botón, no se reanuda solo
+  let idle = null;
   ["wheel", "touchstart", "keydown"].forEach((ev) => window.addEventListener(ev, (e) => {
     if (e.target.closest && e.target.closest("#auto, #gate")) return;
+    if (!document.body.classList.contains("entered")) return;
     if (auto.on || autoStart) setAuto(false);
+    // tras 12 s sin tocar nada, el recorrido sigue desde donde esté
+    clearTimeout(idle);
+    if (!userStopped && !reduce) idle = setTimeout(() => setAuto(true), 12000);
   }, { passive: true }));
-  // al entrar, deja ver la portada (menú, siluro) y arranca el viaje
-  document.addEventListener("kf:entered", () => { if (!reduce) autoStart = setTimeout(() => setAuto(true), 4500); });
+  autoBtn.addEventListener("click", () => { userStopped = !auto.on; clearTimeout(idle); });
+  // al entrar arranca el viaje enseguida
+  document.addEventListener("kf:entered", () => { if (!reduce) autoStart = setTimeout(() => setAuto(true), 1200); });
 
   const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
   let lt = performance.now();
