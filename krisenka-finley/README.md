@@ -36,4 +36,5 @@ python3 -m http.server 8000
 python3 tools/build_fish.py tools/krisenka-original.jpg assets
 python3 tools/build_menu.py tools/krisenka-original.jpg assets
 python3 tools/build_masks.py assets
+python3 tools/build_title.py tools/krisenka-original.jpg assets
 ```

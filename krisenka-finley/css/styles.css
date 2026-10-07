@@ -357,7 +357,18 @@ body.entered .hero.can-pan .hero__pan-hint { display: block; }
 .player__tt small { color: var(--lilac); font-size: .78rem; }
 .player:not(.is-on) small::after { content: " · en pausa"; }
 
-.footer { text-align: center; padding: 3rem 16px 7rem; color: var(--lilac); font-size: .92rem; background: linear-gradient(transparent, var(--plum)); }
+.footer { position: relative; overflow: hidden; text-align: center; padding: 4rem 16px 7rem; color: var(--lilac); font-size: .92rem; background: linear-gradient(transparent, var(--plum) 40%); }
+.footer__sign { position: relative; width: min(620px, 92%); margin: 0 auto 1.6rem; }
+/* rayos de colores girando detrás del rótulo, como el mandala de la portada */
+.footer__sign::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 170%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(rgba(255, 79, 163, .45) 0 7deg, transparent 7deg 15deg, rgba(255, 138, 31, .4) 15deg 22deg, transparent 22deg 30deg, rgba(255, 210, 63, .35) 30deg 37deg, transparent 37deg 45deg, rgba(31, 184, 201, .35) 45deg 52deg, transparent 52deg 60deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%); mask: radial-gradient(circle, #000 18%, transparent 62%);
+  animation: sunrays 70s linear infinite;
+  pointer-events: none;
+}
+.footer__sign img { position: relative; width: 100%; height: auto; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 0 2px var(--plum)) drop-shadow(5px 6px 0 rgba(138, 75, 255, .8)); }
+@keyframes sunrays { to { transform: translate(-50%, -50%) rotate(360deg); } }
 .footer p { margin: .2rem 0; }
 
 /* ---------- Animaciones ---------- */
