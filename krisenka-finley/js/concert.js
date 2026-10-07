@@ -13,9 +13,11 @@
 
   let R;
   try {
-    R = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+    R = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
   } catch (e) { canvas.remove(); return; }
-  R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  // resolución moderada: las líneas de neón y el polvo no necesitan más
+  let quality = Math.min(window.devicePixelRatio || 1, 1.25);
+  R.setPixelRatio(quality);
   R.setClearColor(0x1b0b2e, 1);
 
   const scene = new THREE.Scene();
@@ -108,14 +110,24 @@
   const clock = new THREE.Clock();
   const Z0 = 8, ZL = 120;
 
-  function frame() {
+  let last = performance.now(), frames = 0, slow = 0;
+  function frame(now) {
     requestAnimationFrame(frame);
+    const raw = (now - last) / 1000;
+    last = now;
     const vh = window.innerHeight;
     const heroH = hero.offsetHeight;
     const fade = sm(0.3, 0.85, window.scrollY / heroH);
     canvas.style.opacity = fade.toFixed(3);
     visible = fade > 0.01;
     if (!visible || document.hidden) return;
+    // calidad adaptable, igual que en la portada
+    frames++;
+    if (raw > 0.026) slow++;
+    if (frames >= 90) {
+      if (slow > 40 && quality > 0.5) { quality *= 0.75; R.setPixelRatio(quality); resize(); }
+      frames = 0; slow = 0;
+    }
 
     const t = reduce ? 0 : clock.getElapsedTime();
     const max = Math.max(1, document.documentElement.scrollHeight - vh - heroH * 0.5);

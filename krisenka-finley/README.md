@@ -8,14 +8,21 @@ Web de una sola página: **de día** se pasea por la ilustración animada de Zar
 - **Atardecer**: al bajar, la ilustración se oscurece y aparece el túnel de neón 3D (Three.js) que avanza con el scroll.
 - **Viaje por el túnel**: cada sección es un disco que sale del fondo girando, se para para leerlo y sale volando. Los vinilos de Música salen uno a uno del centro.
 - **Música**: reproductor de «Back Again» con ecualizador real, vinilos que giran y, al pulsar uno, su **caja de CD se abre** y muestra el disco.
-- **Reproductor flotante** con el progreso de la canción y **recorrido automático** por toda la página.
+- **Recorrido automático**: empieza solo al entrar y se para en cuanto el visitante toca la rueda, la pantalla o el teclado.
+- **Reproductor flotante** con el progreso de la canción.
+- **Calidad adaptable**: si el equipo va justo, la portada y el túnel bajan su resolución solos.
 - Con «reducir movimiento» activado, todo se muestra estático.
 
 ## Editar contenido
-Todo está en `js/data.js`: canción, discos (portada y enlace), conciertos y enlaces.
-- **Portadas**: las de los 4 álbumes en `assets/portadas/` son recreaciones provisionales; sustitúyelas por las originales con el mismo nombre de archivo.
-- **Conciertos**: mientras `gigs` esté vacío se muestra «Cocinando un disco nuevo».
-- **Ritmo de la canción**: `assets/back-again-bands.txt` (24 bandas por fotograma) y `back-again-hits.txt` (golpes), en base64, a 30 fotogramas por segundo.
+Todo se cambia en **`js/data.js`**, que está explicado con ejemplos. Se puede editar desde GitHub con el lápiz («Edit this file»).
+
+- **Canción principal** (la que suena al entrar): `cancionPrincipal`.
+- **Discos y sus canciones**: `discos`. Cada canción es `{ titulo: "…", archivo: "musica/….mp3" }`; las que no tienen archivo salen en la lista sin botón de escuchar.
+- **MP3**: súbelos a la carpeta `musica/` (en GitHub: «Add file» → «Upload files»). Siempre dentro de la web: con archivos de otras webs el navegador no los dejaría sonar.
+- **Portadas**: `assets/portadas/` (las de los 4 álbumes son provisionales; sustitúyelas con el mismo nombre).
+- **Conciertos** y **enlaces**: `conciertos` y `enlaces`.
+
+La web baila con cualquier canción: si no trae su ritmo precalculado, lo calcula mientras suena.
 
 ## Probar en local
 Los efectos necesitan servirse por HTTP:

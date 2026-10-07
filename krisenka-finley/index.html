@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1b0b2e">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Krisenka Finley">
-  <meta property="og:description" content="Cantautora de Zaragoza. Folk, country-rock y raíces latinas. Ahora suena «Back Again».">
+  <meta property="og:description" content="Cantautora de Zaragoza. Folk, country-rock y raíces latinas.">
   <meta property="og:image" content="assets/og-krisenka.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/favicon.png">
@@ -63,7 +63,7 @@
 
         <button class="hot hot--guitar" data-rect="96,770,400,340" aria-label="Tocar la guitarra"><span class="hot__tip">¡Rasguea!</span></button>
         <button class="hot hot--sun" data-rect="1786,6,184,184" aria-label="Hacer girar el sol"><span class="hot__tip">¡Hazme girar!</span></button>
-        <button class="hot hot--title" data-rect="640,400,710,310" aria-label="Reproducir Back Again"><span class="hot__tip">▶ Back Again</span></button>
+        <button class="hot hot--title" data-rect="640,400,710,310" aria-label="Reproducir la música"><span class="hot__tip">▶ Escuchar</span></button>
       </div>
       <div class="hero__dusk" id="dusk" aria-hidden="true"></div>
 
@@ -112,14 +112,14 @@
       <div class="music">
         <header class="music__head">
           <h2>Cuatro discos,<br><em>una voz.</em></h2>
-          <p>Ahora suena «Back Again». Pulsa un vinilo para abrir su caja.</p>
+          <p>Pulsa un vinilo para abrir su caja y escuchar sus canciones.</p>
         </header>
 
         <div class="deck">
-          <img class="deck__cover" id="deck-cover" src="assets/back-again-cover.jpg" width="360" height="360" alt="Portada de «Back Again»">
+          <img class="deck__cover" id="deck-cover" src="musica/back-again.jpg" width="360" height="360" alt="">
           <div class="deck__body">
             <p class="deck__now">Ahora suena</p>
-            <p class="deck__title">Back Again</p>
+            <p class="deck__title" id="deck-title">Back Again</p>
             <canvas class="deck__viz" id="deck-viz" aria-hidden="true"></canvas>
             <div class="deck__row">
               <button class="deck__play" id="deck-play" type="button" aria-label="Reproducir Back Again">▶</button>
@@ -169,6 +169,7 @@
       <p class="case__kind" id="case-kind"></p>
       <h3 class="case__title" id="case-title"></h3>
       <p class="case__note" id="case-note"></p>
+      <ol class="case__tracks" id="case-tracks"></ol>
       <div class="case__actions">
         <a class="btn" id="case-link" target="_blank" rel="noopener">Escuchar en Bandcamp</a>
         <button class="btn btn--ghost" type="button" id="case-close">Cerrar</button>
@@ -182,11 +183,11 @@
   </footer>
 
   <!-- Reproductor flotante: vinilo con el progreso de la canción -->
-  <button class="player" id="player" type="button" aria-label="Reproducir o pausar Back Again" hidden>
+  <button class="player" id="player" type="button" aria-label="Reproducir o pausar la música" hidden>
     <span class="player__lp"><span class="player__vinyl"></span>
       <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" stroke="rgba(243,236,228,.18)" stroke-width="2"/><circle id="ring" cx="26" cy="26" r="24" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 26 26)"/></svg>
     </span>
-    <span class="player__tt"><b>Back Again</b><small>Krisenka Finley</small></span>
+    <span class="player__tt"><b id="player-title">Back Again</b><small>Krisenka Finley</small></span>
   </button>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">

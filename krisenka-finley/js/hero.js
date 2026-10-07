@@ -20,7 +20,7 @@
 
   const state = {
     t: 0, last: performance.now(), running: true, visible: true,
-    mouse: [-9999, -9999], night: 0, wind: 0, windTarget: 0, titleBoost: 0, titleHover: false,
+    mouse: [-9999, -9999], night: 0, quality: 1, slow: 0, frames: 0, wind: 0, windTarget: 0, titleBoost: 0, titleHover: false,
     sunAngle: 0, sunVel: 0, ripples: [], pan: 0, maxPan: 0, scale: 1
   };
 
@@ -240,11 +240,11 @@
   function resizeCanvases(w, h) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     // resolución WebGL limitada para que vaya fluido en cualquier equipo
-    const glScale = Math.min(dpr, 1.5, 2600 / w, Math.sqrt(3.2e6 / (w * h)));
+    const glScale = Math.min(dpr, 1.25, Math.sqrt(1.6e6 / (w * h))) * state.quality;
     glCanvas.width = Math.round(w * glScale);
     glCanvas.height = Math.round(h * glScale);
     if (gl) gl.viewport(0, 0, glCanvas.width, glCanvas.height);
-    const s2 = Math.min(dpr, 2400 / w * 1.2);
+    const s2 = Math.min(dpr, 1.25, Math.sqrt(2.2e6 / (w * h)));
     canvas2d.width = Math.round(w * s2);
     canvas2d.height = Math.round(h * s2);
   }
@@ -535,9 +535,20 @@
      Bucle principal
      ====================================================== */
   function frame(now) {
-    const dt = Math.min(0.05, (now - state.last) / 1000);
+    const raw = (now - state.last) / 1000;
+    const dt = Math.min(0.05, raw);
     state.last = now;
     if (state.running && state.visible) {
+      // calidad adaptable: si el equipo no llega a ~40 fps, se baja la resolución
+      state.frames++;
+      if (raw > 0.026) state.slow++;
+      if (state.frames >= 90) {
+        if (state.slow > 40 && state.quality > 0.5) {
+          state.quality *= 0.75;
+          resizeCanvases(parseFloat(stage.style.width), parseFloat(stage.style.height));
+        }
+        state.frames = 0; state.slow = 0;
+      }
       state.t += dt;
       state.wind += (state.windTarget - state.wind) * Math.min(1, dt * 1.6);
       const hr = hero.getBoundingClientRect();
