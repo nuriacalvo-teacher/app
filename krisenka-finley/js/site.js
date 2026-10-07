@@ -155,8 +155,9 @@
   // k < 0: llega; 0..1: fijada en pantalla
   function flight(k, inEnd, outStart) {
     if (k < inEnd) {
-      const u = Math.min(1, (inEnd - k) / (inEnd + 0.45));
-      return { s: Math.pow(0.04, u), rot: u * u * 900, o: 1 - sm(0.55, 1, u), hold: false };
+      // llega desde el fondo: diminuto, lejos y girando
+      const u = Math.min(1, (inEnd - k) / (inEnd + 0.4));
+      return { s: Math.pow(0.02, u), rot: u * u * 900, o: 1 - sm(0.8, 1, u), hold: false };
     }
     if (k > outStart) {
       const v = Math.min(1, (k - outStart) / (1 - outStart));
@@ -164,8 +165,15 @@
     }
     return { s: 1 + (k - inEnd) * 0.1, rot: 0, o: 1, hold: true };
   }
-  function apply(el, f, spin) {
-    el.style.transform = `${spin ? `rotate(${f.rot.toFixed(1)}deg) ` : ""}scale(${f.s.toFixed(4)})`;
+  // mientras la sección aún no está fija (o ya se suelta), se compensa su
+  // desplazamiento para que todo nazca y se vaya justo en el centro de la pantalla
+  function centreShift(box, y, vh) {
+    if (y < box.top) return y - box.top;
+    const end = box.top + box.h - vh;
+    return y > end ? y - end : 0;
+  }
+  function apply(el, f, spin, dy) {
+    el.style.transform = `translateY(${(dy || 0).toFixed(1)}px) ${spin ? `rotate(${f.rot.toFixed(1)}deg) ` : ""}scale(${f.s.toFixed(4)})`;
     el.style.opacity = f.o.toFixed(3);
   }
   function show(box, on) {
@@ -194,14 +202,13 @@
     const y = KF.y(), vh = KF.vh;
     secBox.forEach((box) => {
       const k = (y - box.top) / Math.max(1, box.h - vh);
-      if (k < -0.9 || k > 1.1) { show(box, false); return; }
+      if (k < -0.75 || k > 1.1) { show(box, false); return; }
       show(box, true);
       if (box.music) {
         // primero llegan el título y el reproductor; con la sección ya fija,
         // los vinilos salen uno tras otro del centro del túnel, girando
         const f = flight(Math.min(k, 0.99), 0.0, 0.88);
-        const head = k < 0 ? { s: 0.7 + 0.3 * sm(-0.5, 0, k), o: sm(-0.5, 0, k), rot: 0 } : f;
-        apply(box.music, head, false);
+        apply(box.music, f, false, centreShift(box, y, vh));
         if (!vinylHome || !vinylHome.length) measureVinyls();
         const n = vinylHome.length;
         const step = Math.min(0.1, 0.5 / Math.max(1, n));
@@ -217,7 +224,7 @@
         if (k > 0.02 + n * step + 0.2 && k < 0.88) holding = true;
       } else {
         const f = flight(k, 0.28, 0.72);
-        apply(box.disc, f, true);
+        apply(box.disc, f, true, centreShift(box, y, vh));
         if (f.hold) holding = true;
       }
     });

@@ -188,12 +188,12 @@ body.entered .hero.can-pan .hero__pan-hint { display: block; }
 .hero__pan-hint.is-hidden { opacity: 0; }
 
 /* ---------- NOCHE: discos que salen del fondo del túnel ---------- */
-.night { position: relative; height: 230vh; }
+.night { position: relative; height: 230vh; overflow-x: clip; }
 .night--wide { height: 320vh; }
-.pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; place-items: center; padding: 70px 16px 16px; overflow: hidden; }
+.pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; place-items: center; padding: 70px 16px; }
 
 .disc {
-  --D: min(84vmin, 720px);
+  --D: min(84vmin, 720px, calc(100vh - 140px));
   position: relative; width: var(--D); height: var(--D); max-width: 100%;
   font-size: clamp(13px, calc(var(--D) / 44), 19px);
   will-change: transform, opacity;
