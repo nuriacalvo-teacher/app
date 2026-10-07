@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Krisenka Finley · Web oficial</title>
+  <meta name="description" content="Krisenka Finley: folk psicodélico nacido a orillas del Ebro. Música, gira, biografía y contacto.">
+  <meta name="theme-color" content="#2a1240">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Krisenka Finley · Web oficial">
+  <meta property="og:description" content="Folk psicodélico nacido a orillas del Ebro. Nuevo álbum «Cierzo y Purpurina».">
+  <meta property="og:image" content="assets/og-krisenka.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preload" as="image" href="assets/krisenka-hero.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Shrikhand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip" href="#musica">Saltar al contenido</a>
+
+  <!-- Portada de entrada: desbloquea el audio del navegador -->
+  <div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="intro__swirl" aria-hidden="true"></div>
+    <div class="intro__box">
+      <p class="intro__kicker">Bienvenida al universo de</p>
+      <h1 class="intro__title" id="intro-title">Krisenka<br><span>Finley</span></h1>
+      <div class="intro__actions">
+        <button class="btn btn--sun" data-enter="sound">✿ Entrar con sonido</button>
+        <button class="btn btn--ghost" data-enter="mute">Entrar en silencio</button>
+      </div>
+      <p class="intro__hint">Toca la guitarra, haz saltar al siluro y pulsa el sol. Todo se mueve.</p>
+    </div>
+  </div>
+
+  <!-- Barra superior: aparece al bajar (y siempre en móvil) -->
+  <header class="topbar" id="topbar">
+    <a class="topbar__logo" href="#inicio" aria-label="Inicio">K<span>F</span></a>
+    <nav class="topbar__nav" aria-label="Principal">
+      <a href="#musica">Música</a>
+      <a href="#gira">Gira</a>
+      <a href="#biografia">Biografía</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <button class="sound-toggle" id="sound-toggle" aria-pressed="false" title="Sonido ambiente">
+      <span class="sound-toggle__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="sound-toggle__label">Sonido</span>
+    </button>
+  </header>
+
+  <main>
+    <!-- ============ HERO ANIMADO ============ -->
+    <section class="hero" id="inicio" aria-label="Portada">
+      <div class="stage" id="stage">
+        <img class="stage__plate" id="plate" src="assets/krisenka-hero.jpg" width="2000" height="1116"
+             alt="Ilustración psicodélica: Krisenka Finley canta con su guitarra junto al Ebro, con el Pilar, el Puente de Piedra, la Aljafería, los Monegros y un siluro saltando del río.">
+        <img class="stage__fish" id="fish-static" src="assets/siluro.png" alt="" aria-hidden="true">
+        <canvas class="stage__fx" id="fx" aria-hidden="true"></canvas>
+
+        <div class="drift" aria-hidden="true">
+          <div class="drift__track" style="--top:13%; --w:11%; --dur:95s; --delay:-20s"><svg viewBox="0 0 160 80"><use href="#nube"/></svg></div>
+          <div class="drift__track" style="--top:24%; --w:8%;  --dur:70s; --delay:-55s"><svg viewBox="0 0 160 80"><use href="#nube"/></svg></div>
+          <div class="drift__track" style="--top:17%; --w:13%; --dur:130s; --delay:-90s"><svg viewBox="0 0 160 80"><use href="#nube"/></svg></div>
+          <div class="drift__track drift__track--rev" style="--top:30%; --w:7%; --dur:110s; --delay:-30s"><svg viewBox="0 0 160 80"><use href="#nube"/></svg></div>
+        </div>
+
+        <canvas class="stage__fx2d" id="fx2d" aria-hidden="true"></canvas>
+
+        <!-- Menú: las nubes de la ilustración son botones -->
+        <nav class="cloud-menu" aria-label="Menú de la portada">
+          <a class="cloud-btn" href="#musica"    data-rect="318,24,232,92"  style="--d:0s"><span class="sr">Música</span></a>
+          <a class="cloud-btn" href="#gira"      data-rect="566,14,226,102" style="--d:-1.3s"><span class="sr">Gira</span></a>
+          <a class="cloud-btn" href="#biografia" data-rect="1204,14,262,102" style="--d:-2.1s"><span class="sr">Biografía</span></a>
+          <a class="cloud-btn" href="#contacto"  data-rect="1506,14,270,102" style="--d:-0.7s"><span class="sr">Contacto</span></a>
+        </nav>
+
+        <!-- Zonas interactivas -->
+        <button class="hot hot--guitar" data-rect="96,770,400,340" aria-label="Tocar la guitarra"><span class="hot__tip">🎸 ¡Rasguea!</span></button>
+        <button class="hot hot--sun" data-rect="1786,6,184,184" aria-label="Hacer girar el sol"><span class="hot__tip">☀ ¡Hazme girar!</span></button>
+        <button class="hot hot--title" data-rect="640,400,710,310" aria-label="Escuchar el nuevo single"><span class="hot__tip">▶ Escucha «Cierzo»</span></button>
+      </div>
+
+      <p class="hero__pan-hint" id="pan-hint" aria-hidden="true">⟵ desliza para explorar ⟶</p>
+      <a class="hero__scroll" href="#musica" aria-label="Bajar a la música"><span></span></a>
+    </section>
+
+    <div class="marquee" aria-label="Novedades">
+      <div class="marquee__inner">
+        <span>Nuevo álbum «Cierzo y Purpurina» ya disponible</span><span>✿</span>
+        <span>Gira 2026 – 2027</span><span>☀</span>
+        <span>Zaragoza · Huesca · Madrid · Barcelona · Valencia · Lisboa</span><span>✿</span>
+        <span>Nuevo álbum «Cierzo y Purpurina» ya disponible</span><span>✿</span>
+        <span>Gira 2026 – 2027</span><span>☀</span>
+        <span>Zaragoza · Huesca · Madrid · Barcelona · Valencia · Lisboa</span><span>✿</span>
+      </div>
+    </div>
+
+    <!-- ============ MÚSICA ============ -->
+    <!-- Contenido de ejemplo: sustituir títulos, enlaces y añadir "src" con los MP3 reales en js/data.js -->
+    <section class="section section--musica" id="musica">
+      <div class="wrap">
+        <header class="section__head reveal">
+          <p class="kicker">Nuevo álbum · 2026</p>
+          <h2 class="section__title">Música</h2>
+        </header>
+
+        <div class="album reveal">
+          <div class="album__art">
+            <div class="vinyl" id="vinyl" aria-hidden="true"><div class="vinyl__label"></div></div>
+            <img class="album__cover" src="assets/portada-album.jpg" width="600" height="600" alt="Portada del álbum «Cierzo y Purpurina»">
+          </div>
+          <div class="album__body">
+            <h3 class="album__title">Cierzo y Purpurina</h3>
+            <p class="album__meta">6 canciones · 22 min · Autoeditado</p>
+            <ol class="tracks" id="tracks"></ol>
+            <canvas class="viz" id="viz" height="90" aria-hidden="true"></canvas>
+            <p class="note">Las preescuchas se generan en directo en tu navegador con una guitarra sintetizada.</p>
+            <div class="platforms">
+              <a class="pill" href="#" rel="noopener">Spotify</a>
+              <a class="pill" href="#" rel="noopener">Apple Music</a>
+              <a class="pill" href="#" rel="noopener">YouTube</a>
+              <a class="pill" href="#" rel="noopener">Bandcamp</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 180 0 360 80 540 40 S 900 0 1080 40 S 1440 80 1440 40 V80 H0Z"/></svg>
+
+    <!-- ============ GIRA ============ -->
+    <!-- Fechas de ejemplo: editar en js/data.js -->
+    <section class="section section--gira" id="gira">
+      <div class="wrap">
+        <header class="section__head reveal">
+          <p class="kicker">Gira 2026 – 2027</p>
+          <h2 class="section__title">Gira</h2>
+        </header>
+        <div class="countdown reveal" id="countdown" aria-live="polite"></div>
+        <div class="tour-filter reveal" role="tablist" aria-label="Filtrar conciertos">
+          <button role="tab" aria-selected="true" data-filter="next">Próximos</button>
+          <button role="tab" aria-selected="false" data-filter="past">Pasados</button>
+        </div>
+        <ul class="tour" id="tour"></ul>
+      </div>
+    </section>
+
+    <svg class="wave wave--flip" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 180 0 360 80 540 40 S 900 0 1080 40 S 1440 80 1440 40 V80 H0Z"/></svg>
+
+    <!-- ============ BIOGRAFÍA ============ -->
+    <!-- Texto de ejemplo: sustituir por la biografía real -->
+    <section class="section section--bio" id="biografia">
+      <div class="wrap bio">
+        <header class="section__head reveal">
+          <p class="kicker">Del Ebro al mundo</p>
+          <h2 class="section__title">Biografía</h2>
+        </header>
+        <div class="bio__grid">
+          <figure class="bio__photo reveal">
+            <img src="assets/zaragoza.jpg" width="600" height="600" alt="Detalle de la ilustración: el Pilar entre flores gigantes">
+            <figcaption>Zaragoza, su ciudad y su musa.</figcaption>
+          </figure>
+          <div class="bio__text reveal">
+            <p class="lead">Krisenka Finley canta como sopla el cierzo: de golpe, con fuerza y llevándose por delante cualquier nube gris.</p>
+            <p>Creció entre la ribera del Ebro y los paisajes lunares de los Monegros, con una guitarra de segunda mano y una colección de vinilos de los setenta heredada de su familia. De ahí sale su folk psicodélico: canciones luminosas, coros que se quedan pegados y letras llenas de río, desierto y verbena.</p>
+            <blockquote>“Escribo canciones para que el río suene a fiesta.”</blockquote>
+            <ol class="timeline">
+              <li><b>2019</b> Primeros conciertos en los bares del Tubo.</li>
+              <li><b>2021</b> EP «Cactus en flor», grabado en una nave agrícola.</li>
+              <li><b>2023</b> Primer álbum, «Ribera», y gira por festivales.</li>
+              <li><b>2026</b> «Cierzo y Purpurina», su disco más luminoso.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTO ============ -->
+    <section class="section section--contacto" id="contacto">
+      <div class="wrap">
+        <header class="section__head reveal">
+          <p class="kicker">Hablemos</p>
+          <h2 class="section__title">Contacto</h2>
+        </header>
+        <div class="contact">
+          <form class="form reveal" id="contact-form" novalidate>
+            <label>Nombre<input name="nombre" required autocomplete="name"></label>
+            <label>Email<input name="email" type="email" required autocomplete="email"></label>
+            <label>Motivo
+              <select name="motivo">
+                <option>Contratación / booking</option>
+                <option>Prensa</option>
+                <option>Colaboraciones</option>
+                <option>Fans</option>
+              </select>
+            </label>
+            <label>Mensaje<textarea name="mensaje" rows="5" required></textarea></label>
+            <button class="btn btn--sun" type="submit">Enviar mensaje ✿</button>
+            <p class="form__status" role="status"></p>
+          </form>
+          <aside class="contact__side reveal">
+            <!-- Direcciones de ejemplo -->
+            <div class="card">
+              <h3>Booking</h3>
+              <a href="mailto:booking@krisenkafinley.com">booking@krisenkafinley.com</a>
+            </div>
+            <div class="card">
+              <h3>Prensa</h3>
+              <a href="mailto:prensa@krisenkafinley.com">prensa@krisenkafinley.com</a>
+            </div>
+            <div class="card card--news">
+              <h3>Boletín psicodélico</h3>
+              <p>Fechas nuevas y canciones antes que nadie.</p>
+              <form id="news-form" class="news">
+                <label class="sr" for="news-email">Tu email</label>
+                <input id="news-email" type="email" placeholder="tu@email.com" required>
+                <button class="btn btn--small" type="submit">Apuntarme</button>
+              </form>
+              <p class="news__ok" role="status"></p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__socials">
+      <a href="#" aria-label="Instagram">Instagram</a>
+      <a href="#" aria-label="TikTok">TikTok</a>
+      <a href="#" aria-label="YouTube">YouTube</a>
+      <a href="#" aria-label="Spotify">Spotify</a>
+    </div>
+    <p>© 2026 Krisenka Finley · Hecho con cierzo en Aragón</p>
+  </footer>
+
+  <!-- Reproductor flotante -->
+  <div class="mini" id="mini" hidden>
+    <button class="mini__play" id="mini-play" aria-label="Pausar">❚❚</button>
+    <div class="mini__info"><b id="mini-title"></b><span>Krisenka Finley</span></div>
+    <canvas class="mini__viz" id="mini-viz" width="120" height="32" aria-hidden="true"></canvas>
+  </div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="nube-g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff8e6"/><stop offset=".65" stop-color="#ffd9ec"/><stop offset="1" stop-color="#ff9fcf"/>
+      </linearGradient>
+      <symbol id="nube" viewBox="0 0 160 80">
+        <path d="M22 70 C 4 70 2 46 22 44 C 18 24 44 14 58 28 C 64 6 100 4 108 26 C 122 14 148 24 142 46 C 160 50 156 72 138 70 Z"
+              fill="url(#nube-g)" stroke="#3a1d5c" stroke-width="3.5" stroke-linejoin="round"/>
+        <path d="M40 56 C 50 48 62 50 66 58 M92 52 C 102 44 116 46 120 56" fill="none" stroke="#e86bb0" stroke-width="3" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>
