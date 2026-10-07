@@ -14,11 +14,13 @@
   const canvas2d = document.getElementById("fx2d");
   const ctx2d = canvas2d.getContext("2d");
   const panHint = document.getElementById("pan-hint");
+  const dusk = document.getElementById("dusk");
+  const beat = window.KFBeat;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const state = {
     t: 0, last: performance.now(), running: true, visible: true,
-    mouse: [-9999, -9999], wind: 0, windTarget: 0, titleBoost: 0, titleHover: false,
+    mouse: [-9999, -9999], night: 0, wind: 0, windTarget: 0, titleBoost: 0, titleHover: false,
     sunAngle: 0, sunVel: 0, ripples: [], pan: 0, maxPan: 0, scale: 1
   };
 
@@ -75,7 +77,7 @@
     precision highp float;
     varying vec2 vUv;
     uniform sampler2D uImg, uMask, uMask2;
-    uniform float uTime, uWind, uTitle, uSun;
+    uniform float uTime, uWind, uTitle, uSun, uNight, uBass, uHit;
     uniform vec2 uMouse;
     uniform vec4 uRip[4];
     const vec2 SZ = vec2(2000.0, 1116.0);
@@ -99,7 +101,7 @@
 
       // Flores mecidas por el viento (ráfagas que cruzan de izquierda a derecha)
       float ph = m2.r * 6.2831;
-      float gust = 0.65 + 0.35 * sin(t * 0.37 - P.x * 0.002) + uWind * 1.6;
+      float gust = 0.65 + 0.35 * sin(t * 0.37 - P.x * 0.002) + uWind * 1.6 + uBass * 1.4;
       off.x += m.r * (7.0 * sin(t * 1.4 + ph) + 2.5 * sin(t * 3.1 + ph * 2.0 + P.y * 0.02)) * gust - m.r * uWind * 6.0;
       off.y += m.r * 1.4 * sin(t * 1.4 + ph + 1.57);
 
@@ -153,7 +155,10 @@
       // Letras FINLEY: arcoíris que recorre el rótulo
       float mx = max(col.r, max(col.g, col.b)), mn = min(col.r, min(col.g, col.b));
       float k = m2.g * smoothstep(0.25, 0.45, mx - mn) * smoothstep(0.45, 0.6, mx);
-      col = mix(col, clamp(hueShift(col, t * (0.9 + uTitle * 3.0) + P.x * 0.012), 0.0, 1.0), k);
+      col = mix(col, clamp(hueShift(col, t * (0.9 + uTitle * 3.0) + uHit * 1.5 + P.x * 0.012), 0.0, 1.0), k);
+
+      // Atardecer: al bajar hacia el concierto la escena se vuelve noche
+      col = mix(col, col * vec3(0.62, 0.30, 0.45) + vec3(0.05, 0.0, 0.03), uNight * 0.85);
 
       // Rayos de sol proyectados desde el mandala y desde el sol
       vec2 cr = P - vec2(1000.0, 152.0); float cd = length(cr); float ca = atan(cr.y, cr.x);
@@ -164,7 +169,8 @@
       L += pow(0.5 + 0.5 * sin(sa * 12.0 - t * 0.5), 4.0) * (0.6 + 0.4 * sin(sd * 0.03 - t * 2.2)) * exp(-sd / 380.0) * smoothstep(95.0, 140.0, sd) * 0.32;
       L += exp(-sd / 90.0) * 0.14 * (0.8 + 0.2 * sin(t * 2.0));
       L += exp(-length(P - uMouse) / 170.0) * 0.10;
-      vec3 light = vec3(1.0, 0.86, 0.55) * L;
+      L *= 1.0 + uHit * 0.9 + uNight * 0.6;
+      vec3 light = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.18, 0.3), uNight) * L;
       col = 1.0 - (1.0 - col) * (1.0 - light);
 
       gl_FragColor = vec4(col, 1.0);
@@ -205,7 +211,7 @@
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
-    ["uImg", "uMask", "uMask2", "uTime", "uWind", "uTitle", "uSun", "uMouse", "uRip"].forEach((n) => {
+    ["uImg", "uMask", "uMask2", "uTime", "uWind", "uTitle", "uSun", "uMouse", "uRip", "uNight", "uBass", "uHit"].forEach((n) => {
       uni[n] = gl.getUniformLocation(prog, n);
     });
 
@@ -259,6 +265,9 @@
     gl.uniform1f(uni.uWind, state.wind);
     gl.uniform1f(uni.uTitle, state.titleBoost);
     gl.uniform1f(uni.uSun, state.sunAngle);
+    gl.uniform1f(uni.uNight, state.night);
+    gl.uniform1f(uni.uBass, beat ? beat.bass : 0);
+    gl.uniform1f(uni.uHit, beat ? beat.hit : 0);
     gl.uniform2f(uni.uMouse, state.mouse[0], state.mouse[1]);
     const rip = new Float32Array(16);
     state.ripples.forEach((r, i) => rip.set(r, i * 4));
@@ -403,7 +412,6 @@
   function gust() {
     state.windTarget = 1;
     setTimeout(() => (state.windTarget = 0), 2200);
-    if (window.KFAudio) KFAudio.gust(1);
     const sources = [[275, 262], [372, 303], [565, 388], [1920, 630], [1724, 790], [1784, 655], [1958, 796], [140, 590]];
     for (let i = 0; i < 16; i++) {
       const [sx, sy] = pick(sources);
@@ -421,7 +429,9 @@
     for (let i = rings.length - 1; i >= 0; i--) if (rings[i].age > 2.2) rings.splice(i, 1);
 
     noteTimer -= dt;
-    if (noteTimer <= 0) { emitNotes(500, 585, 1, false); noteTimer = 1.1 + Math.random() * 0.6; }
+    if (noteTimer <= 0) { emitNotes(500, 585, 1, false); noteTimer = (beat && beat.playing ? 0.45 : 1.1) + Math.random() * 0.6; }
+    // con la música, el siluro salta en los golpes fuertes
+    if (beat && beat.playing && beat.hit > 0.8 && fish.phase === "under" && fish.under > 1.5) jumpNow();
     notes.forEach((n) => { n.life += dt; n.x += n.vx * dt + Math.sin(n.life * 3 + n.w) * 0.6; n.y += n.vy * dt; n.vy *= 0.995; });
     for (let i = notes.length - 1; i >= 0; i--) if (notes[i].life > notes[i].max) notes.splice(i, 1);
 
@@ -534,6 +544,9 @@
     if (state.running && state.visible) {
       state.t += dt;
       state.wind += (state.windTarget - state.wind) * Math.min(1, dt * 1.6);
+      const hr = hero.getBoundingClientRect();
+      state.night = Math.min(1, Math.max(0, -hr.top / hr.height * 1.4));
+      dusk.style.opacity = state.night.toFixed(3);
       state.titleBoost += ((state.titleHover ? 1 : 0) - state.titleBoost) * Math.min(1, dt * 3);
       state.sunVel *= Math.pow(0.35, dt);
       state.sunAngle += state.sunVel * dt;

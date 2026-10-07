@@ -1,30 +1,33 @@
-/* Contenido editable de la web (datos de ejemplo: sustituir por los reales).
-   - Canciones: si se añade "src" con un MP3, se reproduce ese archivo; si no,
-     se genera una preescucha con guitarra sintetizada usando key/bpm/chords.
-   - Conciertos: fecha en formato ISO local (AAAA-MM-DDTHH:MM). */
+/* Contenido editable de la web.
+   - song: la canción que suena en la web, con los datos de ritmo precalculados
+     (24 bandas de frecuencia y un pulso por fotograma, a 30 fotogramas/segundo).
+   - albums: discos. Cada vinilo abre su caja de CD con la portada y el enlace.
+     Las portadas de los 4 álbumes son provisionales: sustituir los archivos de
+     assets/portadas/ por las originales (mismo nombre).
+   - gigs: conciertos. Formato: { date: "2027-03-20T21:00", city: "Zaragoza",
+     venue: "Sala López", url: "https://..." }. Mientras esté vacío se muestra
+     el aviso de «cocinando un disco nuevo». */
 window.KF_DATA = {
-  tracks: [
-    { title: "Cierzo", time: "3:41", note: "Single", bpm: 96, chords: ["G", "D", "Em", "C"], scale: "G" },
-    { title: "El siluro del Ebro", time: "4:05", bpm: 112, chords: ["Am", "F", "C", "G"], scale: "A" },
-    { title: "Monegros en technicolor", time: "3:28", bpm: 84, chords: ["Em", "C", "G", "D"], scale: "E" },
-    { title: "Puente de Piedra", time: "3:55", bpm: 72, chords: ["C", "G", "Am", "F"], scale: "C" },
-    { title: "Pilarica eléctrica", time: "3:12", bpm: 124, chords: ["D", "G", "A", "D"], scale: "D" },
-    { title: "Cactus en flor", time: "3:37", note: "Acústica", bpm: 90, chords: ["Am", "Em", "F", "G"], scale: "A" }
+  song: {
+    title: "Back Again",
+    src: "assets/back-again.mp3",
+    cover: "assets/back-again-cover.jpg",
+    bands: "assets/back-again-bands.bin",
+    hits: "assets/back-again-hits.bin",
+    fps: 30
+  },
+  albums: [
+    { title: "Wasteland", kind: "Álbum", cover: "assets/portadas/wasteland.jpg", url: "https://krisenkafinley.bandcamp.com" },
+    { title: "Hello Freedom", kind: "Álbum", cover: "assets/portadas/hello-freedom.jpg", url: "https://krisenkafinley.bandcamp.com" },
+    { title: "No está en venta", kind: "Álbum", cover: "assets/portadas/no-esta-en-venta.jpg", url: "https://krisenkafinley.bandcamp.com" },
+    { title: "10", kind: "Álbum", cover: "assets/portadas/10.jpg", url: "https://krisenkafinley.bandcamp.com" },
+    { title: "Inner Peace", kind: "Single · 2020", cover: "assets/portadas/inner-peace.jpg", url: "https://krisenkafinley.bandcamp.com/track/inner-peace",
+      note: "Primer single de su quinto disco: rock sureño y blues con música del mundo y de la India." }
   ],
-  gigs: [
-    { date: "2026-08-15T22:00", city: "Lanuza (Huesca)", venue: "Festival en el pantano", status: "past" },
-    { date: "2026-09-05T21:30", city: "Jaca", venue: "Palacio de Congresos", status: "past" },
-    { date: "2026-10-12T20:00", city: "Zaragoza", venue: "Escenario Plaza del Pilar · Fiestas del Pilar", status: "free" },
-    { date: "2026-10-24T21:00", city: "Huesca", venue: "Palacio de Congresos", status: "tickets" },
-    { date: "2026-11-07T21:30", city: "Madrid", venue: "Sala La Riviera", status: "last" },
-    { date: "2026-11-14T21:00", city: "Barcelona", venue: "Sala Apolo", status: "tickets" },
-    { date: "2026-11-28T21:30", city: "Valencia", venue: "Sala Moon", status: "tickets" },
-    { date: "2026-12-12T21:00", city: "Bilbao", venue: "Kafe Antzokia", status: "sold" },
-    { date: "2027-01-23T20:30", city: "Teruel", venue: "Teatro Marín", status: "tickets" },
-    { date: "2027-02-13T21:30", city: "Sevilla", venue: "Sala Custom", status: "tickets" },
-    { date: "2027-03-06T22:00", city: "Lisboa (PT)", venue: "Musicbox", status: "tickets" },
-    { date: "2027-03-20T21:00", city: "Toulouse (FR)", venue: "Le Bikini", status: "tickets" }
-  ],
-  ticketsUrl: "#",
-  contactEmail: "contacto@krisenkafinley.com"
+  gigs: [],
+  links: [
+    { name: "Bandcamp", url: "https://krisenkafinley.bandcamp.com", note: "Discos y descargas" },
+    { name: "YouTube", url: "https://www.youtube.com/krisenka", note: "Vídeos y directos" },
+    { name: "LinkedIn", url: "https://www.linkedin.com/in/krisenkafinley/", note: "Contratación y producción" }
+  ]
 };

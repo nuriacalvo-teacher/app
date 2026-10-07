@@ -1,32 +1,31 @@
-# Krisenka Finley · landing page animada
+# Krisenka Finley · web oficial
 
-Web de una sola página construida sobre la ilustración original. Sin dependencias ni compilación: HTML, CSS y JavaScript.
+Web de una sola página: **de día** se pasea por la ilustración animada de Zaragoza y, al bajar, **anochece** y se entra en un concierto 3D que late con «Back Again».
 
-## Qué hace la portada
-- **WebGL** (`js/hero.js`): el río fluye hacia el puente (al fondo), las flores se mecen con ráfagas de viento, las nubes respiran, los rayos de sol salen proyectados del mandala y del sol, y el rótulo FINLEY cambia de color.
-- **El siluro** salta del Ebro, se zambulle con salpicaduras y ondas y vuelve nadando bajo el agua. Al pulsar el agua salen ondas; al pulsar cerca de su sombra, salta.
-- **Menú clicable**: las nubes MÚSICA, GIRA, BIOGRAFÍA y CONTACTO de la ilustración son botones.
-- **Zonas interactivas**: la guitarra suena (acordes sintetizados), el sol gira, el título reproduce el single.
-- Notas musicales que salen de la boca, pájaros, pétalos con el viento y estrellitas que siguen al cursor.
-- En móvil se puede arrastrar la ilustración para explorarla. Con «reducir movimiento» activado se muestra estática.
-
-## Secciones
-Música (reproductor con visualizador y mini-reproductor flotante), Gira (cuenta atrás, filtros, botón «+ Calendario» que descarga un .ics), Biografía y Contacto (formulario que abre el correo + boletín).
+## Qué hay
+- **Entrada** con o sin sonido (los navegadores solo dejan sonar música tras un clic).
+- **Portada de día** (WebGL): el río fluye hacia el puente, las flores se mecen con el viento y con el bajo de la canción, las nubes se mueven, el sol proyecta rayos, el rótulo FINLEY cambia de color y el siluro salta y se sumerge (con la música, salta en los golpes fuertes). Las nubes del menú son botones, la guitarra suena y el sol gira.
+- **Atardecer**: al bajar, la ilustración se oscurece y aparece el túnel de neón 3D (Three.js) que avanza con el scroll.
+- **Secciones en forma de disco** que giran al entrar: biografía, trayectoria, directo y enlaces.
+- **Música**: reproductor de «Back Again» con ecualizador real, vinilos que giran y, al pulsar uno, su **caja de CD se abre** y muestra el disco.
+- **Reproductor flotante** con el progreso de la canción y **recorrido automático** por toda la página.
+- Con «reducir movimiento» activado, todo se muestra estático.
 
 ## Editar contenido
-Todo el contenido de ejemplo (canciones, conciertos, emails) está en `js/data.js`. Para usar las canciones reales, añade `src: "audio/cancion.mp3"` a cada pista. Los enlaces a plataformas y redes están en `index.html` (`href="#"`).
+Todo está en `js/data.js`: canción, discos (portada y enlace), conciertos y enlaces.
+- **Portadas**: las de los 4 álbumes en `assets/portadas/` son recreaciones provisionales; sustitúyelas por las originales con el mismo nombre de archivo.
+- **Conciertos**: mientras `gigs` esté vacío se muestra «Cocinando un disco nuevo».
+- **Ritmo de la canción**: `assets/back-again-bands.bin` (24 bandas por fotograma) y `back-again-hits.bin` (golpes), a 30 fotogramas por segundo.
 
 ## Probar en local
-Los efectos WebGL necesitan servirse por HTTP (no abriendo el archivo con doble clic):
+Los efectos necesitan servirse por HTTP:
 
 ```
 python3 -m http.server 8000
 # abrir http://localhost:8000
 ```
 
-## Regenerar recursos
-`tools/` contiene la ilustración original y los scripts que generan el recorte del siluro, el fondo sin pez y las máscaras de animación:
-
+## Regenerar recursos de la ilustración
 ```
 python3 tools/build_fish.py tools/krisenka-original.jpg assets
 python3 tools/build_masks.py assets
