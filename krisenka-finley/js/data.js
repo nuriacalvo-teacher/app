@@ -12,8 +12,8 @@ window.KF_DATA = {
     title: "Back Again",
     src: "assets/back-again.mp3",
     cover: "assets/back-again-cover.jpg",
-    bands: "assets/back-again-bands.bin",
-    hits: "assets/back-again-hits.bin",
+    bands: "assets/back-again-bands.txt",
+    hits: "assets/back-again-hits.txt",
     fps: 30
   },
   albums: [

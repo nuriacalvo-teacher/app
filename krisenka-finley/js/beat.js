@@ -33,8 +33,10 @@
 
   ["play", "pause", "ended"].forEach((ev) => audio.addEventListener(ev, () => listeners.forEach((fn) => fn(beat))));
 
-  Promise.all([song.bands, song.hits].map((u) => fetch(u).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))))
-    .then(([b, f]) => { BD = new Uint8Array(b); FX = new Uint8Array(f); NF = FX.length; })
+  // datos en base64: 24 bytes de bandas por fotograma y 1 byte de golpe
+  const decode = (txt) => Uint8Array.from(atob(txt.trim()), (c) => c.charCodeAt(0));
+  Promise.all([song.bands, song.hits].map((u) => fetch(u).then((r) => (r.ok ? r.text() : Promise.reject()))))
+    .then(([b, f]) => { BD = decode(b); FX = decode(f); NF = FX.length; })
     .catch(() => { /* sin datos de ritmo: se usa un pulso suave */ });
 
   let t0 = performance.now();

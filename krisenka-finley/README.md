@@ -15,7 +15,7 @@ Web de una sola página: **de día** se pasea por la ilustración animada de Zar
 Todo está en `js/data.js`: canción, discos (portada y enlace), conciertos y enlaces.
 - **Portadas**: las de los 4 álbumes en `assets/portadas/` son recreaciones provisionales; sustitúyelas por las originales con el mismo nombre de archivo.
 - **Conciertos**: mientras `gigs` esté vacío se muestra «Cocinando un disco nuevo».
-- **Ritmo de la canción**: `assets/back-again-bands.bin` (24 bandas por fotograma) y `back-again-hits.bin` (golpes), a 30 fotogramas por segundo.
+- **Ritmo de la canción**: `assets/back-again-bands.txt` (24 bandas por fotograma) y `back-again-hits.txt` (golpes), en base64, a 30 fotogramas por segundo.
 
 ## Probar en local
 Los efectos necesitan servirse por HTTP:
