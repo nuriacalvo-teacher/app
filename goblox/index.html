@@ -172,6 +172,73 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 .res-who b{color:var(--fg)}
 @media (max-width:480px){.pc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* my nation */
+.nation-hero{display:flex;align-items:center;gap:16px;text-align:left;background:linear-gradient(120deg,#0f5c55,#163a6b);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:16px 18px;width:100%;transition:transform .15s}
+.nation-hero:hover{transform:translateY(-2px)}
+.nh-flag{width:72px;height:48px;border-radius:6px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.nh-new{display:grid;place-items:center;font-size:34px;background:rgba(255,255,255,.12)}
+.nh-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.nh-txt small{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#a7ffeb;font-weight:800}
+.nh-txt b{font-family:var(--f-display);font-size:20px;font-weight:900}
+.nh-txt span{color:#cfd8dc;font-size:14px}
+.nh-go{font-family:var(--f-display);font-weight:900;background:var(--green);padding:10px 14px;border-radius:9px;white-space:nowrap}
+.flag{display:inline-block;height:20px;border-radius:3px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,.25);margin-right:6px}
+.panel.wide{width:min(900px,100%)}
+.panel-p{margin:0 0 10px;color:#dfe1e4;line-height:1.5;font-size:14px}
+.found{display:grid;gap:12px}
+.found label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.found input,.found select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--fg);font:inherit;font-weight:700;text-transform:none;letter-spacing:0}
+.found-flag{width:150px;max-width:100%;aspect-ratio:3/2;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.found-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.found-row span{font-size:12px;font-weight:800;color:var(--muted);min-width:76px;text-transform:uppercase;letter-spacing:.05em}
+.sw.sm{width:28px;height:28px;border-radius:6px}
+.quiz{display:flex;flex-direction:column;gap:12px}
+.quiz-text{background:#fffdf5;color:#2b1c12;border-radius:10px;padding:12px 14px;line-height:1.55;font-size:15px}
+.quiz-q{font-size:18px;font-weight:800;line-height:1.35}
+.quiz-q small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.opt.right{background:rgba(0,168,107,.35);border-color:var(--green)}
+.opt.wrong{background:rgba(239,77,85,.3);border-color:var(--red)}
+.opt:disabled{cursor:default}
+.quiz-fb{border-radius:9px;padding:10px 12px;font-weight:800;line-height:1.4}
+.quiz-fb.good{background:rgba(0,168,107,.2)}.quiz-fb.bad{background:rgba(239,77,85,.18)}
+.quiz-end{text-align:center;padding:10px}
+.quiz-end b{font:900 44px var(--f-display)}
+.quiz-end p{color:var(--muted)}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.bcard{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0;text-align:left}
+.bcard.mon{border-color:rgba(255,194,61,.55);background:rgba(255,194,61,.08)}
+.bcard p{margin:0;font-size:13px;color:#dfe1e4;line-height:1.35;flex:1}
+.bcard small{color:var(--muted);font-size:12px}
+.bcard .btn{padding:8px;font-size:13px}
+.b-top{display:flex;align-items:center;gap:8px}
+.b-top b{flex:1;min-width:0;font-size:14.5px;line-height:1.2}
+.b-emo{font-size:24px}
+.b-cost{display:flex;align-items:center;gap:4px;font-weight:900;font-variant-numeric:tabular-nums}
+.fxs{display:flex;flex-wrap:wrap;gap:4px}
+.fx{font-size:12px;font-weight:800;padding:2px 6px;border-radius:5px}
+.fx.up{background:rgba(0,168,107,.25)}.fx.down{background:rgba(239,77,85,.25)}
+.nhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.nhead div{flex:1;min-width:0}
+.nhead b{display:block;font:900 20px var(--f-display)}
+.nhead small{color:var(--muted);font-size:13px}
+.npts{font:900 26px var(--f-display);text-align:center;line-height:1}
+.npts small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.nstats{display:grid;gap:8px;margin-bottom:12px}
+.nstat{display:grid;grid-template-columns:130px 1fr 48px;gap:10px;align-items:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.nstat b{text-align:right}
+.treaties{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tbtn:hover{border-color:#fff}
+.letter-wrap{display:flex;flex-direction:column;gap:12px}
+.letter{background:#fffdf5;color:#2b1c12;border-radius:6px;padding:14px 18px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.55;box-shadow:0 3px 14px rgba(0,0,0,.35)}
+.letter p{margin:0 0 10px}
+.letter-next{color:#b0a490}
+.letters{display:flex;flex-direction:column;gap:14px}
+.letters h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lcard{display:flex;flex-direction:column;gap:8px}
+.lhead{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.lhead small{color:var(--muted);margin-left:auto}
+@media (max-width:520px){.nstat{grid-template-columns:100px 1fr 40px}.nh-go{display:none}}
+
 /* notebook */
 .vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
@@ -419,6 +486,7 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
       <div class="note-bar" id="cloudNote" hidden></div>
       <div class="stats" id="stats"></div>
       <div class="grants" id="grantsBox" hidden></div>
+      <button class="nation-hero" id="nationHero"></button>
       <div><div class="row-title"><h2>Play now</h2><span>Scenario-based roleplay · Functional English</span></div></div>
       <div class="grid" id="rowPlay"></div>
       <div class="row-title"><h2>Coming soon</h2><span>New scenarios in development</span></div>
@@ -628,7 +696,7 @@ let guestCode = store.get('guestCode', '');
 /* calls that identify the player also send the guest invite code (ignored for school accounts) */
 const apiU = (fn, ...args) => api(fn, ...args, guestCode || '');
 const levelOf = xp => 1 + Math.floor((xp || 0) / XP_PER_LEVEL);
-const goyuxTotal = () => (profile.xp || 0) + (profile.granted || 0);
+const goyuxTotal = () => (profile.xp || 0) + (profile.granted || 0) + (profile.nationNet || 0);
 function saveProfile() {
   store.set('profile', profile);
   if (CLOUD && account) { clearTimeout(profT); profT = setTimeout(() => apiU('saveProfile', { name: profile.name, skin: profile.skin, shirt: profile.shirt, pants: profile.pants }).catch(() => {}), 900); }
@@ -706,10 +774,14 @@ function renderHome() {
   const lv = levelOf(profile.xp), into = (profile.xp || 0) % XP_PER_LEVEL;
   $('#stats').innerHTML = `
     <div class="stat"><b>Level ${lv}</b><span>${XP_PER_LEVEL - into} XP to level ${lv + 1}</span><div class="lvl"><i style="width:${into / XP_PER_LEVEL * 100}%"></i></div></div>
-    <div class="stat"><b>${goyuxTotal()} GOYUX</b><span>${profile.xp || 0} from games · ${profile.granted || 0} from your teacher</span></div>
+    <div class="stat"><b>${goyuxTotal()} GOYUX</b><span>${profile.xp || 0} from games · ${profile.granted || 0} from your teacher${profile.nationNet ? ` · ${profile.nationNet > 0 ? '+' : ''}${profile.nationNet} nation` : ''}</span></div>
     <div class="stat"><b>${profile.plays}</b><span>missions played</span></div>
     <div class="stat"><b>${starsTotal} / ${GAMES.filter(g => !g.soon).length * 3}</b><span>stars collected</span></div>
     <div class="stat"><b>${profile.vocab.length}</b><span>phrases in your notebook</span></div>`;
+  const nc = store.get('nationCache', null);
+  $('#nationHero').innerHTML = nc
+    ? `<span class="nh-flag" style="background:${flagCss(nc.flag)}"></span><span class="nh-txt"><small>My Nation</small><b>${escH(nc.name)}</b><span>${nc.score} points · ${nc.pop} people · ${nc.buildings} buildings</span></span><span class="nh-go">Enter ▸</span>`
+    : `<span class="nh-flag nh-new">🏝</span><span class="nh-txt"><small>My Nation</small><b>Found your own English-speaking country</b><span>Spend your GOYUX on land and buildings. Pass an English test to build each one.</span></span><span class="nh-go">Start ▸</span>`;
   const gb = $('#grantsBox'), gr = profile.grants || [];
   gb.hidden = !gr.length;
   gb.innerHTML = '<h2>GOYUX from your teacher</h2>' + gr.map(g => `<div class="grant"><b class="${g.amount >= 0 ? 'pos' : 'neg'}">${g.amount >= 0 ? '+' : ''}${g.amount}</b><span>${escH(g.reason)}</span><small>${new Date(g.date).toLocaleDateString()}</small></div>`).join('');
@@ -845,7 +917,7 @@ function part(x, y, z, w, h, d, color, o = {}) {
 }
 function plane(x, y, z, w, h, rotY, tex, o = {}) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: !!o.transparent }));
-  m.position.set(x, y, z); m.rotation.y = rotY || 0; W.scene.add(m); return m;
+  m.position.set(x, y, z); m.rotation.y = rotY || 0; (o.parent || W.scene).add(m); return m;
 }
 function sign(text, x, y, z, w, h, rotY, o = {}) {
   const cw = 1024, ch = Math.round(1024 * h / w);
@@ -860,7 +932,7 @@ function sign(text, x, y, z, w, h, rotY, o = {}) {
     g.fillStyle = o.fg || '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
     lines.forEach((l, i) => g.fillText(l, cw / 2, ch / 2 + (i - (lines.length - 1) / 2) * size * 1.15));
   });
-  return plane(x, y, z, w, h, rotY, tex);
+  return plane(x, y, z, w, h, rotY, tex, o);
 }
 function tagSprite(text, color = '#ffffff') {
   const tex = canvasTex(512, 96, (g) => {
@@ -1024,6 +1096,7 @@ function setupInput() {
     if (e.target && e.target.tagName === 'INPUT') return;
     if (e.key === '/') { e.preventDefault(); $('#chat').hidden = false; $('#chatIn').focus(); return; }
     if (e.key === 'Escape') { toggleEsc(); return; }
+    if (!$('#panelWrap').hidden && /^[1-9]$/.test(e.key)) { const ob = $('#panelBody .dlg-opts'); const b = ob && ob.children[+e.key - 1]; if (b && !b.disabled) b.click(); return; }
     if (!$('#dlg').hidden && /^[1-9]$/.test(e.key)) { const b = $('#dlgOpts').children[+e.key - 1]; if (b) b.click(); return; }
     if (e.code === 'KeyE' && curInter && !blocked()) { curInter.act(); return; }
     keys[e.code] = true;
@@ -1243,7 +1316,7 @@ function renderHotbar() {
   const hb = $('#hotbar'); hb.innerHTML = '';
   G.inv.filter(i => !i.returned).forEach((it, i) => {
     const s = el('button', 'slot' + (it.bad && it.bad() ? ' bad' : ''), `<small>${i + 1}</small>${it.emoji}`);
-    s.title = it.label; s.onclick = () => notify(it.emoji + ' ' + it.label, it.info());
+    s.title = it.label; s.setAttribute('aria-label', it.label); s.onclick = () => it.act ? (blocked() ? null : it.act()) : notify(it.emoji + ' ' + it.label, it.info());
     hb.append(s);
   });
 }
@@ -1251,7 +1324,7 @@ $('#msToggle').onclick = () => { const m = $('#mission'); m.classList.toggle('co
 function showCard(first) {
   panel(G.sc.cardTitle, '', `<div class="card-sheet">${G.sc.card()}</div>`, [{ t: first ? 'Let\'s go!' : 'Close', cls: 'primary', fn: closePanel }], { onClose: first ? null : () => {} });
 }
-$('#cardBtn').onclick = () => { if ($('#panelWrap').hidden && $('#dlg').hidden) showCard(false); };
+$('#cardBtn').onclick = () => { if (!$('#panelWrap').hidden || !$('#dlg').hidden) return; G && G.sc.menu ? G.sc.menu() : showCard(false); };
 
 /* esc menu */
 function toggleEsc() {
@@ -1261,7 +1334,7 @@ function toggleEsc() {
 }
 $('#menuBtn').onclick = toggleEsc;
 $('#escResume').onclick = toggleEsc;
-$('#escCard').onclick = () => { toggleEsc(); if ($('#panelWrap').hidden && $('#dlg').hidden) showCard(false); };
+$('#escCard').onclick = () => { toggleEsc(); if ($('#panelWrap').hidden && $('#dlg').hidden) { G && G.sc.menu ? G.sc.menu() : showCard(false); } };
 $('#escHelp').onclick = () => {
   toggleEsc();
   panel('How to play', '', `<div class="card-sheet">
@@ -1341,7 +1414,7 @@ function startScenario(id) {
   const sc = SCEN[id];
   G = { id, sc, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
   sc.build();
-  $('#msTitle').textContent = sc.title;
+  $('#msTitle').textContent = sc.title; $('#cardBtn').textContent = 'Character card';
   renderObjectives(); updateBoard(); renderHotbar();
   chat('System', `${profile.name} joined the game.`, '#aaa');
   chat('System', 'Press / to chat. Walk to people and press E to talk.', '#aaa');
@@ -2399,6 +2472,742 @@ function review(t) {
   }), 'See my results');
 }
 
+/* =====================================================================
+   MY NATION — data. Rules and costs must match apps-script/Code.gs
+   ===================================================================== */
+const NR = { size: 7, capital: 24, start: [17, 23, 24, 25, 31] };
+const N_KEYS = ['pop', 'happy', 'econ', 'secu', 'cult', 'env'];
+const N_LABEL = { pop: 'People', happy: 'Happiness', econ: 'Economy', secu: 'Security', cult: 'Culture', env: 'Environment' };
+const N_EMO = { pop: '👥', happy: '😊', econ: '💰', secu: '🛡', cult: '🎭', env: '🌳' };
+/* id: [name, emoji, cost, [pop, happy, econ, secu, cult, env], English test, description] */
+const BLD = {
+  cityhall: ['City Hall', '🏛', 0, [0, 5, 5, 5, 0, 0], null, 'The heart of your capital. Your government works here.'],
+  houses: ['Houses', '🏘', 12, [40, 2, 0, 0, 0, -2], 'houses', 'Homes for 40 new citizens.'],
+  farm: ['Farm', '🌾', 15, [10, 2, 6, 0, 0, 2], 'farm', 'Fresh food for your people and for the market.'],
+  park: ['Park', '🌳', 10, [0, 6, 0, 0, 0, 8], 'park', 'Trees, a pond and benches. People love it.'],
+  market: ['Market', '🛒', 25, [5, 5, 9, 0, 0, 0], 'market', 'Shops and stalls where people buy and sell.'],
+  school: ['School', '🏫', 25, [5, 4, 4, 0, 8, 0], 'school', 'Educated citizens make a stronger nation.'],
+  police: ['Police Station', '🚓', 25, [0, 3, 0, 12, 0, 0], 'police', 'Keeps your streets safe.'],
+  factory: ['Factory', '🏭', 30, [0, -3, 16, 0, 0, -10], 'factory', 'Lots of jobs and money, but it pollutes.'],
+  windfarm: ['Wind Farm', '🌬', 30, [0, 0, 8, 0, 0, 6], 'windfarm', 'Clean electricity from the wind.'],
+  museum: ['History Museum', '🏺', 30, [0, 4, 3, 0, 12, 0], 'museum', 'Tells the story of your nation.'],
+  press: ['TV & Newspaper', '📰', 30, [0, 3, 2, 0, 8, 0], 'press', 'News for your citizens.'],
+  embassy: ['Embassy', '🕊', 30, [0, 2, 2, 2, 4, 0], 'embassy', 'Lets you write to other nations and sign treaties.'],
+  hospital: ['Hospital', '🏥', 35, [25, 10, 0, 0, 0, 0], 'hospital', 'Healthy people live longer and happier lives.'],
+  army: ['Army Base', '🪖', 35, [0, -2, 0, 18, 0, -2], 'army', 'Protects your borders.'],
+  parliament: ['Parliament', '⚖', 40, [0, 6, 4, 6, 4, 0], 'parliament', 'Where the laws of your nation are made.'],
+  port: ['Port', '⚓', 40, [10, 0, 14, 0, 2, -4], 'port', 'Ships bring goods from all over the world.'],
+  stadium: ['Stadium', '🏟', 40, [0, 12, 4, 0, 4, -2], 'stadium', 'Football, concerts and big celebrations.'],
+  airport: ['Airport', '✈', 50, [15, 2, 12, 0, 4, -6], 'airport', 'Tourists and business people fly in.'],
+  bigben: ['Big Ben (UK)', '🕰', 60, [0, 6, 6, 0, 20, 0], 'r:bigben', 'A famous monument from London.'],
+  castle: ['Edinburgh Castle (Scotland)', '🏰', 60, [0, 6, 4, 6, 16, 0], 'r:castle', 'A famous monument from Scotland.'],
+  cntower: ['CN Tower (Canada)', '🗼', 60, [0, 4, 8, 0, 18, 0], 'r:cntower', 'A famous monument from Toronto.'],
+  liberty: ['Statue of Liberty (USA)', '🗽', 70, [0, 8, 6, 0, 22, 0], 'r:liberty', 'A famous monument from New York.'],
+  opera: ['Sydney Opera House (Australia)', '🎭', 70, [0, 8, 6, 0, 22, 0], 'r:opera', 'A famous monument from Sydney.']
+};
+const UNIQUE_B = ['cityhall', 'parliament', 'embassy', 'port', 'stadium', 'airport', 'bigben', 'castle', 'cntower', 'liberty', 'opera'];
+const MONUMENTS = ['bigben', 'castle', 'cntower', 'liberty', 'opera'];
+const TREATY_FX = { trade: [0, 0, 6, 0, 0, 0], culture: [0, 0, 0, 0, 6, 0], peace: [0, 4, 0, 4, 0, 0] };
+const TREATY_NAME = { trade: 'Trade Agreement', culture: 'Cultural Exchange', peace: 'Peace Treaty' };
+function nStats(n, treaties) {
+  const s = { pop: 50, happy: 50, econ: 20, secu: 20, cult: 10, env: 60 };
+  Object.values(n.buildings || {}).forEach(id => { const b = BLD[id]; if (b) N_KEYS.forEach((k, i) => { s[k] += b[3][i]; }); });
+  const per = {};
+  (treaties || []).forEach(t => { per[t] = (per[t] || 0) + 1; if (per[t] <= 3 && TREATY_FX[t]) N_KEYS.forEach((k, i) => { s[k] += TREATY_FX[t][i]; }); });
+  s.happy = clamp(s.happy, 0, 100); s.env = clamp(s.env, 0, 100);
+  s.score = Math.round(s.pop / 5 + s.happy + s.econ + s.secu + s.cult + s.env + Object.keys(n.buildings || {}).length * 5);
+  return s;
+}
+const plotPrice = owned => 10 + 3 * Math.max(0, owned - NR.start.length);
+const taxAmount = st => Math.min(12, 3 + Math.floor(Math.max(0, st.econ) / 15));
+const adjacentPlot = (i, plots) => { const r = Math.floor(i / NR.size), c = i % NR.size; return plots.some(p => Math.abs(Math.floor(p / NR.size) - r) + Math.abs(p % NR.size - c) === 1); };
+
+/* ---------- English tests: [question, correct answer, [wrong answers], tip] ---------- */
+const QB = {
+  found: { label: 'Present simple: facts about your nation', qs: [
+    ['Our nation ___ a beautiful coast.', 'has', ['have', 'is having'], 'With "it / our nation" use has.'],
+    ['People here ___ English.', 'speak', ['speaks', 'speaking'], '"People" is plural: people speak.'],
+    ['The capital ___ in the north.', 'is', ['are', 'be'], 'One capital → is.'],
+    ['___ your country have a king?', 'Does', ['Do', 'Is'], 'Questions with "your country" (it) use Does.'],
+    ['Our flag ___ three colours.', 'has', ['have', 'haves'], 'Our flag (it) → has.'],
+    ['We ___ tea every afternoon.', 'drink', ['drinks', 'are drink'], 'We → drink (no -s).']
+  ] },
+  houses: { label: 'There is / there are and the home', qs: [
+    ['There ___ forty new houses in the capital.', 'are', ['is', 'be'], 'Plural → there are.'],
+    ['There ___ a garden behind every house.', 'is', ['are', 'have'], 'One garden → there is.'],
+    ['___ there any flats near the park?', 'Are', ['Is', 'Do'], 'Plural question → Are there…?'],
+    ['Where do you cook? In the ___.', 'kitchen', ['bathroom', 'bedroom'], 'We cook in the kitchen.'],
+    ['There isn\'t ___ garage in my house.', 'a', ['any', 'some'], 'One garage (singular) → a.'],
+    ['You have a shower in the ___.', 'bathroom', ['living room', 'garden'], 'Showers are in the bathroom.']
+  ] },
+  farm: { label: 'Countable and uncountable: much, many, some, any', qs: [
+    ['How ___ milk do our cows give?', 'much', ['many', 'lot'], 'Milk is uncountable → how much.'],
+    ['How ___ sheep are on the farm?', 'many', ['much', 'lot of'], 'Sheep are countable → how many.'],
+    ['Is there ___ bread left?', 'any', ['many', 'a'], 'Questions with uncountable nouns → any.'],
+    ['There isn\'t ___ water for the crops.', 'much', ['many', 'a'], 'Water is uncountable → much.'],
+    ['We need ___ eggs for the market.', 'a lot of', ['much', 'a'], 'Countable plural → a lot of / many.'],
+    ['We have ___ apples, but not many.', 'some', ['any', 'much'], 'Positive sentences → some.']
+  ] },
+  park: { label: 'Prepositions of place', qs: [
+    ['The fountain is ___ the middle of the park.', 'in', ['on', 'at'], 'We say "in the middle of".'],
+    ['The bench is ___ the two trees.', 'between', ['among', 'in'], 'Two things → between.'],
+    ['There is a statue ___ the lake.', 'next to', ['next of', 'near of'], 'Next TO, near (without "of").'],
+    ['The cat is sleeping ___ the bench.', 'under', ['below of', 'down'], 'Debajo de = under.'],
+    ['The playground is ___ front of the café.', 'in', ['on', 'at'], 'We say "in front of".'],
+    ['Our park is ___ Main Street.', 'on', ['in', 'at'], 'Streets in American English: on Main Street.']
+  ] },
+  market: { label: 'Shopping English', qs: [
+    ['How much ___ these apples?', 'are', ['is', 'does'], 'Plural (these apples) → are.'],
+    ['Can I pay ___ card?', 'by', ['with', 'in'], 'We pay BY card and IN cash.'],
+    ['These shoes are too small. Do you have them in a ___ size?', 'bigger', ['more big', 'big'], 'Short adjective: big → bigger.'],
+    ['I like it. I\'ll ___ it!', 'take', ['took', 'taking'], '"I\'ll take it" = me lo llevo.'],
+    ['Is anything ___ sale this week?', 'on', ['in', 'at'], 'Rebajado = on sale.'],
+    ['Can I have the ___, please? I may need to return it.', 'receipt', ['recipe', 'ticket of money'], 'False friend! Receta = recipe. Tique de compra = receipt.']
+  ] },
+  school: { label: 'Present perfect', qs: [
+    ['I ___ my homework already.', 'have finished', ['finished yet', 'has finished'], 'I → have + past participle.'],
+    ['___ you ever been to London?', 'Have', ['Did', 'Are'], 'Experiences → Have you ever…?'],
+    ['She ___ English for three years.', 'has studied', ['studies since', 'have studied'], 'She → has + past participle.'],
+    ['We haven\'t had lunch ___.', 'yet', ['already', 'ever'], 'Negative sentences → yet.'],
+    ['They ___ a new science lab this year.', 'have built', ['has built', 'have build'], 'They → have + built.'],
+    ['He has lived here ___ 2020.', 'since', ['for', 'from'], 'A point in time → since.']
+  ] },
+  police: { label: 'Past continuous and past simple', qs: [
+    ['I ___ home when I saw the thief.', 'was walking', ['walked', 'were walking'], 'Background action → was walking.'],
+    ['What ___ you doing at 9 pm last night?', 'were', ['did', 'was'], 'You → were + -ing.'],
+    ['While the guards ___, the robber escaped.', 'were sleeping', ['slept', 'was sleeping'], 'The guards (plural) → were sleeping.'],
+    ['She was reading when the phone ___.', 'rang', ['was ringing', 'rings'], 'Short interrupting action → past simple.'],
+    ['They ___ TV when the lights went out.', 'were watching', ['was watching', 'watched'], 'They → were watching.'],
+    ['It ___ when the accident happened.', 'was raining', ['rained', 'is raining'], 'Background → was raining.']
+  ] },
+  factory: { label: 'The passive voice', qs: [
+    ['Cars ___ in our factory.', 'are made', ['make', 'are make'], 'Passive: be + past participle (made).'],
+    ['This chocolate ___ in 1950.', 'was invented', ['invented', 'is invent'], 'Past passive: was + invented.'],
+    ['The robots ___ by engineers every day.', 'are checked', ['check', 'are checking'], 'Passive present: are + checked.'],
+    ['English ___ all over the world.', 'is spoken', ['speaks', 'is speak'], 'Passive: is + spoken.'],
+    ['The new factory ___ next year.', 'will be opened', ['will open by', 'opens'], 'Future passive: will be + opened.'],
+    ['Our phones ___ to many countries.', 'are sold', ['sell', 'are sell'], 'Passive: are + sold.']
+  ] },
+  windfarm: { label: 'Comparatives and superlatives', qs: [
+    ['Wind energy is ___ than coal.', 'cleaner', ['more clean', 'cleanest'], 'Short adjective + -er.'],
+    ['This is the ___ turbine in the country.', 'biggest', ['most big', 'bigger'], 'Superlative: the biggest.'],
+    ['Solar power is ___ expensive than it was.', 'less', ['least', 'fewer'], 'Less + adjective + than.'],
+    ['Our city is ___ windy as yours.', 'as', ['so', 'than'], 'Equal: as … as.'],
+    ['This is the ___ important project of the year.', 'most', ['more', 'mostest'], 'Long adjective → the most.'],
+    ['Electricity is getting ___.', 'cheaper and cheaper', ['more cheaper', 'cheapest and cheapest'], 'Repeat the comparative: cheaper and cheaper.']
+  ] },
+  museum: { label: 'Past simple: irregular verbs', qs: [
+    ['The first king ___ the castle in 1066.', 'built', ['builded', 'build'], 'build → built.'],
+    ['Our ancestors ___ here by sea.', 'came', ['comed', 'come'], 'come → came.'],
+    ['The explorers ___ a lot of gold.', 'found', ['finded', 'find'], 'find → found.'],
+    ['Did the queen ___ the war?', 'win', ['won', 'wins'], 'After "did" use the base verb.'],
+    ['Ancient people ___ on stone.', 'wrote', ['writed', 'written'], 'write → wrote (past simple).'],
+    ['We ___ our independence in 1850.', 'got', ['getted', 'get'], 'get → got.']
+  ] },
+  press: { label: 'Reported speech', qs: [
+    ['She said, "I am tired." → She said that she ___ tired.', 'was', ['is', 'were'], 'am → was in reported speech.'],
+    ['He said, "I will call you." → He said he ___ call me.', 'would', ['will', 'wills'], 'will → would.'],
+    ['They said, "We live in London." → They said they ___ in London.', 'lived', ['live', 'living'], 'Present → past.'],
+    ['"Can you help?" she asked. → She asked if I ___ help.', 'could', ['can', 'could to'], 'can → could.'],
+    ['He ___ us that the news was true.', 'told', ['said', 'said to'], 'tell + person: he told us.'],
+    ['The minister said, "I have won." → He said he ___ won.', 'had', ['has', 'have'], 'have → had.']
+  ] },
+  embassy: { label: 'Formal English', qs: [
+    ['Which sentence is formal?', 'I would be grateful if you could help us.', ['Help us, OK?', 'Can ya help?'], 'Formal requests: "I would be grateful if…"'],
+    ['Dear Prime Minister, I am writing ___ invite you to our capital.', 'to', ['for', 'for to'], 'Purpose: to + verb.'],
+    ['Which ending is formal?', 'Yours sincerely,', ['Love,', 'See ya,'], 'Formal letters end with "Yours sincerely,".'],
+    ['I look forward to ___ from you.', 'hearing', ['hear', 'heard'], '"Look forward to" + -ing.'],
+    ['Could you ___ send us the documents?', 'please', ['pleased', 'pleasing'], 'Could you please…?'],
+    ['A formal word for "get" is…', 'receive', ['grab', 'pick'], 'Formal: receive.']
+  ] },
+  hospital: { label: 'Health and advice: should / shouldn\'t', qs: [
+    ['You have a fever. You ___ stay in bed.', 'should', ['should to', 'shoulds'], 'should + verb (no "to").'],
+    ['You ___ eat so much sugar.', 'shouldn\'t', ['don\'t should', 'not should'], 'Negative: shouldn\'t.'],
+    ['What ___ I do if I break my arm?', 'should', ['do', 'am'], 'Asking for advice: What should I do?'],
+    ['My head hurts. I have a ___.', 'headache', ['head pain', 'cold head'], 'Dolor de cabeza = headache.'],
+    ['Take this medicine ___ a day.', 'twice', ['two times per', 'doubles'], 'Dos veces = twice.'],
+    ['You look pale. You ___ see a doctor.', 'should', ['should to', 'must to'], 'should + verb.']
+  ] },
+  army: { label: 'Orders: imperatives, must and mustn\'t', qs: [
+    ['___ the gate, soldier!', 'Close', ['Closing', 'To close'], 'Imperative: base verb.'],
+    ['___ touch the red button!', 'Don\'t', ['Not', 'No'], 'Negative imperative: Don\'t + verb.'],
+    ['Soldiers ___ wear their uniform.', 'must', ['must to', 'musts'], 'must + verb (no "to", no -s).'],
+    ['You ___ leave the base without permission.', 'mustn\'t', ['don\'t must', 'not must'], 'Prohibition: mustn\'t.'],
+    ['___ quiet during the ceremony, please.', 'Be', ['Being', 'Are'], 'Imperative of "be": Be quiet!'],
+    ['Stand ___! The general is here.', 'up', ['on', 'in'], 'Stand up = ponerse de pie.']
+  ] },
+  parliament: { label: 'Laws: must, have to, can, may', qs: [
+    ['Citizens ___ pay taxes.', 'must', ['must to', 'musts'], 'must + verb.'],
+    ['You ___ vote when you are 18.', 'can', ['can to', 'cans'], 'can + verb.'],
+    ['Visitors ___ smoke in Parliament.', 'mustn\'t', ['don\'t must', 'mustn\'t to'], 'Prohibition: mustn\'t.'],
+    ['Ministers ___ wear a tie, but most do.', 'don\'t have to', ['mustn\'t', 'haven\'t to'], 'Not necessary → don\'t have to.'],
+    ['Everyone ___ respect the law.', 'has to', ['have to', 'has'], 'Everyone (singular) → has to.'],
+    ['___ I ask a question, Mr Speaker?', 'May', ['Must', 'Do'], 'Polite permission: May I…?']
+  ] },
+  port: { label: 'First conditional', qs: [
+    ['If we build a port, more ships ___.', 'will come', ['would come', 'come will'], 'If + present, will + verb.'],
+    ['If the weather ___ bad, the ships will stay here.', 'is', ['will be', 'was'], 'After "if" use the present.'],
+    ['We will export more if we ___ a bigger port.', 'have', ['will have', 'had'], 'After "if" use the present.'],
+    ['If you don\'t hurry, you ___ the ferry.', 'will miss', ['miss', 'would miss'], 'Result: will + verb.'],
+    ['What will happen if the storm ___?', 'arrives', ['will arrive', 'arrived'], 'After "if" use the present.'],
+    ['Unless we ___ the docks, ships can\'t stop here.', 'repair', ['will repair', 'don\'t repair'], 'Unless = if not; use the present.']
+  ] },
+  stadium: { label: 'Present continuous', qs: [
+    ['Look! The players ___ onto the field.', 'are running', ['run', 'is running'], 'Happening now: are + -ing.'],
+    ['The crowd ___ very loudly.', 'is singing', ['are sing', 'sing now'], 'The crowd (it) → is singing.'],
+    ['What ___ the referee doing?', 'is', ['does', 'are'], 'The referee → is … doing?'],
+    ['Our team ___ right now!', 'is winning', ['wins', 'win'], 'Right now → is winning.'],
+    ['Shh! The coach ___ to the players.', 'is talking', ['talks', 'talking'], 'is + talking.'],
+    ['They ___ playing well today.', 'aren\'t', ['don\'t', 'isn\'t'], 'Negative: aren\'t + -ing.']
+  ] },
+  airport: { label: 'Travel English', qs: [
+    ['Your flight leaves from ___ 12.', 'gate', ['door', 'port'], 'Puerta de embarque = gate.'],
+    ['Would you like a window or an ___ seat?', 'aisle', ['isle', 'corridor'], 'Pasillo (in a plane) = aisle.'],
+    ['Do you have anything to ___?', 'declare', ['declarate', 'declaration'], 'Customs: anything to declare?'],
+    ['The flight is ___. It will leave two hours late.', 'delayed', ['retarded', 'late-ed'], 'False friend! Retrasado = delayed.'],
+    ['Please ___ your seatbelt.', 'fasten', ['close', 'tie'], 'Abrocharse el cinturón = fasten your seatbelt.'],
+    ['Where can I pick up my ___?', 'luggage', ['luggages', 'baggages'], 'Luggage is uncountable: no -s.']
+  ] }
+};
+const READING = {
+  bigben: { title: 'Big Ben', text: 'Big Ben is the nickname of the great bell in the clock tower of the Houses of Parliament in London. The tower was finished in 1859, and in 2012 it was renamed the Elizabeth Tower to celebrate Queen Elizabeth II. The clock has four faces and the bell weighs more than 13 tonnes. Millions of people listen to it on New Year\'s Eve.',
+    qs: [['What is "Big Ben" really?', 'The great bell', ['The architect of the tower', 'The whole Parliament'], 'Read the first sentence again: it is the nickname of the bell.'],
+      ['When was the tower finished?', 'In 1859', ['In 2012', 'In 1950'], 'The tower was finished in 1859.'],
+      ['What is the tower called today?', 'The Elizabeth Tower', ['The Victoria Tower', 'The London Eye'], 'In 2012 it was renamed the Elizabeth Tower.']] },
+  liberty: { title: 'The Statue of Liberty', text: 'The Statue of Liberty stands on Liberty Island in New York Harbor. It was a gift from the people of France to the United States, and it was opened in 1886. The statue is made of copper, which turned green over time. Lady Liberty holds a torch in her right hand and a tablet with the date of American independence in her left.',
+    qs: [['Who gave the statue to the USA?', 'The people of France', ['The people of Britain', 'The King of Spain'], 'It was a gift from the people of France.'],
+      ['What is the statue made of?', 'Copper', ['Gold', 'Stone'], 'It is made of copper, which turned green.'],
+      ['What does she hold in her right hand?', 'A torch', ['A book', 'A sword'], 'A torch in her right hand, a tablet in her left.']] },
+  opera: { title: 'The Sydney Opera House', text: 'The Sydney Opera House is in Sydney, Australia. A Danish architect, Jørn Utzon, designed it, and it opened in 1973. Its white roof looks like the sails of a ship. More than 10 million people visit it every year, and it hosts more than 1,500 performances a year. In 2007 it became a UNESCO World Heritage Site.',
+    qs: [['Who designed it?', 'A Danish architect', ['An Australian singer', 'A British king'], 'Jørn Utzon, a Danish architect, designed it.'],
+      ['What does the roof look like?', 'The sails of a ship', ['A mountain', 'A bird\'s nest'], 'Its white roof looks like the sails of a ship.'],
+      ['When did it open?', 'In 1973', ['In 2007', 'In 1500'], 'It opened in 1973.']] },
+  cntower: { title: 'The CN Tower', text: 'The CN Tower is in Toronto, Canada. It is 553 metres tall, and it was the tallest free-standing structure in the world for 32 years. It was finished in 1976. Visitors can go up in glass elevators in less than a minute, and the bravest can walk around the outside of the tower on the EdgeWalk, attached to a safety rope.',
+    qs: [['Where is the CN Tower?', 'In Toronto', ['In Vancouver', 'In Sydney'], 'The CN Tower is in Toronto, Canada.'],
+      ['For how long was it the tallest structure in the world?', '32 years', ['553 years', '76 years'], 'It was the tallest for 32 years.'],
+      ['What is the EdgeWalk?', 'A walk around the outside of the tower', ['A glass elevator', 'A restaurant'], 'On the EdgeWalk people walk outside, attached to a rope.']] },
+  castle: { title: 'Edinburgh Castle', text: 'Edinburgh Castle stands on Castle Rock, an old volcano, in the capital of Scotland. People have lived on the rock since the Iron Age. Today the castle keeps the Crown Jewels of Scotland, called the Honours of Scotland. Every day except Sunday, a cannon called the One O\'Clock Gun is fired at 1 pm.',
+    qs: [['What is Castle Rock?', 'An old volcano', ['A mountain of gold', 'An island'], 'Castle Rock is an old volcano.'],
+      ['What are the Honours of Scotland?', 'The Crown Jewels', ['A football team', 'A cannon'], 'The Crown Jewels are called the Honours of Scotland.'],
+      ['When is the One O\'Clock Gun fired?', 'At 1 pm, except on Sundays', ['Every hour', 'Only on Sundays'], 'Every day except Sunday, at 1 pm.']] }
+};
+const MOTTOS = ['Unity is strength', 'Knowledge is power', 'Freedom and friendship', 'Work hard, be kind', 'Together we build', 'Peace, people, progress', 'Dream big, act now', 'Brave, free and fair'];
+const FLAG_COLS = ['#c62828', '#1d3fbf', '#fafafa', '#2e7d32', '#fbc02d', '#212121', '#6a1b9a', '#ef6c00', '#00838f', '#f48fb1'];
+
+/* =====================================================================
+   MY NATION — game: island, plots, buildings, English tests, diplomacy
+   ===================================================================== */
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+/* Same API online (Apps Script) and offline (this browser only; no other nations). */
+const NAPI = {
+  cloud: () => CLOUD && account,
+  local() {
+    const n = store.get('nation', null), st = n ? nStats(n, []) : null, net = n ? n.income - n.spent : 0;
+    return { nation: n, stats: st, treaties: [], inbox: [], sent: [], offline: true, taxReady: !!n && n.lastTax !== todayStr(), taxAmount: st ? taxAmount(st) : 0,
+      goyux: { xp: profile.xp || 0, granted: profile.granted || 0, nationNet: net, total: (profile.xp || 0) + (profile.granted || 0) + net } };
+  },
+  async run(fn, args, offline) { if (NAPI.cloud()) return apiU(fn, ...args); offline(); return NAPI.local(); },
+  get() { return NAPI.run('nationGet', [], () => {}); },
+  found(d) {
+    return NAPI.run('nationFound', [d], () => {
+      if (store.get('nation', null)) throw new Error('You have already founded a nation.');
+      store.set('nation', { email: 'me', leader: profile.name, name: d.name, capital: d.capital, motto: d.motto, flag: d.flag, plots: NR.start.slice(), buildings: { [NR.capital]: 'cityhall' }, spent: 0, income: 0, lastTax: '' });
+    });
+  },
+  buyPlot(i) {
+    return NAPI.run('nationBuyPlot', [i], () => {
+      const s = NAPI.local(), n = s.nation, price = plotPrice(n.plots.length);
+      if (n.plots.includes(i) || !adjacentPlot(i, n.plots)) throw new Error('You can only buy land next to your country.');
+      if (s.goyux.total < price) throw new Error(`You need ${price} GOYUX to buy this land.`);
+      n.plots.push(i); n.spent += price; store.set('nation', n);
+    });
+  },
+  build(i, id) {
+    return NAPI.run('nationBuild', [i, id], () => {
+      const s = NAPI.local(), n = s.nation, b = BLD[id];
+      if (!n.plots.includes(i) || n.buildings[i]) throw new Error('You cannot build there.');
+      if (UNIQUE_B.includes(id) && Object.values(n.buildings).includes(id)) throw new Error('Your nation already has one.');
+      if (s.goyux.total < b[2]) throw new Error(`You need ${b[2]} GOYUX for this building.`);
+      n.buildings[i] = id; n.spent += b[2]; store.set('nation', n);
+    });
+  },
+  tax() {
+    return NAPI.run('nationTax', [true], () => {
+      const n = store.get('nation', null);
+      if (n.lastTax === todayStr()) throw new Error('You have already collected taxes today. Come back tomorrow!');
+      n.income += taxAmount(nStats(n, [])); n.lastTax = todayStr(); store.set('nation', n);
+    });
+  },
+  world() { if (!NAPI.cloud()) throw new Error('offline'); return apiU('nationWorld'); },
+  visit(email) { return apiU('nationVisit', email); },
+  send(to, type, letter) { return apiU('nationSendTreaty', to, type, letter); },
+  answer(id, ok, reply) { return apiU('nationAnswerTreaty', id, ok, reply); }
+};
+
+/* ---------- flags ---------- */
+function flagCss(f) {
+  const c = (f && f.c && f.c.length ? f.c : ['#1d3fbf', '#fafafa', '#c62828']);
+  if (f && f.layout === 'cross') return `linear-gradient(90deg,transparent 30%,${c[1]} 30%,${c[1]} 42%,transparent 42%),linear-gradient(0deg,transparent 42%,${c[1]} 42%,${c[1]} 58%,transparent 58%),${c[0]}`;
+  const dir = f && f.layout === 'v' ? '90deg' : '180deg', n = c.length;
+  return `linear-gradient(${dir},${c.map((x, i) => `${x} ${i * 100 / n}% ${(i + 1) * 100 / n}%`).join(',')})`;
+}
+function flagTex(f) {
+  const c = (f && f.c && f.c.length ? f.c : ['#1d3fbf', '#fafafa', '#c62828']);
+  return canvasTex(150, 100, (g, w, h) => {
+    if (f && f.layout === 'cross') { g.fillStyle = c[0]; g.fillRect(0, 0, w, h); g.fillStyle = c[1]; g.fillRect(w * 0.3, 0, w * 0.12, h); g.fillRect(0, h * 0.42, w, h * 0.16); return; }
+    c.forEach((col, i) => { g.fillStyle = col; if (f && f.layout === 'v') g.fillRect(i * w / c.length, 0, w / c.length + 1, h); else g.fillRect(0, i * h / c.length, w, h / c.length + 1); });
+  });
+}
+const flagChip = (f, w = 30) => `<i class="flag" style="width:${w}px;background:${flagCss(f)}"></i>`;
+
+/* ---------- 3D island ---------- */
+const PLOT = 12, TILE = 10;
+const plotXZ = i => [((i % NR.size) - 3) * PLOT, (Math.floor(i / NR.size) - 3) * PLOT];
+function clockTex() {
+  return canvasTex(128, 128, (g) => {
+    g.fillStyle = '#c8a96a'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#fffbe6'; g.beginPath(); g.arc(64, 64, 52, 0, 7); g.fill();
+    g.strokeStyle = '#222'; g.lineWidth = 4; for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6; g.beginPath(); g.moveTo(64 + Math.cos(a) * 42, 64 + Math.sin(a) * 42); g.lineTo(64 + Math.cos(a) * 50, 64 + Math.sin(a) * 50); g.stroke(); }
+    g.lineWidth = 6; g.beginPath(); g.moveTo(64, 64); g.lineTo(64, 28); g.moveTo(64, 64); g.lineTo(90, 70); g.stroke();
+  });
+}
+function drawBuilding(id, x, z, g, flag) {
+  const B = (dx, y, dz, w, h, d, col, solid = true) => part(x + dx, y, z + dz, w, h, d, col, { parent: g, solid });
+  const Mx = (geo, col, dx, y, dz, rot, mat) => { const m = new THREE.Mesh(geo, mat || M(col)); m.position.set(x + dx, y, z + dz); if (rot) m.rotation.set(rot[0], rot[1], rot[2]); m.castShadow = true; g.add(m); return m; };
+  const roof = (dx, y, dz, w, d, h, col) => { const r = Math.max(w, d); const m = Mx(new THREE.ConeGeometry(r * 0.72, h, 4), col, dx, y + h / 2, dz, [0, Math.PI / 4, 0]); m.scale.set(w / r, 1, d / r); };
+  const tree = (dx, dz, s = 1) => { B(dx, 0, dz, 0.5 * s, 2 * s, 0.5 * s, '#6d4c41'); Mx(new THREE.SphereGeometry(1.3 * s, 10, 8), '#2e7d32', dx, 2.6 * s, dz); };
+  const pole = (dx, dz, h, f) => { B(dx, 0, dz, 0.15, h, 0.15, '#9e9e9e'); const fm = Mx(new THREE.PlaneGeometry(1.8, 1.2), null, dx + 0.95, h - 0.7, dz, null, new THREE.MeshBasicMaterial({ map: flagTex(f), side: THREE.DoubleSide })); fm.castShadow = false; };
+  const collider = (w, h, d) => W.colliders.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, minY: 0, maxY: h });
+  const label = t => sign(t, x, 0.55, z + 4.75, Math.min(8.5, t.length * 0.42 + 1), 0.62, 0, { bg: '#fffde7', fg: '#263238', parent: g });
+  switch (id) {
+    case 'cityhall':
+      B(0, 0, -0.5, 7, 3.5, 5, '#f5f5f5'); for (let k = -3; k <= 3; k += 1.5) B(k, 0, 2.3, 0.4, 3.2, 0.4, '#e0e0e0', false);
+      B(0, 3.5, -0.3, 7.6, 0.4, 5.8, '#cfd8dc', false); Mx(new THREE.SphereGeometry(1.7, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), '#ffd54f', 0, 3.9, -0.5);
+      pole(-3.6, 3.6, 6, flag); label('CITY HALL'); break;
+    case 'houses':
+      [[-2.4, -2, '#ef9a9a'], [2.4, -2, '#90caf9'], [0, 1.6, '#fff59d']].forEach(([dx, dz, c]) => { B(dx, 0, dz, 3, 2.4, 3, c); roof(dx, 2.4, dz, 3.3, 3.3, 1.6, '#8d3b2f'); });
+      label('HOUSES'); break;
+    case 'farm':
+      B(-1.2, 0, 0, 5, 0.15, 7.5, '#8d6e63', false); for (let k = 0; k < 4; k++) B(-3 + k * 1.2, 0.15, 0, 0.5, 0.45, 7, '#7cb342', false);
+      B(2.8, 0, -1, 2.6, 2.6, 3.4, '#c62828'); roof(2.8, 2.6, -1, 2.8, 3.6, 1.4, '#5d4037'); label('FARM'); break;
+    case 'park':
+      B(0, 0, 0, 9, 0.12, 9, '#66bb6a', false); B(1.6, 0.12, 1.2, 3.2, 0.08, 2.6, '#4fc3f7', false);
+      tree(-2.8, -2.8); tree(2.6, -2.6, 0.8); tree(-3, 2, 0.9); B(-0.6, 0, 3, 2, 0.6, 0.6, '#8d6e63'); label('PARK'); break;
+    case 'market':
+      [[-2.2, -2, '#e53935'], [2.2, -2, '#43a047'], [-2.2, 1.8, '#1e88e5'], [2.2, 1.8, '#fb8c00']].forEach(([dx, dz, c]) => {
+        B(dx, 0, dz, 2.2, 1, 1.4, '#d7ccc8'); B(dx, 2.1, dz, 2.6, 0.15, 2, c, false); B(dx - 1.1, 0, dz - 0.8, 0.12, 2.1, 0.12, '#795548', false); B(dx + 1.1, 0, dz - 0.8, 0.12, 2.1, 0.12, '#795548', false);
+      }); label('MARKET'); break;
+    case 'school':
+      B(0, 0, -0.8, 7, 3.6, 4.5, '#f9a825'); B(0, 3.6, -0.8, 7.4, 0.4, 4.9, '#6d4c41', false); B(0, 0, 1.5, 1.2, 2, 0.12, '#5d4037', false);
+      Mx(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 16), '#fafafa', 0, 2.9, 1.5, [Math.PI / 2, 0, 0]); label('SCHOOL'); break;
+    case 'police':
+      B(0, 0, -0.5, 6, 3, 4.5, '#1565c0'); B(0, 3, -0.5, 6.2, 0.3, 4.7, '#e0e0e0', false); B(0, 3.3, -0.5, 0.8, 0.5, 0.8, '#e53935', false);
+      B(2.4, 0, 2.8, 2.2, 0.8, 1.1, '#fafafa'); B(2.4, 0.8, 2.8, 1.2, 0.5, 1, '#1565c0', false); label('POLICE'); break;
+    case 'factory':
+      B(-0.5, 0, -0.5, 6.5, 3.5, 6, '#78909c'); B(1.8, 3.5, -2, 0.9, 4, 0.9, '#5d4037', false); B(-1, 3.5, -2, 0.9, 3, 0.9, '#5d4037', false);
+      [[1.8, 8.2], [-1, 7.2]].forEach(([dx, y]) => { const s = Mx(new THREE.SphereGeometry(0.8, 8, 6), null, dx, y, -2, null, new THREE.MeshLambertMaterial({ color: '#9e9e9e', transparent: true, opacity: 0.7 })); s.castShadow = false; });
+      label('FACTORY'); break;
+    case 'windfarm':
+      [[-2.6, -2], [2.6, -1], [0, 2.4]].forEach(([dx, dz]) => {
+        B(dx, 0, dz, 0.3, 7, 0.3, '#eceff1');
+        const hub = new THREE.Group(); hub.position.set(x + dx, 7, z + dz + 0.3); g.add(hub);
+        for (let k = 0; k < 3; k++) { const bl = new THREE.Mesh(new THREE.BoxGeometry(0.25, 3, 0.08), M('#fafafa')); bl.position.y = 1.5; const arm = new THREE.Group(); arm.rotation.z = k * Math.PI * 2 / 3; arm.add(bl); hub.add(arm); }
+        W.spin.push(hub);
+      }); label('WIND FARM'); break;
+    case 'museum':
+      B(0, 0, 0, 7.5, 0.5, 5.5, '#e0e0e0'); B(0, 0.5, -0.6, 6.5, 3, 3.8, '#f5f5f5', false); for (let k = -3; k <= 3; k += 1.2) B(k, 0.5, 2, 0.45, 3, 0.45, '#fafafa', false);
+      B(0, 3.5, -0.2, 7.2, 0.4, 5, '#e0e0e0', false); B(0, 3.9, -0.2, 5.2, 0.4, 4.6, '#eeeeee', false); B(0, 4.3, -0.2, 3, 0.4, 4.2, '#e0e0e0', false); label('MUSEUM'); break;
+    case 'press':
+      B(0, 0, -0.5, 5.5, 4.5, 4, '#8e24aa'); B(1.6, 4.5, -1.5, 0.2, 4, 0.2, '#bdbdbd', false);
+      Mx(new THREE.SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), '#eeeeee', -1.2, 4.6, -0.5, [-0.6, 0, 0]); label('TV & NEWS'); break;
+    case 'embassy':
+      B(0, 0, -1, 6.5, 3.2, 4, '#fafafa'); B(0, 3.2, -1, 6.9, 0.35, 4.4, '#455a64', false);
+      pole(-2.4, 2.6, 4, { c: ['#1d3fbf', '#fafafa'], layout: 'h' }); pole(0, 2.6, 4.5, flag); pole(2.4, 2.6, 4, { c: ['#2e7d32', '#fbc02d'], layout: 'v' }); label('EMBASSY'); break;
+    case 'hospital':
+      B(0, 0, -0.5, 7, 4, 5, '#fafafa'); B(0, 2, 2.06, 1.8, 0.5, 0.1, '#e53935', false); B(0, 1.35, 2.06, 0.5, 1.8, 0.1, '#e53935', false);
+      B(0, 4, -0.5, 3, 0.05, 3, '#43a047', false); label('HOSPITAL'); break;
+    case 'army':
+      B(-1.6, 0, -1.6, 5, 2.2, 3, '#556b2f'); B(2, 0, 2, 2.6, 0.9, 1.6, '#4b5320'); B(2, 0.9, 2, 1.3, 0.6, 1.1, '#4b5320', false); B(3.1, 1.1, 2, 1.6, 0.2, 0.2, '#333', false);
+      pole(3.6, -3, 5, flag); label('ARMY BASE'); break;
+    case 'parliament':
+      B(0, 0, -0.5, 8, 3.5, 5, '#d7ccc8'); B(-3, 0, -2, 1.6, 8, 1.6, '#bcaaa4'); roof(-3, 8, -2, 1.8, 1.8, 1.6, '#5d4037');
+      B(0, 3.5, -0.5, 8.2, 0.4, 5.2, '#8d6e63', false); pole(3.5, -2.6, 6.5, flag); label('PARLIAMENT'); break;
+    case 'port':
+      B(0, 0, 1.6, 9.4, 0.1, 5, '#29b6f6', false); B(-2.4, 0.1, 1.6, 1.5, 0.4, 5, '#8d6e63', false);
+      B(2.5, 0, -2.6, 0.5, 6, 0.5, '#fbc02d'); B(1.1, 5.6, -2.6, 3.4, 0.4, 0.4, '#fbc02d', false);
+      B(1.8, 0.1, 2, 2.2, 1, 4, '#e53935', false); B(1.8, 1.1, 2.8, 1.4, 1, 1.4, '#fafafa', false); label('PORT'); break;
+    case 'stadium': {
+      const ring = Mx(new THREE.CylinderGeometry(4.3, 4.3, 2.6, 28, 1, true), null, 0, 1.3, 0, null, new THREE.MeshLambertMaterial({ color: '#90a4ae', side: THREE.DoubleSide }));
+      ring.receiveShadow = true; B(0, 0, 0, 6, 0.12, 5, '#43a047', false); collider(8.6, 2.6, 8.6); label('STADIUM'); break;
+    }
+    case 'airport':
+      B(0, 0, 1.2, 9.4, 0.08, 2.6, '#37474f', false); for (let k = -3.5; k <= 3.5; k += 1.75) B(k, 0.08, 1.2, 0.9, 0.02, 0.2, '#fafafa', false);
+      B(-3, 0, -2.6, 1.2, 5, 1.2, '#eceff1'); B(-3, 5, -2.6, 2, 1.2, 2, '#4fc3f7', false);
+      B(1.5, 0.5, -2.2, 4, 0.8, 0.8, '#fafafa'); B(1.5, 0.7, -2.2, 1, 0.15, 4.2, '#fafafa', false); B(-0.3, 1.1, -2.2, 0.6, 1, 0.15, '#e53935', false); label('AIRPORT'); break;
+    case 'bigben': {
+      B(0, 0, 0, 2.6, 11, 2.6, '#c8a96a'); B(0, 11, 0, 3, 1, 3, '#b08d57', false);
+      const ct = new THREE.MeshBasicMaterial({ map: clockTex() });
+      [[0, 1.31, 0], [0, -1.31, Math.PI], [1.31, 0, Math.PI / 2], [-1.31, 0, -Math.PI / 2]].forEach(([dx, dz, r]) => { const m = Mx(new THREE.PlaneGeometry(2, 2), null, dx, 9.2, dz, [0, r, 0], ct); m.castShadow = false; });
+      Mx(new THREE.ConeGeometry(1.9, 3.6, 4), '#3e5f4b', 0, 13.8, 0, [0, Math.PI / 4, 0]); label('BIG BEN'); break;
+    }
+    case 'castle':
+      B(0, 0, -3.4, 8, 3, 1, '#9e9e9e'); B(-3.4, 0, 0, 1, 3, 6, '#9e9e9e'); B(3.4, 0, 0, 1, 3, 6, '#9e9e9e'); B(-2.4, 0, 3.4, 3, 3, 1, '#9e9e9e'); B(2.4, 0, 3.4, 3, 3, 1, '#9e9e9e');
+      [[-3.6, -3.6], [3.6, -3.6], [-3.6, 3.6], [3.6, 3.6]].forEach(([dx, dz]) => { Mx(new THREE.CylinderGeometry(1, 1, 5, 12), '#8d8d8d', dx, 2.5, dz); Mx(new THREE.ConeGeometry(1.2, 1.6, 12), '#37474f', dx, 5.8, dz); });
+      B(0, 0, 0, 3, 5, 3, '#8a8a8a'); pole(0, 0, 8, flag); label('EDINBURGH CASTLE'); break;
+    case 'cntower':
+      Mx(new THREE.CylinderGeometry(0.45, 1.1, 18, 12), '#e0e0e0', 0, 9, 0); Mx(new THREE.CylinderGeometry(1.7, 1.5, 1.4, 16), '#cfd8dc', 0, 13, 0);
+      Mx(new THREE.CylinderGeometry(0.12, 0.25, 5, 8), '#e53935', 0, 20.5, 0); collider(2.2, 18, 2.2); label('CN TOWER'); break;
+    case 'liberty':
+      B(0, 0, 0, 3.6, 3, 3.6, '#bcaaa4'); B(0, 3, 0, 2.6, 1, 2.6, '#a1887f');
+      Mx(new THREE.CylinderGeometry(0.55, 1, 4, 12), '#4db6ac', 0, 6, 0); Mx(new THREE.SphereGeometry(0.55, 12, 10), '#4db6ac', 0, 8.5, 0);
+      for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k - 2) * 0.45; Mx(new THREE.ConeGeometry(0.1, 0.6, 6), '#4db6ac', Math.cos(a) * 0.5, 9.1, Math.sin(a) * -0.5, [Math.sin(a) * 0.6, 0, Math.cos(a) * 0.6]); }
+      Mx(new THREE.BoxGeometry(0.35, 2.2, 0.35), '#4db6ac', 0.75, 9, 0, [0, 0, -0.25]); Mx(new THREE.SphereGeometry(0.35, 8, 6), '#ffca28', 1.05, 10.3, 0);
+      Mx(new THREE.BoxGeometry(0.8, 1, 0.2), '#4db6ac', -0.7, 6.6, 0.45); label('STATUE OF LIBERTY'); break;
+    case 'opera':
+      B(0, 0, 0, 8.4, 1, 6, '#d7ccc8');
+      [[-2.6, 2.4], [-0.2, 2.1], [2.2, 1.8]].forEach(([dx, r]) => { const m = Mx(new THREE.SphereGeometry(r, 16, 8, 0, Math.PI, 0, Math.PI / 2), null, dx, 1, 0, [0, Math.PI / 2, 0], new THREE.MeshLambertMaterial({ color: '#fafafa', side: THREE.DoubleSide })); m.scale.set(1.2, 1.5, 0.7); });
+      collider(8.4, 3.5, 6); label('SYDNEY OPERA HOUSE'); break;
+  }
+}
+function renderPlots() {
+  const s = G.s, st = s.state, n = st.nation;
+  (s.layers || []).forEach(l => { W.scene.remove(l.g); const dead = new Set(l.refs); W.colliders = W.colliders.filter(c => !dead.has(c)); });
+  s.layers = [];
+  for (let i = 0; i < NR.size * NR.size; i++) {
+    const g = new THREE.Group(); W.scene.add(g); const c0 = W.colliders.length;
+    const [x, z] = plotXZ(i), owned = !!n && n.plots.includes(i);
+    part(x, 0, z, TILE, 0.1, TILE, owned ? '#7cc36b' : '#4a8a3b', { solid: false, parent: g, shadow: false });
+    if (owned) [[0, -5, TILE, 0.3], [0, 5, TILE, 0.3], [-5, 0, 0.3, TILE], [5, 0, 0.3, TILE]].forEach(([dx, dz, w, d]) => part(x + dx, 0.1, z + dz, w, 0.15, d, '#f5f5dc', { solid: false, parent: g, shadow: false }));
+    else {
+      let seed = i * 7919 + 13; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+      for (let k = 0; k < 2 + Math.floor(r() * 2); k++) { const tx = x + (r() - 0.5) * 7, tz = z + (r() - 0.5) * 7; part(tx, 0.1, tz, 0.5, 1.8, 0.5, '#6d4c41', { parent: g }); const t = new THREE.Mesh(new THREE.SphereGeometry(1.1 + r() * 0.5, 9, 7), M('#2e7d32')); t.position.set(tx, 2.4, tz); t.castShadow = true; g.add(t); }
+      if (n && !s.visit && adjacentPlot(i, n.plots)) { part(x, 0.1, z + 4, 0.15, 1.4, 0.15, '#795548', { parent: g, solid: false }); sign(`FOR SALE\n${plotPrice(n.plots.length)} GOYUX`, x, 1.6, z + 4.08, 1.8, 0.9, 0, { bg: '#fffde7', fg: '#b71c1c', parent: g }); }
+    }
+    const b = n && n.buildings[i]; if (b) drawBuilding(b, x, z, g, n.flag);
+    s.layers.push({ g, refs: W.colliders.slice(c0) });
+  }
+}
+function plotInteractions() {
+  for (let i = 0; i < NR.size * NR.size; i++) {
+    const [x, z] = plotXZ(i);
+    inter({
+      at: () => ({ x, y: 0, z }), r: 6.2, h: 4.5,
+      get obj() { const n = G.s.state.nation, b = n && n.buildings[i]; return b ? BLD[b][1] + ' ' + BLD[b][0] : (n && n.plots.includes(i) ? 'Your land' : 'Wild land'); },
+      get label() { const n = G.s.state.nation; if (!n) return ''; if (n.buildings[i]) return 'Look'; if (n.plots.includes(i)) return 'Build here'; return `Buy land · ${plotPrice(n.plots.length)} GOYUX`; },
+      when: () => { const n = G.s.state.nation; if (!n) return false; if (G.s.visit) return !!n.buildings[i]; return n.plots.includes(i) || adjacentPlot(i, n.plots); },
+      act: () => { const n = G.s.state.nation; if (n.buildings[i]) buildingInfo(n.buildings[i]); else if (n.plots.includes(i)) buildMenu(i); else buyPlot(i); }
+    });
+  }
+}
+
+/* ---------- state, HUD, goals ---------- */
+SCEN.nation = {
+  title: 'My Nation', cardTitle: 'Nation', vocab: [], menuLabel: 'Nation menu',
+  board() {
+    const st = G.s.state, s = st.stats;
+    if (!s) return [['GOYUX', st.goyux ? st.goyux.total : 0], ['Citizens', '—'], ['Points', '—']];
+    return [[G.s.visit ? 'Leader' : 'GOYUX', G.s.visit ? escH(st.nation.leader) : st.goyux.total], ['Citizens', s.pop], ['Points', s.score]];
+  },
+  menu: () => nationMenu()
+};
+function applyNation(st) {
+  if (!G || G.id !== 'nation') return;
+  const prevPlots = G.s.state && G.s.state.nation ? G.s.state.nation.plots.length + Object.keys(G.s.state.nation.buildings).length : -1;
+  G.s.state = st;
+  if (st.goyux && !G.s.visit) { profile.xp = st.goyux.xp; profile.granted = st.goyux.granted; profile.nationNet = st.goyux.nationNet; store.set('profile', profile); }
+  if (st.nation && !G.s.visit) store.set('nationCache', { name: st.nation.name, flag: st.nation.flag, score: st.stats.score, pop: st.stats.pop, buildings: Object.keys(st.nation.buildings).length });
+  const now = st.nation ? st.nation.plots.length + Object.keys(st.nation.buildings).length : -1;
+  if (now !== prevPlots) renderPlots();
+  nationHud();
+}
+function nationHud() {
+  const st = G.s.state, n = st.nation, s = st.stats;
+  $('#msTitle').textContent = G.s.visit ? `Visiting ${n.name}` : n ? n.name : 'My Nation';
+  const blds = n ? Object.values(n.buildings) : [];
+  G.obj = G.s.visit ? [
+    { id: 'v1', text: `President: ${n.leader}`, done: true }, { id: 'v2', text: `Capital: ${n.capital}`, done: true },
+    { id: 'v3', text: n.motto ? `Motto: “${n.motto}”` : 'No motto', done: true }, { id: 'v4', text: `${blds.length} buildings · ${s.pop} people`, done: true }
+  ] : [
+    { id: 'g1', text: 'Found your nation', done: !!n },
+    { id: 'g2', text: 'Own 8 plots of land', done: !!n && n.plots.length >= 8 },
+    { id: 'g3', text: 'Build 3 new buildings', done: blds.length >= 4 },
+    { id: 'g4', text: 'Reach 200 people', done: !!s && s.pop >= 200 },
+    { id: 'g5', text: 'Build a famous monument', done: blds.some(b => MONUMENTS.includes(b)) },
+    { id: 'g6', text: 'Build an embassy and sign a treaty', done: (st.treaties || []).length > 0 },
+    { id: 'g7', text: 'Reach 500 nation points', done: !!s && s.score >= 500 }
+  ];
+  renderObjectives(); updateBoard();
+  G.inv = G.s.visit ? [{ emoji: '🏠', label: 'Back to my nation', act: () => launchNation() }] : [
+    { emoji: '📜', label: 'Nation menu', act: nationMenu },
+    { emoji: '💰', label: 'Collect taxes', act: collectTaxes, bad: () => !!st.taxReady },
+    { emoji: '🌍', label: 'World ranking', act: worldPanel },
+    { emoji: '✉', label: 'Letters', act: lettersPanel, bad: () => (st.inbox || []).length > 0 }
+  ];
+  renderHotbar();
+}
+async function launchNation(visit) {
+  const back = !$('#game').hidden;
+  $('#detail').hidden = true; $('#loading').hidden = false;
+  $('#lThumb').style.background = 'linear-gradient(150deg,#26a69a,#00695c)'; $('#lThumb').textContent = visit ? '🛳' : '🏝';
+  $('#lTitle').textContent = visit ? 'Travelling abroad…' : 'My Nation'; $('#lText').textContent = 'Loading your land…';
+  if (typeof THREE === 'undefined') { $('#lText').textContent = 'The 3D engine could not load. Check your internet connection and reload the page.'; setTimeout(() => $('#loading').hidden = true, 4000); return; }
+  let st;
+  try { st = visit ? await NAPI.visit(visit) : await NAPI.get(); }
+  catch (e) { $('#lText').textContent = 'Could not load the nation: ' + e.message; setTimeout(() => $('#loading').hidden = true, 3500); return; }
+  try { await Promise.race([document.fonts.load('900 40px Montserrat'), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+  $('#home').hidden = true; $('#game').hidden = false;
+  initThree(); resize();
+  newWorld();
+  G = { id: 'nation', sc: SCEN.nation, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: { state: st, visit: visit || null, layers: [] } };
+  W.spin = [];
+  W.bounds = { minX: -44, maxX: 44, minZ: -44, maxZ: 46 };
+  W.scene.fog = new THREE.Fog('#a8dcff', 110, 300);
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshLambertMaterial({ color: '#2f80d0' })); sea.rotation.x = -Math.PI / 2; sea.position.y = -0.5; W.scene.add(sea);
+  part(0, -2, 0, 92, 2, 94, '#e3d29b', { solid: false, shadow: false, mat: new THREE.MeshLambertMaterial({ map: studTex('#e3d29b', 46) }) });
+  renderPlots(); plotInteractions();
+  W.update = dt => { W.spin.forEach(h => { h.rotation.z += dt * 2.2; }); };
+  if (!visit) {
+    const gd = pick1(['f', 'm']);
+    const adv = npc(`${NPC_NAME[gd]} (Advisor)`, Object.assign({ shirt: '#37474f', pants: '#263238', sleeves: true, tie: '#c62828', shoes: true }, pick1(STAFF_LOOKS[gd])), 6, 6, -Math.PI / 4, { color: '#ffd54f', voice: NPC_VOICE[gd] });
+    adv.badge = '#8d6e63'; G.s.adv = adv;
+    inter({ obj: adv.name, label: 'Talk', at: () => adv.pos, r: 3.5, act: advisorTalk });
+  }
+  spawnPlayer(0, 8.5, Math.PI, 0); cam.pitch = 0.62; cam.dist = 16;
+  $('#cardBtn').textContent = 'Nation menu';
+  nationHud();
+  chat('System', visit ? `You are visiting ${st.nation.name}. Walk around and press E to look at the buildings.` : 'Welcome to your island! Walk to a plot and press E.', '#aaa');
+  $('#loading').hidden = true; R.canvas.focus();
+  if (!visit && !st.nation) later(0.6, foundNation);
+  else if (!visit && st.taxReady) later(1.2, () => notify('💰 Taxes are ready', 'Answer one English question to collect today\'s taxes. Use the 💰 button.'));
+  if (!visit && (st.inbox || []).length) later(2, () => notify('✉ New letters', `You have ${st.inbox.length} letter${st.inbox.length > 1 ? 's' : ''} from other nations.`));
+  if (back) {}
+}
+function advisorTalk() {
+  const st = G.s.state, n = st.nation, s = st.stats, a = G.s.adv;
+  if (!n) { line(a, 'Welcome, leader! First we need to found our nation. Shall we start?', '¡Bienvenido/a! Primero tenemos que fundar nuestra nación.', foundNation, 'Found my nation'); return; }
+  const blds = Object.values(n.buildings);
+  const tips = [];
+  if (st.taxReady) tips.push(['The treasury is waiting! Collect today\'s taxes with the money button.', '¡Cobra los impuestos de hoy!']);
+  if (s.pop < 150) tips.push(['Our people need homes. Houses and a hospital will make our population grow.', 'Necesitamos casas y un hospital para crecer.']);
+  if (s.env < 40) tips.push(['The air is dirty! Build a park or a wind farm to help the environment.', 'Construye un parque o un parque eólico.']);
+  if (s.happy < 45) tips.push(['People are not happy. A park, a stadium or a hospital would help.', 'La gente no está contenta.']);
+  if (!blds.includes('embassy')) tips.push(['With an embassy we could write to other nations and sign treaties.', 'Con una embajada podrás firmar tratados.']);
+  if (!blds.some(b => MONUMENTS.includes(b))) tips.push(['A famous monument would bring culture and tourists. Read about it, then build it!', 'Un monumento famoso traería cultura y turistas.']);
+  tips.push(['Every mission you play gives us more GOYUX for new land and buildings.', 'Cada misión te da más GOYUX.']);
+  const t = tips[0];
+  choice(a, `Good to see you, President ${profile.name}! ${t[0]}`, t[1], [
+    { t: 'Open the nation menu, please.', fn: nationMenu },
+    { t: 'Thanks for the advice!', fn: () => say(a, 'Always at your service!') }
+  ]);
+}
+
+/* ---------- founding ---------- */
+function foundNation() {
+  const f = { name: '', capital: '', motto: MOTTOS[0], layout: 'h', c: ['#1d3fbf', '#fafafa', '#c62828'] };
+  const box = el('div', 'found');
+  const draw = () => {
+    box.innerHTML = `
+      <div class="found-flag" style="background:${flagCss({ c: f.c, layout: f.layout })}"></div>
+      <label for="fName">Name of your nation<input id="fName" maxlength="24" placeholder="e.g. The United Islands of Goya" value="${escH(f.name)}" autocomplete="off"></label>
+      <label for="fCap">Name of your capital city<input id="fCap" maxlength="24" placeholder="e.g. New Selgua" value="${escH(f.capital)}" autocomplete="off"></label>
+      <label for="fMotto">National motto<select id="fMotto">${MOTTOS.map(m => `<option ${m === f.motto ? 'selected' : ''}>${m}</option>`).join('')}</select></label>
+      <div class="found-row"><span>Flag design</span>${[['h', 'Horizontal'], ['v', 'Vertical'], ['cross', 'Cross']].map(([k, t]) => `<button class="mini ${f.layout === k ? 'pos' : ''}" data-l="${k}">${t}</button>`).join('')}</div>
+      ${[0, 1, 2].map(i => `<div class="found-row"><span>Colour ${i + 1}</span>${FLAG_COLS.map(c => `<button class="sw sm" style="background:${c}" aria-label="Colour ${c}" aria-pressed="${f.c[i] === c}" data-i="${i}" data-c="${c}"></button>`).join('')}</div>`).join('')}`;
+    box.querySelector('#fName').oninput = e => f.name = e.target.value;
+    box.querySelector('#fCap').oninput = e => f.capital = e.target.value;
+    box.querySelector('#fMotto').onchange = e => f.motto = e.target.value;
+    box.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { f.layout = b.dataset.l; draw(); });
+    box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { f.c[+b.dataset.i] = b.dataset.c; draw(); });
+  };
+  draw();
+  panel('Found your nation', 'Every country needs a name, a capital, a motto and a flag. Then sign the Declaration of Independence by passing a short English test.', box, [{
+    t: 'Sign the Declaration', cls: 'primary', fn: () => {
+      const clean = t => t.replace(/[^\p{L}\p{N} .,'&-]/gu, '').replace(/\s+/g, ' ').trim();
+      f.name = clean(f.name); f.capital = clean(f.capital);
+      if (f.name.length < 2 || f.capital.length < 2) { notify('✏️ Almost', 'Write a name for your nation and for its capital.', 'warn'); return; }
+      runQuiz({ title: 'Declaration of Independence', topic: 'found', n: 4, onClose: foundNation, onPass: async () => {
+        try { applyNation(await NAPI.found({ name: f.name, capital: f.capital, motto: f.motto, flag: { c: f.c, layout: f.layout } })); notify('🎉 A new nation is born!', `Long live ${f.name}! Your capital is ${f.capital}.`, 'good'); if (G.s.adv) say(G.s.adv, `Congratulations, President! Welcome to ${f.name}!`); }
+        catch (e) { notify('⚠️ Not saved', e.message, 'bad'); }
+      } });
+    }
+  }], { onClose: () => {} });
+}
+
+/* ---------- English test ---------- */
+function runQuiz(o) {
+  const reading = o.topic && o.topic.startsWith('r:') ? READING[o.topic.slice(2)] : null;
+  const pool = o.topic === 'any' ? Object.values(QB).flatMap(t => t.qs) : reading ? reading.qs : QB[o.topic].qs;
+  const qs = reading ? shuffle(pool.slice()) : sample(pool, Math.min(o.n || 5, pool.length));
+  const need = Math.ceil(qs.length * 0.8), label = reading ? 'Reading: ' + reading.title : o.topic === 'any' ? 'Mixed grammar' : QB[o.topic].label;
+  let i = 0, right = 0;
+  const show = () => {
+    const [q, a, wrong, tip] = qs[i];
+    const box = el('div', 'quiz');
+    if (reading) box.append(el('div', 'quiz-text', escH(reading.text)));
+    box.append(el('div', 'quiz-q', `<small>Question ${i + 1} of ${qs.length}</small>${escH(q)}`));
+    const opts = el('div', 'dlg-opts');
+    shuffle([a].concat(wrong)).forEach((t, k) => { const b = el('button', 'opt', `<span class="n">${k + 1}</span><span>${escH(t)}</span>`); b.dataset.t = t; b.onclick = () => answer(t, b); opts.append(b); });
+    box.append(opts);
+    const fb = el('div', 'quiz-fb'); fb.hidden = true; box.append(fb);
+    panel(o.title, `${escH(label)} · You need ${need} of ${qs.length} correct.`, box, [], { onClose: () => {} });
+    function answer(t, b) {
+      const ok = t === a; if (ok) right++;
+      opts.querySelectorAll('button').forEach(x => { x.disabled = true; if (x.dataset.t === a) x.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      fb.hidden = false; fb.className = 'quiz-fb ' + (ok ? 'good' : 'bad'); fb.textContent = ok ? '✔ Correct!' : '✘ ' + tip;
+      const f = $('#panelFoot'); f.innerHTML = '';
+      const nx = el('button', 'btn primary', i + 1 < qs.length ? 'Next question' : 'See my result'); nx.onclick = () => { i++; i < qs.length ? show() : end(); }; f.append(nx); nx.focus();
+    }
+  };
+  const end = () => {
+    const pass = right >= need;
+    panel(pass ? 'Test passed! 🎉' : 'Not yet…', '', `<div class="quiz-end"><b>${right} / ${qs.length}</b><p>${pass ? 'Excellent English!' : `You need ${need} correct answers. Read the tips and try again: the questions change.`}</p></div>`,
+      pass ? [{ t: 'Continue', cls: 'primary', fn: () => { closePanel(); o.onPass(); } }] : [{ t: 'Close', fn: () => { closePanel(); } }, { t: 'Try again', cls: 'primary', fn: () => runQuiz(o) }]);
+  };
+  show();
+}
+
+/* ---------- land and buildings ---------- */
+function buyPlot(i) {
+  const st = G.s.state, price = plotPrice(st.nation.plots.length);
+  panel('Buy this land?', `New land costs ${price} GOYUX. You have ${st.goyux.total} GOYUX.`, `<p class="panel-p">Land gets more expensive as your nation grows, so plan where you want to build.</p>`, [
+    { t: 'Cancel', fn: closePanel },
+    { t: `Buy for ${price} GOYUX`, cls: 'primary', disabled: st.goyux.total < price, fn: async () => { closePanel(); try { applyNation(await NAPI.buyPlot(i)); notify('🗺 New land!', 'Your nation is bigger now.', 'good'); } catch (e) { notify('⚠️ Not bought', e.message, 'bad'); } } }
+  ], { onClose: () => {} });
+}
+function fxChips(fx) { return N_KEYS.map((k, j) => fx[j] ? `<span class="fx ${fx[j] > 0 ? 'up' : 'down'}">${N_EMO[k]} ${fx[j] > 0 ? '+' : ''}${fx[j]}</span>` : '').join(''); }
+function buildMenu(i) {
+  const st = G.s.state, n = st.nation, have = Object.values(n.buildings);
+  const grid = el('div', 'bgrid');
+  Object.entries(BLD).filter(([id]) => id !== 'cityhall').forEach(([id, b]) => {
+    const done = UNIQUE_B.includes(id) && have.includes(id), poor = st.goyux.total < b[2];
+    const topic = b[4].startsWith('r:') ? 'Reading: ' + READING[b[4].slice(2)].title : QB[b[4]].label;
+    const c = el('div', 'bcard' + (MONUMENTS.includes(id) ? ' mon' : ''), `<div class="b-top"><span class="b-emo">${b[1]}</span><b>${escH(b[0])}</b><span class="b-cost"><i class="gx">G</i>${b[2]}</span></div>
+      <p>${escH(b[5])}</p><div class="fxs">${fxChips(b[3])}</div><small>📝 ${escH(topic)}</small>`);
+    const btn = el('button', 'btn ' + (done || poor ? '' : 'primary'), done ? 'Already built' : poor ? `Need ${b[2] - st.goyux.total} more GOYUX` : 'Take the test & build');
+    btn.disabled = done || poor;
+    btn.onclick = () => runQuiz({ title: `Build: ${b[0]}`, topic: b[4], n: 5, onPass: async () => {
+      try { applyNation(await NAPI.build(i, id)); notify('🏗 Built!', `${b[0]} is ready. ${N_KEYS.map((k, j) => b[3][j] ? `${N_LABEL[k]} ${b[3][j] > 0 ? '+' : ''}${b[3][j]}` : '').filter(Boolean).join(', ')}`, 'good'); }
+      catch (e) { notify('⚠️ Not built', e.message, 'bad'); }
+    } });
+    c.append(btn); grid.append(c);
+  });
+  panel('What do you want to build?', `You have <b>${st.goyux.total} GOYUX</b>. To build, pass an English test (4 of 5 correct).`, grid, [], { onClose: () => {} });
+}
+function buildingInfo(id) {
+  const b = BLD[id];
+  panel(`${b[1]} ${b[0]}`, '', `<p class="panel-p">${escH(b[5])}</p><div class="fxs">${fxChips(b[3])}</div>${b[4] && b[4].startsWith('r:') ? `<div class="quiz-text">${escH(READING[b[4].slice(2)].text)}</div>` : ''}`, [{ t: 'Close', cls: 'primary', fn: closePanel }], { onClose: () => {} });
+}
+
+/* ---------- nation menu, taxes, world, letters ---------- */
+function statBars(s) {
+  return `<div class="nstats">${N_KEYS.map(k => { const v = s[k], max = k === 'pop' ? Math.max(300, v) : (k === 'happy' || k === 'env') ? 100 : Math.max(100, v);
+    return `<div class="nstat"><span>${N_EMO[k]} ${N_LABEL[k]}</span><div class="bar"><i style="width:${clamp(v / max * 100, 2, 100)}%;background:${k === 'env' && v < 40 ? 'var(--red)' : 'var(--green)'}"></i></div><b>${v}${k === 'happy' || k === 'env' ? '%' : ''}</b></div>`; }).join('')}</div>`;
+}
+function nationMenu() {
+  const st = G.s.state, n = st.nation, s = st.stats;
+  if (!n) { foundNation(); return; }
+  const html = `<div class="nhead">${flagChip(n.flag, 54)}<div><b>${escH(n.name)}</b><small>President ${escH(n.leader || profile.name)} · Capital: ${escH(n.capital)}${n.motto ? ` · “${escH(n.motto)}”` : ''}</small></div><span class="npts">${s.score}<small>points</small></span></div>
+    ${statBars(s)}
+    <p class="panel-p">${st.treaties.length ? 'Treaties: ' + st.treaties.map(t => `${TREATY_NAME[t.type]} with ${escH(t.from === account?.email ? t.toName : t.fromName)}`).join(' · ') : 'No treaties yet. Build an embassy to write to other nations.'}</p>`;
+  if (G.s.visit) { panel(n.name, '', html, [{ t: 'Back to my nation', cls: 'primary', fn: () => { closePanel(); launchNation(); } }], { onClose: () => {} }); return; }
+  panel('Nation menu', '', html, [
+    { t: st.taxReady ? `💰 Collect taxes (+${st.taxAmount})` : '💰 Taxes collected today', cls: st.taxReady ? 'primary' : '', disabled: !st.taxReady, fn: collectTaxes },
+    { t: '🌍 World', fn: worldPanel },
+    { t: `✉ Letters${st.inbox.length ? ' (' + st.inbox.length + ')' : ''}`, fn: lettersPanel }
+  ], { onClose: () => {} });
+}
+function collectTaxes() {
+  const st = G.s.state;
+  if (!st.nation) return foundNation();
+  if (!st.taxReady) { notify('💰 Taxes', 'You have already collected taxes today. Come back tomorrow!'); return; }
+  runQuiz({ title: 'Collect today\'s taxes', topic: 'any', n: 1, onPass: async () => {
+    try { applyNation(await NAPI.tax()); notify('💰 Taxes collected', `+${st.taxAmount} GOYUX for the treasury. A stronger economy means more taxes.`, 'good'); }
+    catch (e) { notify('⚠️', e.message, 'bad'); }
+  } });
+}
+async function worldPanel() {
+  if (!NAPI.cloud()) { panel('The world', '', '<p class="panel-p">Other nations, visits and treaties work when you play with your class link (iesgoya.es account or invite code). In offline mode only your own nation exists.</p>', [{ t: 'Close', cls: 'primary', fn: closePanel }], { onClose: () => {} }); return; }
+  panel('The world', 'Loading nations…', '', [], { onClose: () => {} });
+  let list; try { list = await NAPI.world(); } catch (e) { $('#panelSub').textContent = e.message; return; }
+  const st = G.s.state, myEmb = st.nation && Object.values(st.nation.buildings).includes('embassy');
+  const box = el('div', 'tbl-wrap');
+  box.innerHTML = `<table class="tbl"><tr><th>#</th><th>Nation</th><th class="num">Points</th><th class="num">People</th><th></th></tr>${list.map((w, k) => `<tr><td>${k + 1}</td><td>${flagChip(w.flag)} <b>${escH(w.name)}</b>${w.me ? ' <small>(you)</small>' : ''}<small>President ${escH(w.leader)} · ${w.buildings} buildings</small></td><td class="num">${w.score}</td><td class="num">${w.pop}</td>
+    <td>${w.me ? '' : `<div class="acts"><button class="mini" data-v="${escH(w.email)}">Visit</button><button class="mini pos" data-w="${escH(w.email)}" ${myEmb ? '' : 'disabled title="Build an embassy first"'}>Write a letter</button></div>`}</td></tr>`).join('') || '<tr><td colspan="5">No nations yet.</td></tr>'}</table>`;
+  panel('The world', myEmb ? 'Visit other nations or write to their presidents to sign treaties.' : 'Visit other nations. Build an embassy to write letters and sign treaties.', box, [{ t: 'Close', fn: closePanel }], { onClose: () => {} });
+  box.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { closePanel(); launchNation(b.dataset.v); });
+  box.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const w = list.find(x => x.email === b.dataset.w); chooseTreaty(w); });
+}
+function chooseTreaty(w) {
+  panel(`Letter to ${w.name}`, `What do you want to propose to President ${escH(w.leader)}?`, `<div class="treaties">${Object.entries(TREATY_NAME).map(([k, t]) => `<button class="bcard tbtn" data-t="${k}"><b>${t}</b><div class="fxs">${fxChips(TREATY_FX[k])}</div><small>Both nations get this bonus.</small></button>`).join('')}</div>`, [{ t: 'Back', fn: worldPanel }], { onClose: () => {} });
+  $('#panelBody').querySelectorAll('[data-t]').forEach(b => b.onclick = () => composeLetter(w, b.dataset.t));
+}
+const LETTER_BODY = {
+  trade: ['I am writing to propose a trade agreement between our two nations.', 'This agreement would help both of our economies to grow.', [['This agreement would helps both of our economies.', 'After "would" use the base verb: would help.'], ['This agreement will to help our economies grow.', 'No "to" after "will".']]],
+  culture: ['I am writing to propose a cultural exchange between our two nations.', 'Our students and artists would learn a lot from each other.', [['Our students and artists would learn many of each other.', 'Say "learn a lot from each other".'], ['Our students would learned a lot from each other.', 'After "would" use the base verb: would learn.']]],
+  peace: ['I am writing to propose a peace treaty between our two nations.', 'Peace would make both of our countries safer and happier.', [['Peace would make both of our countries more safe.', 'safe → safer (short adjective + -er).'], ['Peace would makes our countries happier.', 'After "would" use the base verb: would make.']]]
+};
+/* the student builds a formal letter slot by slot; every slot has one correct option */
+function letterBuilder(title, sub, slots, onDone) {
+  let k = 0; const done = [];
+  const draw = () => {
+    const box = el('div', 'letter-wrap');
+    box.append(el('div', 'letter', done.map(t => `<p>${escH(t).replace(/\n/g, '<br>')}</p>`).join('') + (k < slots.length ? '<p class="letter-next">…</p>' : '')));
+    if (k < slots.length) {
+      const sl = slots[k];
+      box.append(el('div', 'quiz-q', `<small>Part ${k + 1} of ${slots.length}: ${escH(sl.label)}</small>Choose the best option for a formal letter.`));
+      const opts = el('div', 'dlg-opts'); const fb = el('div', 'quiz-fb'); fb.hidden = true;
+      shuffle([{ t: sl.ok }].concat(sl.bad.map(([t, tip]) => ({ t, tip })))).forEach((o, j) => {
+        const b = el('button', 'opt', `<span class="n">${j + 1}</span><span>${escH(o.t).replace(/\n/g, '<br>')}</span>`);
+        b.onclick = () => { if (!o.tip) { done.push(o.t); k++; draw(); } else { b.disabled = true; b.classList.add('wrong'); fb.hidden = false; fb.className = 'quiz-fb bad'; fb.textContent = '✘ ' + o.tip; } };
+        opts.append(b);
+      });
+      box.append(opts, fb);
+      panel(title, sub, box, [{ t: 'Cancel', fn: closePanel }], { cls: 'wide', onClose: () => {} });
+    } else panel(title, 'Your letter is ready.', box, [{ t: 'Cancel', fn: closePanel }, { t: 'Send', cls: 'primary', fn: () => onDone(done.join('\n\n')) }], { cls: 'wide', onClose: () => {} });
+  };
+  draw();
+}
+function composeLetter(w, type) {
+  const me = G.s.state.nation, L = LETTER_BODY[type];
+  letterBuilder(`${TREATY_NAME[type]} with ${w.name}`, 'Write a formal letter. A president expects polite, correct English!', [
+    { label: 'Greeting', ok: `Dear President ${w.leader},`, bad: [[`Hey ${w.leader}!!`, 'Too informal for an official letter. Start with "Dear President …,"'], [`Hello my friend ${w.leader},`, 'Official letters start with "Dear" + title + name.']] },
+    { label: 'Purpose', ok: L[0], bad: [[L[0].replace('I am writing to propose', 'I write you for propose'), 'Use "I am writing to propose…": the continuous form and "to" + verb.'], ['We wanna make a deal with you guys, OK?', '"Wanna" and "you guys" are for friends, not presidents.']] },
+    { label: 'Reason', ok: L[1], bad: L[2] },
+    { label: 'Closing', ok: 'I look forward to hearing from you.', bad: [['I look forward to hear from you.', '"Look forward to" is followed by -ing: hearing.'], ['Write me back soon, bye!', 'Too informal. Use "I look forward to hearing from you."']] },
+    { label: 'Sign-off', ok: `Yours sincerely,\n${profile.name}, President of ${me.name}`, bad: [[`Love,\n${profile.name}`, '"Love" is for family and friends. Use "Yours sincerely,".'], [`See ya!\n${profile.name}`, 'Too informal. Use "Yours sincerely,".']] }
+  ], async letter => {
+    closePanel();
+    try { applyNation(await NAPI.send(w.email, type, letter)); notify('✉ Letter sent', `Your letter is on its way to ${w.name}. If they accept, you both get a bonus.`, 'good'); }
+    catch (e) { notify('⚠️ Not sent', e.message, 'bad'); }
+  });
+}
+function lettersPanel() {
+  const st = G.s.state;
+  if (!NAPI.cloud()) { panel('Letters', '', '<p class="panel-p">Letters between nations work when you play with your class link.</p>', [{ t: 'Close', cls: 'primary', fn: closePanel }], { onClose: () => {} }); return; }
+  const box = el('div', 'letters');
+  box.innerHTML = (st.inbox.length ? st.inbox.map(t => `<div class="lcard"><div class="lhead"><b>${TREATY_NAME[t.type]}</b> from <b>${escH(t.fromName)}</b><small>${new Date(t.date).toLocaleDateString('en-GB')}</small></div><div class="letter">${t.letter.split('\n\n').map(p => `<p>${escH(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>
+      <div class="acts"><button class="btn primary" data-a="${escH(t.id)}">Reply and accept</button><button class="btn" data-d="${escH(t.id)}">Reply and decline</button></div></div>`).join('') : '<p class="panel-p">No new letters.</p>')
+    + (st.sent.length ? `<h3>Waiting for an answer</h3>${st.sent.map(t => `<p class="panel-p">${TREATY_NAME[t.type]} → ${escH(t.toName)}</p>`).join('')}` : '')
+    + (st.treaties.length ? `<h3>Signed treaties</h3>${st.treaties.map(t => `<p class="panel-p">✅ ${TREATY_NAME[t.type]} with ${escH(t.from === account.email ? t.toName : t.fromName)}</p>`).join('')}` : '');
+  panel('Letters', 'Answer other presidents with a formal letter.', box, [{ t: 'Close', fn: closePanel }], { cls: 'wide', onClose: () => {} });
+  box.querySelectorAll('[data-a],[data-d]').forEach(b => b.onclick = () => reply(st.inbox.find(t => t.id === (b.dataset.a || b.dataset.d)), !!b.dataset.a));
+}
+function reply(t, accept) {
+  const leader = (t.letter.match(/Yours sincerely,\n(.+?), President of/) || [])[1] || 'President';
+  const me = G.s.state.nation;
+  letterBuilder(`Reply to ${t.fromName}`, accept ? 'Accept the proposal with a formal letter.' : 'Decline the proposal politely.', [
+    { label: 'Greeting', ok: `Dear President ${leader},`, bad: [['Hi there,', 'Too informal. Use "Dear President …,".'], [`Dear ${leader} president,`, 'The title goes first: "Dear President …,".']] },
+    accept ? { label: 'Answer', ok: 'Thank you for your letter. I am delighted to accept your proposal.', bad: [['Thanks for you letter. I am delight to accept.', '"your letter" and "I am delighted".'], ['OK, cool, deal!', 'Too informal for a president.']] }
+      : { label: 'Answer', ok: 'Thank you for your letter, but I am afraid we cannot accept your proposal at this time.', bad: [['Sorry but no.', 'Too direct. Use "I am afraid we cannot accept…".'], ['Thank you, but we can\'t to accept your proposal.', 'No "to" after "can\'t".']] },
+    { label: 'Closing', ok: accept ? 'I am sure this will be good for both of our nations.' : 'I hope we can work together in the future.', bad: [[accept ? 'I am sure this will be good for both of ours nations.' : 'I hope we can to work together in the future.', accept ? '"our" never takes -s: both of our nations.' : 'No "to" after "can".']] },
+    { label: 'Sign-off', ok: `Yours sincerely,\n${profile.name}, President of ${me.name}`, bad: [[`Kisses,\n${profile.name}`, 'Too informal. Use "Yours sincerely,".']] }
+  ], async letter => {
+    closePanel();
+    try { applyNation(await NAPI.answer(t.id, accept, letter)); notify(accept ? '🤝 Treaty signed!' : '✉ Reply sent', accept ? `${TREATY_NAME[t.type]} with ${t.fromName}. Both nations get a bonus.` : 'You declined politely.', 'good'); }
+    catch (e) { notify('⚠️ Not sent', e.message, 'bad'); }
+  });
+}
+
 /* ---------------- progress card (made to be screenshotted and sent to the teacher) ---------------- */
 async function openProgress() {
   const lv = levelOf(profile.xp), into = (profile.xp || 0) % XP_PER_LEVEL;
@@ -2428,6 +3237,7 @@ async function openProgress() {
   if (CLOUD && account) { try { render(await apiU('myRuns')); } catch (e) {} }
 }
 $('#progOpen').onclick = openProgress;
+$('#nationHero').onclick = () => launchNation();
 $('#progX').onclick = () => $('#progModal').hidden = true;
 $('#progModal').addEventListener('click', e => { if (e.target.id === 'progModal') $('#progModal').hidden = true; });
 
@@ -2458,17 +3268,17 @@ function renderTeacher() {
   const q = $('#tSearch').value.trim().toLowerCase();
   const rows = T.list.filter(st => !q || st.name.toLowerCase().includes(q) || st.email.includes(q));
   const allSel = rows.length && rows.every(st => T.sel.has(st.email));
-  const head = `<tr><th><input type="checkbox" id="tAll" aria-label="Seleccionar todos" ${allSel ? 'checked' : ''}></th><th>Alumno</th><th class="num">Nivel</th><th class="num">Partidas</th>${GAMES.filter(g => !g.soon).map(g => `<th>${escH(g.title)}</th>`).join('')}<th class="num">GOYUX juego</th><th class="num">GOYUX profe</th><th class="num">Total</th><th>Última partida</th><th>Dar GOYUX</th><th></th></tr>`;
+  const head = `<tr><th><input type="checkbox" id="tAll" aria-label="Seleccionar todos" ${allSel ? 'checked' : ''}></th><th>Alumno</th><th class="num">Nivel</th><th class="num">Partidas</th>${GAMES.filter(g => !g.soon).map(g => `<th>${escH(g.title)}</th>`).join('')}<th>País</th><th class="num">GOYUX juego</th><th class="num">GOYUX profe</th><th class="num">Total</th><th>Última partida</th><th>Dar GOYUX</th><th></th></tr>`;
   const body = rows.map(st => `<tr data-e="${escH(st.email)}">
       <td><input type="checkbox" class="tSel" aria-label="Seleccionar ${escH(st.name)}" ${T.sel.has(st.email) ? 'checked' : ''}></td>
       <td><b>${escH(st.name)}</b><small>${escH(st.email)}</small></td>
       <td class="num">${st.level}</td><td class="num">${st.plays}</td>
       ${GAMES.filter(g => !g.soon).map(g => `<td class="stars">${starStr(st.best[g.id])}</td>`).join('')}
-      <td class="num">${st.xp}</td><td class="num">${st.granted}</td><td class="num"><b>${st.total}</b></td>
+      <td>${st.nationName ? escH(st.nationName) + `<small>${st.nationScore} puntos</small>` : '—'}</td><td class="num">${st.xp}</td><td class="num">${st.granted}</td><td class="num"><b>${st.total}</b></td>
       <td>${fmtDate(st.lastRun)}</td>
       <td><div class="acts"><button class="mini pos" data-a="1">+1</button><button class="mini pos" data-a="5">+5</button><button class="mini pos" data-a="10">+10</button><button class="mini neg" data-a="-5">−5</button></div></td>
       <td><button class="mini" data-runs="1">Partidas</button></td></tr>`).join('');
-  $('#tTable').innerHTML = head + (body || `<tr><td colspan="12">${T.list.length ? 'Ningún alumno coincide con la búsqueda.' : 'Todavía no ha entrado ningún alumno. Comparte el enlace de GOBLOX con la clase.'}</td></tr>`);
+  $('#tTable').innerHTML = head + (body || `<tr><td colspan="13">${T.list.length ? 'Ningún alumno coincide con la búsqueda.' : 'Todavía no ha entrado ningún alumno. Comparte el enlace de GOBLOX con la clase.'}</td></tr>`);
   $('#tAll').onchange = e => { rows.forEach(st => e.target.checked ? T.sel.add(st.email) : T.sel.delete(st.email)); renderTeacher(); };
   $('#tTable').querySelectorAll('.tSel').forEach(c => c.onchange = () => { const em = c.closest('tr').dataset.e; c.checked ? T.sel.add(em) : T.sel.delete(em); });
   $('#tTable').querySelectorAll('[data-a]').forEach(b => b.onclick = () => give([b.closest('tr').dataset.e], +b.dataset.a));
