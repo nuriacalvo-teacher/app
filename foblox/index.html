@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Foblox English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a Roblox-style shell (top bar + left rail + rows of game cards); in game, a full-bleed 3D canvas with floating translucent HUD panels */
+:root{
+  --bg:#232527; --surface:#2b2d30; --card:#393b3d; --line:#4b4e52; --fg:#ffffff; --muted:#bcbec2;
+  --blue:#335fff; --green:#00a86b; --green-hi:#00c47d; --gold:#ffc23d; --red:#ef4d55; --warn:#ff9f1c;
+  --hud:rgba(18,19,22,.62); --hud-strong:rgba(18,19,22,.86); --hud-line:rgba(255,255,255,.12);
+  --paper:#fff6e5; --ink:#2b1c12; --ink-soft:#7a5b45; --menu-red:#c62828;
+  --f-display:'Montserrat','Arial Black',system-ui,sans-serif;
+  --f-body:'Nunito Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;overflow:hidden}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+
+/* ---------- logo ---------- */
+.logo{font-family:var(--f-display);font-weight:900;font-size:22px;letter-spacing:.02em;display:flex;align-items:center;gap:1px;user-select:none}
+.logo .o{display:inline-block;width:.72em;height:.72em;background:currentColor;transform:rotate(-14deg);margin:0 .07em;position:relative;top:.02em}
+.logo .o::after{content:"";position:absolute;inset:32%;background:var(--bg)}
+
+/* ---------- home shell ---------- */
+#home{height:100%;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:16px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.topbar nav{display:flex;gap:4px}
+.topbar nav button{padding:8px 12px;border-radius:8px;font-weight:700;color:var(--muted)}
+.topbar nav button[aria-current="page"],.topbar nav button:hover{color:var(--fg);background:var(--card)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.fobux{display:flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.fb-icon{width:16px;height:16px;border:3px solid var(--gold);transform:rotate(45deg);border-radius:3px;display:inline-block}
+.who{font-weight:700;color:var(--muted)}
+.shell{flex:1;overflow:auto;padding-block:24px 48px;padding-inline:max(16px,4vw)}
+.page{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.hello{display:flex;align-items:center;gap:18px}
+.headshot{width:84px;height:84px;border-radius:50%;background:var(--card);position:relative;overflow:hidden;flex:none}
+.hello h1{font-size:clamp(24px,4vw,34px);font-weight:900}
+.hello p{margin:4px 0 0;color:var(--muted)}
+.row-title{display:flex;align-items:baseline;gap:10px}
+.row-title h2{font-size:20px;font-weight:800}
+.row-title span{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.gcard{text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0}
+.thumb{aspect-ratio:1/1;max-width:100%;border-radius:10px;position:relative;overflow:hidden;display:grid;place-items:center;transition:transform .15s}
+.gcard:hover .thumb{transform:translateY(-3px)}
+.t-emo{font-size:clamp(46px,7vw,64px);filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.thumb .t-name{position:absolute;left:8px;right:8px;bottom:8px;font-family:var(--f-display);font-weight:900;font-size:15px;line-height:1.05;text-transform:uppercase;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.thumb .lock{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:6px}
+.gcard.soon .thumb{filter:grayscale(.75) brightness(.7)}
+.gname{font-weight:800;font-size:15px;line-height:1.2}
+.gmeta{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.stars{color:var(--gold);letter-spacing:1px}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:140px}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:13px}
+.method{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.method h3{font-size:14px;font-weight:800;margin-bottom:4px}
+.method p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+
+/* avatar editor */
+.av-edit{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:28px;align-items:start}
+.av-stage{background:radial-gradient(circle at 50% 30%,#4a4d52,#2b2d30);border-radius:14px;aspect-ratio:3/4;max-width:100%;display:grid;place-items:center}
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.field label{font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--fg);font:inherit;font-weight:700;max-width:320px}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:36px;height:36px;border-radius:8px;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.sw[aria-pressed="true"]{border-color:#fff}
+@media (max-width:640px){.av-edit{grid-template-columns:1fr}.av-stage{max-width:240px}}
+
+/* 2D blocky avatar */
+.av2d{position:relative;width:120px;height:170px;--skin:#f5cd30;--shirt:#0d69ac;--pants:#a4bd47}
+.av2d i{position:absolute;display:block;border-radius:3px}
+.av2d .h{left:40px;top:0;width:40px;height:38px;background:var(--skin);border-radius:9px}
+.av2d .h::before,.av2d .h::after{content:"";position:absolute;top:13px;width:5px;height:9px;background:#1b1b1b;border-radius:3px}
+.av2d .h::before{left:12px}.av2d .h::after{right:12px}
+.av2d .m{left:52px;top:25px;width:16px;height:7px;border:3px solid #1b1b1b;border-top:0;border-radius:0 0 10px 10px;z-index:2}
+.av2d .t{left:30px;top:40px;width:60px;height:62px;background:var(--shirt)}
+.av2d .al{left:0;top:40px;width:28px;height:62px;background:var(--skin)}
+.av2d .ar{right:0;top:40px;width:28px;height:62px;background:var(--skin)}
+.av2d .ll{left:30px;top:104px;width:29px;height:64px;background:var(--pants)}
+.av2d .lr{left:61px;top:104px;width:29px;height:64px;background:var(--pants)}
+.headshot .av2d{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateY(78px) scale(1.1)}
+
+/* notebook */
+.vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.vcard b{display:block;font-weight:800}
+.vcard span{color:var(--muted);font-size:14px}
+.vcard small{display:block;margin-top:6px;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.empty{color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:20px}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px;overflow:auto}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;width:min(860px,100%);max-height:calc(100% - 8px);overflow:auto;position:relative}
+.x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.45);font-size:18px;font-weight:800;z-index:2}
+.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.detail .thumb{border-radius:14px 0 0 14px;aspect-ratio:auto;min-height:280px}
+.detail-body{padding:22px;display:flex;flex-direction:column;gap:14px}
+.detail-body h2{font-size:26px;font-weight:900;line-height:1.1}
+.by{color:var(--muted);font-size:13px}
+.play{background:var(--green);border-radius:10px;padding:14px;font-family:var(--f-display);font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s}
+.play:hover{background:var(--green-hi)}
+.play svg{width:26px;height:26px}
+.detail-body p{margin:0;color:var(--muted);line-height:1.55}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--card);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+.detail h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.detail ul{margin:0;padding-left:18px;line-height:1.6}
+@media (max-width:680px){.detail{grid-template-columns:1fr}.detail .thumb{border-radius:14px 14px 0 0;min-height:170px}}
+
+#loading{position:fixed;inset:0;z-index:60;background:#111214;display:grid;place-items:center;padding:16px}
+.load-box{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;max-width:420px}
+.load-thumb{width:200px;max-width:100%;aspect-ratio:16/10;border-radius:10px;display:grid;place-items:center;font-size:60px}
+.spin{width:38px;height:38px;border:7px solid #fff;animation:spin 1.1s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-box h2{font-size:22px;font-weight:900}
+.load-box p{margin:0;color:var(--muted)}
+
+/* ---------- game + HUD ---------- */
+#game{position:fixed;inset:0;background:#9fd3ff;overflow:hidden;touch-action:none}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;outline:none}
+.hud-layer{position:absolute;inset:0;pointer-events:none}
+.hud-layer > *{pointer-events:auto}
+.hud-tl{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;display:flex;gap:8px}
+.hbtn{width:44px;height:44px;border-radius:10px;background:var(--hud);display:grid;place-items:center;backdrop-filter:blur(4px)}
+.hbtn:hover{background:var(--hud-strong)}
+.hbtn .logo{font-size:0}
+.hbtn .logo .o{width:22px;height:22px;margin:0}
+.hbtn .logo .o::after{background:#3a3c40;inset:30%}
+.hbtn svg{width:22px;height:22px;fill:#fff}
+#chat{position:absolute;top:calc(62px + env(safe-area-inset-top,0px));left:12px;width:min(380px,calc(100% - 24px));display:flex;flex-direction:column;gap:6px}
+#chatLog{background:var(--hud);border-radius:8px;height:150px;overflow-y:auto;padding:8px 10px;font-size:14px;line-height:1.35;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.6)}
+#chatLog div{margin-bottom:2px;overflow-wrap:anywhere}
+#chatIn{background:var(--hud);border:1px solid var(--hud-line);border-radius:8px;padding:8px 10px;color:#fff;font:inherit;font-weight:700}
+#chatIn::placeholder{color:rgba(255,255,255,.55)}
+#board{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;min-width:250px;background:var(--hud);border-radius:8px;overflow:hidden;font-variant-numeric:tabular-nums}
+.lb-row{display:grid;grid-template-columns:1fr repeat(3,minmax(58px,auto));gap:8px;padding:7px 12px;font-size:13px;font-weight:800;align-items:center}
+.lb-row span:not(:first-child){text-align:right}
+.lb-head{background:rgba(255,255,255,.08);color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+#mission{position:absolute;top:calc(88px + env(safe-area-inset-top,0px));right:12px;width:min(290px,calc(100% - 24px));background:var(--hud);border-radius:8px;padding:10px 12px 12px;max-height:calc(100% - 210px);overflow:auto}
+.ms-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ms-head h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.ms-toggle{font-size:12px;font-weight:800;color:var(--muted);padding:2px 6px}
+#objList{list-style:none;margin:8px 0 10px;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:700;line-height:1.3}
+#objList li{display:flex;gap:8px;align-items:flex-start}
+#objList .ck{flex:none;width:18px;height:18px;border-radius:5px;border:2px solid rgba(255,255,255,.5);display:grid;place-items:center;font-size:12px;margin-top:1px}
+#objList li.done{color:rgba(255,255,255,.55);text-decoration:line-through}
+#objList li.done .ck{background:var(--green);border-color:var(--green)}
+#objList li.fail .ck{background:var(--red);border-color:var(--red)}
+#objList li.fail{color:#ffb3b6}
+#objList li.secret{color:var(--gold);font-style:italic}
+.ms-btn{width:100%;background:rgba(255,255,255,.12);border-radius:7px;padding:8px;font-weight:800;font-size:13px}
+.ms-btn:hover{background:rgba(255,255,255,.2)}
+#mission.collapsed #objList,#mission.collapsed .ms-btn{display:none}
+#hotbar{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:6px;max-width:calc(100% - 24px);overflow-x:auto}
+.slot{width:58px;height:58px;flex:none;border-radius:8px;background:var(--hud);border:2px solid transparent;position:relative;display:grid;place-items:center;font-size:28px}
+.slot:hover{border-color:#fff}
+.slot small{position:absolute;top:2px;left:5px;font-size:11px;font-weight:800;color:rgba(255,255,255,.8)}
+.slot.bad::after{content:"!";position:absolute;right:3px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--red);font-size:11px;font-weight:900;display:grid;place-items:center}
+#prompt{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;will-change:transform}
+.pr-obj{font-size:12px;font-weight:800;text-shadow:0 1px 2px #000}
+.pr-row{display:flex;align-items:center;gap:8px;background:var(--hud-strong);border-radius:8px;padding:6px 12px 6px 6px;font-weight:800;font-size:14px;white-space:nowrap}
+.pr-row kbd{width:30px;height:30px;border-radius:6px;border:2px solid #fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:900}
+#bubbles{position:absolute;inset:0;pointer-events:none}
+.bubble{position:absolute;left:0;top:0;max-width:240px;background:#fff;color:#1d1d1f;border-radius:12px;padding:7px 11px;font-weight:700;font-size:13px;line-height:1.3;box-shadow:0 3px 10px rgba(0,0,0,.25);will-change:transform}
+.bubble::after{content:"";position:absolute;bottom:-7px;left:50%;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:#fff}
+#dlg{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(760px,calc(100% - 24px));background:var(--hud-strong);border:1px solid var(--hud-line);border-radius:14px;padding:14px 16px 16px;backdrop-filter:blur(6px);animation:rise .18s ease-out}
+@keyframes rise{from{opacity:0;transform:translate(-50%,10px)}}
+.dlg-head{display:flex;align-items:center;gap:10px}
+.dlg-name{font-family:var(--f-display);font-weight:900;font-size:14px;padding:3px 10px;border-radius:6px;background:var(--blue)}
+.dlg-tools{margin-left:auto;display:flex;gap:6px}
+.tool{height:30px;min-width:38px;padding:0 10px;border-radius:7px;background:rgba(255,255,255,.12);font-weight:800;font-size:12px}
+.tool:hover{background:rgba(255,255,255,.22)}
+.tool[aria-pressed="true"]{background:var(--gold);color:#222}
+.dlg-text{font-size:18px;font-weight:700;line-height:1.4;margin:10px 0 0}
+.dlg-es{font-size:14px;color:var(--gold);margin:6px 0 0;font-style:italic}
+.dlg-opts{display:grid;gap:8px;margin-top:12px}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:10px 12px;font-weight:700;font-size:15px;line-height:1.3}
+.opt:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4)}
+.opt .n{flex:none;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:12px;font-weight:900}
+.opt.meta{background:rgba(51,95,255,.35);border-color:rgba(120,150,255,.5)}
+#notes{position:absolute;right:12px;bottom:calc(86px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;width:min(330px,calc(100% - 24px));pointer-events:none}
+.note{background:var(--hud-strong);border-radius:10px;padding:10px 12px;border-left:5px solid var(--blue);animation:slide .25s ease-out;font-size:13.5px;line-height:1.4}
+.note b{display:block;font-size:14px;margin-bottom:2px}
+.note.good{border-left-color:var(--green)}.note.bad{border-left-color:var(--red)}.note.warn{border-left-color:var(--warn)}
+@keyframes slide{from{opacity:0;transform:translateX(20px)}}
+#pop{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-family:var(--f-display);font-weight:900;font-size:18px;padding:6px 14px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .25s}
+#pop.show{opacity:1}
+#pop.good{background:var(--green)}#pop.bad{background:var(--red)}
+/* panel (menu, shop, bill) */
+#panelWrap{position:absolute;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px}
+.panel{width:min(820px,100%);max-height:100%;display:flex;flex-direction:column;background:var(--hud-strong);border:1px solid var(--hud-line);border-radius:14px;overflow:hidden;position:relative;backdrop-filter:blur(8px)}
+.panel-top{display:flex;align-items:center;gap:10px;padding:14px 56px 10px 18px}
+.panel-top h2{font-size:20px;font-weight:900}
+.panel-sub{padding:0 18px;color:var(--muted);font-size:14px;line-height:1.45}
+#panelBody{padding:12px 18px;overflow:auto;flex:1;min-height:0}
+#panelFoot{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid var(--hud-line)}
+.btn{padding:10px 18px;border-radius:9px;background:rgba(255,255,255,.14);font-weight:800}
+.btn:hover{background:rgba(255,255,255,.24)}
+.btn.primary{background:var(--green)}.btn.primary:hover{background:var(--green-hi)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.foot-info{margin-right:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.4}
+.foot-info b{color:#fff}
+/* diner menu = paper */
+.panel.paper{background:var(--paper);color:var(--ink);border:0}
+.panel.paper .panel-top h2{color:var(--menu-red);font-size:24px;letter-spacing:.04em}
+.panel.paper .panel-sub{color:var(--ink-soft)}
+.panel.paper #panelFoot{border-color:rgba(43,28,18,.15)}
+.panel.paper .foot-info{color:var(--ink-soft)}.panel.paper .foot-info b{color:var(--ink)}
+.panel.paper .btn{background:rgba(43,28,18,.1)}
+.panel.paper .btn.primary{background:var(--menu-red);color:#fff}
+.panel.paper .x{background:rgba(43,28,18,.12);color:var(--ink)}
+.menu-cols{columns:2 300px;column-gap:28px}
+.mcat{break-inside:avoid;margin-bottom:14px}
+.mcat h3{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--menu-red);border-bottom:2px dotted rgba(198,40,40,.4);padding-bottom:4px;margin-bottom:6px}
+.mitem{display:grid;grid-template-columns:28px 1fr auto;gap:2px 10px;width:100%;text-align:left;padding:7px 8px;border-radius:8px;border:2px solid transparent;color:var(--ink)}
+.mitem:hover{background:rgba(43,28,18,.06)}
+.mitem[aria-pressed="true"]{border-color:var(--menu-red);background:rgba(198,40,40,.08)}
+.mitem .e{grid-row:span 2;font-size:22px}
+.mitem b{font-weight:800}
+.mitem .p{font-weight:800;font-variant-numeric:tabular-nums}
+.mitem small{grid-column:2 / 4;color:var(--ink-soft);font-size:13px;line-height:1.35}
+/* bill */
+.bill{font-variant-numeric:tabular-nums;max-width:440px;margin:0 auto;background:#fffdf7;color:#222;border-radius:6px;padding:16px 18px;font-family:'Courier New',ui-monospace,monospace;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.bill h4{text-align:center;margin:0 0 4px;font-size:16px;letter-spacing:.1em}
+.bill .c{text-align:center;color:#666;font-size:12px;margin-bottom:10px}
+.bl{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.bl.sep{border-top:1px dashed #999;margin-top:6px;padding-top:6px}
+.bl.tot{font-weight:900;font-size:16px}
+.tips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.tips button{flex:1 1 60px;border:2px solid #333;border-radius:6px;padding:6px;font-weight:900;font-family:inherit;color:#222}
+.tips button[aria-pressed="true"]{background:#222;color:#fff}
+.tips button:disabled{opacity:.35}
+.tipnote{font-family:var(--f-body);font-size:12.5px;color:#555;margin-top:8px;line-height:1.4}
+/* shop catalog */
+.policy{background:rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px;line-height:1.4}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.item{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.ithumb{aspect-ratio:4/3;max-width:100%;border-radius:8px;background:linear-gradient(160deg,#4a4d55,#30323a);display:grid;place-items:center;font-size:42px;position:relative}
+.ithumb i{position:absolute;right:8px;bottom:8px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:var(--c)}
+.ithumb .tag{position:absolute;left:6px;top:6px;background:var(--red);font-size:10px;font-weight:900;padding:3px 6px;border-radius:5px;letter-spacing:.04em}
+.ithumb .own{position:absolute;right:6px;top:6px;background:var(--green);font-size:10px;font-weight:900;padding:3px 6px;border-radius:5px}
+.iname{font-weight:800;font-size:14.5px;line-height:1.2}
+.imeta{font-size:12.5px;color:var(--muted)}
+.idesc{font-size:12.5px;color:#dfe1e4;margin:0;line-height:1.35;flex:1}
+.iprice{font-family:var(--f-display);font-weight:900;font-size:17px;font-variant-numeric:tabular-nums}
+.iprice s{color:var(--muted);font-size:13px;margin-right:6px;font-weight:700}
+.ibtns{display:flex;gap:6px}
+.ibtns .btn{flex:1;padding:7px 6px;font-size:13px}
+/* card */
+.card-sheet{display:grid;gap:10px;font-size:15px;line-height:1.5}
+.card-sheet .cs{background:rgba(255,255,255,.07);border-radius:9px;padding:10px 12px}
+.card-sheet b{color:var(--gold)}
+/* esc menu */
+#esc{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px}
+.esc-box{width:min(420px,100%);background:var(--hud-strong);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--hud-line)}
+.esc-box .logo{justify-content:center;margin-bottom:6px}
+.esc-box .btn{width:100%;text-align:left;display:flex;justify-content:space-between}
+.esc-box .btn.danger{background:var(--red)}
+/* results */
+#results{position:absolute;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px;overflow:auto}
+.res-card{width:min(720px,100%);max-height:100%;overflow:auto;background:var(--surface);border-radius:16px;border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:16px}
+.res-top{text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.res-top h2{font-size:28px;font-weight:900}
+#resStars{font-size:44px;color:var(--gold);letter-spacing:4px;line-height:1}
+#resStars .off{color:#555}
+.res-fob{display:flex;align-items:center;gap:6px;font-weight:900;font-size:18px}
+.metric{display:grid;grid-template-columns:120px 1fr 48px;gap:10px;align-items:center;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+.bar{height:12px;border-radius:6px;background:var(--card);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+.res-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.res-cols h3,.res-card > h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.res-cols ul{margin:0;padding-left:18px;line-height:1.5;font-size:14px}
+.res-cols li{margin-bottom:4px}
+.res-btns{display:flex;gap:10px;flex-wrap:wrap}
+.res-btns .btn{flex:1}
+/* touch */
+#touch{position:absolute;inset:auto 0 0 0;height:0}
+#joy{position:absolute;left:24px;bottom:calc(28px + env(safe-area-inset-bottom,0px));width:120px;height:120px;border-radius:50%;background:rgba(0,0,0,.28);border:2px solid rgba(255,255,255,.35);touch-action:none}
+#joyK{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.55)}
+#jumpB{position:absolute;right:24px;bottom:calc(40px + env(safe-area-inset-bottom,0px));width:76px;height:76px;border-radius:50%;background:rgba(0,0,0,.28);border:2px solid rgba(255,255,255,.4);font-weight:900;font-size:12px}
+#game.locked #touch{display:none}
+@media (max-width:760px){
+  #chatLog{height:92px;font-size:12.5px}
+  #chat{width:min(300px,calc(100% - 24px))}
+  #board{min-width:0}
+  .lb-row{grid-template-columns:auto repeat(3,auto);padding:5px 8px;font-size:11.5px;gap:6px}
+  #mission{top:auto;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(250px,calc(100% - 24px));max-height:38%}
+  #notes{top:calc(120px + env(safe-area-inset-top,0px));bottom:auto;right:12px}
+  .dlg-text{font-size:16px}.opt{font-size:14px;padding:8px 10px}
+  .slot{width:48px;height:48px;font-size:22px}
+  #hotbar{left:auto;right:12px;transform:none;bottom:calc(140px + env(safe-area-inset-bottom,0px));flex-direction:column}
+  .metric{grid-template-columns:90px 1fr 40px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= HOME (website) ================= -->
+<div id="home">
+  <header class="topbar">
+    <div class="logo" aria-label="Foblox">F<span class="o"></span>BLOX</div>
+    <nav aria-label="Main">
+      <button data-page="Home" aria-current="page">Home</button>
+      <button data-page="Avatar">Avatar</button>
+      <button data-page="Notebook">Notebook</button>
+    </nav>
+    <div class="top-right">
+      <span class="fobux" title="Fobux earned by playing"><i class="fb-icon"></i><span id="fobuxN">0</span></span>
+      <span class="who" id="whoName">Alex</span>
+    </div>
+  </header>
+  <div class="shell">
+    <section class="page" id="pageHome">
+      <div class="hello">
+        <div class="headshot" id="headshot"></div>
+        <div><h1 id="hello">Hello, Alex!</h1><p>Pick an experience and use your English to survive real life.</p></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div><div class="row-title"><h2>Play now</h2><span>Scenario-based roleplay · Functional English</span></div></div>
+      <div class="grid" id="rowPlay"></div>
+      <div class="row-title"><h2>Coming soon</h2><span>New scenarios in development</span></div>
+      <div class="grid" id="rowSoon"></div>
+      <div class="method">
+        <div><h3>Real situations</h3><p>Every experience drops you into a place you will really visit: a restaurant, a shopping street, a school.</p></div>
+        <div><h3>Choose what to say</h3><p>Pick the phrase a native speaker would use. Wrong grammar confuses people; rude words cost you Manners.</p></div>
+        <div><h3>Money and surprises</h3><p>Plan a budget, compare prices and quality, and deal with problems nobody warned you about.</p></div>
+      </div>
+    </section>
+    <section class="page" id="pageAvatar" hidden>
+      <h1>Avatar</h1>
+      <div class="av-edit">
+        <div class="av-stage" id="avStage"></div>
+        <div>
+          <div class="field"><label for="nameIn">Display name</label><input id="nameIn" maxlength="16" autocomplete="off"></div>
+          <div class="field"><label>Skin</label><div class="swatches" id="swSkin"></div></div>
+          <div class="field"><label>Shirt</label><div class="swatches" id="swShirt"></div></div>
+          <div class="field"><label>Trousers</label><div class="swatches" id="swPants"></div></div>
+        </div>
+      </div>
+    </section>
+    <section class="page" id="pageNotebook" hidden>
+      <h1>Notebook</h1>
+      <p style="margin:0;color:var(--muted)">The useful phrases you have practised in each experience.</p>
+      <div class="vocab" id="vocabList"></div>
+    </section>
+  </div>
+</div>
+
+<!-- game detail -->
+<div class="overlay" id="detail" hidden>
+  <div class="modal">
+    <button class="x" id="detailX" aria-label="Close">✕</button>
+    <div class="detail">
+      <div class="thumb" id="dThumb"></div>
+      <div class="detail-body">
+        <div><h2 id="dTitle"></h2><div class="by">By Foblox Learning · <span id="dLevel"></span></div></div>
+        <button class="play" id="dPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></svg>Play</button>
+        <p id="dDesc"></p>
+        <div><h3>You will practise</h3><ul id="dGoals"></ul></div>
+        <div class="chips" id="dChips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="loading" hidden>
+  <div class="load-box">
+    <div class="load-thumb" id="lThumb"></div>
+    <h2 id="lTitle"></h2>
+    <div class="spin" aria-hidden="true"></div>
+    <p id="lText">Joining server…</p>
+  </div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="game" hidden>
+  <canvas id="c" tabindex="0"></canvas>
+  <div id="bubbles"></div>
+  <div class="hud-layer">
+    <div class="hud-tl">
+      <button class="hbtn" id="menuBtn" aria-label="Game menu"><span class="logo"><span class="o"></span></span></button>
+      <button class="hbtn" id="chatBtn" aria-label="Toggle chat"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button>
+    </div>
+    <div id="chat">
+      <div id="chatLog" aria-live="polite"></div>
+      <input id="chatIn" placeholder="To chat click here or press / key" maxlength="120" autocomplete="off">
+    </div>
+    <div id="board"></div>
+    <div id="mission">
+      <div class="ms-head"><h3 id="msTitle">Mission</h3><button class="ms-toggle" id="msToggle">Hide</button></div>
+      <ul id="objList"></ul>
+      <button class="ms-btn" id="cardBtn">Character card</button>
+    </div>
+    <div id="hotbar"></div>
+    <div id="prompt" hidden><div class="pr-obj"></div><div class="pr-row"><kbd>E</kbd><span class="pr-act"></span></div></div>
+    <div id="notes"></div>
+    <div id="pop"></div>
+    <div id="touch" hidden>
+      <div id="joy"><div id="joyK"></div></div>
+      <button id="jumpB">JUMP</button>
+    </div>
+    <div id="dlg" hidden>
+      <div class="dlg-head">
+        <span class="dlg-name" id="dlgName"></span>
+        <div class="dlg-tools">
+          <button class="tool" id="dlgSpeak" title="Listen again" aria-label="Listen again">🔊</button>
+          <button class="tool" id="dlgEs" title="Show Spanish translation" aria-pressed="false">ES</button>
+        </div>
+      </div>
+      <p class="dlg-text" id="dlgText"></p>
+      <p class="dlg-es" id="dlgEsText" hidden></p>
+      <div class="dlg-opts" id="dlgOpts"></div>
+    </div>
+    <div id="panelWrap" hidden>
+      <div class="panel" id="panel">
+        <button class="x" id="panelX" aria-label="Close">✕</button>
+        <div class="panel-top"><h2 id="panelTitle"></h2></div>
+        <div class="panel-sub" id="panelSub"></div>
+        <div id="panelBody"></div>
+        <div id="panelFoot"></div>
+      </div>
+    </div>
+    <div id="esc" hidden>
+      <div class="esc-box">
+        <div class="logo">F<span class="o"></span>BLOX</div>
+        <button class="btn primary" id="escResume">Resume game <span>Esc</span></button>
+        <button class="btn" id="escCard">Character card <span>📄</span></button>
+        <button class="btn" id="escHelp">How to play <span>❔</span></button>
+        <button class="btn" id="escVoice">Voices <span id="escVoiceV">On</span></button>
+        <button class="btn" id="escReset">Reset character <span>R</span></button>
+        <button class="btn danger" id="escLeave">Leave game <span>L</span></button>
+      </div>
+    </div>
+    <div id="results" hidden>
+      <div class="res-card">
+        <div class="res-top">
+          <h2 id="resTitle">Mission complete!</h2>
+          <div id="resStars"></div>
+          <div class="res-fob"><i class="fb-icon"></i><span id="resFob"></span></div>
+        </div>
+        <div id="resMetrics" style="display:grid;gap:8px"></div>
+        <div class="res-cols">
+          <div><h3>What went well</h3><ul id="resGood"></ul></div>
+          <div><h3>To improve</h3><ul id="resBad"></ul></div>
+        </div>
+        <h3>Phrases you practised</h3>
+        <div class="chips" id="resVocab"></div>
+        <div class="res-btns"><button class="btn primary" id="resAgain">Play again</button><button class="btn" id="resHome">Back to Home</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   FOBLOX ENGLISH — scenario-based roleplay in a blocky 3D world
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick1 = a => a[Math.random() * a.length | 0];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const money = n => '$' + (Math.round(n * 100) / 100).toFixed(2);
+const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const lerpAngle = (a, b, t) => { let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI; if (d < -Math.PI) d += Math.PI * 2; return a + d * t; };
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('foblox:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('foblox:' + k, JSON.stringify(v)); } catch (e) {} }
+};
+let profile = Object.assign({ name: 'Alex', skin: '#f5cd30', shirt: '#0d69ac', pants: '#a4bd47', fobux: 0, best: {}, vocab: [], plays: 0 }, store.get('profile', {}));
+const saveProfile = () => store.set('profile', profile);
+let settings = Object.assign({ voice: true }, store.get('settings', {}));
+
+/* ---------------- games catalogue ---------------- */
+const GAMES = [
+  { id: 'diner', title: 'Healthy Bites Diner', emoji: '🥗', bg: 'linear-gradient(150deg,#ff6b5b,#c62828 55%,#5e1010)', level: 'A2–B1',
+    desc: 'You have just finished football practice and you are starving. Get a table, order a healthy dinner with only $20 (tax and tip included!), survive a noisy family and sort out a kitchen mistake. Oh, and you are allergic to nuts.',
+    goals: ['Asking for a table and ordering politely (I\'d like…, Could I…?)', 'Reading a menu and talking about allergies', 'Complaining politely (I\'m afraid…, Would you mind…?)', 'Asking for the check and calculating a tip'],
+    chips: ['🍽 Restaurant', '💵 Budget: $20', '⏱ 10–15 min'] },
+  { id: 'mall', title: 'Back to School Rush', emoji: '🎒', bg: 'linear-gradient(150deg,#4f7dff,#1d3fbf 55%,#0d1a5c)', level: 'A2–B1',
+    desc: 'School starts tomorrow and you need a uniform. Three shops, one budget of $100. One shop is cheap but never gives refunds, one is fair, one is fancy. Read the labels, ask the right questions, try things on, and pass the dress-code check at Lincoln High.',
+    goals: ['Clothes, colours and sizes', 'Shop phrases: Can I try it on? I\'ll take it.', 'Return policies, refunds, exchanges and discounts', 'Comparing price and quality to stay on budget'],
+    chips: ['🛍 Shopping street', '💵 Budget: $100', '⏱ 15–20 min'] },
+  { id: 'airport', soon: true, title: 'Airport Check-in', emoji: '✈️', bg: 'linear-gradient(150deg,#26c6da,#00838f)' },
+  { id: 'doctor', soon: true, title: 'At the Doctor\'s', emoji: '🩺', bg: 'linear-gradient(150deg,#66bb6a,#2e7d32)' },
+  { id: 'hotel', soon: true, title: 'Hotel Trouble', emoji: '🏨', bg: 'linear-gradient(150deg,#ab47bc,#6a1b9a)' },
+  { id: 'train', soon: true, title: 'Lost in London', emoji: '🚇', bg: 'linear-gradient(150deg,#ffa726,#e65100)' }
+];
+
+/* ---------------- home ---------------- */
+function av2d(o) {
+  return `<div class="av2d" style="--skin:${o.skin};--shirt:${o.shirt};--pants:${o.pants}"><i class="h"></i><i class="m"></i><i class="al"></i><i class="t"></i><i class="ar"></i><i class="ll"></i><i class="lr"></i></div>`;
+}
+function renderHome() {
+  $('#hello').textContent = `Hello, ${profile.name}!`;
+  $('#whoName').textContent = profile.name;
+  $('#fobuxN').textContent = profile.fobux;
+  $('#headshot').innerHTML = av2d(profile);
+  const starsTotal = Object.values(profile.best).reduce((a, b) => a + b, 0);
+  $('#stats').innerHTML = `
+    <div class="stat"><b>${profile.plays}</b><span>missions played</span></div>
+    <div class="stat"><b>${starsTotal} / 6</b><span>stars collected</span></div>
+    <div class="stat"><b>${profile.vocab.length}</b><span>phrases in your notebook</span></div>`;
+  const rp = $('#rowPlay'), rs = $('#rowSoon'); rp.innerHTML = ''; rs.innerHTML = '';
+  GAMES.forEach(g => {
+    const b = profile.best[g.id] || 0;
+    const card = el('button', 'gcard' + (g.soon ? ' soon' : ''));
+    card.innerHTML = `<div class="thumb" style="background:${g.bg}"><span class="t-emo">${g.emoji}</span><span class="t-name">${escH(g.title)}</span>${g.soon ? '<span class="lock">COMING SOON</span>' : ''}</div>
+      <div class="gname">${escH(g.title)}</div>
+      <div class="gmeta">${g.soon ? 'In development' : `<span class="stars">${'★'.repeat(b)}${'☆'.repeat(3 - b)}</span><span>${g.level}</span>`}</div>`;
+    if (g.soon) card.disabled = true; else card.onclick = () => openDetail(g);
+    (g.soon ? rs : rp).append(card);
+  });
+}
+const SKINS = ['#f5cd30', '#ffdbac', '#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e'];
+const SHIRTS = ['#0d69ac', '#e53935', '#43a047', '#fb8c00', '#8e24aa', '#212121', '#f5f5f5', '#00acc1'];
+const PANTS = ['#a4bd47', '#1565c0', '#37474f', '#5d4037', '#212121', '#6d4c41', '#ad1457'];
+function renderAvatarPage() {
+  $('#avStage').innerHTML = av2d(profile);
+  $('#avStage .av2d').style.transform = 'scale(1.5)';
+  $('#nameIn').value = profile.name;
+  const sw = (box, list, key) => {
+    box.innerHTML = '';
+    list.forEach(c => {
+      const b = el('button', 'sw'); b.style.background = c; b.setAttribute('aria-label', key + ' ' + c);
+      b.setAttribute('aria-pressed', profile[key] === c); b.onclick = () => { profile[key] = c; saveProfile(); renderAvatarPage(); renderHome(); };
+      box.append(b);
+    });
+  };
+  sw($('#swSkin'), SKINS, 'skin'); sw($('#swShirt'), SHIRTS, 'shirt'); sw($('#swPants'), PANTS, 'pants');
+}
+$('#nameIn').addEventListener('input', e => {
+  const v = e.target.value.replace(/[^\w .-]/g, '').trim(); profile.name = v || 'Player'; saveProfile(); renderHome();
+});
+function renderNotebook() {
+  const box = $('#vocabList');
+  if (!profile.vocab.length) { box.innerHTML = '<div class="empty">Your notebook is empty. Finish a mission and the phrases you practised will appear here.</div>'; return; }
+  box.innerHTML = profile.vocab.map(v => `<div class="vcard"><b>${escH(v.en)}</b><span>${escH(v.es)}</span><small>${escH(v.g)}</small></div>`).join('');
+}
+document.querySelectorAll('.topbar nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.topbar nav button').forEach(x => x.removeAttribute('aria-current'));
+  b.setAttribute('aria-current', 'page');
+  ['Home', 'Avatar', 'Notebook'].forEach(p => $('#page' + p).hidden = p !== b.dataset.page);
+  if (b.dataset.page === 'Avatar') renderAvatarPage();
+  if (b.dataset.page === 'Notebook') renderNotebook();
+});
+let detailGame = null;
+function openDetail(g) {
+  detailGame = g;
+  $('#dThumb').style.background = g.bg; $('#dThumb').innerHTML = `<span class="t-emo">${g.emoji}</span>`;
+  $('#dTitle').textContent = g.title; $('#dLevel').textContent = 'Level ' + g.level;
+  $('#dDesc').textContent = g.desc;
+  $('#dGoals').innerHTML = g.goals.map(x => `<li>${escH(x)}</li>`).join('');
+  $('#dChips').innerHTML = g.chips.map(x => `<span class="chip">${x}</span>`).join('');
+  $('#detail').hidden = false; $('#dPlay').focus();
+}
+$('#detailX').onclick = () => $('#detail').hidden = true;
+$('#detail').addEventListener('click', e => { if (e.target.id === 'detail') $('#detail').hidden = true; });
+$('#dPlay').onclick = () => launch(detailGame.id);
+
+/* =====================================================================
+   3D ENGINE
+   ===================================================================== */
+let R = null, W = null, G = null;
+const P = { av: null, pos: null, vy: 0, ground: true, yaw: 0, frozen: false, moving: false, spawn: [0, 0, 0] };
+const cam = { yaw: 0, pitch: 0.42, dist: 11 };
+const keys = {}; const joy = { x: 0, y: 0, id: null }; let jumpReq = false;
+const matCache = {};
+const M = color => matCache[color] || (matCache[color] = new THREE.MeshLambertMaterial({ color }));
+
+function initThree() {
+  if (R) return;
+  const canvas = $('#c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 600);
+  R = { renderer, camera, canvas, ray: new THREE.Raycaster() };
+  addEventListener('resize', resize);
+  setupInput();
+  requestAnimationFrame(loop);
+}
+function resize() {
+  if (!R) return;
+  const w = $('#game').clientWidth || innerWidth, h = $('#game').clientHeight || innerHeight;
+  R.renderer.setSize(w, h, false); R.camera.aspect = w / h; R.camera.updateProjectionMatrix();
+}
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+function studTex(base, rep) {
+  const t = canvasTex(64, 64, (g) => {
+    g.fillStyle = base; g.fillRect(0, 0, 64, 64);
+    g.fillStyle = 'rgba(0,0,0,.13)'; g.beginPath(); g.arc(34, 35, 15, 0, 7); g.fill();
+    g.fillStyle = base; g.beginPath(); g.arc(32, 32, 15, 0, 7); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.arc(30, 30, 11, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.06)'; g.strokeRect(0, 0, 64, 64);
+  });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); return t;
+}
+function checkerTex(a, b, n, rx, rz) {
+  const t = canvasTex(128, 128, (g) => { const s = 128 / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { g.fillStyle = (i + j) % 2 ? a : b; g.fillRect(i * s, j * s, s, s); } });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, rz); return t;
+}
+
+function newWorld() {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#a8dcff'); scene.fog = new THREE.Fog('#a8dcff', 90, 260);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#6f7f5f', 0.78));
+  const sun = new THREE.DirectionalLight('#fff3df', 0.72); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); const sc = sun.shadow.camera; sc.left = -45; sc.right = 45; sc.top = 45; sc.bottom = -45; sc.near = 1; sc.far = 160; sun.shadow.bias = -0.0006;
+  scene.add(sun); scene.add(sun.target);
+  W = { scene, sun, colliders: [], occluders: [], inter: [], npcs: [], hides: [], timers: [], t: 0, bounds: { minX: -60, maxX: 60, minZ: -60, maxZ: 60 }, update: null, marker: null };
+  $('#bubbles').innerHTML = ''; $('#chatLog').innerHTML = ''; $('#notes').innerHTML = '';
+  $('#dlg').hidden = true; $('#panelWrap').hidden = true; $('#esc').hidden = true; $('#results').hidden = true; $('#prompt').hidden = true;
+}
+function later(sec, fn) { const w = W; W.timers.push({ at: W.t + sec, fn: () => { if (W === w) fn(); } }); }
+
+function ground(color, size = 400) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshLambertMaterial({ map: studTex(color, size / 2) }));
+  m.rotation.x = -Math.PI / 2; m.receiveShadow = true; W.scene.add(m); return m;
+}
+function part(x, y, z, w, h, d, color, o = {}) {
+  const mat = o.mat || (o.occlude ? new THREE.MeshLambertMaterial({ color }) : M(color));
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y + h / 2, z); m.castShadow = o.shadow !== false; m.receiveShadow = true;
+  (o.parent || W.scene).add(m);
+  if (o.solid !== false) W.colliders.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2, minY: y, maxY: y + h });
+  if (o.occlude) { m.userData.faded = false; W.occluders.push(m); }
+  return m;
+}
+function plane(x, y, z, w, h, rotY, tex, o = {}) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: !!o.transparent }));
+  m.position.set(x, y, z); m.rotation.y = rotY || 0; W.scene.add(m); return m;
+}
+function sign(text, x, y, z, w, h, rotY, o = {}) {
+  const cw = 1024, ch = Math.round(1024 * h / w);
+  const tex = canvasTex(cw, ch, (g) => {
+    g.fillStyle = o.bg || '#222'; g.fillRect(0, 0, cw, ch);
+    if (o.border) { g.strokeStyle = o.border; g.lineWidth = ch * 0.08; g.strokeRect(0, 0, cw, ch); }
+    const lines = String(text).split('\n');
+    let size = o.size || ch * 0.55 / lines.length;
+    g.font = `${o.weight || 900} ${size}px Montserrat, Arial, sans-serif`;
+    const maxW = Math.max(...lines.map(l => g.measureText(l).width));
+    if (maxW > cw * 0.9) { size *= cw * 0.9 / maxW; g.font = `${o.weight || 900} ${size}px Montserrat, Arial, sans-serif`; }
+    g.fillStyle = o.fg || '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    lines.forEach((l, i) => g.fillText(l, cw / 2, ch / 2 + (i - (lines.length - 1) / 2) * size * 1.15));
+  });
+  return plane(x, y, z, w, h, rotY, tex);
+}
+function tagSprite(text, color = '#ffffff') {
+  const tex = canvasTex(512, 96, (g) => {
+    g.font = '800 46px Montserrat, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 9; g.strokeStyle = 'rgba(0,0,0,.55)'; g.strokeText(text, 256, 50); g.fillStyle = color; g.fillText(text, 256, 50);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true })); s.scale.set(2.9, 0.55, 1); return s;
+}
+function faceTex(skin, mood) {
+  return canvasTex(128, 128, (g) => {
+    g.fillStyle = skin; g.fillRect(0, 0, 128, 128);
+    g.fillStyle = '#1b1b1b';
+    const eye = (x) => { g.beginPath(); g.ellipse(x, 52, 7, 12, 0, 0, 7); g.fill(); };
+    eye(44); eye(84);
+    g.strokeStyle = '#1b1b1b'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath();
+    if (mood === 'sad') g.arc(64, 104, 20, 1.15 * Math.PI, 1.85 * Math.PI);
+    else if (mood === 'wow') { g.ellipse(64, 88, 9, 12, 0, 0, 7); }
+    else g.arc(64, 70, 24, 0.2 * Math.PI, 0.8 * Math.PI);
+    g.stroke();
+    if (mood === 'sad') { g.fillStyle = '#e57373'; g.globalAlpha = .5; g.beginPath(); g.arc(30, 76, 9, 0, 7); g.arc(98, 76, 9, 0, 7); g.fill(); }
+  });
+}
+function makeAvatar(o) {
+  const g = new THREE.Group();
+  const bx = (w, h, d, m) => { const x = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); x.castShadow = true; return x; };
+  const torso = bx(1, 1, 0.5, M(o.shirt)); torso.position.y = 1.5; g.add(torso);
+  const pivot = (x, y) => { const p = new THREE.Group(); p.position.set(x, y, 0); g.add(p); return p; };
+  const lLeg = pivot(-0.25, 1), rLeg = pivot(0.25, 1);
+  const ll = bx(0.49, 1, 0.5, M(o.pants)); ll.position.y = -0.5; lLeg.add(ll);
+  const rl = bx(0.49, 1, 0.5, M(o.pants)); rl.position.y = -0.5; rLeg.add(rl);
+  const lArm = pivot(-0.75, 1.95), rArm = pivot(0.75, 1.95);
+  const armM = M(o.sleeves ? o.shirt : o.skin);
+  const la = bx(0.49, 1, 0.5, armM); la.position.y = -0.45; lArm.add(la);
+  const ra = bx(0.49, 1, 0.5, armM); ra.position.y = -0.45; rArm.add(ra);
+  const skinM = M(o.skin);
+  const faceMat = new THREE.MeshLambertMaterial({ map: faceTex(o.skin, 'smile') });
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.6, 0.6), [skinM, skinM, skinM, skinM, faceMat, skinM]);
+  head.position.y = 2.32; head.castShadow = true; g.add(head);
+  if (o.hair) { const hc = bx(0.67, 0.18, 0.67, M(o.hair)); hc.position.set(0, 2.66, 0); g.add(hc); const hb = bx(0.67, 0.42, 0.14, M(o.hair)); hb.position.set(0, 2.44, -0.28); g.add(hb); if (o.long) { const hl = bx(0.67, 0.75, 0.2, M(o.hair)); hl.position.set(0, 2.1, -0.28); g.add(hl); } }
+  if (o.chef) { const h1 = bx(0.66, 0.1, 0.66, M('#ffffff')); h1.position.y = 2.66; g.add(h1); const h2 = bx(0.52, 0.5, 0.52, M('#ffffff')); h2.position.y = 2.95; g.add(h2); }
+  if (o.cap) { const c1 = bx(0.68, 0.16, 0.68, M(o.cap)); c1.position.y = 2.68; g.add(c1); const c2 = bx(0.6, 0.06, 0.32, M(o.cap)); c2.position.set(0, 2.62, 0.45); g.add(c2); }
+  if (o.apron) { const a = bx(0.86, 0.85, 0.04, M(o.apron)); a.position.set(0, 1.3, 0.27); g.add(a); }
+  if (o.tie) { const t = bx(0.14, 0.6, 0.03, M(o.tie)); t.position.set(0, 1.62, 0.27); g.add(t); }
+  const shoeL = bx(0.51, 0.2, 0.58, M('#111')); shoeL.position.set(0, -0.92, 0.04); lLeg.add(shoeL);
+  const shoeR = bx(0.51, 0.2, 0.58, M('#111')); shoeR.position.set(0, -0.92, 0.04); rLeg.add(shoeR);
+  shoeL.visible = shoeR.visible = !!o.shoes;
+  const pack = bx(0.8, 0.9, 0.34, M('#1565c0')); pack.position.set(0, 1.5, -0.42); pack.visible = false; g.add(pack);
+  if (o.name) { const tag = tagSprite(o.name, o.tagColor); tag.position.y = 3.15; g.add(tag); }
+  g.userData = { torso, lLeg, rLeg, lArm, rArm, legs: [ll, rl], arms: [la, ra], shoes: [shoeL, shoeR], pack, faceMat, skin: o.skin, swing: 0, seated: false };
+  return g;
+}
+function setFace(av, mood) { av.userData.faceMat.map = faceTex(av.userData.skin, mood); av.userData.faceMat.needsUpdate = true; }
+function animAv(av, moving, t, dt) {
+  const u = av.userData;
+  if (u.seated) {
+    u.lLeg.rotation.x = u.rLeg.rotation.x = -Math.PI / 2;
+    const a = u.eating ? -1.1 + Math.sin(t * 11) * 0.35 : -0.35;
+    u.lArm.rotation.x = u.eating ? -0.35 : a; u.rArm.rotation.x = a; return;
+  }
+  u.swing = moving ? Math.sin(t * 10) * 0.85 : u.swing * Math.max(0, 1 - dt * 10);
+  u.lLeg.rotation.x = u.swing; u.rLeg.rotation.x = -u.swing;
+  if (u.carry) { u.lArm.rotation.x = u.rArm.rotation.x = -1.35; }
+  else { u.lArm.rotation.x = -u.swing; u.rArm.rotation.x = u.swing; }
+  if (u.wave) u.rArm.rotation.z = Math.PI * 0.85 + Math.sin(t * 9) * 0.3; else u.rArm.rotation.z = 0;
+}
+
+/* ---------------- NPCs ---------------- */
+function npc(name, look, x, z, yaw = 0, o = {}) {
+  const av = makeAvatar(Object.assign({ name }, look));
+  av.position.set(x, 0, z); av.rotation.y = yaw; if (o.scale) av.scale.setScalar(o.scale);
+  W.scene.add(av);
+  const n = { name, av, pos: av.position, path: [], speed: o.speed || 6, color: o.color || '#ffd54a', voice: o.voice || { pitch: 1, rate: 1 }, t: Math.random() * 9, moving: false, update: null };
+  W.npcs.push(n); return n;
+}
+function walkTo(n, pts, cb) { if (n.av.userData.seated) { n.av.userData.seated = false; n.pos.y = n.baseY || 0; } n.path = pts.map(p => p.slice()); n.onArrive = cb; }
+function faceTo(n, x, z) { n.av.rotation.y = Math.atan2(x - n.pos.x, z - n.pos.z); }
+function sitAv(av, x, z, yaw) { av.position.set(x, -0.15, z); av.rotation.y = yaw; av.userData.seated = true; }
+function updateNPC(n, dt) {
+  n.t += dt; n.moving = false;
+  if (n.path.length) {
+    const [tx, tz] = n.path[0]; const dx = tx - n.pos.x, dz = tz - n.pos.z; const d = Math.hypot(dx, dz);
+    if (d < 0.12) { n.path.shift(); if (!n.path.length) { const cb = n.onArrive; n.onArrive = null; cb && cb(); } }
+    else { const s = Math.min(d, n.speed * dt); n.pos.x += dx / d * s; n.pos.z += dz / d * s; n.av.rotation.y = lerpAngle(n.av.rotation.y, Math.atan2(dx, dz), Math.min(1, dt * 12)); n.moving = true; }
+  }
+  if (n.update) n.update(dt);
+  animAv(n.av, n.moving, n.t, dt);
+}
+function inter(o) { W.inter.push(o); return o; }
+function setMarker(x, y, z) {
+  if (!W.marker) {
+    const g = new THREE.Group();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.9, 4), new THREE.MeshBasicMaterial({ color: '#00e676' }));
+    cone.rotation.x = Math.PI; g.add(cone); W.scene.add(g); W.marker = g;
+  }
+  W.marker.visible = true; W.marker.userData.base = [x, y, z];
+}
+function hideMarker() { if (W.marker) W.marker.visible = false; }
+
+/* ---------------- player & physics ---------------- */
+function spawnPlayer(x, z, yaw, camYaw) {
+  P.av = makeAvatar({ skin: profile.skin, shirt: profile.shirt, pants: profile.pants, name: profile.name });
+  W.scene.add(P.av); P.pos = P.av.position; P.pos.set(x, 0, z); P.yaw = yaw; P.vy = 0; P.frozen = false; P.spawn = [x, z, yaw, camYaw];
+  cam.yaw = camYaw; cam.pitch = 0.42; cam.dist = 11;
+}
+function blocked() { return !$('#dlg').hidden || !$('#panelWrap').hidden || !$('#esc').hidden || !$('#results').hidden || document.activeElement === $('#chatIn'); }
+function collide() {
+  const r = 0.55, feet = P.pos.y; let gY = 0;
+  for (const c of W.colliders) {
+    if (c.maxY <= feet + 0.6) {
+      if (P.pos.x > c.minX - 0.15 && P.pos.x < c.maxX + 0.15 && P.pos.z > c.minZ - 0.15 && P.pos.z < c.maxZ + 0.15) gY = Math.max(gY, c.maxY);
+      continue;
+    }
+    if (c.minY >= feet + 2.5) continue;
+    const cx = clamp(P.pos.x, c.minX, c.maxX), cz = clamp(P.pos.z, c.minZ, c.maxZ);
+    const dx = P.pos.x - cx, dz = P.pos.z - cz, d2 = dx * dx + dz * dz;
+    if (d2 < r * r) {
+      if (d2 > 1e-8) { const d = Math.sqrt(d2); P.pos.x = cx + dx / d * r; P.pos.z = cz + dz / d * r; }
+      else {
+        const pen = [P.pos.x - c.minX, c.maxX - P.pos.x, P.pos.z - c.minZ, c.maxZ - P.pos.z]; const i = pen.indexOf(Math.min(...pen));
+        if (i === 0) P.pos.x = c.minX - r; else if (i === 1) P.pos.x = c.maxX + r; else if (i === 2) P.pos.z = c.minZ - r; else P.pos.z = c.maxZ + r;
+      }
+    }
+  }
+  return gY;
+}
+function updatePlayer(dt) {
+  if (!P.av) return;
+  if (P.frozen) { P.moving = false; animAv(P.av, false, W.t, dt); return; }
+  let ix = 0, iz = 0;
+  if (!blocked()) {
+    if (keys.KeyW || keys.ArrowUp) iz += 1; if (keys.KeyS || keys.ArrowDown) iz -= 1;
+    if (keys.KeyD || keys.ArrowRight) ix += 1; if (keys.KeyA || keys.ArrowLeft) ix -= 1;
+    ix += joy.x; iz -= joy.y;
+  }
+  const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw);
+  let mx = fx * iz + rx * ix, mz = fz * iz + rz * ix; const len = Math.hypot(mx, mz);
+  P.moving = false;
+  if (len > 0.08) {
+    const s = Math.min(len, 1) / len * 8.5; mx *= s; mz *= s;
+    P.pos.x += mx * dt; P.pos.z += mz * dt; P.moving = true;
+    P.yaw = lerpAngle(P.yaw, Math.atan2(mx, mz), Math.min(1, dt * 14));
+  }
+  if ((keys.Space || jumpReq) && P.ground && !blocked()) { P.vy = 15; P.ground = false; }
+  jumpReq = false;
+  P.vy -= 45 * dt; P.pos.y += P.vy * dt;
+  const gY = collide();
+  if (P.pos.y <= gY) { P.pos.y = gY; P.vy = 0; P.ground = true; } else P.ground = P.pos.y - gY < 0.05;
+  const b = W.bounds; P.pos.x = clamp(P.pos.x, b.minX, b.maxX); P.pos.z = clamp(P.pos.z, b.minZ, b.maxZ);
+  P.av.rotation.y = P.yaw;
+  animAv(P.av, P.moving && P.ground, W.t, dt);
+}
+function resetPlayer() { if (P.frozen) return; const [x, z, yaw, cy] = P.spawn; P.pos.set(x, 0, z); P.yaw = yaw; cam.yaw = cy; P.vy = 0; }
+
+/* ---------------- input ---------------- */
+function setupInput() {
+  addEventListener('keydown', e => {
+    if ($('#game').hidden) return;
+    if (e.target === $('#chatIn')) { if (e.key === 'Enter') sendChat(); if (e.key === 'Escape') $('#chatIn').blur(); return; }
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === '/') { e.preventDefault(); $('#chat').hidden = false; $('#chatIn').focus(); return; }
+    if (e.key === 'Escape') { toggleEsc(); return; }
+    if (!$('#dlg').hidden && /^[1-9]$/.test(e.key)) { const b = $('#dlgOpts').children[+e.key - 1]; if (b) b.click(); return; }
+    if (e.code === 'KeyE' && curInter && !blocked()) { curInter.act(); return; }
+    keys[e.code] = true;
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  });
+  addEventListener('keyup', e => { keys[e.code] = false; });
+  addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+  const cv = R.canvas; let drag = null;
+  cv.addEventListener('pointerdown', e => { drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); cv.focus(); });
+  cv.addEventListener('pointermove', e => {
+    if (!drag || drag.id !== e.pointerId) return;
+    cam.yaw -= (e.clientX - drag.x) * 0.006; cam.pitch = clamp(cam.pitch + (e.clientY - drag.y) * 0.004, 0.08, 1.25);
+    drag.x = e.clientX; drag.y = e.clientY;
+  });
+  const end = e => { if (drag && drag.id === e.pointerId) drag = null; };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = clamp(cam.dist + Math.sign(e.deltaY) * 1.2, 4, 24); }, { passive: false });
+  const jb = $('#joy'), jk = $('#joyK');
+  jb.addEventListener('pointerdown', e => { joy.id = e.pointerId; jb.setPointerCapture(e.pointerId); moveJoy(e); });
+  jb.addEventListener('pointermove', e => { if (joy.id === e.pointerId) moveJoy(e); });
+  const jEnd = e => { if (joy.id !== e.pointerId) return; joy.id = null; joy.x = joy.y = 0; jk.style.transform = ''; };
+  jb.addEventListener('pointerup', jEnd); jb.addEventListener('pointercancel', jEnd);
+  function moveJoy(e) {
+    const r = jb.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const d = Math.hypot(dx, dy), m = 45; if (d > m) { dx *= m / d; dy *= m / d; }
+    joy.x = dx / m; joy.y = dy / m; jk.style.transform = `translate(${dx}px,${dy}px)`;
+  }
+  $('#jumpB').addEventListener('pointerdown', () => { jumpReq = true; });
+  $('#prompt').addEventListener('click', () => { if (curInter && !blocked()) curInter.act(); });
+}
+$('#touch').hidden = !(matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
+
+/* ---------------- loop ---------------- */
+let last = performance.now(), curInter = null;
+const _v = new THREE.Vector3();
+function toScreen(x, y, z) {
+  _v.set(x, y, z).project(R.camera); if (_v.z > 1) return null;
+  return { x: (_v.x + 1) / 2 * R.canvas.clientWidth, y: (1 - _v.y) / 2 * R.canvas.clientHeight };
+}
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!W || !P.av || $('#game').hidden) return;
+  W.t += dt;
+  for (let i = W.timers.length - 1; i >= 0; i--) if (W.t >= W.timers[i].at) { const tm = W.timers.splice(i, 1)[0]; tm.fn(); }
+  if (!W) return;
+  updatePlayer(dt);
+  W.npcs.forEach(n => updateNPC(n, dt));
+  if (W.update) W.update(dt);
+  for (const h of W.hides) h.mesh.visible = !(P.pos.x > h.minX && P.pos.x < h.maxX && P.pos.z > h.minZ && P.pos.z < h.maxZ);
+  if (W.marker && W.marker.visible) { const [x, y, z] = W.marker.userData.base; W.marker.position.set(x, y + Math.sin(W.t * 4) * 0.25, z); W.marker.rotation.y += dt * 2; }
+  // camera
+  const tx = P.pos.x, ty = P.pos.y + 2.2, tz = P.pos.z, cp = Math.cos(cam.pitch);
+  R.camera.position.set(tx + Math.sin(cam.yaw) * cp * cam.dist, Math.max(0.6, ty + Math.sin(cam.pitch) * cam.dist), tz + Math.cos(cam.yaw) * cp * cam.dist);
+  R.camera.lookAt(tx, ty, tz);
+  // fade walls between camera and player
+  _v.set(tx, ty, tz).sub(R.camera.position); const dist = _v.length(); _v.normalize();
+  R.ray.set(R.camera.position, _v); R.ray.far = Math.max(0.1, dist - 0.4);
+  const hits = new Set(R.ray.intersectObjects(W.occluders, false).map(h => h.object));
+  for (const m of W.occluders) { const f = hits.has(m); if (f !== m.userData.faded) { m.userData.faded = f; m.material.transparent = f; m.material.opacity = f ? 0.2 : 1; m.material.depthWrite = !f; m.material.needsUpdate = true; } }
+  W.sun.position.set(P.pos.x + 25, 45, P.pos.z + 18); W.sun.target.position.set(P.pos.x, 0, P.pos.z);
+  R.renderer.render(W.scene, R.camera);
+  hud();
+}
+function hud() {
+  // proximity prompt
+  let best = null, bd = 1e9;
+  if (!blocked()) for (const it of W.inter) {
+    if (it.when && !it.when()) continue;
+    const p = it.at(); const d = Math.hypot(p.x - P.pos.x, p.z - P.pos.z);
+    if (d < (it.r || 4) && d < bd) { bd = d; best = it; }
+  }
+  curInter = best;
+  const pr = $('#prompt');
+  if (best) {
+    const p = best.at(); const s = toScreen(p.x, (p.y || 0) + (best.h || 3.6), p.z);
+    if (s) {
+      pr.hidden = false; pr.style.transform = `translate(${s.x}px,${s.y}px) translate(-50%,-100%)`;
+      if (pr.dataset.k !== best.obj + best.label) { pr.dataset.k = best.obj + best.label; pr.querySelector('.pr-obj').textContent = best.obj; pr.querySelector('.pr-act').textContent = best.label; }
+    } else pr.hidden = true;
+  } else pr.hidden = true;
+  // speech bubbles
+  const avs = [P.av, ...W.npcs.map(n => n.av)];
+  for (const av of avs) {
+    const b = av.userData.bubble; if (!b) continue;
+    if (W.t > av.userData.bubbleUntil) { b.hidden = true; continue; }
+    const s = toScreen(av.position.x, av.position.y + 3.55 * av.scale.y, av.position.z);
+    if (!s) { b.hidden = true; continue; }
+    b.hidden = false; b.style.transform = `translate(${s.x}px,${s.y}px) translate(-50%,-100%)`;
+  }
+  $('#game').classList.toggle('locked', blocked());
+}
+
+/* =====================================================================
+   HUD SYSTEMS: chat, bubbles, notifications, dialog, panels
+   ===================================================================== */
+function chat(name, text, color = '#fff') {
+  const log = $('#chatLog'); const d = el('div');
+  d.innerHTML = `<span style="color:${color}">[${escH(name)}]:</span> ${escH(text)}`;
+  log.append(d); while (log.children.length > 60) log.firstChild.remove(); log.scrollTop = log.scrollHeight;
+}
+function bubble(av, text, secs) {
+  let b = av.userData.bubble; if (!b) { b = el('div', 'bubble'); $('#bubbles').append(b); av.userData.bubble = b; }
+  b.textContent = text; av.userData.bubbleUntil = W.t + (secs || Math.max(3.5, text.length / 14));
+}
+function say(n, text) { bubble(n.av, text); chat(n.name, text, n.color); }
+function playerSay(text) { bubble(P.av, text); chat(profile.name, text, '#8ec5ff'); }
+function sendChat() {
+  const v = $('#chatIn').value.trim(); $('#chatIn').value = ''; $('#chatIn').blur();
+  if (v) playerSay(v);
+}
+$('#chatBtn').onclick = () => { $('#chat').hidden = !$('#chat').hidden; };
+function notify(title, text, kind = '') {
+  const n = el('div', 'note ' + kind, `<b>${escH(title)}</b>${escH(text)}`); $('#notes').append(n);
+  while ($('#notes').children.length > 3) $('#notes').firstChild.remove();
+  setTimeout(() => n.remove(), Math.max(5500, text.length * 55));
+}
+let popT = 0;
+function pop(text, kind) { const p = $('#pop'); p.textContent = text; p.className = 'show ' + kind; clearTimeout(popT); popT = setTimeout(() => p.className = '', 1300); }
+
+/* speech */
+let voices = [];
+function loadVoices() { try { voices = speechSynthesis.getVoices().filter(v => /^en(-|_)/i.test(v.lang)); } catch (e) {} }
+if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text, voice) {
+  if (!settings.voice || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}\p{N}\s.,!?'’$%:-]/gu, ''));
+    u.lang = 'en-US'; u.rate = (voice && voice.rate) || 0.95; u.pitch = (voice && voice.pitch) || 1;
+    const us = voices.find(v => /en-US/i.test(v.lang)); if (us) u.voice = us;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* dialog */
+let dlgSpeaker = null, dlgLine = '';
+function showDialog(n, text, es, options) {
+  const d = $('#dlg'); d.hidden = false;
+  dlgSpeaker = n; dlgLine = text;
+  $('#dlgName').textContent = n ? n.name : 'Narrator';
+  $('#dlgName').style.background = n ? (n.badge || 'var(--blue)') : '#555';
+  $('#dlgText').textContent = text;
+  $('#dlgEsText').textContent = es || 'Traducción no disponible.';
+  $('#dlgEsText').hidden = $('#dlgEs').getAttribute('aria-pressed') !== 'true';
+  if (n) { say(n, text); speak(text, n.voice); }
+  const box = $('#dlgOpts'); box.innerHTML = '';
+  options.forEach((o, i) => {
+    const b = el('button', 'opt' + (o.meta ? ' meta' : ''), `<span class="n">${i + 1}</span><span>${escH(o.t)}</span>`);
+    b.onclick = () => { if (o.say) playerSay(o.t); closeDialog(); o.fn && o.fn(); };
+    box.append(b);
+  });
+}
+function closeDialog() { $('#dlg').hidden = true; }
+$('#dlgEs').onclick = () => { const on = $('#dlgEs').getAttribute('aria-pressed') !== 'true'; $('#dlgEs').setAttribute('aria-pressed', on); $('#dlgEsText').hidden = !on; if (on && G) G.hints++; };
+$('#dlgSpeak').onclick = () => { if (dlgSpeaker) speak(dlgLine, dlgSpeaker.voice); };
+function line(n, text, es, next, btn = 'Continue') { showDialog(n, text, es, [{ t: btn + ' ▸', meta: true, fn: next }]); }
+function choice(n, text, es, opts) { showDialog(n, text, es, opts.map(o => ({ t: o.t, say: o.say !== false && !o.meta, meta: o.meta, fn: o.fn }))); }
+const CONFUSED = [['Sorry? I don\'t quite understand. Could you say that again?', '¿Perdona? No te entiendo bien. ¿Puedes repetirlo?'], ['Hmm… pardon? What do you mean?', 'Mmm… ¿perdón? ¿Qué quieres decir?'], ['Sorry, I didn\'t get that.', 'Perdona, no lo he entendido.']];
+const RUDE = [['Excuse me? There\'s no need to be rude.', '¿Perdona? No hace falta ser maleducado.'], ['Wow. OK… could you ask a bit more nicely?', 'Vaya. Vale… ¿puedes pedirlo con un poco más de educación?']];
+/* ask(): the core learning mechanic. One phrase is natural and polite (ok), others contain
+   a grammar / false-friend mistake (grammar) or are rude (rude). 'fact' = correct English but a bad decision. */
+function ask(n, text, es, phrases, done) {
+  const list = shuffle(phrases.slice());
+  const show = (t, e) => showDialog(n, t, e, list.map(p => ({ t: p.t, fn: () => pickP(p) })));
+  function pickP(p) {
+    playerSay(p.t);
+    if (p.kind === 'ok' || p.kind === 'fact') {
+      if (p.kind === 'ok') { G.good++; pop('✔ Natural English', 'good'); }
+      updateBoard(); (p.fn || done)(p); return;
+    }
+    G.bad++;
+    if (p.kind === 'rude') { G.manners = Math.max(0, G.manners - 25); notify('😬 That sounded rude', p.tip, 'bad'); pop('Manners −25', 'bad'); }
+    else { notify('✏️ English tip', p.tip, 'warn'); pop('✘ Not quite', 'bad'); }
+    G.mistakes.push({ said: p.t, tip: p.tip });
+    list.splice(list.indexOf(p), 1); updateBoard();
+    const r = pick1(p.kind === 'rude' ? RUDE : CONFUSED);
+    setTimeout(() => { if (G && !G.over) show(r[0], r[1]); }, 450);
+  }
+  show(text, es);
+}
+
+/* panel */
+function panel(title, sub, body, buttons = [], o = {}) {
+  $('#panel').className = 'panel ' + (o.cls || '');
+  $('#panelTitle').textContent = title;
+  $('#panelSub').innerHTML = sub || ''; $('#panelSub').hidden = !sub;
+  const pb = $('#panelBody'); pb.innerHTML = ''; if (typeof body === 'string') pb.innerHTML = body; else pb.append(body);
+  const f = $('#panelFoot'); f.innerHTML = '';
+  if (o.info) f.append(el('div', 'foot-info', o.info));
+  buttons.forEach(b => { const x = el('button', 'btn ' + (b.cls || ''), escH(b.t)); x.disabled = !!b.disabled; x.onclick = b.fn; f.append(x); });
+  $('#panelX').hidden = !o.onClose; $('#panelX').onclick = () => { closePanel(); o.onClose && o.onClose(); };
+  $('#panelWrap').hidden = false;
+}
+function closePanel() { $('#panelWrap').hidden = true; }
+
+/* mission / board / hotbar */
+function renderObjectives() {
+  $('#objList').innerHTML = G.obj.map(o => {
+    const cls = o.failed ? 'fail' : o.done ? 'done' : (o.secret && !o.revealed) ? 'secret' : '';
+    const txt = (o.secret && !o.revealed) ? '??? Something unexpected…' : o.text;
+    return `<li class="${cls}"><span class="ck">${o.failed ? '✕' : o.done ? '✓' : ''}</span><span>${escH(txt)}</span></li>`;
+  }).join('');
+}
+const obj = id => G.obj.find(o => o.id === id);
+function complete(id, failed) { const o = obj(id); if (!o || o.done) return; o.done = true; o.revealed = true; o.failed = !!failed; renderObjectives(); if (!failed) notify('✅ Objective complete', o.text, 'good'); }
+function reveal(id, text) { const o = obj(id); if (!o) return; o.revealed = true; if (text) o.text = text; renderObjectives(); }
+function updateBoard() {
+  if (!G) return;
+  const cols = G.sc.board();
+  $('#board').innerHTML = `<div class="lb-row lb-head"><span>People</span>${cols.map(c => `<span>${c[0]}</span>`).join('')}</div>
+    <div class="lb-row"><span>${escH(profile.name)}</span>${cols.map(c => `<span>${c[1]}</span>`).join('')}</div>`;
+}
+const engPct = () => G.good + G.bad ? Math.round(100 * G.good / (G.good + G.bad)) : 100;
+function renderHotbar() {
+  const hb = $('#hotbar'); hb.innerHTML = '';
+  G.inv.filter(i => !i.returned).forEach((it, i) => {
+    const s = el('button', 'slot' + (it.bad && it.bad() ? ' bad' : ''), `<small>${i + 1}</small>${it.emoji}`);
+    s.title = it.label; s.onclick = () => notify(it.emoji + ' ' + it.label, it.info());
+    hb.append(s);
+  });
+}
+$('#msToggle').onclick = () => { const m = $('#mission'); m.classList.toggle('collapsed'); $('#msToggle').textContent = m.classList.contains('collapsed') ? 'Show' : 'Hide'; };
+function showCard(first) {
+  panel(G.sc.cardTitle, '', `<div class="card-sheet">${G.sc.card()}</div>`, [{ t: first ? 'Let\'s go!' : 'Close', cls: 'primary', fn: closePanel }], { onClose: first ? null : () => {} });
+}
+$('#cardBtn').onclick = () => { if ($('#panelWrap').hidden && $('#dlg').hidden) showCard(false); };
+
+/* esc menu */
+function toggleEsc() {
+  if (!$('#results').hidden) return;
+  const e = $('#esc'); e.hidden = !e.hidden; $('#escLeave').dataset.confirm = ''; $('#escLeave').firstChild.textContent = 'Leave game ';
+  $('#escVoiceV').textContent = settings.voice ? 'On' : 'Off';
+}
+$('#menuBtn').onclick = toggleEsc;
+$('#escResume').onclick = toggleEsc;
+$('#escCard').onclick = () => { toggleEsc(); if ($('#panelWrap').hidden && $('#dlg').hidden) showCard(false); };
+$('#escHelp').onclick = () => {
+  toggleEsc();
+  panel('How to play', '', `<div class="card-sheet">
+    <div class="cs"><b>Move:</b> W A S D or arrow keys · <b>Jump:</b> Space · <b>Camera:</b> drag with the mouse, zoom with the wheel. On a phone use the joystick and drag the screen.</div>
+    <div class="cs"><b>Interact:</b> walk close to a person or object and press <b>E</b> (or tap the prompt).</div>
+    <div class="cs"><b>Talking:</b> choose what to say. Only one option sounds natural and polite. Grammar mistakes confuse people, rude answers cost <b>Manners</b>. Press <b>ES</b> to see a Spanish translation and 🔊 to hear the line again. Keys 1–4 pick an answer.</div>
+    <div class="cs"><b>Chat:</b> press <b>/</b> to type in English. Your words appear above your head.</div>
+  </div>`, [{ t: 'Got it', cls: 'primary', fn: closePanel }], { onClose: () => {} });
+};
+$('#escVoice').onclick = () => { settings.voice = !settings.voice; store.set('settings', settings); $('#escVoiceV').textContent = settings.voice ? 'On' : 'Off'; if (!settings.voice) try { speechSynthesis.cancel(); } catch (e) {} };
+$('#escReset').onclick = () => { toggleEsc(); resetPlayer(); };
+$('#escLeave').onclick = () => {
+  const b = $('#escLeave');
+  if (b.dataset.confirm) { goHome(); return; }
+  b.dataset.confirm = '1'; b.firstChild.textContent = 'Click again to leave (progress is lost) ';
+};
+function goHome() {
+  try { speechSynthesis.cancel(); } catch (e) {}
+  if (G) G.over = true;
+  $('#game').hidden = true; $('#home').hidden = false; W = null; P.av = null; renderHome();
+}
+
+/* results */
+function showResults(o) {
+  G.over = true; closeDialog(); closePanel();
+  const overall = Math.round(o.overall); const stars = overall >= 85 ? 3 : overall >= 65 ? 2 : 1;
+  $('#resTitle').textContent = o.title;
+  $('#resStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">★</span>`).join('');
+  $('#resFob').textContent = `+${overall} Fobux · score ${overall}/100`;
+  const col = v => v >= 80 ? 'var(--green)' : v >= 55 ? 'var(--gold)' : 'var(--red)';
+  $('#resMetrics').innerHTML = o.metrics.map(([k, v]) => `<div class="metric"><span>${k}</span><div class="bar"><i style="width:${v}%;background:${col(v)}"></i></div><span>${Math.round(v)}%</span></div>`).join('');
+  $('#resGood').innerHTML = (o.good.length ? o.good : ['You finished the mission. Keep practising!']).map(x => `<li>${escH(x)}</li>`).join('');
+  const bad = o.bad.concat(G.mistakes.slice(0, 6).map(m => `“${m.said}” → ${m.tip}`));
+  $('#resBad').innerHTML = (bad.length ? bad : ['Nothing! That was excellent.']).map(x => `<li>${escH(x)}</li>`).join('');
+  $('#resVocab').innerHTML = G.sc.vocab.map(([en, es]) => `<span class="chip" title="${escH(es)}">${escH(en)}</span>`).join('');
+  profile.fobux += overall; profile.plays++;
+  profile.best[G.id] = Math.max(profile.best[G.id] || 0, stars);
+  G.sc.vocab.forEach(([en, es]) => { if (!profile.vocab.some(v => v.en === en)) profile.vocab.push({ en, es, g: G.sc.title }); });
+  saveProfile();
+  $('#results').hidden = false;
+}
+$('#resAgain').onclick = () => { const id = G.id; $('#results').hidden = true; startScenario(id); };
+$('#resHome').onclick = () => { $('#results').hidden = true; goHome(); };
+
+/* launch */
+async function launch(id) {
+  const g = GAMES.find(x => x.id === id);
+  $('#detail').hidden = true; $('#loading').hidden = false;
+  $('#lThumb').style.background = g.bg; $('#lThumb').textContent = g.emoji; $('#lTitle').textContent = g.title; $('#lText').textContent = 'Joining server…';
+  if (typeof THREE === 'undefined') { $('#lText').textContent = 'The 3D engine could not load. Check your internet connection and reload the page.'; setTimeout(() => $('#loading').hidden = true, 4000); return; }
+  try { await Promise.race([document.fonts.load('900 40px Montserrat'), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  await new Promise(r => setTimeout(r, 700));
+  $('#home').hidden = true; $('#game').hidden = false;
+  initThree(); resize();
+  startScenario(id);
+  $('#loading').hidden = true;
+  R.canvas.focus();
+}
+function startScenario(id) {
+  newWorld();
+  const sc = SCEN[id];
+  G = { id, sc, money: sc.budget, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
+  sc.build();
+  $('#msTitle').textContent = sc.title;
+  renderObjectives(); updateBoard(); renderHotbar();
+  chat('System', `${profile.name} joined the game.`, '#aaa');
+  chat('System', 'Press / to chat. Walk to people and press E to talk.', '#aaa');
+  later(0.4, () => showCard(true));
+}
+
+/* =====================================================================
+   SCENARIO 1 — HEALTHY BITES DINER
+   ===================================================================== */
+const MENU = [
+  { id: 'soup', cat: 'Starters', name: 'Garden Vegetable Soup', price: 3.5, h: 15, emo: '🥣', desc: 'A warm bowl of carrots, peas and tomatoes.' },
+  { id: 'mozz', cat: 'Starters', name: 'Mozzarella Sticks', price: 4.5, h: -10, emo: '🧀', desc: 'Deep-fried cheese sticks with ketchup.' },
+  { id: 'chick', cat: 'Mains', name: 'Grilled Chicken Salad', price: 9, h: 35, emo: '🥗', food: ['#7cb342', '#f5deb3'], desc: 'Grilled chicken, lettuce, cucumber and a lemon dressing.' },
+  { id: 'thai', cat: 'Mains', name: 'Thai Noodle Bowl', price: 8.5, h: 25, nuts: true, emo: '🍜', food: ['#f4c542', '#e65100'], desc: 'Rice noodles and vegetables in a crunchy peanut sauce.' },
+  { id: 'burger', cat: 'Mains', name: 'Double Cheeseburger', price: 11, h: -20, emo: '🍔', food: ['#8d5524', '#ffca28'], desc: 'Two beef burgers, cheese, bacon and mayo.' },
+  { id: 'salmon', cat: 'Mains', name: 'Salmon with Roasted Vegetables', price: 13, h: 40, emo: '🐟', food: ['#ff8a65', '#43a047'], desc: 'Oven-baked salmon with peppers and courgettes.' },
+  { id: 'wrap', cat: 'Mains', name: 'Veggie Wrap', price: 7.5, h: 30, emo: '🌯', food: ['#d7b377', '#66bb6a'], desc: 'Hummus, spinach, peppers and avocado in a wholemeal wrap.' },
+  { id: 'fries', cat: 'Sides', name: 'French Fries', price: 3, h: -10, emo: '🍟', desc: 'Crispy fried potatoes with lots of salt.' },
+  { id: 'broc', cat: 'Sides', name: 'Steamed Broccoli', price: 2.5, h: 20, emo: '🥦', desc: 'Fresh broccoli with a little olive oil.' },
+  { id: 'house', cat: 'Sides', name: 'House Salad', price: 3, h: 15, nuts: true, emo: '🥬', desc: 'Mixed leaves and tomatoes with a walnut dressing.' },
+  { id: 'water', cat: 'Drinks', name: 'Tap Water', price: 0, h: 15, emo: '💧', drink: true, desc: 'Ice-cold water. Free!' },
+  { id: 'oj', cat: 'Drinks', name: 'Fresh Orange Juice', price: 3, h: 5, emo: '🍊', drink: true, desc: 'Freshly squeezed oranges, no added sugar.' },
+  { id: 'cola', cat: 'Drinks', name: 'Cola', price: 2.5, h: -15, emo: '🥤', drink: true, desc: 'A large glass with free refills.' },
+  { id: 'shake', cat: 'Drinks', name: 'Chocolate Milkshake', price: 5, h: -20, emo: '🥛', drink: true, desc: 'Ice cream, chocolate syrup and whipped cream.' },
+  { id: 'fruit', cat: 'Desserts', name: 'Fresh Fruit Salad', price: 3.5, h: 15, emo: '🍓', desc: 'Melon, strawberries, kiwi and grapes.' },
+  { id: 'cake', cat: 'Desserts', name: 'Chocolate Fudge Cake', price: 5.5, h: -15, emo: '🍰', desc: 'A big slice with hot chocolate sauce.' },
+  { id: 'cookie', cat: 'Desserts', name: 'Almond Cookie', price: 2.5, h: -5, nuts: true, emo: '🍪', desc: 'A crunchy cookie with roasted almonds.' }
+];
+const byId = id => MENU.find(m => m.id === id);
+const TAX = 0.08;
+function makeFood(item) {
+  const g = new THREE.Group();
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.42, 0.07, 20), M('#fafafa')); g.add(plate);
+  const [a, b] = item.food || ['#bdbdbd', '#9e9e9e'];
+  const f1 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.34), M(a)); f1.position.set(-0.08, 0.12, 0); g.add(f1);
+  const f2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.22), M(b)); f2.position.set(0.18, 0.1, 0.08); g.add(f2);
+  g.userData.food = [f1, f2]; return g;
+}
+
+const SCEN = {};
+SCEN.diner = {
+  title: 'Healthy Bites Diner', budget: 20, cardTitle: 'Your character card',
+  vocab: [['A table for one, please.', 'Una mesa para uno, por favor.'], ['What do you recommend?', '¿Qué me recomienda?'], ['I\'d like the…, please.', 'Quisiera el/la…, por favor.'], ['I\'m allergic to nuts.', 'Soy alérgico/a a los frutos secos.'], ['Would you mind…?', '¿Le importaría…?'], ['keep it down', 'hacer menos ruido'], ['I\'m afraid this isn\'t what I ordered.', 'Me temo que esto no es lo que pedí.'], ['take $3 off the bill', 'descontar 3 $ de la cuenta'], ['Could I have the check, please?', '¿Me trae la cuenta, por favor?'], ['tip / tax', 'propina / impuesto'], ['You too!', '¡Igualmente!']],
+  board() { return [['Cash', money(G.money)], ['English', engPct() + '%'], ['Manners', G.manners]]; },
+  card() {
+    return `<div class="cs">You are <b>${escH(profile.name)}</b>, 14 years old. You have just finished football practice and you are <b>really hungry</b>.</div>
+      <div class="cs">🎯 <b>Goal:</b> a healthy, balanced dinner: a main dish, a drink and maybe a side or dessert. Choose food that is good for you.</div>
+      <div class="cs">💵 <b>Budget:</b> $20.00 in total. Remember: in the USA, an 8% sales tax is added to the bill, and people usually leave a 15–20% tip.</div>
+      <div class="cs">⚠️ <b>Allergy:</b> you are allergic to <b>nuts</b> (peanuts, walnuts, almonds…). Read the menu carefully!</div>
+      <div class="cs">🗣 Be polite. People react to what you say and how you say it.</div>`;
+  },
+  build: buildDiner
+};
+
+function buildDiner() {
+  const s = G.s = { phase: 'enter', order: [], main: null, declared: false, lied: false, wrong: null, acceptedWrong: false, discount: 0, reaction: false, tipPct: null, paidShort: false };
+  W.bounds = { minX: -40, maxX: 40, minZ: -30, maxZ: 40 };
+  ground('#5a9e4b');
+  // street & parking
+  part(0, 0, 18, 80, 0.2, 10, '#c9ccd1', {});
+  part(0, 0, 30, 80, 0.04, 12, '#3c3f44', { solid: false });
+  for (let x = -36; x < 40; x += 8) part(x, 0.05, 30, 4, 0.02, 0.4, '#f5f5f5', { solid: false, shadow: false });
+  // car
+  part(14, 0.2, 27.5, 5, 1.3, 2.6, '#1e88e5'); part(14.3, 1.5, 27.5, 3, 0.9, 2.4, '#90caf9', { solid: false });
+  part(-18, 0.2, 32, 5, 1.3, 2.6, '#fdd835'); part(-18.3, 1.5, 32, 3, 0.9, 2.4, '#fff59d', { solid: false });
+  // trees
+  [[-26, 14], [26, 14], [-30, -10], [30, -6], [24, -20], [-24, -22]].forEach(([x, z]) => { part(x, 0, z, 0.8, 3, 0.8, '#6d4c41'); part(x, 3, z, 3.2, 3, 3.2, '#2e7d32', { solid: false }); });
+  // building shell
+  const WALL = '#f2e8d8', H = 6;
+  const wall = (x, z, w, d) => part(x, 0, z, w, H, d, WALL, { occlude: true });
+  wall(0, -12, 30, 0.6); wall(-15, 0, 0.6, 24.6); wall(15, 0, 0.6, 24.6);
+  wall(-8.75, 12, 12.5, 0.6); wall(8.75, 12, 12.5, 0.6);
+  part(0, 4.6, 12, 5, 1.4, 0.6, WALL, { solid: false });
+  part(0, 4.2, 12.6, 30.6, 0.5, 0.2, '#c62828', { solid: false });
+  [-9, 9].forEach(x => part(x, 1.6, 12, 6, 2, 0.7, '#9fd8ff', { solid: false, shadow: false }));
+  [-4, 4].forEach(z => part(-15, 1.6, z, 0.7, 2, 5, '#9fd8ff', { solid: false, shadow: false }));
+  const roof = part(0, H, 0, 31.4, 0.6, 25.4, '#b71c1c', { solid: false });
+  W.hides.push({ mesh: roof, minX: -15, maxX: 15, minZ: -12, maxZ: 12 });
+  sign('HEALTHY BITES\nDINER', 0, 8.2, 12.25, 11, 3.2, 0, { bg: '#c62828', fg: '#fff8e1', border: '#fff8e1' });
+  // awning
+  part(0, 4, 13.4, 6, 0.25, 2.4, '#ef5350', { solid: false });
+  // floor
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(29.4, 23.4), new THREE.MeshLambertMaterial({ map: checkerTex('#f5f5f5', '#263238', 4, 7, 6) }));
+  fl.rotation.x = -Math.PI / 2; fl.position.y = 0.02; fl.receiveShadow = true; W.scene.add(fl);
+  // host stand
+  part(0, 0, 8.5, 2.2, 1.3, 0.8, '#6d4c41');
+  sign('PLEASE WAIT\nTO BE SEATED', 0, 0.75, 8.92, 1.9, 0.75, 0, { bg: '#fff8e1', fg: '#3e2723' });
+  // tables
+  const table = (x, z, top = '#fafafa') => {
+    part(x, 0.95, z, 2.4, 0.2, 1.6, top); part(x, 0, z, 0.35, 0.95, 0.35, '#555', { solid: false });
+    [1, -1].forEach(sd => { part(x, 0, z + sd * 1.35, 1.1, 0.55, 0.9, '#d32f2f'); part(x, 0.55, z + sd * 1.78, 1.1, 1.15, 0.16, '#b71c1c'); });
+  };
+  table(-7, 3); table(-11.2, 3); table(7, 3); table(7, -3.5); table(-7, -3.5);
+  sign('TABLE 4', -7, 1.3, 3.84, 0.8, 0.28, 0, { bg: '#2e7d32', fg: '#fff' });
+  // counter + kitchen
+  part(4, 0, -8.2, 16, 1.2, 1.2, '#90a4ae'); part(4, 1.2, -8.2, 16.2, 0.12, 1.4, '#eceff1', { solid: false });
+  part(8, 0, -11, 3.2, 1, 1.3, '#424242'); part(1, 0, -11.1, 3, 1.4, 1.1, '#b0bec5');
+  sign('KITCHEN', -1.5, 2.6, -11.68, 3, 0.8, 0, { bg: '#37474f', fg: '#fff' });
+  // menu board
+  const board = canvasTex(1024, 380, (g) => {
+    g.fillStyle = '#1f2a24'; g.fillRect(0, 0, 1024, 380); g.strokeStyle = '#8d6e63'; g.lineWidth = 16; g.strokeRect(0, 0, 1024, 380);
+    g.fillStyle = '#fff8e1'; g.font = '900 42px Montserrat, Arial'; g.textAlign = 'center'; g.fillText('TODAY\'S MENU', 512, 54);
+    g.font = '700 22px Montserrat, Arial'; g.textAlign = 'left';
+    const mains = MENU.filter(m => m.cat === 'Mains' || m.cat === 'Starters'), rest = MENU.filter(m => !(m.cat === 'Mains' || m.cat === 'Starters'));
+    const col = (list, x) => list.forEach((m, i) => { const y = 92 + i * 25; g.fillStyle = '#fff8e1'; g.fillText(m.name, x, y); g.fillStyle = '#ffd54f'; g.textAlign = 'right'; g.fillText(m.price ? '$' + m.price.toFixed(2) : 'FREE', x + 420, y); g.textAlign = 'left'; });
+    col(mains, 50); col(rest.slice(0, 11), 540);
+  });
+  plane(4, 4.3, -11.66, 9, 3.34, 0, board);
+  sign('EAT THE RAINBOW', -14.66, 4.2, -4, 5, 1, Math.PI / 2, { bg: '#fff3e0', fg: '#e65100' });
+  [[-13.8, 10.8], [13.8, 10.8], [13.8, -10.8]].forEach(([x, z]) => { part(x, 0, z, 0.9, 0.8, 0.9, '#795548'); part(x, 0.8, z, 1.1, 1.3, 1.1, '#43a047', { solid: false }); });
+
+  // ---- NPCs
+  const host = npc('Emma (Host)', { skin: '#e0ac69', shirt: '#7b1fa2', pants: '#263238', hair: '#3e2723', long: true, sleeves: true }, 0, 7.2, 0, { color: '#ce93d8', voice: { pitch: 1.25, rate: 1 } });
+  const waiter = npc('Carlos (Waiter)', { skin: '#c68642', shirt: '#fafafa', pants: '#212121', hair: '#1b1b1b', apron: '#212121', sleeves: true, shoes: true }, 0, -6.6, 0, { color: '#80deea', voice: { pitch: 0.95, rate: 1 }, speed: 6.5 });
+  const dad = npc('Mr. Johnson', { skin: '#f1c27d', shirt: '#2e7d32', pants: '#5d4037', hair: '#8d6e63', sleeves: true }, 0, 0, 0, { color: '#a5d6a7', voice: { pitch: 0.8, rate: 0.95 } });
+  const kid = npc('Timmy', { skin: '#f1c27d', shirt: '#ff9800', pants: '#1565c0', hair: '#d4a017' }, 0, 0, 0, { scale: 0.72, color: '#ffcc80', voice: { pitch: 1.6, rate: 1.1 }, speed: 7 });
+  const chef = npc('Marco (Chef)', { skin: '#ffdbac', shirt: '#ffffff', pants: '#424242', chef: true, sleeves: true }, 4, -10, 0, { color: '#ffab91' });
+  const lady = npc('Mrs. Lee', { skin: '#ffdbac', shirt: '#ec407a', pants: '#37474f', hair: '#cfd8dc', sleeves: true }, 0, 0, 0, { color: '#f48fb1', voice: { pitch: 1.3, rate: 0.9 } });
+  host.badge = '#7b1fa2'; waiter.badge = '#00838f'; dad.badge = '#2e7d32'; kid.badge = '#ef6c00'; lady.badge = '#ad1457';
+  sitAv(dad.av, -11.2, 4.35, Math.PI); sitAv(kid.av, -11.2, 1.65, 0); sitAv(lady.av, 7, -4.85, Math.PI);
+  const ladyLines = ['This soup is lovely!', 'Excuse me, could I have some more water, please?', 'Mmm, the fruit salad here is so fresh.', 'Carlos, could you bring me a napkin, please?'];
+  let ladyT = 6;
+  const WAIT_IDLE = [0, -6.6], AT_TABLE = [-5.15, 4.6];
+  const toTable = [[-3.6, -0.4], AT_TABLE], toKitchen = [[-3.6, -0.4], WAIT_IDLE];
+  let plateMesh = null, kidAngle = 0, kidT = 0;
+  const KID_LINES = ['VROOOOM! 🚗', 'I\'m a dinosaur! RAAAWR!', 'Catch me, Daddy!', 'Weeeeee!', 'BEEP BEEP!', 'I don\'t want broccoli!'];
+
+  spawnPlayer(0, 19, Math.PI, 0);
+  G.obj = [
+    { id: 'host', text: 'Ask the host for a table' },
+    { id: 'sit', text: 'Sit down at your table' },
+    { id: 'order', text: 'Order a healthy meal (main dish + drink)' },
+    { id: 'noise', text: 'Ask the noisy family to keep it down, politely', secret: true },
+    { id: 'dish', text: 'Check your food: is it what you ordered?', secret: true },
+    { id: 'eat', text: 'Eat your meal' },
+    { id: 'bill', text: 'Ask for the check and leave a fair tip' },
+    { id: 'bye', text: 'Say goodbye to the host' }
+  ];
+
+  W.update = (dt) => {
+    ladyT -= dt; if (ladyT < 0) { ladyT = 14 + Math.random() * 8; if (Math.hypot(P.pos.x - 7, P.pos.z + 4) < 16) say(lady, pick1(ladyLines)); }
+    if (s.kidRun) {
+      kidAngle += dt * 2.6; kidT -= dt;
+      kid.pos.set(-9.1 + Math.cos(kidAngle) * 3.4, 0, 3 + Math.sin(kidAngle) * 2.9);
+      kid.av.rotation.y = Math.atan2(-Math.sin(kidAngle), Math.cos(kidAngle)); kid.moving = true; animAv(kid.av, true, W.t * 1.4, dt);
+      if (kidT < 0) { kidT = 2.6; say(kid, pick1(KID_LINES)); }
+    }
+  };
+
+  // ---- interactions
+  inter({ obj: 'Emma (Host)', label: 'Talk', at: () => host.pos, r: 4, when: () => s.phase === 'enter', act: hostGreet });
+  inter({ obj: 'Emma (Host)', label: 'Say goodbye', at: () => host.pos, r: 4, when: () => s.phase === 'leave', act: hostBye });
+  inter({ obj: 'Table 4', label: 'Sit down', at: () => ({ x: -7, y: 0, z: 4.4 }), r: 2.6, h: 2.6, when: () => s.phase === 'seat', act: sitDown });
+  inter({ obj: 'Mr. Johnson', label: 'Talk', at: () => dad.pos, r: 6, when: () => s.phase === 'noise', act: dadTalk });
+  inter({ obj: 'Your meal', label: 'Eat', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'eat', act: eat });
+  inter({ obj: 'Carlos (Waiter)', label: 'Call the waiter 🛎', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'bill', act: callWaiter });
+  inter({ obj: 'Mrs. Lee', label: 'Say hello', at: () => lady.pos, r: 3.5, when: () => true, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
+
+  function hostGreet() {
+    ask(host, 'Hi there, welcome to Healthy Bites! How many people are in your party?', '¡Hola, bienvenido/a a Healthy Bites! ¿Cuántas personas sois?', [
+      { t: 'Just me. A table for one, please.', kind: 'ok' },
+      { t: 'I want a table. Now.', kind: 'rude', tip: 'Too direct! Use "please" and a softer phrase: "A table for one, please."' },
+      { t: 'We are one person.', kind: 'grammar', tip: '"We" means more than one. Say "Just me" or "A table for one, please."' }
+    ], () => ask(host, 'Great! Would you like to sit by the window or near the kitchen?', '¡Genial! ¿Prefieres sentarte junto a la ventana o cerca de la cocina?', [
+      { t: 'By the window, please.', kind: 'ok' },
+      { t: 'Near of the window, please.', kind: 'grammar', tip: '"Near" doesn\'t need "of": near the window. Or better: by the window.' },
+      { t: 'In the window, please.', kind: 'grammar', tip: '"Junto a la ventana" = by the window. "In the window" means inside the glass!' }
+    ], () => {
+      line(host, 'Perfect. You\'re at table 4, next to the window. Just follow the green arrow. Your waiter will be with you shortly!', 'Perfecto. Estás en la mesa 4, junto a la ventana. Sigue la flecha verde. Tu camarero vendrá enseguida.', () => {
+        complete('host'); s.phase = 'seat'; setMarker(-7, 3.4, 4.4);
+      });
+    }));
+  }
+  function sitDown() {
+    hideMarker(); s.phase = 'wait'; complete('sit');
+    P.frozen = true; sitAv(P.av, -7, 4.35, Math.PI); P.yaw = Math.PI; cam.yaw = 0.5; cam.pitch = 0.55; cam.dist = 9;
+    later(1.2, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); waiterHello(); }));
+  }
+  function waiterHello() {
+    ask(waiter, 'Hi, I\'m Carlos and I\'ll be your server tonight. Here\'s the menu. Take your time!', 'Hola, soy Carlos y seré tu camarero esta noche. Aquí tienes la carta. ¡Tómate tu tiempo!', [
+      { t: 'Thanks, Carlos! What do you recommend?', kind: 'ok', fn: () => line(waiter, 'The salmon is excellent today. And the Thai noodles are really popular!', 'El salmón está excelente hoy. ¡Y los fideos tailandeses son muy populares!', openMenu, 'Read the menu') },
+      { t: 'Thank you. Could I have a minute to look at it?', kind: 'ok', fn: () => line(waiter, 'Of course! Take all the time you need.', '¡Claro! Tómate el tiempo que necesites.', openMenu, 'Read the menu') },
+      { t: 'Thanks. What do you recommend me?', kind: 'grammar', tip: '"Recommend me" is not natural. Say "What do you recommend?"' },
+      { t: 'Gracias, tío.', kind: 'grammar', tip: 'Speak English! Try "Thank you!" or "Thanks!"' }
+    ]);
+  }
+  function openMenu() {
+    const sel = new Set(s.order.map(i => i.id));
+    const render = () => {
+      const items = MENU.filter(m => sel.has(m.id));
+      const sub = items.reduce((a, m) => a + m.price, 0);
+      const wrap = el('div', 'menu-cols');
+      ['Starters', 'Mains', 'Sides', 'Drinks', 'Desserts'].forEach(cat => {
+        const c = el('div', 'mcat', `<h3>${cat}</h3>`);
+        MENU.filter(m => m.cat === cat).forEach(m => {
+          const b = el('button', 'mitem', `<span class="e">${m.emo}</span><b>${escH(m.name)}</b><span class="p">${m.price ? money(m.price) : 'FREE'}</span><small>${escH(m.desc)}</small>`);
+          b.setAttribute('aria-pressed', sel.has(m.id));
+          b.onclick = () => {
+            if (sel.has(m.id)) sel.delete(m.id);
+            else { if (cat === 'Mains') MENU.filter(x => x.cat === 'Mains').forEach(x => sel.delete(x.id)); sel.add(m.id); }
+            render();
+          };
+          c.append(b);
+        });
+        wrap.append(c);
+      });
+      const hasMain = items.some(i => i.cat === 'Mains'), hasDrink = items.some(i => i.drink);
+      const withTax = sub * (1 + TAX), over = withTax > G.money;
+      const info = `Subtotal <b>${money(sub)}</b> · with 8% tax <b>${money(withTax)}</b> · your budget <b>${money(G.money)}</b><br>${!hasMain ? 'Choose one main dish. ' : ''}${!hasDrink ? 'Choose a drink. ' : ''}${over ? '<b style="color:#c62828">Too expensive with tax!</b> ' : (hasMain && hasDrink ? 'Leave money for the tip!' : '')}`;
+      panel('HEALTHY BITES — MENU', 'Tap the dishes you want. One main dish only. Read the descriptions carefully.', wrap, [{ t: 'I\'m ready to order', cls: 'primary', disabled: !(hasMain && hasDrink) || over, fn: () => { s.order = items.map(i => Object.assign({}, i)); closePanel(); orderPhrase(); } }], { cls: 'paper', info });
+    };
+    render();
+  }
+  function orderList() {
+    const names = s.order.map(i => (i.drink ? 'a ' : 'the ') + i.name.toLowerCase());
+    return names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+  }
+  function orderPhrase() {
+    s.main = s.order.find(i => i.cat === 'Mains');
+    const list = orderList();
+    G.inv = s.order.map(i => ({ emoji: i.emo, label: i.name, info: () => `${i.desc} ${money(i.price)}` })); renderHotbar();
+    ask(waiter, 'Are you ready to order?', '¿Estás listo/a para pedir?', [
+      { t: `Yes, I'd like ${list}, please.`, kind: 'ok' },
+      { t: `Yes, I would like to ${list}.`, kind: 'grammar', tip: 'After "I would like" use a noun directly: "I\'d like the salad". "I\'d like to" needs a verb: "I\'d like to order…"' },
+      { t: `Give me ${list}.`, kind: 'rude', tip: '"Give me" sounds like an order. Use "I\'d like…, please" or "Could I have…?"' }
+    ], allergyQ);
+  }
+  function allergyQ() {
+    ask(waiter, 'Great choice! Do you have any food allergies I should know about?', '¡Buena elección! ¿Tienes alguna alergia alimentaria que deba saber?', [
+      { t: 'Yes, I\'m allergic to nuts. Is there anything with nuts in my order?', kind: 'ok', fn: () => { s.declared = true; allergyCheck(); } },
+      { t: 'No, I don\'t have any allergies.', kind: 'fact', fn: () => { s.lied = true; waiterLeaves('Perfect! I\'ll put your order in right away.'); } },
+      { t: 'Yes, I\'m allergic of nuts.', kind: 'grammar', tip: 'We say "allergic TO something": I\'m allergic to nuts.' },
+      { t: 'Yes, I have allergy with the nuts.', kind: 'grammar', tip: 'Say "I\'m allergic to nuts" or "I have a nut allergy".' }
+    ]);
+  }
+  function allergyCheck() {
+    const nut = s.order.filter(i => i.nuts);
+    if (nut.length) {
+      nut.forEach(i => i.safe = true);
+      const names = nut.map(i => 'the ' + i.name.toLowerCase()).join(' and ');
+      line(waiter, `Good thing you told me! ${names[0].toUpperCase() + names.slice(1)} ${nut.length > 1 ? 'have' : 'has'} nuts. I'll ask the chef to make ${nut.length > 1 ? 'them' : 'it'} without nuts.`, `¡Menos mal que me lo has dicho! ${nut.length > 1 ? 'Llevan' : 'Lleva'} frutos secos. Le pediré al chef que lo prepare sin frutos secos.`, () => waiterLeaves('I\'ll put your order in right away.'));
+    } else line(waiter, 'No problem. Nothing you ordered has nuts, but I\'ll tell the chef anyway.', 'Sin problema. Nada de lo que has pedido lleva frutos secos, pero se lo diré al chef igualmente.', () => waiterLeaves('Your food will be ready soon!'));
+  }
+  function waiterLeaves(msg) {
+    say(waiter, msg); complete('order'); s.phase = 'kitchen';
+    walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+    later(5, startNoise);
+  }
+  function startNoise() {
+    reveal('noise'); s.phase = 'noise'; s.kidRun = true; kid.av.userData.seated = false; kid.pos.y = 0; setFace(P.av, 'wow');
+    notify('🔊 Uh-oh!', 'The little boy at the next table is running around your chair and shouting. Talk to his dad, Mr. Johnson.', 'warn');
+    chat('Timmy', 'VROOOOOM!!! 🚗💨', '#ffcc80');
+  }
+  function dadTalk() {
+    ask(dad, 'Hmm? Oh, hi there.', '¿Mmm? Ah, hola.', [
+      { t: 'Excuse me, sorry to bother you. Would you mind asking your son to keep it down a little?', kind: 'ok' },
+      { t: 'Hey! Your kid is SO annoying. Control him!', kind: 'rude', tip: 'Complain politely: "Excuse me, would you mind…?" or "Could you possibly…?"' },
+      { t: 'Excuse me, can you say to your son that he doesn\'t shout?', kind: 'grammar', tip: 'Use "ask/tell someone TO do something": "Could you ask your son not to shout?"' }
+    ], () => line(dad, 'Oh, I\'m so sorry! Timmy, come and sit down, please. And finish your broccoli!', '¡Oh, lo siento mucho! Timmy, ven a sentarte, por favor. ¡Y acábate el brócoli!', () => {
+      s.kidRun = false; setFace(P.av, 'smile');
+      walkTo(kid, [[-11.2, 1.65]], () => sitAv(kid.av, -11.2, 1.65, 0));
+      say(kid, 'Okaaaay, Daddy…');
+      complete('noise'); s.phase = 'kitchen2'; later(4, bringWrong);
+    }, 'No problem'));
+  }
+  function carry(item) {
+    plateMesh = makeFood(item); plateMesh.position.set(0, 1.55, 0.7); waiter.av.add(plateMesh); waiter.av.userData.carry = true;
+  }
+  function putDown() {
+    waiter.av.remove(plateMesh); waiter.av.userData.carry = false;
+    plateMesh.position.set(-7, 1.2, 3.6); W.scene.add(plateMesh);
+  }
+  function takeBack() { W.scene.remove(plateMesh); plateMesh.position.set(0, 1.55, 0.7); waiter.av.add(plateMesh); waiter.av.userData.carry = true; }
+  function bringWrong() {
+    s.wrong = Object.assign({}, byId(s.main.id === 'burger' ? 'thai' : 'burger'));
+    carry(s.wrong);
+    walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); reveal('dish'); wrongDialog(); });
+  }
+  function wrongDialog() {
+    ask(waiter, `Here you go: one ${s.wrong.name.toLowerCase()}! Enjoy your meal!`, `¡Aquí tienes: un/a ${s.wrong.name}! ¡Que aproveche!`, [
+      { t: `Excuse me, I'm afraid this isn't what I ordered. I ordered the ${s.main.name.toLowerCase()}.`, kind: 'ok', fn: fixDish },
+      { t: 'This is wrong! Are you blind? Take it away!', kind: 'rude', tip: 'Mistakes happen. Start with "Excuse me, I\'m afraid…" to complain politely.' },
+      { t: 'Oh… OK, thanks!', kind: 'fact', fn: acceptWrong },
+      { t: 'Sorry, but this is not which I ordered.', kind: 'grammar', tip: 'Use "what", not "which": "This isn\'t what I ordered."' }
+    ]);
+  }
+  function fixDish() {
+    complete('dish');
+    line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take $3 off your bill.`, `¡Oh, no, lo siento mucho! Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 $ de la cuenta.`, () => {
+      s.discount = 3; takeBack();
+      walkTo(waiter, toKitchen, () => {
+        waiter.av.remove(plateMesh); carry(s.main);
+        later(1.5, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Sorry again, and enjoy!`); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); }));
+      });
+    }, 'Thank you!');
+  }
+  function acceptWrong() {
+    s.acceptedWrong = true; complete('dish', true);
+    G.mistakes.push({ said: 'Oh… OK, thanks!', tip: `That wasn't your order! You could say: "Excuse me, I'm afraid this isn't what I ordered."` });
+    say(waiter, 'Enjoy!'); s.phase = 'eat'; walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+  }
+  function eaten() { return s.order.map(i => (i.cat === 'Mains' && s.acceptedWrong) ? s.wrong : i); }
+  function eat() {
+    s.phase = 'eating'; P.av.userData.eating = true;
+    const food = plateMesh.userData.food; let k = 0;
+    const shrink = () => { k++; food.forEach(f => f.scale.setScalar(Math.max(0.05, 1 - k / 10))); if (k < 10) later(0.3, shrink); };
+    shrink();
+    later(3.2, () => {
+      P.av.userData.eating = false;
+      const risky = eaten().some(i => i.nuts && !i.safe);
+      if (risky) {
+        s.reaction = true; setFace(P.av, 'sad');
+        notify('🚑 Allergic reaction!', 'Your mouth feels itchy and your lips are swelling… There were nuts in your food! Carlos brings your medicine just in time. Always tell the waiter about allergies.', 'bad');
+        chat('System', `${profile.name} had an allergic reaction.`, '#ff8a80');
+      } else { notify('😋 Delicious!', 'That was a great meal.', 'good'); }
+      complete('eat'); s.phase = 'bill';
+      later(1.5, () => notify('💡 Tip', 'When you are ready, call the waiter to ask for the check.'));
+    });
+  }
+  function callWaiter() {
+    s.phase = 'billwait';
+    walkTo(waiter, toTable, () => {
+      faceTo(waiter, -7, 4.35); if (plateMesh) W.scene.remove(plateMesh);
+      ask(waiter, 'How was everything?', '¿Qué tal todo?', [
+        { t: 'It was delicious, thank you! Could I have the check, please?', kind: 'ok' },
+        { t: 'It was very delicious. Can you bring me the count?', kind: 'grammar', tip: '"La cuenta" = the check (US) or the bill (UK). Also, "delicious" is already very strong, so don\'t say "very delicious".' },
+        { t: 'Whatever. Bring the money paper.', kind: 'rude', tip: 'Say "Could I have the check, please?"' }
+      ], () => line(waiter, 'Sure! Here you are. The tax is on the bill, but the tip isn\'t included.', '¡Claro! Aquí tienes. El impuesto está en la cuenta, pero la propina no está incluida.', openBill, 'Look at the check'));
+    });
+  }
+  function openBill() {
+    const items = eaten();
+    const sub = Math.max(0, items.reduce((a, i) => a + i.price, 0) - s.discount);
+    const tax = Math.round(sub * TAX * 100) / 100;
+    let tip = null;
+    const render = () => {
+      const tipAmt = tip == null ? 0 : Math.round(sub * tip) / 100;
+      const total = sub + tax + tipAmt;
+      const tips = [0, 10, 15, 18, 20].map(p => { const t = Math.round(sub * p) / 100; return `<button data-p="${p}" aria-pressed="${tip === p}" ${sub + tax + t > G.money + 1e-9 ? 'disabled' : ''}>${p}%<br><small>${money(t)}</small></button>`; }).join('');
+      const html = `<div class="bill"><h4>HEALTHY BITES DINER</h4><div class="c">Table 4 · Server: Carlos</div>
+        ${items.map(i => `<div class="bl"><span>${escH(i.name)}</span><span>${i.price ? money(i.price) : 'FREE'}</span></div>`).join('')}
+        ${s.discount ? `<div class="bl"><span>Discount (sorry!)</span><span>-${money(s.discount)}</span></div>` : ''}
+        <div class="bl sep"><span>Subtotal</span><span>${money(sub)}</span></div>
+        <div class="bl"><span>Sales tax 8%</span><span>${money(tax)}</span></div>
+        <div class="tips">${tips}</div>
+        <div class="bl"><span>Tip</span><span>${tip == null ? '—' : money(tipAmt)}</span></div>
+        <div class="bl sep tot"><span>TOTAL</span><span>${money(total)}</span></div>
+        <div class="tipnote">In the USA, waiters earn a big part of their money from tips. A tip of 15–20% of the subtotal is normal; 10% means you were not happy. Your wallet: ${money(G.money)}.</div></div>`;
+      const canAny = sub + tax <= G.money + 1e-9;
+      panel('The check', 'Choose a tip. Then pay.', html, canAny ? [{ t: tip == null ? 'Choose a tip first' : `Pay ${money(total)}`, cls: 'primary', disabled: tip == null, fn: () => pay(total, tip) }] : [{ t: `Pay what you have (${money(G.money)})`, cls: 'primary', fn: () => { s.paidShort = true; pay(G.money, 0); } }]);
+      $('#panelBody').querySelectorAll('.tips button').forEach(b => b.onclick = () => { tip = +b.dataset.p; render(); });
+    };
+    render();
+  }
+  function pay(total, tip) {
+    closePanel(); G.money = Math.max(0, G.money - total); s.tipPct = tip; updateBoard(); complete('bill');
+    const thanks = s.paidShort ? ['Oh… that\'s not enough. Never mind, the manager says it\'s OK this time.', 'Oh… no es suficiente. Bueno, el encargado dice que por esta vez no pasa nada.'] : tip === 0 ? ['Oh… OK. Thanks, I guess.', 'Oh… vale. Gracias, supongo.'] : tip === 10 ? ['Thank you. Have a good evening.', 'Gracias. Que pases buena noche.'] : ['Thank you so much! Have a great night!', '¡Muchísimas gracias! ¡Que pases una noche estupenda!'];
+    line(waiter, thanks[0], thanks[1], () => {
+      if (tip === 0 && !s.paidShort) notify('💡 Culture note', 'In the USA, leaving no tip is considered very rude unless the service was terrible.', 'warn');
+      P.av.userData.seated = false; P.pos.set(-5, 0, 5.6); P.frozen = false; s.phase = 'leave';
+      walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+      setMarker(0, 4.2, 7.2); notify('🚪 Almost done', 'Say goodbye to Emma at the entrance.');
+    });
+  }
+  function hostBye() {
+    hideMarker();
+    ask(host, 'Thanks for coming! Have a nice evening!', '¡Gracias por venir! ¡Que pases una buena noche!', [
+      { t: 'Thank you, you too! Goodbye!', kind: 'ok' },
+      { t: 'Thanks, equally!', kind: 'grammar', tip: '"Igualmente" is not "equally" here. Say "You too!" or "Same to you!"' },
+      { t: 'Good night! I go now.', kind: 'grammar', tip: 'For something happening now, use the present continuous: "I\'m leaving now."' }
+    ], () => { host.av.userData.wave = true; complete('bye'); later(1.2, finishDiner); });
+  }
+  function finishDiner() {
+    const items = eaten();
+    let health = clamp(40 + items.reduce((a, i) => a + i.h, 0), 0, 100);
+    if (s.reaction) health = Math.min(health, 15);
+    const tipScore = s.paidShort ? 0 : ({ 0: 15, 10: 60, 15: 100, 18: 100, 20: 95 })[s.tipPct] ?? 50;
+    const eng = engPct();
+    const overall = 0.3 * health + 0.3 * eng + 0.2 * G.manners + 0.2 * tipScore;
+    const good = [], bad = [];
+    if (health >= 75) good.push('You chose a really healthy meal.'); else bad.push('Your meal was not very healthy. Try grilled food, vegetables and water instead of fried food and sugary drinks.');
+    if (s.declared) good.push('You told the waiter about your nut allergy. That can save your life!');
+    else bad.push('You didn\'t mention your allergy. Say "I\'m allergic to nuts" every time you order.');
+    if (s.reaction) bad.push('You ate food with nuts and had an allergic reaction.');
+    if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got $3 off!');
+    else bad.push('You accepted a dish you didn\'t order and paid for it.');
+    if (s.tipPct >= 15) good.push(`You left a fair ${s.tipPct}% tip, just like people do in the USA.`);
+    else if (!s.paidShort) bad.push(`A ${s.tipPct}% tip is low in the USA. 15–20% is normal.`);
+    if (s.paidShort) bad.push('You ran out of money. Leave space in your budget for tax and tip.');
+    if (G.manners === 100) good.push('Perfect manners all evening.');
+    showResults({ title: s.reaction ? 'You survived… just!' : 'Mission complete!', overall, metrics: [['Health', health], ['English', eng], ['Manners', G.manners], ['Money & tip', tipScore]], good, bad });
+  }
+}
+
+/* =====================================================================
+   SCENARIO 2 — BACK TO SCHOOL RUSH
+   ===================================================================== */
+const SIZES = { shirt: ['XS', 'S', 'M', 'L', 'XL'], trousers: ['28', '30', '32', '34'], shoes: ['6', '7', '8', '9', '10'] };
+const MY = { shirt: 'M', trousers: '30', shoes: '8' };
+const CATS = {
+  polo: { label: 'Navy blue polo shirt', emoji: '👕', size: 'shirt' },
+  trousers: { label: 'Grey trousers or skirt', emoji: '👖', size: 'trousers' },
+  shoes: { label: 'Black school shoes', emoji: '👞', size: 'shoes' },
+  trainers: { label: 'White trainers for P.E.', emoji: '👟', size: 'shoes' },
+  backpack: { label: 'A backpack', emoji: '🎒', size: null }
+};
+const SHOPS = {
+  bargain: { name: 'Bargain Barn', clerk: 'Gus', x: -24, wall: '#e0b04a', roof: '#8d6e63', signBg: '#ffeb3b', signFg: '#b71c1c', policy: 'All sales are final: no refunds and no exchanges.',
+    items: [
+      { id: 'b1', cat: 'polo', name: 'Polo shirt', color: 'Light blue', hex: '#81d4fa', price: 5, q: 1, ok: false, why: 'That polo is light blue. The dress code says navy blue.', desc: 'Thin cotton. Wash in cold water.' },
+      { id: 'b2', cat: 'polo', name: 'Polo shirt', color: 'Navy blue', hex: '#1a237e', price: 7, q: 1, ok: true, desc: 'Thin cotton. May shrink in the wash.' },
+      { id: 'b3', cat: 'trousers', name: 'School trousers', color: 'Grey', hex: '#9e9e9e', price: 9, q: 1, ok: true, desc: '100% polyester. A bit shiny.' },
+      { id: 'b4', cat: 'shoes', name: 'School shoes', color: 'Black', hex: '#1b1b1b', price: 12, q: 1, ok: true, desc: 'Plastic “leather”. Not waterproof.' },
+      { id: 'b5', cat: 'trainers', name: 'Canvas trainers', color: 'White', hex: '#fafafa', price: 10, q: 1, ok: true, fragile: true, desc: 'Light canvas trainers with glued soles.' },
+      { id: 'b6', cat: 'backpack', name: 'Backpack', color: 'Pink', hex: '#f48fb1', price: 6, q: 1, ok: true, fragile: true, desc: 'Small backpack with one pocket.' },
+      { id: 'b7', cat: 'extra', name: 'Sunglasses', color: 'Black', hex: '#212121', price: 4, q: 1, ok: false, desc: 'Cool sunglasses. Not on your list!' }
+    ] },
+  campus: { name: 'Campus Corner', clerk: 'Priya', x: 0, wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', policy: 'Returns and exchanges within 30 days. Keep your receipt!',
+    items: [
+      { id: 'c1', cat: 'polo', name: 'Official school polo', color: 'Navy blue', hex: '#1a237e', price: 14, q: 3, ok: true, desc: 'Strong cotton with the Lincoln High logo.' },
+      { id: 'c2', cat: 'trousers', name: 'School trousers', color: 'Grey', hex: '#8a8f96', price: 20, q: 3, ok: true, desc: 'Hard-wearing trousers with an adjustable waist.' },
+      { id: 'c3', cat: 'trousers', name: 'Pleated skirt', color: 'Grey', hex: '#8a8f96', price: 20, q: 3, ok: true, desc: 'Knee-length school skirt.' },
+      { id: 'c4', cat: 'shoes', name: 'School shoes', color: 'Black', hex: '#1b1b1b', price: 30, q: 3, ok: true, desc: 'Real leather. Comfortable and waterproof.' },
+      { id: 'c5', cat: 'trainers', name: 'Sports trainers', color: 'White', hex: '#fafafa', price: 25, q: 2, ok: true, desc: 'Good grip for the gym.' },
+      { id: 'c6', cat: 'backpack', name: 'School backpack', color: 'Blue', hex: '#1e88e5', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
+      { id: 'c7', cat: 'backpack', name: 'School backpack', color: 'Black', hex: '#263238', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
+      { id: 'c8', cat: 'extra', name: 'Hoodie', color: 'Grey', hex: '#9e9e9e', price: 22, q: 3, ok: false, desc: 'Super soft. Not on your list!' }
+    ] },
+  luxe: { name: 'Luxe Label', clerk: 'Mr. Sterling', x: 24, wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.',
+    items: [
+      { id: 'l1', cat: 'polo', name: 'Designer polo', color: 'Navy blue', hex: '#1a237e', price: 32, q: 3, ok: true, desc: 'Italian cotton. Small gold logo.' },
+      { id: 'l2', cat: 'trousers', name: 'Slim-fit chinos', color: 'Grey', hex: '#8a8f96', price: 40, q: 3, ok: true, desc: 'Very stylish. Dry clean only.' },
+      { id: 'l3', cat: 'shoes', name: 'Leather loafers', color: 'Brown', hex: '#6d4c41', price: 55, q: 3, ok: false, why: 'Brown loafers are not allowed. School shoes must be black.', desc: 'Handmade loafers. Very elegant.' },
+      { id: 'l4', cat: 'shoes', name: 'Leather school shoes', color: 'Black', hex: '#1b1b1b', price: 65, q: 3, ok: true, desc: 'Handmade. They will last for years.' },
+      { id: 'l5', cat: 'trainers', name: 'Designer sneakers', color: 'White', hex: '#fafafa', price: 60, q: 3, ok: true, sale: true, desc: 'The coolest sneakers in town.' },
+      { id: 'l6', cat: 'backpack', name: 'Leather backpack', color: 'Blue', hex: '#1565c0', price: 45, q: 3, ok: true, desc: 'Soft leather. Very fashionable.' },
+      { id: 'l7', cat: 'extra', name: 'Baseball cap', color: 'Red', hex: '#e53935', price: 25, q: 3, ok: false, desc: 'Limited edition. Not on your list!' }
+    ] }
+};
+
+SCEN.mall = {
+  title: 'Back to School Rush', budget: 100, cardTitle: 'Your character card',
+  vocab: [['Can I help you? / I\'m just looking, thanks.', '¿Le puedo ayudar? / Solo estoy mirando, gracias.'], ['Can I try it on?', '¿Me lo puedo probar?'], ['fitting room', 'probador'], ['It fits. / It\'s too tight. / It\'s too loose.', 'Me queda bien. / Me aprieta. / Me queda ancho.'], ['What size are you? / I\'m a medium.', '¿Qué talla usas? / Uso la M.'], ['I\'ll take it.', 'Me lo llevo.'], ['by card / in cash', 'con tarjeta / en efectivo'], ['What\'s your return policy?', '¿Cuál es su política de devoluciones?'], ['refund / exchange / store credit', 'reembolso / cambio / vale de compra'], ['receipt', 'tique / recibo'], ['on sale', 'rebajado'], ['student discount', 'descuento para estudiantes'], ['All sales are final.', 'No se admiten devoluciones.']],
+  board() { return [['Cash', money(G.money)], ['Items', mallCount() + '/5'], ['Manners', G.manners]]; },
+  card() {
+    return `<div class="cs">You are <b>${escH(profile.name)}</b>. Tomorrow is your <b>first day at Lincoln High School</b> and you need your uniform and school things.</div>
+      <div class="cs">💵 <b>Budget:</b> $100.00. You can't spend more. Compare prices and quality!</div>
+      <div class="cs">📋 <b>Dress code:</b> navy blue polo shirt · grey trousers or a grey skirt · black school shoes · white trainers for P.E. You also need a backpack.</div>
+      <div class="cs">📏 <b>Your sizes:</b> shirt <b>M</b> (medium) · trousers <b>30</b> · shoes <b>8</b>.</div>
+      <div class="cs">💙 You love the colour <b>blue</b>, and you want things that <b>last all year</b>.</div>
+      <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to <b>Ms. Parker</b> at the school gate.</div>`;
+  },
+  build: buildMall
+};
+const activeInv = () => G.inv.filter(r => !r.returned);
+function mallCount() { return Object.keys(CATS).filter(c => activeInv().some(r => r.cat === c && !r.broken)).length; }
+function itemValid(r) { return !r.broken && r.ok && (!CATS[r.cat].size || r.sizeOk); }
+
+function buildMall() {
+  const s = G.s = { info: {}, discount: false, sale: false, tried: {}, said: {}, fitted: {}, broke: false, brokeItem: null, uid: 0, credit: { bargain: 0, campus: 0, luxe: 0 } };
+  W.bounds = { minX: -50, maxX: 74, minZ: -26, maxZ: 18 };
+  ground('#5a9e4b');
+  // road and sidewalks
+  part(12, 0, 6, 130, 0.04, 8, '#3c3f44', { solid: false });
+  for (let x = -50; x < 76; x += 7) part(x, 0.05, 6, 3.5, 0.02, 0.35, '#f5f5f5', { solid: false, shadow: false });
+  part(12, 0, -1, 130, 0.25, 6, '#c9ccd1'); part(12, 0, 11.5, 130, 0.25, 3, '#c9ccd1');
+  // crossing
+  for (let i = 0; i < 6; i++) part(36 + i * 0.9 - 2.2, 0.05, 6, 0.5, 0.02, 7, '#fafafa', { solid: false, shadow: false });
+  // trees, lamps, bench, bus
+  for (let x = -44; x < 74; x += 12) { part(x, 0.25, 12, 0.7, 2.6, 0.7, '#6d4c41'); part(x, 2.85, 12, 2.8, 2.6, 2.8, '#388e3c', { solid: false }); }
+  for (let x = -38; x < 70; x += 16) { part(x + 6, 0.25, 1.5, 0.25, 4.2, 0.25, '#455a64'); part(x + 6, 4.45, 1.2, 0.5, 0.25, 0.9, '#fff59d', { solid: false }); }
+  part(-8, 0.25, 1.4, 3, 0.5, 0.9, '#8d6e63');
+  part(58, 0.15, 6.2, 11, 3, 3, '#fbc02d'); part(58, 2, 6.2, 9.5, 0.9, 3.05, '#bbdefb', { solid: false }); sign('SCHOOL BUS', 58, 1, 7.73, 4, 0.6, 0, { bg: '#fbc02d', fg: '#212121' });
+  sign('MAIN STREET', -46, 3.4, -3.7, 3, 0.7, 0, { bg: '#2e7d32', fg: '#fff' }); part(-46, 0.25, -3.9, 0.2, 3.4, 0.2, '#455a64');
+  // shops
+  Object.entries(SHOPS).forEach(([k, sh]) => buildShop(k, sh));
+  // school
+  const SX = 58;
+  [[SX, -22, 26, 0.6], [SX - 13, -14, 0.6, 16.6], [SX + 13, -14, 0.6, 16.6], [SX, -6, 26, 0.6]].forEach(([x, z, w, d]) => part(x, 0, z, w, 9.25, d, '#b5523b'));
+  part(SX, 9.25, -14, 27, 0.6, 17, '#5d4037', { solid: false });
+  sign('LINCOLN HIGH SCHOOL', SX, 7.4, -5.66, 14, 1.7, 0, { bg: '#f5f5f5', fg: '#7b1f1f', border: '#7b1f1f' });
+  part(SX, 0.25, -5.6, 4, 4, 0.2, '#4e342e', { solid: false }); sign('First day: Monday 8:30', SX, 4.8, -5.6, 4.6, 0.6, 0, { bg: '#fff8e1', fg: '#3e2723' });
+  [[-6, 2.2], [-3, 2.2], [3, 2.2], [6, 2.2]].forEach(([dx, y]) => part(SX + dx, 0.25 + y, -5.62, 1.8, 1.8, 0.12, '#bbdefb', { solid: false, shadow: false }));
+  part(SX + 10, 0.25, -3.6, 0.25, 9, 0.25, '#cfd8dc'); part(SX + 10.9, 7.4, -3.6, 1.6, 1, 0.05, '#1565c0', { solid: false });
+  // gate check sign
+  sign('DRESS CODE CHECK\nshow your things to Ms. Parker', SX - 5, 2.4, -3.85, 4.6, 1.4, 0, { bg: '#fffde7', fg: '#3e2723' }); part(SX - 5, 0.25, -3.95, 0.2, 1.7, 0.15, '#5d4037');
+
+  // NPCs
+  const teacher = npc('Ms. Parker', { skin: '#8d5524', shirt: '#6a1b9a', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, SX, -3, 0, { color: '#ce93d8', voice: { pitch: 1.15, rate: 0.95 } });
+  teacher.badge = '#6a1b9a'; teacher.pos.y = 0.25;
+  const mia = npc('Mia', { skin: '#ffdbac', shirt: '#1a237e', pants: '#8a8f96', hair: '#e65100', long: true }, -10, -0.5, 0, { color: '#ffab91', speed: 3, voice: { pitch: 1.4, rate: 1.05 } });
+  const leo = npc('Leo', { skin: '#c68642', shirt: '#43a047', pants: '#37474f', hair: '#1b1b1b', cap: '#e53935' }, 12, 11.8, 0, { color: '#a5d6a7', speed: 3, voice: { pitch: 1.1, rate: 1.05 } });
+  mia.badge = '#bf360c'; leo.badge = '#2e7d32';
+  const wander = (n, a, b, lines) => {
+    let to = b, cd = 3;
+    n.update = (dt) => {
+      if (!n.path.length && !n.hold) { walkTo(n, [to], () => { to = to === a ? b : a; n.hold = true; later(2 + Math.random() * 3, () => n.hold = false); }); }
+      cd -= dt; if (cd < 0 && Math.hypot(P.pos.x - n.pos.x, P.pos.z - n.pos.z) < 7) { cd = 12; say(n, pick1(lines)); }
+    };
+    n.pos.y = n.baseY = 0.25;
+  };
+  const MIA = ['Hi! Are you starting at Lincoln High too?', 'Campus Corner has a student discount, but only if you ask!', 'Remember: the polo has to be NAVY blue, not light blue.'];
+  const LEO = ['My Bargain Barn trainers broke after one day! And they don\'t give refunds.', 'I heard something is on sale at Luxe Label this week.', 'Always try clothes on before you buy them!'];
+  wander(mia, [-30, -1.5], [8, -1.5], MIA); wander(leo, [-20, 11.8], [40, 11.8], LEO);
+  const smallTalk = (n, lines) => () => ask(n, 'Hey! What\'s up?', '¡Hola! ¿Qué tal?', [
+    { t: 'Hi! Not much. I\'m shopping for my school uniform. Any tips?', kind: 'ok' },
+    { t: 'Hi! I am buying my uniform. You have any advice?', kind: 'grammar', tip: 'Questions need an auxiliary: "Do you have any advice?" or "Any tips?"' },
+    { t: 'Hello. What is up? The sky!', kind: 'grammar', tip: '"What\'s up?" means "¿Qué tal?". Answer "Not much!" or "Fine, thanks!"' }
+  ], () => line(n, pick1(lines), 'Un consejo de un/a compañero/a.', () => {}, 'Thanks!'));
+  inter({ obj: 'Mia', label: 'Chat', at: () => mia.pos, r: 3.5, act: () => { mia.path = []; mia.hold = true; later(9, () => mia.hold = false); faceTo(mia, P.pos.x, P.pos.z); smallTalk(mia, MIA)(); } });
+  inter({ obj: 'Leo', label: 'Chat', at: () => leo.pos, r: 3.5, act: () => { leo.path = []; leo.hold = true; later(9, () => leo.hold = false); faceTo(leo, P.pos.x, P.pos.z); smallTalk(leo, LEO)(); } });
+  inter({ obj: 'Ms. Parker', label: 'Show your things', at: () => teacher.pos, r: 4, when: () => !G.over, act: () => teacherTalk(teacher) });
+
+  spawnPlayer(-44, -1, Math.PI / 2, -Math.PI / 2);
+  G.obj = Object.entries(CATS).map(([k, c]) => ({ id: k, text: 'Buy: ' + c.label })).concat([
+    { id: 'broken', text: 'Replace your broken item', secret: true },
+    { id: 'school', text: 'Show your things to Ms. Parker at Lincoln High' }
+  ]);
+  W.update = () => {};
+}
+
+function buildShop(k, sh) {
+  const cx = sh.x, z0 = -4, z1 = -18, H = 7;
+  const wall = (x, z, w, d) => part(x, 0.25, z, w, H, d, sh.wall, { occlude: true });
+  wall(cx, z1, 16, 0.6); wall(cx - 8, (z0 + z1) / 2, 0.6, 14.6); wall(cx + 8, (z0 + z1) / 2, 0.6, 14.6);
+  wall(cx - 5.1, z0, 5.8, 0.6); wall(cx + 5.1, z0, 5.8, 0.6);
+  part(cx, 4.25, z0, 4.4, 3, 0.6, sh.wall, { solid: false });
+  [-5.1, 5.1].forEach(dx => part(cx + dx, 1.4, z0, 4, 2.4, 0.7, '#cfe8ff', { solid: false, shadow: false }));
+  const roof = part(cx, H + 0.25, (z0 + z1) / 2, 16.8, 0.6, 15.2, sh.roof, { solid: false });
+  W.hides.push({ mesh: roof, minX: cx - 8, maxX: cx + 8, minZ: z1, maxZ: z0 });
+  sign(sh.name.toUpperCase(), cx, 5.6, z0 + 0.34, 9, 1.6, 0, { bg: sh.signBg, fg: sh.signFg, border: sh.signFg });
+  part(cx, 0, (z0 + z1) / 2, 15.4, 0.27, 13.4, '#eee', { shadow: false, mat: new THREE.MeshLambertMaterial({ map: checkerTex(k === 'luxe' ? '#e0d6c3' : '#eeeeee', k === 'luxe' ? '#cbbd9f' : '#d6d6d6', 2, 8, 7) }) });
+  part(cx, 0.25, -14.3, 6, 1.2, 1.2, k === 'luxe' ? '#1b1b1b' : '#8d6e63');
+  // racks with clothes
+  [-6, 6].forEach((dx, i) => {
+    part(cx + dx, 0.25, -11, 0.4, 2.4, 6, '#9e9e9e');
+    sh.items.filter((_, j) => j % 2 === i).forEach((it, j) => part(cx + dx + (i ? -0.45 : 0.45), 1.0, -13.2 + j * 1.3, 0.25, 1.3, 0.9, it.hex, { solid: false }));
+  });
+  [-2.6, 2.6].forEach(dx => { part(cx + dx, 0.25, -8.5, 1.6, 0.9, 1.6, '#f5f5f5'); });
+  sh.items.slice(0, 2).forEach((it, i) => part(cx + (i ? 2.6 : -2.6), 1.15, -8.5, 1, 0.25, 0.8, it.hex, { solid: false }));
+  const notice = { bargain: 'ALL SALES FINAL\nNO REFUNDS!', campus: 'ASK ABOUT OUR\nSTUDENT DISCOUNT', luxe: 'EXCHANGES 14 DAYS\nWITH RECEIPT' }[k];
+  sign(notice, cx, 3.6, z1 + 0.34, 5, 1.4, 0, { bg: k === 'bargain' ? '#fff' : '#fffde7', fg: k === 'bargain' ? '#c62828' : '#263238' });
+  const looks = {
+    bargain: { skin: '#ffdbac', shirt: '#ff7043', pants: '#5d4037', hair: '#9e9e9e', cap: '#ffeb3b' },
+    campus: { skin: '#a1665e', shirt: '#1565c0', pants: '#263238', hair: '#1b1b1b', long: true, sleeves: true },
+    luxe: { skin: '#f1c27d', shirt: '#212121', pants: '#212121', hair: '#bdbdbd', tie: '#e6c068', sleeves: true, shoes: true }
+  }[k];
+  const n = npc(sh.clerk, looks, cx, -15.6, 0, { color: sh.signFg === '#ffffff' ? '#90caf9' : sh.signFg, voice: { bargain: { pitch: 0.7, rate: 0.9 }, campus: { pitch: 1.2, rate: 1 }, luxe: { pitch: 0.85, rate: 0.88 } }[k] });
+  n.pos.y = 0.27; n.badge = sh.signBg === '#ffeb3b' ? '#b71c1c' : sh.signBg;
+  sh.npc = n;
+  inter({ obj: sh.clerk + ' · ' + sh.name, label: 'Talk', at: () => n.pos, r: 3.6, act: () => shopTalk(k) });
+}
+
+const GREET = {
+  bargain: ['Yeah? What do you want, kid?', '¿Sí? ¿Qué quieres, chaval?'],
+  campus: ['Hi there! Welcome to Campus Corner. Can I help you?', '¡Hola! Bienvenido/a a Campus Corner. ¿Te puedo ayudar?'],
+  luxe: ['Good afternoon. Welcome to Luxe Label. How may I help you?', 'Buenas tardes. Bienvenido/a a Luxe Label. ¿En qué puedo ayudarle?']
+};
+function shopTalk(k) {
+  const sh = SHOPS[k], n = sh.npc, s = G.s;
+  const opts = [
+    { t: '👕 Look at the clothes', meta: true, fn: () => openCatalog(k) },
+    { t: '🔄 Ask about returns', meta: true, fn: () => askReturns(k) },
+    { t: '🏷 Ask about discounts or sales', meta: true, fn: () => askDiscount(k) }
+  ];
+  if (activeInv().some(r => r.shop === k)) opts.push({ t: '🧾 Return or exchange something', meta: true, fn: () => returnsFlow(k) });
+  opts.push({ t: '👋 Leave the shop', meta: true, fn: () => shopBye(k) });
+  const g = s.said[k] ? ['Anything else?', '¿Algo más?'] : GREET[k];
+  s.said[k] = true;
+  showDialog(n, g[0], g[1], opts);
+}
+function askReturns(k) {
+  const sh = SHOPS[k], n = sh.npc;
+  const replies = {
+    bargain: ['Returns? Ha! Read the sign, kid. All sales are final. No refunds, no exchanges.', '¿Devoluciones? ¡Ja! Lee el cartel, chaval. No se admiten devoluciones ni cambios.'],
+    campus: ['You can return or exchange anything within 30 days. Just keep your receipt!', 'Puedes devolver o cambiar cualquier cosa en 30 días. ¡Solo guarda el tique!'],
+    luxe: ['We accept exchanges within 14 days with the receipt. We don\'t give cash refunds, only store credit.', 'Aceptamos cambios en 14 días con el tique. No devolvemos dinero, solo vale de compra.']
+  }[k];
+  ask(n, 'Yes?', '¿Sí?', [
+    { t: 'What\'s your return policy?', kind: 'ok' },
+    { t: 'Which is your return politic?', kind: 'grammar', tip: 'False friend! "Política" (rules) = policy. "Politics" is about government. Say "What\'s your return policy?"' },
+    { t: 'Can I return back the money if I don\'t like it?', kind: 'grammar', tip: 'The shop gives YOU the money back: "Can I get a refund?"' }
+  ], () => { G.s.info[k] = true; line(n, replies[0], replies[1], () => shopTalk(k), 'Good to know'); });
+}
+function askDiscount(k) {
+  const sh = SHOPS[k], n = sh.npc;
+  ask(n, 'Mm-hm?', '¿Mmm?', [
+    { t: 'Do you have a student discount?', kind: 'ok' },
+    { t: 'Is anything on sale at the moment?', kind: 'ok' },
+    { t: 'Is anything in sale actually?', kind: 'grammar', tip: 'We say "ON sale". And "actually" means "en realidad". "Actualmente" = currently / at the moment.' },
+    { t: 'Do you make discount to students?', kind: 'grammar', tip: 'Shops "offer" or "give" a discount: "Do you have / offer a student discount?"' }
+  ], () => {
+    let r;
+    if (k === 'campus') { G.s.discount = true; r = ['Yes! Students get 10% off everything. I\'ll take it off the prices for you.', '¡Sí! Los estudiantes tienen un 10% de descuento en todo. Te lo aplico en los precios.']; }
+    else if (k === 'luxe') { G.s.sale = true; r = ['We never give discounts… however, our designer sneakers are half price this week.', 'Nunca hacemos descuentos… sin embargo, nuestras zapatillas de diseño están a mitad de precio esta semana.']; }
+    else r = ['Discount? Kid, everything here is already cheap!', '¿Descuento? Chaval, ¡aquí ya está todo baratísimo!'];
+    line(n, r[0], r[1], () => shopTalk(k), 'Great');
+  });
+}
+function shopBye(k) {
+  const n = SHOPS[k].npc;
+  if (G.s['bye' + k]) { say(n, 'See you!'); return; }
+  ask(n, 'Is that everything?', '¿Eso es todo?', [
+    { t: 'Yes, that\'s all. Thanks for your help!', kind: 'ok' },
+    { t: 'Yes, it\'s all. Thank you very much.', kind: 'grammar', tip: '"Eso es todo" = "That\'s all", not "It\'s all".' },
+    { t: 'Yes. Bye. Whatever.', kind: 'rude', tip: 'Thank the shop assistant: "That\'s all, thanks for your help!"' }
+  ], () => { G.s['bye' + k] = true; say(n, k === 'bargain' ? 'Yeah, yeah. Bye.' : 'You\'re welcome! Have a great day!'); });
+}
+function priceOf(k, it) {
+  let p = it.price;
+  if (k === 'luxe' && it.sale && G.s.sale) p = p / 2;
+  if (k === 'campus' && G.s.discount) p = Math.round(p * 90) / 100;
+  return p;
+}
+function sizeWord(cat, sz) { const t = CATS[cat].size; return t === 'shirt' ? ({ XS: 'Extra small (XS)', S: 'Small (S)', M: 'Medium (M)', L: 'Large (L)', XL: 'Extra large (XL)' })[sz] : 'Size ' + sz; }
+function openCatalog(k) {
+  const sh = SHOPS[k], s = G.s;
+  const grid = el('div');
+  if (s.info[k]) grid.append(el('div', 'policy', `🧾 <b>Return policy:</b> ${escH(sh.policy)}`));
+  const box = el('div', 'items');
+  sh.items.forEach(it => {
+    const p = priceOf(k, it), owned = activeInv().some(r => r.id === it.id);
+    const c = el('div', 'item');
+    c.innerHTML = `<div class="ithumb" style="--c:${it.hex}">${CATS[it.cat] ? CATS[it.cat].emoji : '🕶'}<i></i>${p < it.price ? '<span class="tag">SALE</span>' : ''}${owned ? '<span class="own">OWNED</span>' : ''}</div>
+      <div class="iname">${escH(it.name)}</div>
+      <div class="imeta">Colour: ${escH(it.color)} · Quality <span class="stars">${'★'.repeat(it.q)}${'☆'.repeat(3 - it.q)}</span></div>
+      <p class="idesc">${escH(it.desc)}</p>
+      <div class="iprice">${p < it.price ? `<s>${money(it.price)}</s>` : ''}${money(p)}</div>`;
+    const bt = el('div', 'ibtns');
+    if (CATS[it.cat] && CATS[it.cat].size) { const t = el('button', 'btn', s.fitted[it.id] ? 'Fits ✓' : 'Try on'); t.onclick = () => { closePanel(); tryOn(k, it); }; bt.append(t); }
+    const can = G.money + s.credit[k] >= p - 1e-9;
+    const b = el('button', 'btn primary', can ? 'Buy' : 'Too expensive'); b.disabled = !can; b.onclick = () => { closePanel(); buy(k, it); }; bt.append(b);
+    c.append(bt); box.append(c);
+  });
+  grid.append(box);
+  const info = `Wallet <b>${money(G.money)}</b>${s.credit[k] ? ` · store credit <b>${money(s.credit[k])}</b>` : ''}${k === 'campus' && s.discount ? ' · <b>10% student discount</b>' : ''}`;
+  panel(sh.name, `${sh.clerk} is watching you. Read every label: colour, quality and price.`, grid, [{ t: 'Back', fn: () => { closePanel(); shopTalk(k); } }], { info, onClose: () => {} });
+}
+function tryOn(k, it) {
+  const n = SHOPS[k].npc, s = G.s;
+  const go = () => {
+    const t = CATS[it.cat].size;
+    choice(n, 'Sure! The fitting room is over there. What size would you like to try?', '¡Claro! El probador está allí. ¿Qué talla te quieres probar?', SIZES[t].map(sz => ({
+      t: `${sizeWord(it.cat, sz)}, please.`, fn: () => {
+        const d = SIZES[t].indexOf(sz) - SIZES[t].indexOf(MY[t]);
+        const shoes = t === 'shoes';
+        let m;
+        if (d === 0) { s.fitted[it.id] = sz; m = [shoes ? 'They fit perfectly! Nice and comfortable. 👌' : 'It fits perfectly! 👌', shoes ? '¡Te quedan perfectos!' : '¡Te queda perfecto!']; }
+        else if (d < 0) m = [shoes ? 'Ouch! They\'re too small. They hurt your toes.' : 'It\'s too tight. You can hardly breathe!', shoes ? '¡Ay! Son demasiado pequeños.' : 'Te aprieta demasiado.'];
+        else m = [shoes ? 'They\'re too big. Your feet slide around inside.' : 'It\'s too loose. It looks like a tent!', shoes ? 'Son demasiado grandes.' : 'Te queda demasiado ancho.'];
+        notify('🪞 Fitting room', m[0], d === 0 ? 'good' : 'warn');
+        line(null, m[0] + (d === 0 ? '' : ' Check your character card for your size.'), m[1], () => openCatalog(k), 'Back to the shop');
+      }
+    })));
+  };
+  if (s.tried[k]) return go();
+  ask(n, 'Do you need anything?', '¿Necesitas algo?', [
+    { t: 'Yes, can I try it on, please?', kind: 'ok' },
+    { t: 'Yes, can I try on it, please?', kind: 'grammar', tip: 'With a pronoun, the particle goes after it: try IT on (not "try on it").' },
+    { t: 'Yes, can I prove it, please?', kind: 'grammar', tip: 'False friend! "Probarse ropa" = try on. "Prove" means "demostrar".' }
+  ], () => { s.tried[k] = true; go(); });
+}
+function buy(k, it) {
+  const n = SHOPS[k].npc, s = G.s, price = priceOf(k, it);
+  ask(n, k === 'luxe' ? 'An excellent choice. Shall I wrap it for you?' : k === 'bargain' ? 'You gonna buy that or what?' : 'Great choice! Do you want it?', 'Buena elección. ¿Te lo llevas?', [
+    { t: 'Yes, I\'ll take it, please.', kind: 'ok' },
+    { t: 'Yes, I take it this.', kind: 'grammar', tip: 'For a decision made now, use "will": "I\'ll take it." No extra "this".' },
+    { t: 'Yes, give me.', kind: 'rude', tip: '"Give me" sounds bossy. Use "I\'ll take it, please."' }
+  ], () => {
+    const t = CATS[it.cat] && CATS[it.cat].size;
+    const pay = (size) => ask(n, `That's ${money(price)}. Cash or card?`, `Son ${money(price)}. ¿Efectivo o tarjeta?`, [
+      { t: 'By card, please.', kind: 'ok' }, { t: 'In cash, please.', kind: 'ok' },
+      { t: 'With card.', kind: 'grammar', tip: 'We pay BY card and IN cash.' }
+    ], () => complete_purchase(size));
+    const complete_purchase = (size) => {
+      let p = price; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
+      G.money = Math.round((G.money - p) * 100) / 100;
+      const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid: price, size: size || null, sizeOk: !t || size === MY[t], broken: false, returned: false });
+      rec.emoji = CATS[rec.cat] ? CATS[rec.cat].emoji : '🕶';
+      rec.label = `${rec.color} ${rec.name}`;
+      rec.info = () => `${rec.shopName} · ${money(rec.paid)} · quality ${'★'.repeat(rec.q)}${rec.size ? ' · size ' + rec.size : ''}${rec.broken ? ' · BROKEN' : ''}`;
+      rec.bad = () => rec.broken;
+      G.inv.push(rec); renderHotbar(); equipAll(); mallObjectives(); updateBoard();
+      notify('🧾 Receipt', `${rec.label} · ${money(price)}${useCredit ? ' (store credit used)' : ''} · ${SHOPS[k].name}`, 'good');
+      say(n, k === 'bargain' ? 'There. Next!' : 'Here\'s your receipt. Enjoy!');
+      if (k === 'bargain' && it.fragile && !s.broke) { s.broke = true; later(20, () => breakItem(rec)); }
+      later(0.6, () => { if (!G.over && $('#dlg').hidden && $('#panelWrap').hidden) openCatalog(k); });
+    };
+    if (t) {
+      if (s.fitted[it.id]) pay(s.fitted[it.id]);
+      else choice(n, 'What size do you need?', '¿Qué talla necesitas?', SIZES[t].map(sz => ({ t: `${sizeWord(it.cat, sz)}, please.`, fn: () => pay(sz) })));
+    } else pay(null);
+  });
+}
+function breakItem(rec) {
+  if (rec.returned || G.over) return;
+  rec.broken = true; G.s.brokeItem = rec;
+  const what = rec.cat === 'trainers' ? 'The sole of your Bargain Barn trainers just fell off! 😱' : 'The strap of your Bargain Barn backpack just broke! 😱';
+  notify('💥 Oh no!', what, 'bad'); chat('System', what, '#ff8a80'); setFace(P.av, 'sad'); later(3, () => setFace(P.av, 'smile'));
+  reveal('broken', `Replace your broken ${rec.cat === 'trainers' ? 'trainers' : 'backpack'}`);
+  renderHotbar(); equipAll(); mallObjectives(); updateBoard();
+}
+function returnsFlow(k) {
+  const n = SHOPS[k].npc;
+  const mine = activeInv().filter(r => r.shop === k);
+  const opts = mine.map(r => ({ t: `${r.emoji} ${r.label}${r.size ? ' (size ' + r.size + ')' : ''}${r.broken ? ' — broken' : ''}`, meta: true, fn: () => returnItem(k, r) }));
+  opts.push({ t: '↩ Never mind', meta: true, fn: () => shopTalk(k) });
+  showDialog(n, 'Which item is it?', '¿Qué artículo es?', opts);
+}
+function returnItem(k, r) {
+  const n = SHOPS[k].npc, t = CATS[r.cat] && CATS[r.cat].size;
+  const opts = [];
+  if (t || r.broken) opts.push({ t: t ? '🔁 Exchange it for a different size' : '🔁 Exchange it for a new one', meta: true, fn: () => doExchange(k, r) });
+  opts.push({ t: '💵 Return it and get my money back', meta: true, fn: () => doRefund(k, r) });
+  opts.push({ t: '↩ Never mind', meta: true, fn: () => shopTalk(k) });
+  choice(null, `What do you want to do with the ${r.label.toLowerCase()}?`, `¿Qué quieres hacer con el artículo?`, opts);
+}
+function refuseBargain() {
+  line(SHOPS.bargain.npc, 'Sorry, kid. All sales are final. It says so on the sign. No refunds, no exchanges.', 'Lo siento, chaval. No se admiten devoluciones. Lo pone en el cartel. Ni reembolsos ni cambios.', () => {
+    notify('📚 Lesson learned', 'Always ask "What\'s your return policy?" BEFORE you buy something cheap.', 'warn');
+    G.s.bargainRefused = true;
+  }, 'Oh no…');
+}
+function doExchange(k, r) {
+  const n = SHOPS[k].npc, t = CATS[r.cat] && CATS[r.cat].size;
+  ask(n, 'Is there a problem?', '¿Hay algún problema?', [
+    { t: r.broken ? 'Yes, it broke after one day. Could I exchange it for a new one? Here\'s my receipt.' : 'Yes, it doesn\'t fit. Could I exchange it for a different size? Here\'s my receipt.', kind: 'ok' },
+    { t: 'I want to change this for other.', kind: 'grammar', tip: 'Use "exchange it for another one / a different size".' },
+    { t: 'This is rubbish. Change it now.', kind: 'rude', tip: 'Explain the problem politely: "It doesn\'t fit. Could I exchange it, please?"' }
+  ], () => {
+    if (k === 'bargain') return refuseBargain();
+    if (r.broken) { r.broken = false; line(n, 'Of course. Here\'s a new one.', 'Por supuesto. Aquí tienes uno nuevo.', after, 'Thank you!'); return; }
+    choice(n, 'No problem. Which size would you like?', 'Sin problema. ¿Qué talla quieres?', SIZES[t].map(sz => ({ t: `${sizeWord(r.cat, sz)}, please.`, fn: () => { r.size = sz; r.sizeOk = sz === MY[t]; line(n, 'Here you go. All done!', '¡Aquí tienes! Listo.', after, 'Thanks!'); } })));
+  });
+  function after() { renderHotbar(); equipAll(); mallObjectives(); updateBoard(); }
+}
+function doRefund(k, r) {
+  const n = SHOPS[k].npc;
+  ask(n, 'What\'s wrong with it?', '¿Qué le pasa?', [
+    { t: 'I\'d like to return this, please. Can I get a refund? Here\'s the receipt.', kind: 'ok' },
+    { t: 'I want to give back this and you return me the money.', kind: 'grammar', tip: 'Say "I\'d like to return this" and "Can I get a refund?"' },
+    { t: 'Take this back and give me my money.', kind: 'rude', tip: 'Be polite: "I\'d like to return this, please."' }
+  ], () => {
+    if (k === 'bargain') return refuseBargain();
+    r.returned = true;
+    if (k === 'campus') { G.money = Math.round((G.money + r.paid) * 100) / 100; line(n, `No problem. Here's your refund: ${money(r.paid)}.`, `Sin problema. Aquí tienes tu reembolso: ${money(r.paid)}.`, () => {}, 'Thanks!'); }
+    else { G.s.credit.luxe += r.paid; line(n, `We don't give cash refunds, but here is ${money(r.paid)} in store credit for Luxe Label.`, `No devolvemos dinero, pero aquí tienes ${money(r.paid)} en un vale para Luxe Label.`, () => notify('🎟 Store credit', 'You can only spend store credit in the same shop.', 'warn'), 'I see…'); }
+    renderHotbar(); equipAll(); mallObjectives(); updateBoard();
+  });
+}
+function equipAll() {
+  const u = P.av.userData, inv = activeInv();
+  const latest = c => inv.filter(r => r.cat === c).slice(-1)[0];
+  const polo = latest('polo'), tr = latest('trousers'), sh = latest('shoes'), bp = latest('backpack');
+  u.torso.material = M(polo ? polo.hex : profile.shirt);
+  u.legs.forEach(l => l.material = M(tr ? tr.hex : profile.pants));
+  u.shoes.forEach(x => { x.visible = !!sh; if (sh) x.material = M(sh.hex); });
+  u.pack.visible = !!bp && !bp.broken; if (bp) u.pack.material = M(bp.hex);
+}
+function mallObjectives() {
+  const inv = activeInv();
+  Object.keys(CATS).forEach(c => { const o = obj(c); o.done = inv.some(r => r.cat === c && !r.broken); o.failed = false; });
+  const b = obj('broken'), bi = G.s.brokeItem;
+  if (bi) b.done = inv.some(r => r.cat === bi.cat && !r.broken);
+  renderObjectives();
+}
+function teacherTalk(t) {
+  const missing = Object.keys(CATS).filter(c => !activeInv().some(r => r.cat === c && !r.broken));
+  if (missing.length) {
+    choice(t, 'Hi! I\'m Ms. Parker. Are you ready for tomorrow?', '¡Hola! Soy la señorita Parker. ¿Estás listo/a para mañana?', [
+      { t: 'Not yet, I still need a few things. See you later!', fn: () => say(t, 'OK! The shops close at six, so hurry up!') },
+      { t: 'I think so. Could you check my things, please?', fn: () => finalCheck(t, missing) }
+    ]);
+  } else finalCheck(t, missing);
+}
+function finalCheck(t, missing) {
+  ask(t, 'Wonderful! So, have you got everything on the list?', '¡Estupendo! Bueno, ¿tienes todo lo de la lista?', [
+    { t: missing.length ? 'I\'ve bought most of the things on my list.' : 'Yes, I\'ve bought everything on my list!', kind: 'ok' },
+    { t: 'Yes, I have buyed everything.', kind: 'grammar', tip: '"Buy" is irregular: buy – bought – bought. "I\'ve bought everything."' },
+    { t: 'Yes, I have all since yesterday.', kind: 'grammar', tip: 'Say "Yes, I\'ve got everything" or "I bought everything yesterday."' }
+  ], () => review(t));
+}
+function review(t) {
+  complete('school');
+  const inv = activeInv(), good = [], bad = [];
+  let listPts = 0, qSum = 0, qN = 0;
+  Object.entries(CATS).forEach(([c, info]) => {
+    const all = inv.filter(r => r.cat === c);
+    const best = all.filter(itemValid).sort((a, b) => b.q - a.q)[0] || all.filter(r => !r.broken)[0] || all[0];
+    if (!best) { bad.push(`Ms. Parker: “You haven't got ${info.label.toLowerCase().replace(/^a /, 'a ')}!”`); return; }
+    const plural = /trousers|shoes|trainers|chinos|loafers|sneakers/i.test(best.name);
+    if (best.broken) bad.push(`Ms. Parker: “Oh dear, your ${best.name.toLowerCase()} ${plural ? 'are' : 'is'} broken.”`);
+    else if (!best.ok) bad.push(`Ms. Parker: “${best.why || 'That isn\'t on the list.'}”`);
+    else if (info.size && !best.sizeOk) bad.push(`Ms. Parker: “Your ${best.name.toLowerCase()} ${plural ? 'don\'t' : 'doesn\'t'} fit you. Did you try ${plural ? 'them' : 'it'} on?”`);
+    else { listPts += 20; qSum += best.q; qN++; good.push(`${best.color} ${best.name.toLowerCase()}: perfect${best.q === 3 ? ' and great quality' : best.q === 1 ? ', but cheap quality' : ''}.`); }
+  });
+  const extras = inv.filter(r => r.cat === 'extra');
+  if (extras.length) bad.push(`You spent ${money(extras.reduce((a, r) => a + r.paid, 0))} on things that weren't on your list.`);
+  const quality = qN ? Math.round(qSum / qN / 3 * 100) : 0;
+  const bp = inv.filter(r => r.cat === 'backpack' && !r.broken).slice(-1)[0];
+  const pref = bp && /blue/i.test(bp.color) ? 100 : 40;
+  if (pref === 100) good.push('You got a blue backpack, your favourite colour!');
+  if (G.s.discount) good.push('You asked for the student discount at Campus Corner.');
+  if (G.s.sale) good.push('You found the half-price sneakers at Luxe Label by asking.');
+  if (G.s.brokeItem) bad.push('A cheap Bargain Barn item broke. Cheap things can be expensive in the end!');
+  const save = clamp(G.money * 4, 0, 100);
+  const eng = engPct();
+  const overall = 0.35 * listPts + 0.15 * quality + 0.25 * eng + 0.1 * G.manners + 0.05 * pref + 0.1 * Math.max(save, listPts === 100 ? 60 : 0);
+  const msg = listPts === 100 ? ['Everything is perfect. See you tomorrow at 8:30!', 'Todo perfecto. ¡Nos vemos mañana a las 8:30!'] : ['Hmm, there are some problems. Let\'s look at them together.', 'Mmm, hay algunos problemas. Vamos a verlos juntos.'];
+  t.av.userData.wave = listPts === 100;
+  line(t, msg[0], msg[1], () => showResults({
+    title: listPts === 100 ? 'Ready for school!' : 'Mission complete',
+    overall, metrics: [['Shopping list', listPts], ['Quality', quality], ['English', eng], ['Manners', G.manners], ['Savings', save]], good, bad
+  }), 'See my results');
+}
+
+/* boot */
+renderHome();
+</script>
+</body>
+</html>
