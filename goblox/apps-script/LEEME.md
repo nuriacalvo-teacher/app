@@ -30,19 +30,40 @@ No hace falta servidor ni pagar nada. Se tarda unos 10 minutos.
 4. Pulsa **Implementar** y acepta los permisos. Google te pedirá permiso para usar tu hoja de cálculo y ver tu correo.
 5. Copia la **URL de la aplicación web** (termina en `/exec`). Ese es el enlace que compartes con la clase, por ejemplo en Classroom.
 
-## 3. (Opcional) Enlace para invitados sin cuenta de iesgoya.es
+## 3. Crea tus clases
+
+1. Abre el enlace de GOBLOX con tu cuenta y entra en **Profesor → Mis clases**.
+2. Crea una clase por grupo (por ejemplo `3º ESO B`). Cada clase recibe un **código** (por ejemplo `3ESOB-K7Q2`).
+3. Da a cada grupo su código. La primera vez que un alumno entra, el juego le pide el código y lo coloca en su clase.
+
+Para qué sirven las clases:
+- **Solo juegan tus alumnos.** Aunque el enlace llegue a otros alumnos del instituto, sin un código de clase válido no pueden entrar. Si no quieres este filtro, pon `REQUIRE_CLASS_CODE: false` en `CONFIG`.
+- **Panel por clases.** Filtras la lista por clase, das GOYUX a una clase entera (selecciona todos y pulsa "Dar a los seleccionados") y mueves alumnos de una clase a otra.
+- **Cada clase es un mundo.** En My Nation, el ranking, las visitas y las cartas son solo entre países de la misma clase.
+- **Cerrar una clase.** Al cerrarla nadie más puede unirse con ese código; los alumnos que ya están siguen jugando.
+
+### ¿Y si otros profesores quieren usarlo?
+
+Hay dos opciones:
+
+- **Cada profesor con su propia copia (recomendado).** El otro profesor abre tu hoja, hace **Archivo → Hacer una copia** (el script se copia con ella), cambia `TEACHERS` por su correo y publica su propia aplicación web (pasos 1 y 2). Tiene su propio enlace, sus alumnos y sus datos, y tú no ves los suyos. Es lo más sencillo y lo mejor para la protección de datos.
+- **Una hoja compartida para un departamento.** Añade los correos de los demás profesores a `TEACHERS`. Cada profesor solo ve en su panel los alumnos de las clases que él ha creado.
+
+No recomiendo una sola hoja para todo el instituto (cientos de alumnos y muchos profesores): Apps Script lo aguanta, pero cada profesor debe ser responsable de los datos de sus propios alumnos.
+
+## 4. (Opcional) Enlace para invitados sin cuenta de iesgoya.es
 
 Sirve para que juegue alguien de fuera del instituto, por ejemplo tu hija. Se hace con una **segunda implementación** del mismo script; tus alumnos siguen usando el primer enlace.
 
 1. **Implementar → Nueva implementación → Aplicación web.**
 2. **Ejecutar como:** *Yo*. **Quién tiene acceso:** *Cualquier usuario*. Así no necesita ninguna cuenta de Google.
 3. Copia esta segunda URL: es el **enlace para invitados**.
-4. En GOBLOX, abre la pestaña **Profesor → Invitados**, escribe su nombre y pulsa **Crear código** (por ejemplo `LUCIA-7K3P`).
+4. En GOBLOX, abre la pestaña **Profesor → Invitados**, escribe su nombre, elige la clase en la que quieres que aparezca y pulsa **Crear código** (por ejemplo `LUCIA-7K3P`).
 5. Dale el enlace para invitados y su código. La primera vez el juego le pide el código y lo recuerda en ese navegador.
 
 Sin un código válido no se puede jugar, aunque alguien consiga el enlace. Desde el mismo panel puedes **desactivar** un código cuando quieras. Los invitados aparecen en la lista de alumnos con un correo del tipo `invitado:lucia-7k3p` y puedes darles GOYUX igual que a un alumno.
 
-## 4. Uso diario
+## 5. Uso diario
 
 - **Alumnos:** abren el enlace. Si no han iniciado sesión, Google les pide su cuenta del instituto. La primera vez aparecen solos en la hoja **Alumnos**.
 - **Profesorado:** con tu cuenta verás la pestaña **Profesor** en el menú de arriba. Desde ella puedes:
@@ -57,12 +78,27 @@ Sin un código válido no se puede jugar, aunque alguien consiga el enlace. Desd
 
 | Hoja | Una fila por… | Contenido |
 | --- | --- | --- |
-| Alumnos | alumno | nombre, nivel, partidas, GOYUX (de juego, del profesor y total), estrellas por juego, última conexión |
+| Alumnos | alumno | nombre, clase, nivel, partidas, GOYUX (de juego, del profesor y total), estrellas por juego, última conexión |
 | Partidas | misión terminada | fecha, juego, puntuación, estrellas, presupuesto, dinero restante, % de inglés, modales, duración, errores, GOYUX ganados y código de partida |
 | GOYUX | premio del profesor | fecha, alumno, cantidad (puede ser negativa), motivo y profesor |
-| Invitados | persona invitada | código, nombre y si está activo (SÍ/NO) |
+| Invitados | persona invitada | código, nombre, si está activo (SÍ/NO) y su clase |
+| Clases | clase | código, nombre, profesor y si está abierta (SÍ/NO) |
 | Países | país de un alumno | nombre, capital, lema, terrenos, edificios, GOYUX gastados, impuestos cobrados, población, felicidad, economía, seguridad, cultura, medio ambiente y puntuación |
 | Diplomacia | carta entre países | quién la envía, a quién, tipo de tratado, estado (pendiente, aceptado o rechazado) y el texto de la carta y de la respuesta |
+
+## Niveles de dificultad
+
+Antes de cada misión el alumno elige la dificultad:
+
+| | Easy (A2) | Normal (A2–B1) | Hard (B1+) |
+| --- | --- | --- | --- |
+| Opciones de respuesta | 2 | 3 | 4 |
+| Traducción al español | siempre visible | con el botón ES | no hay |
+| Presupuesto | más dinero | normal | más ajustado |
+| Sorpresas | menos | normal | todas |
+| GOYUX | ×0,8 | ×1 | ×1,25 |
+
+La dificultad de cada partida queda guardada en la hoja **Partidas**. El **nivel** que aparece en el perfil ("Level 2") es otra cosa: es la experiencia del alumno, que sube cada 200 GOYUX ganados jugando.
 
 ## My Nation: el país de cada alumno
 
@@ -87,7 +123,7 @@ Cada alumno funda su propio país anglosajón en una isla 3D y lo hace crecer co
 
 Si cambias `index.html` (por ejemplo, con un juego nuevo):
 
-1. Pega el nuevo contenido en el archivo `index` del proyecto de Apps Script.
+1. Pega el nuevo contenido (y el nuevo `Code.gs` si también ha cambiado) en el archivo `index` del proyecto de Apps Script.
 2. Ve a **Implementar → Gestionar implementaciones**, edita la implementación (lápiz), elige **Versión: nueva versión** y pulsa **Implementar**. Si tienes también el enlace para invitados, repítelo con esa implementación.
 
 Los enlaces no cambian.

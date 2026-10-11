@@ -497,6 +497,13 @@ function sameWorld_(u, otherEmail, kl, classes) {
   return (kl[u.email] || '') === (kl[otherEmail] || '');
 }
 function nationGet(guestCode) { const u = user_(guestCode); return withLock_(() => { if (needsClass_(u)) throw new Error('CLASS_REQUIRED'); ensureStudent_(u.email, u.name, u.klass); return nationState_(u.email); }); }
+/* A flag is its layout plus its colours in order; two nations in the same class can't share one */
+const flagKey_ = f => (f && f.layout || 'h') + '|' + ((f && f.c) || []).map(c => String(c).toLowerCase()).join(',');
+function takenFlags_(u) {
+  const kl = studentClasses_(), classes = classMap_();
+  return allNations_().filter(n => n.email !== u.email && sameWorld_(u, n.email, kl, classes)).map(n => ({ name: n.name, key: flagKey_(n.flag) }));
+}
+function nationFlags(guestCode) { return takenFlags_(user_(guestCode)); }
 function nationFound(d, guestCode) {
   const u = user_(guestCode);
   const name = cleanText_(d && d.name, 24), capital = cleanText_(d && d.capital, 24), motto = cleanText_(d && d.motto, 60);
@@ -508,6 +515,8 @@ function nationFound(d, guestCode) {
   return withLock_(() => {
     if (needsClass_(u)) throw new Error('CLASS_REQUIRED');
     if (getNation_(u.email)) throw new Error('You have already founded a nation.');
+    const same = takenFlags_(u).find(t => t.key === flagKey_(flag));
+    if (same) throw new Error('That flag already belongs to ' + same.name + '. Choose a different pattern or different colours.');
     const es = ensureStudent_(u.email, u.name, u.klass);
     const st = readStudent_(es.sh, es.r);
     saveNation_({ email: u.email, leader: st.name, name, capital, motto, flag, plots: N_START.slice(), buildings: { [N_CAPITAL]: 'cityhall' }, spent: 0, income: 0, lastTax: '' });

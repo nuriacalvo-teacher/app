@@ -76,7 +76,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 .field input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--fg);font:inherit;font-weight:700;max-width:320px}
 .swatches{display:flex;flex-wrap:wrap;gap:8px}
 .sw{width:36px;height:36px;border-radius:8px;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
-.sw[aria-pressed="true"]{border-color:#fff}
+.sw[aria-pressed="true"]{border-color:#fff;outline:3px solid var(--gold);outline-offset:1px}
 @media (max-width:640px){.av-edit{grid-template-columns:1fr}.av-stage{max-width:240px}}
 
 /* 2D blocky avatar */
@@ -192,6 +192,7 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 .found label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .found input,.found select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--fg);font:inherit;font-weight:700;text-transform:none;letter-spacing:0}
 .found-flag{width:150px;max-width:100%;aspect-ratio:3/2;border-radius:8px;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.flag-warn{margin:0;background:rgba(239,77,85,.18);border:1px solid var(--red);border-radius:9px;padding:10px 12px;font-weight:700;line-height:1.4}
 .found-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .found-row span{font-size:12px;font-weight:800;color:var(--muted);min-width:76px;text-transform:uppercase;letter-spacing:.05em}
 .sw.sm{width:28px;height:28px;border-radius:6px}
@@ -414,6 +415,7 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 .iprice s{color:var(--muted);font-size:13px;margin-right:6px;font-weight:700}
 .ibtns{display:flex;gap:6px}
 .ibtns .btn{flex:1;padding:7px 6px;font-size:13px}
+.item.inbasket{border-color:var(--green);background:rgba(0,168,107,.12)}
 /* card */
 .card-sheet{display:grid;gap:10px;font-size:15px;line-height:1.5}
 .card-sheet .cs{background:rgba(255,255,255,.07);border-radius:9px;padding:10px 12px}
@@ -2287,28 +2289,38 @@ function priceOf(k, it) {
   return p;
 }
 function sizeWord(cat, sz) { const t = CATS[cat].size; return t === 'shirt' ? ({ XS: 'Extra small (XS)', S: 'Small (S)', M: 'Medium (M)', L: 'Large (L)', XL: 'Extra large (XL)' })[sz] : 'Size ' + sz; }
+/* shopping basket: add several items, then pay for all of them at the till */
+const basketOf = k => { const s = G.s; s.basket = s.basket || {}; return (s.basket[k] = s.basket[k] || []); };
+const itemOf = (k, id) => SHOPS[k].items.find(i => i.id === id);
+const basketTotal = k => Math.round(basketOf(k).reduce((a, id) => a + priceOf(k, itemOf(k, id)), 0) * 100) / 100;
 function openCatalog(k) {
-  const sh = SHOPS[k], s = G.s;
+  const sh = SHOPS[k], s = G.s, bk = basketOf(k);
+  const wallet = G.money + s.credit[k], total = basketTotal(k);
   const grid = el('div');
   if (s.info[k]) grid.append(el('div', 'policy', `🧾 <b>Return policy:</b> ${escH(sh.policy)}`));
   const box = el('div', 'items');
   sh.items.forEach(it => {
-    const p = priceOf(k, it), owned = activeInv().some(r => r.id === it.id);
-    const c = el('div', 'item');
-    c.innerHTML = `<div class="ithumb" style="--c:${it.hex}">${it.emo || CATS[it.cat].emoji}<i></i>${p < it.price ? '<span class="tag">SALE</span>' : ''}${owned ? '<span class="own">OWNED</span>' : ''}</div>
+    const p = priceOf(k, it), owned = activeInv().some(r => r.id === it.id), inB = bk.includes(it.id);
+    const c = el('div', 'item' + (inB ? ' inbasket' : ''));
+    c.innerHTML = `<div class="ithumb" style="--c:${it.hex}">${it.emo || CATS[it.cat].emoji}<i></i>${p < it.price ? '<span class="tag">SALE</span>' : ''}${owned ? '<span class="own">OWNED</span>' : ''}${inB ? '<span class="own">IN BASKET</span>' : ''}</div>
       <div class="iname">${escH(it.name)}</div>
       <div class="imeta">Colour: ${escH(it.color)} · Quality <span class="stars">${'★'.repeat(it.q)}${'☆'.repeat(3 - it.q)}</span></div>
       <p class="idesc">${escH(it.desc)}</p>
       <div class="iprice">${p < it.price ? `<s>${money(it.price)}</s>` : ''}${money(p)}</div>`;
     const bt = el('div', 'ibtns');
     if (CATS[it.cat] && CATS[it.cat].size) { const t = el('button', 'btn', s.fitted[it.id] ? 'Fits ✓' : 'Try on'); t.onclick = () => { closePanel(); tryOn(k, it); }; bt.append(t); }
-    const can = G.money + s.credit[k] >= p - 1e-9;
-    const b = el('button', 'btn primary', can ? 'Buy' : 'Too expensive'); b.disabled = !can; b.onclick = () => { closePanel(); buy(k, it); }; bt.append(b);
-    c.append(bt); box.append(c);
+    const can = inB || total + p <= wallet + 1e-9;
+    const b = el('button', 'btn ' + (inB ? '' : 'primary'), inB ? 'Remove' : can ? 'Add to basket' : 'Not enough money');
+    b.disabled = !can;
+    b.onclick = () => { if (inB) bk.splice(bk.indexOf(it.id), 1); else bk.push(it.id); openCatalog(k); };
+    bt.append(b); c.append(bt); box.append(c);
   });
   grid.append(box);
-  const info = `Wallet <b>${money(G.money)}</b>${s.credit[k] ? ` · store credit <b>${money(s.credit[k])}</b>` : ''}${k === 'campus' && s.discount ? ` · <b>${s.discPct}% student discount</b>` : ''}`;
-  panel(sh.name, `${sh.clerk} is watching you. Read every label: colour, quality and price.`, grid, [{ t: 'Back', fn: () => { closePanel(); shopTalk(k); } }], { info, onClose: () => {} });
+  const info = `🧺 <b>${bk.length}</b> item${bk.length === 1 ? '' : 's'} · <b>${money(total)}</b> · wallet <b>${money(G.money)}</b>${s.credit[k] ? ` · store credit <b>${money(s.credit[k])}</b>` : ''}${k === 'campus' && s.discount ? ` · <b>${s.discPct}% student discount</b>` : ''}`;
+  panel(sh.name, `${sh.clerk} is watching you. Read every label: colour, quality and price. Add what you want to your basket, then pay at the till.`, grid, [
+    { t: 'Back', fn: () => { closePanel(); shopTalk(k); } },
+    { t: bk.length ? `Pay at the till (${money(total)})` : 'Your basket is empty', cls: 'primary', disabled: !bk.length, fn: () => { closePanel(); checkout(k); } }
+  ], { info, onClose: () => {} });
 }
 function tryOn(k, it) {
   const n = SHOPS[k].npc, s = G.s;
@@ -2336,69 +2348,97 @@ function tryOn(k, it) {
     { t: 'I go to try this.', kind: 'grammar', tip: 'Ask for permission: "Can I try this on?"' }
   ]), () => { s.tried[k] = true; go(); });
 }
-function buy(k, it) {
-  const n = SHOPS[k].npc, s = G.s, price = priceOf(k, it);
-  const t = CATS[it.cat] && CATS[it.cat].size;
-  const q = k === 'luxe' ? pick1(['An excellent choice. Shall I wrap it for you?', 'Exquisite taste. Will you be taking it?']) : k === 'bargain' ? pick1(['You gonna buy that or what?', 'So? You buying it?']) : pick1(['Great choice! Do you want it?', 'Nice! Would you like to buy it?']);
-  ask(n, q, 'Buena elección. ¿Te lo llevas?', phr(['Yes, I\'ll take it, please.', 'Yes please, I\'ll take this one.', 'I\'ll take it, thanks!'], [
+function checkout(k) {
+  const n = SHOPS[k].npc, s = G.s;
+  const items = basketOf(k).map(id => itemOf(k, id));
+  const many = items.length > 1, sizes = {};
+  const q = k === 'luxe' ? pick1([many ? 'An excellent selection. Shall I wrap them for you?' : 'An excellent choice. Shall I wrap it for you?', 'Will you be taking ' + (many ? 'these' : 'this') + ' today?'])
+    : k === 'bargain' ? pick1([many ? 'You buying all that?' : 'You gonna buy that or what?', 'So? You buying ' + (many ? 'them' : 'it') + '?'])
+    : pick1([many ? 'Great choices! Is that everything?' : 'Great choice! Do you want it?', 'Nice! Would you like to buy ' + (many ? 'them' : 'it') + '?']);
+  const ok = many ? ['Yes, I\'ll take these, please.', 'Yes, I\'ll take all of these, thanks!', 'That\'s everything. I\'ll take them, please.'] : ['Yes, I\'ll take it, please.', 'Yes please, I\'ll take this one.', 'I\'ll take it, thanks!'];
+  const bad = many ? [
+    { t: 'Yes, I take these all.', kind: 'grammar', tip: 'Decision now = "will", and "all of" goes first: "I\'ll take all of these."' },
+    { t: 'Yes, give me all this.', kind: 'rude', tip: '"Give me" sounds bossy. Use "I\'ll take these, please."' },
+    { t: 'Yes, I will to take them.', kind: 'grammar', tip: 'After "will" use the verb without "to": "I\'ll take them."' },
+    { t: 'Yes, I carry all.', kind: 'grammar', tip: '"Llevarse algo" when buying = take: "I\'ll take them."' }
+  ] : [
     { t: 'Yes, I take it this.', kind: 'grammar', tip: 'For a decision made now, use "will": "I\'ll take it." No extra "this".' },
     { t: 'Yes, give me.', kind: 'rude', tip: '"Give me" sounds bossy. Use "I\'ll take it, please."' },
     { t: 'Yes, I will to take it.', kind: 'grammar', tip: 'After "will" use the verb without "to": "I\'ll take it."' },
     { t: 'Yes, I carry it.', kind: 'grammar', tip: '"Llevarse algo" when buying = take: "I\'ll take it."' }
-  ]), () => {
-    const done = (size, paid) => {
-      let p = paid; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
-      G.money = Math.round((G.money - p) * 100) / 100; s.purchases++;
-      const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid, size: size || null, sizeOk: !t || size === MY[t], broken: false, returned: false });
+  ];
+  ask(n, q, many ? '¡Buenas elecciones! ¿Te lo llevas todo?' : 'Buena elección. ¿Te lo llevas?', phr(ok, bad), () => sizeStep(0));
+
+  /* one size question per clothing item that you have not tried on */
+  function sizeStep(j) {
+    if (j >= items.length) return payStep();
+    const it = items[j], t = CATS[it.cat] && CATS[it.cat].size;
+    if (!t) return sizeStep(j + 1);
+    if (s.ev.soldout && !s.soldDone) {
+      s.soldDone = true; s.soldItem = it.id; reveal('soldout');
+      const near = SIZES[t].filter(x => Math.abs(SIZES[t].indexOf(x) - SIZES[t].indexOf(MY[t])) === 1);
+      const iname = it.name.toLowerCase();
+      ask(n, `Oh, sorry! We've just sold out of size ${MY[t]} in the ${iname}. We only have ${near.join(' or ')}.`, `¡Vaya, lo siento! Se nos ha agotado la talla ${MY[t]}. Solo tenemos ${near.join(' o ')}.`, phr([`That's a shame. I'll leave the ${iname}, then. Thanks anyway!`, `Oh, never mind. I'll look for the ${iname} somewhere else.`], [
+        { t: 'Don\'t worry, I search in other shop.', kind: 'grammar', tip: 'Decision now = "will": "I\'ll look in another shop."' },
+        { t: 'What a pity! I go to look other place.', kind: 'grammar', tip: 'Say "I\'ll look somewhere else."' },
+        { t: 'Seriously? This shop is useless.', kind: 'rude', tip: 'Stay polite: "Never mind. Thanks anyway!"' }
+      ]).concat([{ t: `OK, I'll take a size ${near[0]} then.`, kind: 'fact', fn: () => { s.soldOK = false; complete('soldout', true); sizes[it.id] = near[0]; sizeStep(j + 1); } }]), () => {
+        s.soldOK = true; complete('soldout');
+        items.splice(j, 1); const bk = basketOf(k); bk.splice(bk.indexOf(it.id), 1);
+        sizeStep(j);
+      });
+      return;
+    }
+    const avail = SIZES[t].filter(sz => !(s.soldItem === it.id && sz === MY[t]));
+    if (s.fitted[it.id] && avail.includes(s.fitted[it.id])) { sizes[it.id] = s.fitted[it.id]; return sizeStep(j + 1); }
+    choice(n, many ? `What size do you need for the ${it.name.toLowerCase()}?` : 'What size do you need?', '¿Qué talla necesitas?', avail.map(sz => ({ t: `${sizeWord(it.cat, sz)}, please.`, fn: () => { sizes[it.id] = sz; sizeStep(j + 1); } })));
+  }
+  function payStep() {
+    if (!items.length) { say(n, 'No problem. Come back any time!'); later(0.6, () => { if (!G.over && $('#dlg').hidden && $('#panelWrap').hidden) openCatalog(k); }); return; }
+    const price = Math.round(items.reduce((a, it) => a + priceOf(k, it), 0) * 100) / 100;
+    if (s.ev.overcharge && !s.overDone && s.purchases + 1 >= s.overAt) {
+      s.overDone = true;
+      const wrong = price + pick1([5, 8, 10]);
+      const lab = many ? 'the labels add up to' : 'the label says';
+      ask(n, `OK… that's ${money(wrong)}, please.`, `Vale… son ${money(wrong)}, por favor.`, phr([`Sorry, I think there's a mistake. ${cap(lab)} ${money(price)}.`, `Excuse me, isn't it ${money(price)}? That's what ${lab.replace(' says', '').replace(' add up to', '')} ${many ? 'add up to' : 'says'}.`], [
+        { t: `Is not correct. The label put ${money(price)}.`, kind: 'grammar', tip: 'Labels "say" things: "The label says…". And English needs a subject: "It isn\'t correct."' },
+        { t: 'Are you trying to rob me?!', kind: 'rude', tip: 'It could be an honest mistake: "Sorry, I think there\'s a mistake."' },
+        { t: `The price is more cheap, ${money(price)}.`, kind: 'grammar', tip: 'Short adjectives: cheap → cheaper (not "more cheap").' }
+      ]).concat([{ t: 'OK, here you are.', kind: 'fact', fn: () => { s.overpaid += wrong - price; reveal('over'); complete('over', true); payAsk(wrong, wrong - price); } }]), () => {
+        reveal('over'); complete('over');
+        line(n, `Oh, you're right! Sorry, my mistake. It's ${money(price)}.`, `¡Oh, tienes razón! Perdona, error mío. Son ${money(price)}.`, () => payAsk(price, 0), 'No problem');
+      });
+    } else payAsk(price, 0);
+  }
+  function payAsk(amount, extra) {
+    ask(n, `That's ${money(amount)}. Cash or card?`, `Son ${money(amount)}. ¿Efectivo o tarjeta?`, phr(['By card, please.', 'In cash, please.', 'Can I pay by card?'], [
+      { t: 'With card.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
+      { t: 'In card, please.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
+      { t: 'With effective.', kind: 'grammar', tip: 'False friend! "Efectivo" = cash.' }
+    ], 1), () => done(amount, extra));
+  }
+  function done(amount, extra) {
+    let p = amount; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
+    G.money = Math.round((G.money - p) * 100) / 100; s.purchases++;
+    const recs = items.map((it, j) => {
+      const t = CATS[it.cat] && CATS[it.cat].size, size = sizes[it.id] || null;
+      const paid = Math.round((priceOf(k, it) + (j === 0 ? extra : 0)) * 100) / 100;
+      const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid, size, sizeOk: !t || size === MY[t], broken: false, returned: false });
       rec.emoji = it.emo || CATS[rec.cat].emoji;
       rec.label = `${rec.color} ${rec.name}`;
       rec.info = () => `${rec.shopName} · ${money(rec.paid)} · quality ${'★'.repeat(rec.q)}${rec.size ? ' · size ' + rec.size : ''}${rec.broken ? ' · BROKEN' : ''}`;
       rec.bad = () => rec.broken;
-      G.inv.push(rec); renderHotbar(); equipAll(); mallObjectives(); updateBoard();
-      notify('🧾 Receipt', `${rec.label} · ${money(paid)}${useCredit ? ' (store credit used)' : ''} · ${SHOPS[k].name}`, 'good');
-      say(n, k === 'bargain' ? 'There. Next!' : 'Here\'s your receipt. Enjoy!');
-      if (s.ev.broken && k === 'bargain' && it.fragile && !s.broke) { s.broke = true; later(rnd(18, 30), () => breakItem(rec)); }
-      later(0.6, () => { if (!G.over && $('#dlg').hidden && $('#panelWrap').hidden) openCatalog(k); });
-    };
-    const payAsk = (size, amount) => ask(n, `That's ${money(amount)}. Cash or card?`, `Son ${money(amount)}. ¿Efectivo o tarjeta?`, phr(['By card, please.', 'In cash, please.', 'Can I pay by card?'], [
-      { t: 'With card.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
-      { t: 'In card, please.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
-      { t: 'With effective.', kind: 'grammar', tip: 'False friend! "Efectivo" = cash.' }
-    ], 1), () => done(size, amount));
-    const pay = (size) => {
-      if (s.ev.overcharge && !s.overDone && s.purchases + 1 >= s.overAt) {
-        s.overDone = true;
-        const wrong = price + pick1([5, 8, 10]);
-        ask(n, `OK… that's ${money(wrong)}, please.`, `Vale… son ${money(wrong)}, por favor.`, phr([`Sorry, I think there's a mistake. The label says ${money(price)}.`, `Excuse me, isn't it ${money(price)}? That's what the label says.`], [
-          { t: `Is not correct. The label put ${money(price)}.`, kind: 'grammar', tip: 'Labels "say" things: "The label says…". And English needs a subject: "It isn\'t correct."' },
-          { t: 'Are you trying to rob me?!', kind: 'rude', tip: 'It could be an honest mistake: "Sorry, I think there\'s a mistake."' },
-          { t: `The price is more cheap, ${money(price)}.`, kind: 'grammar', tip: 'Short adjectives: cheap → cheaper (not "more cheap").' }
-        ]).concat([{ t: 'OK, here you are.', kind: 'fact', fn: () => { s.overpaid += wrong - price; reveal('over'); complete('over', true); payAsk(size, wrong); } }]), () => {
-          reveal('over'); complete('over');
-          line(n, `Oh, you're right! Sorry, my mistake. It's ${money(price)}.`, `¡Oh, tienes razón! Perdona, error mío. Son ${money(price)}.`, () => payAsk(size, price), 'No problem');
-        });
-      } else payAsk(size, price);
-    };
-    const chooseSize = () => {
-      const avail = SIZES[t].filter(sz => !(s.soldItem === it.id && sz === MY[t]));
-      if (s.fitted[it.id] && avail.includes(s.fitted[it.id])) pay(s.fitted[it.id]);
-      else choice(n, 'What size do you need?', '¿Qué talla necesitas?', avail.map(sz => ({ t: `${sizeWord(it.cat, sz)}, please.`, fn: () => pay(sz) })));
-    };
-    if (t && s.ev.soldout && !s.soldDone) {
-      s.soldDone = true; s.soldItem = it.id; reveal('soldout');
-      const others = SIZES[t].filter(x => x !== MY[t]);
-      const near = others.filter(x => Math.abs(SIZES[t].indexOf(x) - SIZES[t].indexOf(MY[t])) === 1);
-      ask(n, `Oh, sorry! We've just sold out of size ${MY[t]} in this one. We only have ${near.join(' or ')}.`, `¡Vaya, lo siento! Se nos ha agotado la talla ${MY[t]} en este modelo. Solo tenemos ${near.join(' o ')}.`, phr(['That\'s a shame. I\'ll look somewhere else, then. Thanks anyway!', 'Oh, never mind. I\'ll try another shop. Thanks anyway!'], [
-        { t: 'Don\'t worry, I search in other shop.', kind: 'grammar', tip: 'Decision now = "will": "I\'ll look in another shop."' },
-        { t: 'What a pity! I go to look other place.', kind: 'grammar', tip: 'Say "I\'ll look somewhere else."' },
-        { t: 'Seriously? This shop is useless.', kind: 'rude', tip: 'Stay polite: "Never mind. Thanks anyway!"' }
-      ]).concat([{ t: `OK, I'll take a size ${near[0]} then.`, kind: 'fact', fn: () => { s.soldOK = false; complete('soldout', true); pay(near[0]); } }]), () => {
-        s.soldOK = true; complete('soldout'); say(n, 'Sorry about that! Good luck!');
-      });
-      return;
-    }
-    if (t) chooseSize(); else pay(null);
-  });
+      G.inv.push(rec);
+      return rec;
+    });
+    renderHotbar(); equipAll(); mallObjectives(); updateBoard();
+    notify('🧾 Receipt', `${recs.map(r => r.label).join(', ')} · ${money(amount)}${useCredit ? ' (store credit used)' : ''} · ${SHOPS[k].name}`, 'good');
+    say(n, k === 'bargain' ? 'There. Next!' : 'Here\'s your receipt. Enjoy!');
+    const frag = recs.find(r => r.fragile);
+    if (s.ev.broken && k === 'bargain' && frag && !s.broke) { s.broke = true; later(rnd(18, 30), () => breakItem(frag)); }
+    basketOf(k).length = 0;
+    later(0.6, () => { if (!G.over && $('#dlg').hidden && $('#panelWrap').hidden) openCatalog(k); });
+  }
 }
 function breakItem(rec) {
   if (rec.returned || G.over) return;
@@ -2793,6 +2833,7 @@ const NAPI = {
     });
   },
   world() { if (!NAPI.cloud()) throw new Error('offline'); return apiU('nationWorld'); },
+  flags() { return NAPI.cloud() ? apiU('nationFlags') : Promise.resolve([]); },
   visit(email) { return apiU('nationVisit', email); },
   send(to, type, letter) { return apiU('nationSendTreaty', to, type, letter); },
   answer(id, ok, reply) { return apiU('nationAnswerTreaty', id, ok, reply); }
@@ -2812,6 +2853,7 @@ function flagTex(f) {
     c.forEach((col, i) => { g.fillStyle = col; if (f && f.layout === 'v') g.fillRect(i * w / c.length, 0, w / c.length + 1, h); else g.fillRect(0, i * h / c.length, w, h / c.length + 1); });
   });
 }
+const flagKey = f => (f && f.layout || 'h') + '|' + ((f && f.c) || []).map(c => String(c).toLowerCase()).join(',');
 const flagChip = (f, w = 30) => `<i class="flag" style="width:${w}px;background:${flagCss(f)}"></i>`;
 
 /* ---------- 3D island ---------- */
@@ -3056,11 +3098,14 @@ function advisorTalk() {
 
 /* ---------- founding ---------- */
 function foundNation() {
-  const f = { name: '', capital: '', motto: MOTTOS[0], layout: 'h', c: ['#1d3fbf', '#fafafa', '#c62828'] };
+  const f = { name: '', capital: '', motto: MOTTOS[0], layout: 'h', c: ['#1d3fbf', '#fafafa', '#c62828'], taken: [] };
   const box = el('div', 'found');
+  const clash = () => f.taken.find(t => t.key === flagKey({ c: f.c, layout: f.layout }));
   const draw = () => {
+    const same = clash();
     box.innerHTML = `
       <div class="found-flag" style="background:${flagCss({ c: f.c, layout: f.layout })}"></div>
+      ${same ? `<p class="flag-warn" role="alert">⚠️ This flag already belongs to <b>${escH(same.name)}</b>. Choose a different pattern or different colours.</p>` : ''}
       <label for="fName">Name of your nation<input id="fName" maxlength="24" placeholder="e.g. The United Islands of Goya" value="${escH(f.name)}" autocomplete="off"></label>
       <label for="fCap">Name of your capital city<input id="fCap" maxlength="24" placeholder="e.g. New Selgua" value="${escH(f.capital)}" autocomplete="off"></label>
       <label for="fMotto">National motto<select id="fMotto">${MOTTOS.map(m => `<option ${m === f.motto ? 'selected' : ''}>${m}</option>`).join('')}</select></label>
@@ -3073,14 +3118,17 @@ function foundNation() {
     box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { f.c[+b.dataset.i] = b.dataset.c; draw(); });
   };
   draw();
+  NAPI.flags().then(list => { f.taken = list || []; if (!$('#panelWrap').hidden && box.isConnected) draw(); }).catch(() => {});
   panel('Found your nation', 'Every country needs a name, a capital, a motto and a flag. Then sign the Declaration of Independence by passing a short English test.', box, [{
     t: 'Sign the Declaration', cls: 'primary', fn: () => {
       const clean = t => t.replace(/[^\p{L}\p{N} .,'&-]/gu, '').replace(/\s+/g, ' ').trim();
       f.name = clean(f.name); f.capital = clean(f.capital);
       if (f.name.length < 2 || f.capital.length < 2) { notify('✏️ Almost', 'Write a name for your nation and for its capital.', 'warn'); return; }
+      const same = clash();
+      if (same) { notify('🏳 Flag already taken', `That flag belongs to ${same.name}. Change the pattern or the colours.`, 'warn'); return; }
       runQuiz({ title: 'Declaration of Independence', topic: 'found', n: 4, onClose: foundNation, onPass: async () => {
         try { applyNation(await NAPI.found({ name: f.name, capital: f.capital, motto: f.motto, flag: { c: f.c, layout: f.layout } })); notify('🎉 A new nation is born!', `Long live ${f.name}! Your capital is ${f.capital}.`, 'good'); if (G.s.adv) say(G.s.adv, `Congratulations, President! Welcome to ${f.name}!`); }
-        catch (e) { notify('⚠️ Not saved', e.message, 'bad'); }
+        catch (e) { notify('⚠️ Not saved', e.message, 'bad'); if (/flag already belongs/.test(e.message)) later(0.3, foundNation); }
       } });
     }
   }], { onClose: () => {} });
