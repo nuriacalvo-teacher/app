@@ -112,6 +112,9 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 .t-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .t-tools label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);min-width:0}
+.t-tools select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--fg);font:inherit;font-weight:700;text-transform:none;letter-spacing:0;min-width:0;max-width:220px}
+.t-classes{display:flex;flex-direction:column;gap:12px}
+.t-classes h2{font-size:18px;font-weight:900}
 .t-tools input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--fg);font:inherit;font-weight:700;text-transform:none;letter-spacing:0;min-width:0}
 #tSearch{width:200px}#tReason{width:260px}#tAmount{width:90px}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;max-width:100%}
@@ -262,6 +265,12 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 .detail-body p{margin:0;color:var(--muted);line-height:1.55}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{background:var(--card);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+.diff{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.diff button{background:var(--card);border:2px solid transparent;border-radius:9px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.diff button b{font-family:var(--f-display);font-weight:900}
+.diff button small{color:var(--muted);font-size:11px;font-weight:700}
+.diff button[aria-pressed="true"]{border-color:var(--gold);background:rgba(255,194,61,.12)}
+.diff-info{font-size:13px!important;margin-top:-6px!important}
 .detail h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .detail ul{margin:0;padding-left:18px;line-height:1.6}
 @media (max-width:680px){.detail{grid-template-columns:1fr}.detail .thumb{border-radius:14px 14px 0 0;min-height:170px}}
@@ -477,6 +486,12 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
         <div class="hello-txt"><h1 id="hello">Hello!</h1><p>Pick an experience and use your English to survive real life.</p></div>
         <button class="btn" id="progOpen">My progress card</button>
       </div>
+      <form class="guest" id="classBox" hidden>
+        <h2>Join your class</h2>
+        <p>Type the class code your teacher gave you. You only need to do this once.</p>
+        <div class="guest-row"><label for="classIn" class="sr">Class code</label><input id="classIn" placeholder="e.g. 3ESOB-K7Q2" autocomplete="off" maxlength="20"><button class="btn primary" id="classGo">Join</button></div>
+        <p class="guest-err" id="classErr" hidden></p>
+      </form>
       <form class="guest" id="guestBox" hidden>
         <h2>Enter your invite code</h2>
         <p>You are not using an iesgoya.es account. Type the invite code your teacher gave you.</p>
@@ -514,17 +529,26 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
         <h1>Panel del profesor</h1>
         <div class="t-actions"><button class="btn" id="tRefresh">Actualizar</button><a class="btn" id="tSheet" target="_blank" rel="noopener" hidden>Abrir hoja de cálculo</a></div>
       </div>
+      <div class="t-classes">
+        <h2>Mis clases</h2>
+        <p class="t-hint">Crea una clase por grupo y dale el <b>código</b> a esos alumnos: lo escriben la primera vez que entran. Así solo juegan tus alumnos aunque el enlace llegue a otros, y cada clase tiene su propio ranking de países.</p>
+        <div class="t-tools"><label for="cName">Nueva clase<input id="cName" placeholder="Por ejemplo: 3º ESO B" maxlength="30" autocomplete="off"></label><button class="btn primary" id="cCreate">Crear clase</button></div>
+        <div class="tbl-wrap"><table class="tbl" id="cTable"></table></div>
+      </div>
       <div class="t-tools">
+        <label for="tClass">Clase<select id="tClass"></select></label>
         <label for="tSearch">Buscar<input id="tSearch" placeholder="Nombre o correo" autocomplete="off"></label>
         <label for="tReason">Motivo<input id="tReason" value="Buen comportamiento en clase" maxlength="120"></label>
         <label for="tAmount">GOYUX<input id="tAmount" type="number" value="5" min="-100" max="100" step="1"></label>
         <button class="btn primary" id="tGiveSel">Dar a los seleccionados</button>
+        <label for="tMove">Mover seleccionados a<select id="tMove"></select></label>
+        <button class="btn" id="tMoveGo">Mover</button>
       </div>
       <div class="tbl-wrap"><table class="tbl" id="tTable"></table></div>
       <div class="t-guests">
         <h2>Invitados sin cuenta de iesgoya.es</h2>
         <p class="t-hint">Crea un código para cada persona (por ejemplo, tu hija). Entra con el <b>enlace para invitados</b> y escribe su código; su progreso se guarda aquí como el de un alumno. Desactiva un código para cortarle el acceso.</p>
-        <div class="t-tools"><label for="gName">Nombre<input id="gName" placeholder="Nombre del invitado" maxlength="30" autocomplete="off"></label><button class="btn primary" id="gCreate">Crear código</button></div>
+        <div class="t-tools"><label for="gName">Nombre<input id="gName" placeholder="Nombre del invitado" maxlength="30" autocomplete="off"></label><label for="gClass">Clase<select id="gClass"></select></label><button class="btn primary" id="gCreate">Crear código</button></div>
         <div class="tbl-wrap"><table class="tbl" id="gTable"></table></div>
       </div>
       <p class="t-hint">Los alumnos aparecen aquí la primera vez que entran con su cuenta de iesgoya.es. Usa una cantidad negativa para quitar GOYUX (por ejemplo, cuando un alumno los canjea por un premio). Todo queda registrado en la hoja de cálculo.</p>
@@ -545,6 +569,8 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
       <div class="thumb" id="dThumb"></div>
       <div class="detail-body">
         <div><h2 id="dTitle"></h2><div class="by">By GOBLOX Learning · <span id="dLevel"></span></div></div>
+        <div class="diff" id="dDiff" role="group" aria-label="Difficulty"></div>
+        <p class="diff-info" id="dDiffInfo"></p>
         <button class="play" id="dPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></svg>Play</button>
         <p id="dDesc"></p>
         <div><h3>You will practise</h3><ul id="dGoals"></ul></div>
@@ -712,8 +738,8 @@ async function boot() {
   $('#whoName').textContent = 'Connecting…';
   try {
     const me = await apiU('getMe');
-    account = { email: me.email, isTeacher: me.isTeacher, guest: me.guest }; XP_PER_LEVEL = me.xpPerLevel || 200;
-    $('#guestBox').hidden = true;
+    account = { email: me.email, isTeacher: me.isTeacher, guest: me.guest, className: me.className || '' }; XP_PER_LEVEL = me.xpPerLevel || 200;
+    $('#guestBox').hidden = true; $('#classBox').hidden = true;
     const seen = store.get('seenGrants:' + me.email, 0);
     Object.assign(profile, me.profile, { grants: me.grants || [] });
     store.set('profile', profile);
@@ -727,6 +753,7 @@ async function boot() {
     }
   } catch (e) {
     $('#whoName').textContent = profile.name;
+    if (/CLASS_REQUIRED/.test(e.message)) { $('#classBox').hidden = false; $('#classIn').focus(); return; }
     if (/GUEST_(REQUIRED|INVALID)/.test(e.message)) {
       if (/INVALID/.test(e.message) && guestCode) { $('#guestErr').textContent = 'That invite code is not valid. Check it with your teacher.'; $('#guestErr').hidden = false; }
       guestCode = ''; store.set('guestCode', '');
@@ -736,6 +763,15 @@ async function boot() {
     const n = $('#cloudNote'); n.hidden = false; n.classList.add('err'); n.textContent = 'Could not connect to your account: ' + e.message;
   }
 }
+$('#classBox').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = $('#classIn').value.trim().toUpperCase();
+  if (!v) { $('#classErr').textContent = 'Type your class code.'; $('#classErr').hidden = false; return; }
+  $('#classErr').hidden = true; $('#classGo').disabled = true;
+  try { const r = await apiU('joinClass', v); hToast(`Welcome to ${r.className}!`); boot(); }
+  catch (err) { $('#classErr').textContent = err.message; $('#classErr').hidden = false; }
+  finally { $('#classGo').disabled = false; }
+});
 $('#guestBox').addEventListener('submit', e => {
   e.preventDefault();
   const v = $('#guestIn').value.trim().toUpperCase();
@@ -760,6 +796,14 @@ const GAMES = [
   { id: 'train', soon: true, title: 'Lost in London', emoji: '🚇', bg: 'linear-gradient(150deg,#ffa726,#e65100)' }
 ];
 
+/* ---------------- difficulty ---------------- */
+const DIFF = {
+  easy: { label: 'Easy', cefr: 'A2', bad: 1, mult: 0.8, info: 'Two answers to choose from, Spanish translation always visible, a bigger budget and fewer surprises.' },
+  normal: { label: 'Normal', cefr: 'A2–B1', bad: 2, mult: 1, info: 'Three answers to choose from, Spanish translation on demand (ES button).' },
+  hard: { label: 'Hard', cefr: 'B1+', bad: 3, mult: 1.25, info: 'Four answers to choose from, no Spanish help, a tighter budget and every surprise. +25% GOYUX.' }
+};
+let difficulty = DIFF[store.get('difficulty', 'normal')] ? store.get('difficulty', 'normal') : 'normal';
+
 /* ---------------- home ---------------- */
 function av2d(o) {
   return `<div class="av2d" style="--skin:${o.skin};--shirt:${o.shirt};--pants:${o.pants}"><i class="h"></i><i class="m"></i><i class="al"></i><i class="t"></i><i class="ar"></i><i class="ll"></i><i class="lr"></i></div>`;
@@ -767,7 +811,7 @@ function av2d(o) {
 function renderHome() {
   $('#hello').textContent = `Hello, ${profile.name}!`;
   $('#whoName').textContent = profile.name;
-  $('#whoMail').textContent = account ? (account.guest ? 'Guest player' : account.email) : 'Offline';
+  $('#whoMail').textContent = account ? (account.guest ? 'Guest player' : account.email) + (account.className ? ' · ' + account.className : '') : 'Offline';
   $('#goyuxN').textContent = goyuxTotal();
   $('#headshot').innerHTML = av2d(profile);
   const starsTotal = Object.values(profile.best).reduce((a, b) => a + b, 0);
@@ -837,7 +881,13 @@ function openDetail(g) {
   $('#dDesc').textContent = g.desc;
   $('#dGoals').innerHTML = g.goals.map(x => `<li>${escH(x)}</li>`).join('');
   $('#dChips').innerHTML = g.chips.map(x => `<span class="chip">${x}</span>`).join('');
+  renderDiff();
   $('#detail').hidden = false; $('#dPlay').focus();
+}
+function renderDiff() {
+  $('#dDiff').innerHTML = Object.entries(DIFF).map(([k, d]) => `<button data-d="${k}" aria-pressed="${k === difficulty}"><b>${d.label}</b><small>${d.cefr}</small></button>`).join('');
+  $('#dDiffInfo').textContent = DIFF[difficulty].info;
+  $('#dDiff').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { difficulty = b.dataset.d; store.set('difficulty', difficulty); renderDiff(); });
 }
 $('#detailX').onclick = () => $('#detail').hidden = true;
 $('#detail').addEventListener('click', e => { if (e.target.id === 'detail') $('#detail').hidden = true; });
@@ -1242,7 +1292,9 @@ function showDialog(n, text, es, options) {
   $('#dlgName').style.background = n ? (n.badge || 'var(--blue)') : '#555';
   $('#dlgText').textContent = text;
   $('#dlgEsText').textContent = es || 'Traducción no disponible.';
-  $('#dlgEsText').hidden = $('#dlgEs').getAttribute('aria-pressed') !== 'true';
+  const dk = G && G.diff;
+  $('#dlgEs').hidden = dk === 'hard';
+  $('#dlgEsText').hidden = dk === 'hard' || (dk !== 'easy' && $('#dlgEs').getAttribute('aria-pressed') !== 'true');
   if (n) { say(n, text); speak(text, n.voice); }
   const box = $('#dlgOpts'); box.innerHTML = '';
   options.forEach((o, i) => {
@@ -1362,22 +1414,23 @@ function showResults(o) {
   G.over = true; closeDialog(); closePanel();
   const overall = Math.round(o.overall); const stars = overall >= 85 ? 3 : overall >= 65 ? 2 : 1;
   $('#resTitle').textContent = o.title;
-  $('#resWho').innerHTML = `<b>${escH(profile.name)}</b>${account ? ' · ' + escH(account.guest ? 'Guest' : account.email) : ''} · ${escH(G.sc.title)} · ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+  $('#resWho').innerHTML = `<b>${escH(profile.name)}</b>${account ? ' · ' + escH(account.guest ? 'Guest' : account.email) : ''} · ${escH(G.sc.title)} (${DIFF[G.diff] ? DIFF[G.diff].label : 'Normal'}) · ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
   $('#resStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">★</span>`).join('');
-  $('#resFob').textContent = `+${overall} GOYUX · score ${overall}/100`;
+  const dmul = DIFF[G.diff] ? DIFF[G.diff].mult : 1, earnedLocal = Math.round(overall * dmul);
+  $('#resFob').textContent = `+${earnedLocal} GOYUX · score ${overall}/100`;
   const col = v => v >= 80 ? 'var(--green)' : v >= 55 ? 'var(--gold)' : 'var(--red)';
   $('#resMetrics').innerHTML = o.metrics.map(([k, v]) => `<div class="metric"><span>${k}</span><div class="bar"><i style="width:${v}%;background:${col(v)}"></i></div><span>${Math.round(v)}%</span></div>`).join('');
   $('#resGood').innerHTML = (o.good.length ? o.good : ['You finished the mission. Keep practising!']).map(x => `<li>${escH(x)}</li>`).join('');
   const bad = o.bad.concat(G.mistakes.filter((m, i, a) => a.findIndex(x => x.said === m.said) === i).slice(0, 6).map(m => `“${m.said}” → ${m.tip}`));
   $('#resBad').innerHTML = (bad.length ? bad : ['Nothing! That was excellent.']).map(x => `<li>${escH(x)}</li>`).join('');
   $('#resVocab').innerHTML = G.sc.vocab.map(([en, es]) => `<span class="chip" title="${escH(es)}">${escH(en)}</span>`).join('');
-  profile.xp = (profile.xp || 0) + overall; profile.plays++;
+  profile.xp = (profile.xp || 0) + earnedLocal; profile.plays++;
   profile.best[G.id] = Math.max(profile.best[G.id] || 0, stars);
   G.sc.vocab.forEach(([en, es]) => { if (!profile.vocab.some(v => v.en === en)) profile.vocab.push({ en, es, g: G.sc.title }); });
   store.set('profile', profile);
   if (CLOUD && account) {
     const run = {
-      game: G.id, score: overall, budget: G.s.budget, moneyLeft: Math.round(G.money * 100) / 100, english: engPct(), manners: G.manners,
+      game: G.id, difficulty: G.diff, score: overall, budget: G.s.budget, moneyLeft: Math.round(G.money * 100) / 100, english: engPct(), manners: G.manners,
       seconds: Math.round((performance.now() - G.t0) / 1000), metrics: Object.fromEntries(o.metrics.map(([k, v]) => [k, Math.round(v)])),
       events: Object.keys(G.s.ev || {}).map(k => k + (G.s.ev[k] === true ? '' : ':' + G.s.ev[k])), mistakes: G.mistakes.slice(0, 10),
       vocab: G.sc.vocab.map(([en, es]) => ({ en, es, g: G.sc.title }))
@@ -1386,7 +1439,7 @@ function showResults(o) {
     apiU('saveRun', run).then(r => {
       const id = r.runId; delete r.runId;
       Object.assign(profile, r); store.set('profile', profile);
-      $('#resFob').textContent = `+${r.earned} GOYUX · score ${overall}/100 · saved ✓` + (r.earned < overall ? ' (missions finished too quickly earn no GOYUX)' : '');
+      $('#resFob').textContent = `+${r.earned} GOYUX · score ${overall}/100 · saved ✓` + (r.earned === 0 && overall > 0 ? ' (missions finished too quickly earn no GOYUX)' : '');
       if (id) $('#resWho').innerHTML += ` · Mission code <b>${escH(id)}</b>`;
     }).catch(e => { $('#resFob').textContent = `Score ${overall}/100 · not saved: ${e.message}`; });
   }
@@ -1412,7 +1465,7 @@ async function launch(id) {
 function startScenario(id) {
   newWorld();
   const sc = SCEN[id];
-  G = { id, sc, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
+  G = { id, sc, diff: difficulty, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
   sc.build();
   $('#msTitle').textContent = sc.title; $('#cardBtn').textContent = 'Character card';
   renderObjectives(); updateBoard(); renderHotbar();
@@ -1428,7 +1481,8 @@ function startScenario(id) {
 const rnd = (a, b) => a + Math.random() * (b - a);
 const sample = (arr, n) => shuffle(arr.slice()).slice(0, n);
 /* one natural phrase (picked from several) + nBad wrong ones (picked from a bigger pool) */
-function phr(ok, bad, nBad = 2) {
+function phr(ok, bad, nBad) {
+  if (nBad == null) nBad = G && DIFF[G.diff] ? DIFF[G.diff].bad : 2;
   const o = pick1(ok);
   return [typeof o === 'string' ? { t: o, kind: 'ok' } : Object.assign({ kind: 'ok' }, o)].concat(sample(bad, Math.min(nBad, bad.length)));
 }
@@ -1495,7 +1549,7 @@ SCEN.diner = {
       <div class="cs">🎯 <b>Goal:</b> a healthy, balanced dinner: a main dish, a drink and maybe a side or dessert.${s.veg ? ' You are <b>vegetarian</b>: no meat and no fish!' : ''}</div>
       <div class="cs">💵 <b>Budget:</b> ${money(s.budget)} in total. In the USA an 8% sales tax is added to the bill, and people usually leave a 15–20% tip.</div>
       <div class="cs">⚠️ <b>Allergy:</b> you can't eat <b>${a.card}</b>. Read the menu descriptions carefully!</div>
-      <div class="cs">🎲 Every game is different: new menu prices, new people and new surprises.</div>`;
+      <div class="cs">🎲 Every game is different: new menu prices, new people and new surprises. Difficulty: <b>${DIFF[G.diff].label}</b>.</div>`;
   },
   build: buildDiner
 };
@@ -1503,11 +1557,11 @@ SCEN.diner = {
 function buildDiner() {
   const s = G.s = {
     phase: 'enter', order: [], main: null, declared: false, wrong: null, acceptedWrong: false, discount: 0, reaction: false, tipPct: null, paidShort: false,
-    budget: pick1([18, 20, 22, 25]), allergy: pick1(Object.keys(ALLERGY)), veg: Math.random() < 0.4,
+    budget: pick1({ easy: [23, 25], normal: [18, 20, 22], hard: [18] }[G.diff] || [20]), allergy: pick1(Object.keys(ALLERGY)), veg: Math.random() < 0.4,
     reason: pick1(['finished football practice', 'had a long day at school', 'come back from swimming lessons', 'spent all afternoon at the skate park', 'finished a basketball match']),
     ev: {}, drinkFree: false, coldDone: false, ateCold: false, extra: null, extraRemoved: false, overpaid: 0, falseClaim: false, dietBroken: false
   };
-  sample(['A', 'B', 'C', 'D'], 3).forEach(k => s.ev[k] = true);
+  sample(['A', 'B', 'C', 'D'], { easy: 2, normal: 3, hard: 4 }[G.diff] || 3).forEach(k => s.ev[k] = true);
   if (s.ev.A) s.ev.A = pick1(['kid', 'phone', 'spill']);
   G.money = s.budget;
   MENU = MENU_BASE.map(m => Object.assign({}, m, { price: m.price ? Math.max(1.5, m.price + pick1([-0.5, 0, 0, 0.5, 1])) : 0 }));
@@ -2010,7 +2064,7 @@ SCEN.mall = {
       <div class="cs">📏 <b>Your sizes:</b> shirt <b>${sz[MY.shirt]}</b> · trousers <b>${MY.trousers}</b> · shoes <b>${MY.shoes}</b>.</div>
       <div class="cs">💖 Your favourite colour is <b>${s.fav.toLowerCase()}</b>, and you want things that <b>last all year</b>.</div>
       <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to your teacher, <b>${escH(s.teacher)}</b>, at the school gate.</div>
-      <div class="cs">🎲 Every game is different: new dress code, sizes, prices and surprises.</div>`;
+      <div class="cs">🎲 Every game is different: new dress code, sizes, prices and surprises. Difficulty: <b>${DIFF[G.diff].label}</b>.</div>`;
   },
   build: buildMall
 };
@@ -2061,12 +2115,12 @@ function genShops(s) {
 function buildMall() {
   const s = G.s = {
     info: {}, discount: false, sale: false, tried: {}, said: {}, fitted: {}, broke: false, brokeItem: null, uid: 0, credit: { bargain: 0, campus: 0, luxe: 0 },
-    budget: pick1([95, 100, 110]), code: { polo: pick1(['Navy blue', 'Dark green', 'Burgundy']), bottom: pick1(['Grey', 'Black', 'Navy blue']) },
+    budget: pick1({ easy: [110, 120], normal: [95, 100, 110], hard: [90, 95] }[G.diff] || [100]), code: { polo: pick1(['Navy blue', 'Dark green', 'Burgundy']), bottom: pick1(['Grey', 'Black', 'Navy blue']) },
     fav: pick1(['Blue', 'Green', 'Red', 'Purple', 'Black', 'Orange']), school: pick1(['Lincoln High', 'Riverside High', 'Oakwood Academy', 'Westbrook School']),
     discPct: pick1([10, 15, 20]), saleCat: pick1(['trainers', 'backpack', 'polo', 'shoes']), fragileCat: pick1(['trainers', 'backpack', 'shoes']),
     ev: {}, purchases: 0, overAt: pick1([1, 2, 3]), overpaid: 0, overDone: false, soldDone: false, soldItem: null, soldOK: null
   };
-  sample(['broken', 'overcharge', 'soldout'], 2).forEach(e => s.ev[e] = true);
+  sample(['broken', 'overcharge', 'soldout'], { easy: 1, normal: 2, hard: 3 }[G.diff] || 2).forEach(e => s.ev[e] = true);
   G.money = s.budget;
   MY = { shirt: pick1(['S', 'M', 'L']), trousers: pick1(['28', '30', '32']), shoes: pick1(['6', '7', '8', '9']) };
   CATS = {
@@ -3217,7 +3271,7 @@ async function openProgress() {
     $('#pcard').innerHTML = `
       <div class="pc-top">
         <div class="headshot">${av2d(profile)}</div>
-        <div class="pc-id"><div class="logo">G<span class="o"></span>BLOX</div><h2>${escH(profile.name)}</h2><small>${account ? escH(account.guest ? 'Guest player' : account.email) : 'Offline player'}</small></div>
+        <div class="pc-id"><div class="logo">G<span class="o"></span>BLOX</div><h2>${escH(profile.name)}</h2><small>${account ? escH(account.guest ? 'Guest player' : account.email) + (account.className ? '<br>' + escH(account.className) : '') : 'Offline player'}</small></div>
         <div class="pc-lv"><b>${lv}</b><span>Level</span></div>
       </div>
       <div class="lvl" style="margin:0 18px 14px"><i style="width:${into / XP_PER_LEVEL * 100}%"></i></div>
@@ -3242,7 +3296,7 @@ $('#progX').onclick = () => $('#progModal').hidden = true;
 $('#progModal').addEventListener('click', e => { if (e.target.id === 'progModal') $('#progModal').hidden = true; });
 
 /* ---------------- teacher panel (Spanish: it is for the teacher) ---------------- */
-const T = { list: [], sel: new Set(), loading: false };
+const T = { list: [], classes: [], sel: new Set(), loading: false };
 const fmtDate = d => d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 const starStr = n => '★'.repeat(n || 0) + '☆'.repeat(3 - (n || 0));
 async function loadTeacher() {
@@ -3252,33 +3306,42 @@ async function loadTeacher() {
   try { renderGuests(await api('teacherGuests')); } catch (e) {}
 }
 function renderGuests(list) {
-  $('#gTable').innerHTML = '<tr><th>Código</th><th>Nombre</th><th>Estado</th><th></th></tr>' + (list.map(g => `<tr><td><span class="code">${escH(g.code)}</span></td><td>${escH(g.name)}</td><td>${g.active ? 'Activo' : 'Desactivado'}</td><td><button class="mini ${g.active ? 'neg' : 'pos'}" data-g="${escH(g.code)}" data-on="${g.active ? 0 : 1}">${g.active ? 'Desactivar' : 'Activar'}</button></td></tr>`).join('') || '<tr><td colspan="4">Todavía no hay invitados.</td></tr>');
+  $('#gTable').innerHTML = '<tr><th>Código</th><th>Nombre</th><th>Clase</th><th>Estado</th><th></th></tr>' + (list.map(g => `<tr><td><span class="code">${escH(g.code)}</span></td><td>${escH(g.name)}</td><td>${escH(g.className || '—')}</td><td>${g.active ? 'Activo' : 'Desactivado'}</td><td><button class="mini ${g.active ? 'neg' : 'pos'}" data-g="${escH(g.code)}" data-on="${g.active ? 0 : 1}">${g.active ? 'Desactivar' : 'Activar'}</button></td></tr>`).join('') || '<tr><td colspan="5">Todavía no hay invitados.</td></tr>');
   $('#gTable').querySelectorAll('[data-g]').forEach(b => b.onclick = async () => { try { renderGuests(await api('teacherSetGuest', b.dataset.g, b.dataset.on === '1')); } catch (e) { hToast(e.message, true); } });
 }
 $('#gCreate').onclick = async () => {
   const name = $('#gName').value.trim(); if (!name) { hToast('Escribe el nombre del invitado.', true); return; }
-  try { const list = await api('teacherCreateGuest', name); renderGuests(list); $('#gName').value = ''; const g = list[list.length - 1]; hToast(`Código para ${g.name}: ${g.code}`); } catch (e) { hToast(e.message, true); }
+  try { const list = await api('teacherCreateGuest', name, $('#gClass').value); renderGuests(list); $('#gName').value = ''; const g = list[list.length - 1]; hToast(`Código para ${g.name}: ${g.code}`); } catch (e) { hToast(e.message, true); }
 };
 function applyTeacher(r) {
-  T.list = r.students || [];
+  T.list = r.students || []; T.classes = r.classes || [];
+  const cur = $('#tClass').value;
+  const opts = `<option value="">Todas mis clases</option>${T.classes.map(c => `<option value="${escH(c.code)}">${escH(c.name)}</option>`).join('')}<option value="-">Sin clase</option>`;
+  $('#tClass').innerHTML = opts; $('#tClass').value = [...$('#tClass').options].some(o => o.value === cur) ? cur : '';
+  const classOpts = T.classes.map(c => `<option value="${escH(c.code)}">${escH(c.name)}</option>`).join('');
+  $('#tMove').innerHTML = classOpts + '<option value="">(sin clase)</option>';
+  $('#gClass').innerHTML = classOpts + '<option value="">(sin clase)</option>';
+  $('#cTable').innerHTML = '<tr><th>Clase</th><th>Código para los alumnos</th><th class="num">Alumnos</th><th>Estado</th><th></th></tr>' + (T.classes.map(c => `<tr><td><b>${escH(c.name)}</b></td><td><span class="code">${escH(c.code)}</span></td><td class="num">${c.students}</td><td>${c.active ? 'Abierta' : 'Cerrada'}</td><td><button class="mini ${c.active ? 'neg' : 'pos'}" data-cc="${escH(c.code)}" data-on="${c.active ? 0 : 1}">${c.active ? 'Cerrar' : 'Abrir'}</button></td></tr>`).join('') || '<tr><td colspan="5">Todavía no has creado ninguna clase.</td></tr>');
+  $('#cTable').querySelectorAll('[data-cc]').forEach(b => b.onclick = async () => { try { applyTeacher(await api('teacherSetClass', b.dataset.cc, b.dataset.on === '1')); } catch (e) { hToast(e.message, true); } });
   if (r.sheetUrl) { $('#tSheet').href = r.sheetUrl; $('#tSheet').hidden = false; }
   renderTeacher();
 }
 function renderTeacher() {
   const q = $('#tSearch').value.trim().toLowerCase();
-  const rows = T.list.filter(st => !q || st.name.toLowerCase().includes(q) || st.email.includes(q));
+  const kc = $('#tClass').value;
+  const rows = T.list.filter(st => (!kc || (kc === '-' ? !st.className : st.klass === kc)) && (!q || st.name.toLowerCase().includes(q) || st.email.includes(q)));
   const allSel = rows.length && rows.every(st => T.sel.has(st.email));
-  const head = `<tr><th><input type="checkbox" id="tAll" aria-label="Seleccionar todos" ${allSel ? 'checked' : ''}></th><th>Alumno</th><th class="num">Nivel</th><th class="num">Partidas</th>${GAMES.filter(g => !g.soon).map(g => `<th>${escH(g.title)}</th>`).join('')}<th>País</th><th class="num">GOYUX juego</th><th class="num">GOYUX profe</th><th class="num">Total</th><th>Última partida</th><th>Dar GOYUX</th><th></th></tr>`;
+  const head = `<tr><th><input type="checkbox" id="tAll" aria-label="Seleccionar todos" ${allSel ? 'checked' : ''}></th><th>Alumno</th><th>Clase</th><th class="num">Nivel</th><th class="num">Partidas</th>${GAMES.filter(g => !g.soon).map(g => `<th>${escH(g.title)}</th>`).join('')}<th>País</th><th class="num">GOYUX juego</th><th class="num">GOYUX profe</th><th class="num">Total</th><th>Última partida</th><th>Dar GOYUX</th><th></th></tr>`;
   const body = rows.map(st => `<tr data-e="${escH(st.email)}">
       <td><input type="checkbox" class="tSel" aria-label="Seleccionar ${escH(st.name)}" ${T.sel.has(st.email) ? 'checked' : ''}></td>
-      <td><b>${escH(st.name)}</b><small>${escH(st.email)}</small></td>
+      <td><b>${escH(st.name)}</b><small>${escH(st.email)}</small></td><td>${escH(st.className || '—')}</td>
       <td class="num">${st.level}</td><td class="num">${st.plays}</td>
       ${GAMES.filter(g => !g.soon).map(g => `<td class="stars">${starStr(st.best[g.id])}</td>`).join('')}
       <td>${st.nationName ? escH(st.nationName) + `<small>${st.nationScore} puntos</small>` : '—'}</td><td class="num">${st.xp}</td><td class="num">${st.granted}</td><td class="num"><b>${st.total}</b></td>
       <td>${fmtDate(st.lastRun)}</td>
       <td><div class="acts"><button class="mini pos" data-a="1">+1</button><button class="mini pos" data-a="5">+5</button><button class="mini pos" data-a="10">+10</button><button class="mini neg" data-a="-5">−5</button></div></td>
       <td><button class="mini" data-runs="1">Partidas</button></td></tr>`).join('');
-  $('#tTable').innerHTML = head + (body || `<tr><td colspan="13">${T.list.length ? 'Ningún alumno coincide con la búsqueda.' : 'Todavía no ha entrado ningún alumno. Comparte el enlace de GOBLOX con la clase.'}</td></tr>`);
+  $('#tTable').innerHTML = head + (body || `<tr><td colspan="14">${T.list.length ? 'Ningún alumno coincide con la búsqueda.' : 'Todavía no ha entrado ningún alumno. Comparte el enlace de GOBLOX con la clase.'}</td></tr>`);
   $('#tAll').onchange = e => { rows.forEach(st => e.target.checked ? T.sel.add(st.email) : T.sel.delete(st.email)); renderTeacher(); };
   $('#tTable').querySelectorAll('.tSel').forEach(c => c.onchange = () => { const em = c.closest('tr').dataset.e; c.checked ? T.sel.add(em) : T.sel.delete(em); });
   $('#tTable').querySelectorAll('[data-a]').forEach(b => b.onclick = () => give([b.closest('tr').dataset.e], +b.dataset.a));
@@ -3298,8 +3361,8 @@ async function showRuns(email) {
   $('#runsTitle').textContent = st.name; $('#runsTable').innerHTML = '<tr><td>Cargando…</td></tr>'; $('#runsGrants').innerHTML = ''; $('#runsModal').hidden = false;
   try {
     const r = await api('teacherRuns', email);
-    $('#runsTable').innerHTML = '<tr><th>Fecha</th><th>Juego</th><th class="num">Puntos</th><th>Estrellas</th><th class="num">Presupuesto</th><th class="num">Dinero restante</th><th class="num">Inglés</th><th class="num">Modales</th><th class="num">Minutos</th></tr>' +
-      (r.runs.map(x => `<tr><td>${fmtDate(x.date)}</td><td>${escH(x.game)}</td><td class="num">${x.score}</td><td class="stars">${starStr(x.stars)}</td><td class="num">${money(x.budget || 0)}</td><td class="num">${money(x.moneyLeft || 0)}</td><td class="num">${x.english}%</td><td class="num">${x.manners}</td><td class="num">${x.minutes}</td></tr>`).join('') || '<tr><td colspan="9">Todavía no ha terminado ninguna partida.</td></tr>');
+    $('#runsTable').innerHTML = '<tr><th>Fecha</th><th>Juego</th><th class="num">Puntos</th><th>Estrellas</th><th class="num">Presupuesto</th><th class="num">Dinero restante</th><th class="num">Inglés</th><th class="num">Modales</th><th class="num">Minutos</th><th>Dificultad</th></tr>' +
+      (r.runs.map(x => `<tr><td>${fmtDate(x.date)}</td><td>${escH(x.game)}</td><td class="num">${x.score}</td><td class="stars">${starStr(x.stars)}</td><td class="num">${money(x.budget || 0)}</td><td class="num">${money(x.moneyLeft || 0)}</td><td class="num">${x.english}%</td><td class="num">${x.manners}</td><td class="num">${x.minutes}</td><td>${escH((DIFF[x.difficulty] || DIFF.normal).label)}</td></tr>`).join('') || '<tr><td colspan="10">Todavía no ha terminado ninguna partida.</td></tr>');
     $('#runsGrants').innerHTML = '<tr><th>Fecha</th><th class="num">GOYUX</th><th>Motivo</th><th>Profesor</th></tr>' +
       (r.grants.map(g => `<tr><td>${fmtDate(g.date)}</td><td class="num">${g.amount > 0 ? '+' : ''}${g.amount}</td><td>${escH(g.reason)}</td><td>${escH(g.by)}</td></tr>`).join('') || '<tr><td colspan="4">Sin GOYUX del profesor todavía.</td></tr>');
   } catch (e) { $('#runsTable').innerHTML = `<tr><td>${escH(e.message)}</td></tr>`; }
@@ -3307,6 +3370,15 @@ async function showRuns(email) {
 $('#runsX').onclick = () => $('#runsModal').hidden = true;
 $('#runsModal').addEventListener('click', e => { if (e.target.id === 'runsModal') $('#runsModal').hidden = true; });
 $('#tSearch').addEventListener('input', renderTeacher);
+$('#tClass').addEventListener('change', renderTeacher);
+$('#cCreate').onclick = async () => {
+  const name = $('#cName').value.trim(); if (!name) { hToast('Escribe el nombre de la clase.', true); return; }
+  try { applyTeacher(await api('teacherCreateClass', name)); $('#cName').value = ''; const c = T.classes[T.classes.length - 1]; hToast(`Clase creada. Código: ${c ? c.code : ''}`); } catch (e) { hToast(e.message, true); }
+};
+$('#tMoveGo').onclick = async () => {
+  if (!T.sel.size) { hToast('Selecciona al menos un alumno.', true); return; }
+  try { applyTeacher(await api('teacherMoveStudents', [...T.sel], $('#tMove').value)); T.sel.clear(); renderTeacher(); hToast('Alumnos movidos.'); } catch (e) { hToast(e.message, true); }
+};
 $('#tRefresh').onclick = loadTeacher;
 $('#tGiveSel').onclick = () => give([...T.sel], Math.round(+$('#tAmount').value));
 

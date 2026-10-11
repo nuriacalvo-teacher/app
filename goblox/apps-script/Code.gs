@@ -16,7 +16,12 @@ const CONFIG = {
   // Una misión hecha en menos tiempo no da GOYUX (evita trampas)
   MIN_SECONDS_FOR_GOYUX: 90,
   // Puntos de experiencia (GOYUX ganados jugando) para subir de nivel
-  XP_PER_LEVEL: 200
+  XP_PER_LEVEL: 200,
+  // true: cada alumno tiene que escribir el código de su clase la primera vez que entra.
+  // Así solo juegan tus alumnos aunque el enlace llegue a otros alumnos del instituto.
+  REQUIRE_CLASS_CODE: true,
+  // GOYUX por dificultad (la puntuación se multiplica por este valor)
+  DIFFICULTY: { easy: 0.8, normal: 1, hard: 1.25 }
 };
 // ========================================
 
@@ -26,17 +31,20 @@ const SHEETS = {
   students: 'Alumnos',
   runs: 'Partidas',
   goyux: 'GOYUX',
-  guests: 'Invitados'
+  guests: 'Invitados',
+  classes: 'Clases'
 };
-const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida'];
+const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida', 'Dificultad'];
 const GOYUX_HEAD = ['Fecha', 'Correo', 'Nombre', 'Cantidad', 'Motivo', 'Profesor'];
 // Invitados: personas sin cuenta del instituto que entran con un código que crea el profesor
-const GUEST_HEAD = ['Código', 'Nombre', 'Activo', 'Creado', 'Notas'];
+const GUEST_HEAD = ['Código', 'Nombre', 'Activo', 'Creado', 'Notas', 'Clase'];
+// Clases: cada profesor crea las suyas; los alumnos entran con el código de su clase
+const CLASS_HEAD = ['Código', 'Clase', 'Profesor', 'Activa', 'Creada'];
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 // Columnas de la hoja Alumnos (0 = columna A)
-const C = { email: 0, name: 1, level: 2, plays: 3, xp: 4, granted: 5, nation: 6, total: 7, seen: 8, lastRun: 9, avatar: 10, vocab: 11, stars: 12 };
+const C = { email: 0, name: 1, klass: 2, level: 3, plays: 4, xp: 5, granted: 6, nation: 7, total: 8, seen: 9, lastRun: 10, avatar: 11, vocab: 12, stars: 13 };
 function studentHead_() {
-  return ['Correo', 'Nombre', 'Nivel', 'Partidas', 'GOYUX juego', 'GOYUX profesor', 'GOYUX país (impuestos − gastos)', 'GOYUX total', 'Última conexión', 'Última partida', 'Avatar', 'Vocabulario']
+  return ['Correo', 'Nombre', 'Clase (código)', 'Nivel', 'Partidas', 'GOYUX juego', 'GOYUX profesor', 'GOYUX país (impuestos − gastos)', 'GOYUX total', 'Última conexión', 'Última partida', 'Avatar', 'Vocabulario']
     .concat(GAME_IDS.map(id => 'Estrellas · ' + GAMES[id]));
 }
 
@@ -59,7 +67,7 @@ function user_(guestCode) {
   if (!code) throw new Error('GUEST_REQUIRED');
   const g = findGuest_(code);
   if (!g || !g.active) throw new Error('GUEST_INVALID');
-  return { email: 'invitado:' + code.toLowerCase(), isTeacher: false, guest: true, name: g.name };
+  return { email: 'invitado:' + code.toLowerCase(), isTeacher: false, guest: true, name: g.name, klass: g.klass };
 }
 function teacher_() { const u = user_(); if (!u.isTeacher) throw new Error('Esta función es solo para el profesorado.'); return u; }
 function findGuest_(code) {
@@ -67,13 +75,22 @@ function findGuest_(code) {
   const n = sh.getLastRow() - 1;
   if (n < 1) return null;
   const v = sh.getRange(2, 1, n, GUEST_HEAD.length).getValues().find(r => String(r[0]).trim().toUpperCase() === code);
-  return v ? { code, name: String(v[1] || 'Guest'), active: !/^(no|n|false|0)$/i.test(String(v[2]).trim()) } : null;
+  return v ? { code, name: String(v[1] || 'Guest'), active: !/^(no|n|false|0)$/i.test(String(v[2]).trim()), klass: String(v[5] || '').toUpperCase() } : null;
 }
+const active_ = v => !/^(no|n|false|0)$/i.test(String(v).trim());
+function allClasses_() {
+  const sh = sheet_('classes'); const n = sh.getLastRow() - 1;
+  return n < 1 ? [] : sh.getRange(2, 1, n, CLASS_HEAD.length).getValues().filter(v => v[0])
+    .map(v => ({ code: String(v[0]).trim().toUpperCase(), name: String(v[1] || ''), owner: String(v[2] || '').toLowerCase().trim(), active: active_(v[3]) }));
+}
+function classMap_() { const m = {}; allClasses_().forEach(c => { m[c.code] = c; }); return m; }
+/* A teacher sees the students of their own classes, plus students without a class */
+function visibleTo_(teacherEmail, klass, classes) { return !klass || !classes[klass] || classes[klass].owner === teacherEmail; }
 function randomCode_(n) { let c = ''; for (let i = 0; i < n; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
 function sheet_(key) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const name = SHEETS[key];
-  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : GOYUX_HEAD;
+  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : key === 'classes' ? CLASS_HEAD : GOYUX_HEAD;
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   const cur = sh.getRange(1, 1, 1, head.length).getValues()[0];
@@ -98,17 +115,17 @@ function findStudentRow_(sh, email) {
   return -1;
 }
 function setFormulas_(sh, r) {
-  sh.getRange(r, C.level + 1).setFormula('=1+INT(E' + r + '/' + CONFIG.XP_PER_LEVEL + ')');
+  sh.getRange(r, C.level + 1).setFormula('=1+INT(F' + r + '/' + CONFIG.XP_PER_LEVEL + ')');
   sh.getRange(r, C.granted + 1).setFormula('=SUMIF(GOYUX!B:B,A' + r + ',GOYUX!D:D)');
-  sh.getRange(r, C.total + 1).setFormula('=E' + r + '+F' + r + '+G' + r);
+  sh.getRange(r, C.total + 1).setFormula('=F' + r + '+G' + r + '+H' + r);
 }
-function ensureStudent_(email, name) {
+function ensureStudent_(email, name, klass) {
   sheet_('goyux');
   const sh = sheet_('students');
   let r = findStudentRow_(sh, email);
   if (r < 0) {
     const row = studentHead_().map(() => '');
-    row[C.email] = email; row[C.name] = name || nameFromEmail_(email); row[C.plays] = 0; row[C.xp] = 0; row[C.nation] = 0; row[C.avatar] = '{}'; row[C.vocab] = '[]';
+    row[C.email] = email; row[C.name] = name || nameFromEmail_(email); row[C.klass] = klass || ''; row[C.plays] = 0; row[C.xp] = 0; row[C.nation] = 0; row[C.avatar] = '{}'; row[C.vocab] = '[]';
     GAME_IDS.forEach((id, i) => { row[C.stars + i] = 0; });
     sh.appendRow(row);
     r = sh.getLastRow();
@@ -120,7 +137,7 @@ function rowToStudent_(v) {
   const best = {};
   GAME_IDS.forEach((id, i) => { best[id] = Number(v[C.stars + i]) || 0; });
   return {
-    email: String(v[C.email]).toLowerCase(), name: String(v[C.name] || ''), level: Number(v[C.level]) || 1, plays: Number(v[C.plays]) || 0,
+    email: String(v[C.email]).toLowerCase(), name: String(v[C.name] || ''), klass: String(v[C.klass] || '').toUpperCase(), level: Number(v[C.level]) || 1, plays: Number(v[C.plays]) || 0,
     xp: Number(v[C.xp]) || 0, granted: Number(v[C.granted]) || 0, nation: Number(v[C.nation]) || 0, total: Number(v[C.total]) || 0,
     lastSeen: iso_(v[C.seen]), lastRun: iso_(v[C.lastRun]), avatar: parse_(v[C.avatar], {}), vocab: parse_(v[C.vocab], []), best
   };
@@ -151,17 +168,39 @@ function withLock_(fn) {
 }
 
 /* ---------- API for students ---------- */
+/* Students must join a class with its code (unless REQUIRE_CLASS_CODE is false). Error CLASS_REQUIRED makes the game ask for it. */
+function needsClass_(u) {
+  if (u.isTeacher || u.guest || !CONFIG.REQUIRE_CLASS_CODE) return false;
+  const sh = sheet_('students'); const r = findStudentRow_(sh, u.email);
+  if (r < 0) return true;
+  const k = String(sh.getRange(r, C.klass + 1).getValue() || '').toUpperCase();
+  const c = classMap_()[k];
+  return !c;
+}
 function getMe(guestCode) {
   const u = user_(guestCode);
   return withLock_(() => {
-    const { sh, r } = ensureStudent_(u.email, u.name);
+    if (needsClass_(u)) throw new Error('CLASS_REQUIRED');
+    const { sh, r } = ensureStudent_(u.email, u.name, u.klass);
     sh.getRange(r, C.seen + 1).setValue(new Date());
     const st = readStudent_(sh, r);
+    const c = classMap_()[st.klass];
     return {
-      email: u.email, isTeacher: u.isTeacher, guest: u.guest, xpPerLevel: CONFIG.XP_PER_LEVEL,
+      email: u.email, isTeacher: u.isTeacher, guest: u.guest, xpPerLevel: CONFIG.XP_PER_LEVEL, className: c ? c.name : '',
       profile: Object.assign({ name: st.name, plays: st.plays, xp: st.xp, granted: st.granted, nationNet: st.nation, best: st.best, vocab: st.vocab }, cleanAvatar_(st.avatar)),
       grants: grantsOf_(u.email, 8)
     };
+  });
+}
+function joinClass(code, guestCode) {
+  const u = user_(guestCode);
+  code = String(code || '').trim().toUpperCase();
+  const c = classMap_()[code];
+  if (!c || !c.active) throw new Error('That class code is not valid. Check it with your teacher.');
+  return withLock_(() => {
+    const { sh, r } = ensureStudent_(u.email, u.name, code);
+    sh.getRange(r, C.klass + 1).setValue(code);
+    return { className: c.name };
   });
 }
 function saveProfile(p, guestCode) {
@@ -183,16 +222,18 @@ function saveRun(run, guestCode) {
   const score = clamp_(Math.round(Number(run.score) || 0), 0, 100);
   const stars = score >= 85 ? 3 : score >= 65 ? 2 : 1;
   const secs = clamp_(Math.round(Number(run.seconds) || 0), 0, 36000);
-  const earned = secs < CONFIG.MIN_SECONDS_FOR_GOYUX ? 0 : score;
+  const diff = CONFIG.DIFFICULTY[run.difficulty] ? run.difficulty : 'normal';
+  const earned = secs < CONFIG.MIN_SECONDS_FOR_GOYUX ? 0 : Math.round(score * CONFIG.DIFFICULTY[diff]);
   const mistakes = Array.isArray(run.mistakes) ? run.mistakes.slice(0, 10).map(m => ({ said: String(m.said || '').slice(0, 200), tip: String(m.tip || '').slice(0, 300) })) : [];
   return withLock_(() => {
-    const { sh, r } = ensureStudent_(u.email, u.name);
+    if (needsClass_(u)) throw new Error('CLASS_REQUIRED');
+    const { sh, r } = ensureStudent_(u.email, u.name, u.klass);
     const st = readStudent_(sh, r);
     const runId = randomCode_(5);
     sheet_('runs').appendRow([
       new Date(), u.email, st.name, GAMES[run.game], score, stars, num_(run.budget), num_(run.moneyLeft),
       clamp_(num_(run.english), 0, 100), clamp_(num_(run.manners), 0, 100), Math.round(secs / 6) / 10, mistakes.length, earned,
-      JSON.stringify({ metrics: run.metrics || {}, events: run.events || [], mistakes }).slice(0, 40000), runId
+      JSON.stringify({ metrics: run.metrics || {}, events: run.events || [], mistakes }).slice(0, 40000), runId, diff
     ]);
     sh.getRange(r, C.plays + 1).setValue(st.plays + 1);
     sh.getRange(r, C.xp + 1).setValue(st.xp + earned);
@@ -217,7 +258,7 @@ function runsOf_(email, limit) {
   if (n < 1) return [];
   return sh.getRange(2, 1, n, RUN_HEAD.length).getValues()
     .filter(v => String(v[1]).toLowerCase().trim() === email)
-    .map(v => ({ date: iso_(v[0]), game: String(v[3]), score: Number(v[4]) || 0, stars: Number(v[5]) || 0, budget: Number(v[6]) || 0, moneyLeft: Number(v[7]) || 0, english: Number(v[8]) || 0, manners: Number(v[9]) || 0, minutes: Number(v[10]) || 0, id: String(v[14] || '') }))
+    .map(v => ({ date: iso_(v[0]), game: String(v[3]), score: Number(v[4]) || 0, stars: Number(v[5]) || 0, budget: Number(v[6]) || 0, moneyLeft: Number(v[7]) || 0, english: Number(v[8]) || 0, manners: Number(v[9]) || 0, minutes: Number(v[10]) || 0, id: String(v[14] || ''), difficulty: String(v[15] || 'normal') }))
     .reverse().slice(0, limit);
 }
 /* The student's own recent missions, for the progress card */
@@ -227,27 +268,40 @@ function myRuns(guestCode) {
 }
 
 /* ---------- API for teachers ---------- */
+/* Several teachers can share one spreadsheet: each one only sees the students of the classes they created. */
 function teacherList() {
-  teacher_();
+  const u = teacher_();
   sheet_('goyux');
   const sh = sheet_('students');
   SpreadsheetApp.flush();
+  const classes = classMap_();
   const n = sh.getLastRow() - 1;
   const students = n < 1 ? [] : sh.getRange(2, 1, n, studentHead_().length).getValues()
     .filter(v => v[C.email])
-    .map(v => { const s = rowToStudent_(v); delete s.vocab; delete s.avatar; return s; });
-  const nations = {};
-  allNations_().forEach(n => { nations[n.email] = n; });
-  students.forEach(s => { const n = nations[s.email]; s.nationName = n ? n.name : ''; s.nationScore = n ? nStats_(n, treatiesOf_(n.email).accepted).score : 0; });
-  students.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  return { students, sheetUrl: SpreadsheetApp.getActiveSpreadsheet().getUrl() };
+    .map(v => { const s = rowToStudent_(v); delete s.vocab; delete s.avatar; return s; })
+    .filter(s => visibleTo_(u.email, s.klass, classes));
+  const nations = {}, diplo = diploRows_();
+  allNations_().forEach(x => { nations[x.email] = x; });
+  students.forEach(s => {
+    const x = nations[s.email];
+    s.className = classes[s.klass] ? classes[s.klass].name : '';
+    s.nationName = x ? x.name : ''; s.nationScore = x ? nStats_(x, treatiesFrom_(diplo, x.email).accepted).score : 0;
+  });
+  students.sort((a, b) => a.className.localeCompare(b.className, 'es') || a.name.localeCompare(b.name, 'es'));
+  const mine = Object.values(classes).filter(c => c.owner === u.email)
+    .map(c => Object.assign({}, c, { students: students.filter(s => s.klass === c.code).length }));
+  return { students, classes: mine, sheetUrl: SpreadsheetApp.getActiveSpreadsheet().getUrl() };
+}
+function checkVisible_(u, emails) {
+  const sh = sheet_('students'), classes = classMap_();
+  return emails.filter(e => { const r = findStudentRow_(sh, e); return r > 0 && visibleTo_(u.email, String(sh.getRange(r, C.klass + 1).getValue() || '').toUpperCase(), classes); });
 }
 function teacherGrant(emails, amount, reason) {
   const u = teacher_();
   amount = Math.round(Number(amount));
   if (!amount || Math.abs(amount) > 1000) throw new Error('Cantidad no válida.');
   reason = String(reason || '').trim().slice(0, 120) || 'Buen comportamiento en clase';
-  const list = (Array.isArray(emails) ? emails : [emails]).map(e => String(e).toLowerCase().trim()).slice(0, 200);
+  const list = checkVisible_(u, (Array.isArray(emails) ? emails : [emails]).map(e => String(e).toLowerCase().trim()).slice(0, 300));
   withLock_(() => {
     const st = sheet_('students'), g = sheet_('goyux');
     const rows = [];
@@ -257,27 +311,64 @@ function teacherGrant(emails, amount, reason) {
   return teacherList();
 }
 function teacherRuns(email) {
-  teacher_();
+  const u = teacher_();
   email = String(email || '').toLowerCase().trim();
+  if (!checkVisible_(u, [email]).length) throw new Error('Este alumno no está en tus clases.');
   return { runs: runsOf_(email, 60), grants: grantsOf_(email, 60) };
 }
+function teacherCreateClass(name) {
+  const u = teacher_();
+  name = String(name || '').replace(/[^\p{L}\p{N} .ºª'-]/gu, '').trim().slice(0, 30);
+  if (!name) throw new Error('Escribe el nombre de la clase (por ejemplo, 3º ESO B).');
+  withLock_(() => {
+    const sh = sheet_('classes'), have = classMap_();
+    const base = name.normalize('NFD').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8) || 'CLASS';
+    let code; do { code = base + '-' + randomCode_(4); } while (have[code]);
+    sh.appendRow([code, name, u.email, 'SÍ', new Date()]);
+  });
+  return teacherList();
+}
+function teacherSetClass(code, active) {
+  const u = teacher_();
+  code = String(code || '').trim().toUpperCase();
+  withLock_(() => {
+    const sh = sheet_('classes'); const n = sh.getLastRow() - 1; if (n < 1) return;
+    const vals = sh.getRange(2, 1, n, CLASS_HEAD.length).getValues();
+    vals.forEach((v, i) => { if (String(v[0]).trim().toUpperCase() === code && String(v[2]).toLowerCase().trim() === u.email) sh.getRange(i + 2, 4).setValue(active ? 'SÍ' : 'NO'); });
+  });
+  return teacherList();
+}
+function teacherMoveStudents(emails, code) {
+  const u = teacher_();
+  code = String(code || '').trim().toUpperCase();
+  const c = classMap_()[code];
+  if (code && (!c || c.owner !== u.email)) throw new Error('Esa clase no es tuya.');
+  const list = checkVisible_(u, (Array.isArray(emails) ? emails : [emails]).map(e => String(e).toLowerCase().trim()));
+  withLock_(() => { const sh = sheet_('students'); list.forEach(e => { const r = findStudentRow_(sh, e); if (r > 0) sh.getRange(r, C.klass + 1).setValue(code); }); });
+  return teacherList();
+}
 function teacherGuests() {
-  teacher_();
-  const sh = sheet_('guests');
+  const u = teacher_();
+  const sh = sheet_('guests'); const classes = classMap_();
   const n = sh.getLastRow() - 1;
   if (n < 1) return [];
   return sh.getRange(2, 1, n, GUEST_HEAD.length).getValues().filter(v => v[0])
-    .map(v => ({ code: String(v[0]), name: String(v[1] || ''), active: !/^(no|n|false|0)$/i.test(String(v[2]).trim()), created: iso_(v[3]) }));
+    .map(v => ({ code: String(v[0]), name: String(v[1] || ''), active: active_(v[2]), created: iso_(v[3]), klass: String(v[5] || '').toUpperCase() }))
+    .filter(g => visibleTo_(u.email, g.klass, classes))
+    .map(g => Object.assign(g, { className: classes[g.klass] ? classes[g.klass].name : '' }));
 }
-function teacherCreateGuest(name) {
-  teacher_();
+function teacherCreateGuest(name, klass) {
+  const u = teacher_();
   name = String(name || '').replace(/[^\p{L}\p{N} .'-]/gu, '').trim().slice(0, 30);
   if (!name) throw new Error('Escribe el nombre del invitado.');
+  klass = String(klass || '').trim().toUpperCase();
+  const c = classMap_()[klass];
+  if (klass && (!c || c.owner !== u.email)) throw new Error('Esa clase no es tuya.');
   withLock_(() => {
     const sh = sheet_('guests');
     let code;
     do { code = (name.split(' ')[0].normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 8) || 'GUEST') + '-' + randomCode_(4); } while (findGuest_(code));
-    sh.appendRow([code, name, 'SÍ', new Date(), '']);
+    sh.appendRow([code, name, 'SÍ', new Date(), '', klass]);
   });
   return teacherGuests();
 }
@@ -293,7 +384,6 @@ function teacherSetGuest(code, active) {
   });
   return teacherGuests();
 }
-
 
 /* =====================================================================
    MY NATION — every student founds and builds an English-speaking country.
@@ -364,11 +454,11 @@ function saveNation_(n) {
   const s = ensureStudent_(n.email);
   s.sh.getRange(s.r, C.nation + 1).setValue(n.income - n.spent);
 }
-function treatiesOf_(email) {
-  const sh = nSheet_('d'); const n = sh.getLastRow() - 1;
+function diploRows_() { const sh = nSheet_('d'); const n = sh.getLastRow() - 1; return n < 1 ? [] : sh.getRange(2, 1, n, DIPLO_HEAD.length).getValues(); }
+function treatiesOf_(email) { return treatiesFrom_(diploRows_(), email); }
+function treatiesFrom_(rows, email) {
   const out = { accepted: [], acceptedList: [], inbox: [], sent: [] };
-  if (n < 1) return out;
-  sh.getRange(2, 1, n, DIPLO_HEAD.length).getValues().forEach(v => {
+  rows.forEach(v => {
     const t = { id: String(v[0]), date: iso_(v[1]), from: String(v[2]).toLowerCase(), fromName: String(v[3]), to: String(v[4]).toLowerCase(), toName: String(v[5]), type: String(v[6]), status: String(v[7]), letter: String(v[8] || ''), reply: String(v[9] || '') };
     if (t.from !== email && t.to !== email) return;
     if (t.status === 'accepted') { out.accepted.push(t.type); out.acceptedList.push(t); }
@@ -396,7 +486,17 @@ function nationState_(email) {
 }
 function cleanText_(t, max) { return String(t || '').replace(/[^\p{L}\p{N} .,'!?&-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, max); }
 
-function nationGet(guestCode) { const u = user_(guestCode); return withLock_(() => { ensureStudent_(u.email, u.name); return nationState_(u.email); }); }
+/* nations only meet the nations of their own class (teachers see all their classes) */
+function studentClasses_() {
+  const sh = sheet_('students'); const n = sh.getLastRow() - 1; const m = {};
+  if (n > 0) sh.getRange(2, 1, n, C.klass + 1).getValues().forEach(v => { m[String(v[0]).toLowerCase().trim()] = String(v[C.klass] || '').toUpperCase(); });
+  return m;
+}
+function sameWorld_(u, otherEmail, kl, classes) {
+  if (u.isTeacher) return visibleTo_(u.email, kl[otherEmail], classes);
+  return (kl[u.email] || '') === (kl[otherEmail] || '');
+}
+function nationGet(guestCode) { const u = user_(guestCode); return withLock_(() => { if (needsClass_(u)) throw new Error('CLASS_REQUIRED'); ensureStudent_(u.email, u.name, u.klass); return nationState_(u.email); }); }
 function nationFound(d, guestCode) {
   const u = user_(guestCode);
   const name = cleanText_(d && d.name, 24), capital = cleanText_(d && d.capital, 24), motto = cleanText_(d && d.motto, 60);
@@ -406,8 +506,10 @@ function nationFound(d, guestCode) {
   const flag = { c: (Array.isArray(f.c) ? f.c : []).filter(ok).slice(0, 3), layout: ['h', 'v', 'cross'].includes(f.layout) ? f.layout : 'h' };
   if (flag.c.length < 2) flag.c = ['#1d3fbf', '#ffffff', '#c62828'];
   return withLock_(() => {
+    if (needsClass_(u)) throw new Error('CLASS_REQUIRED');
     if (getNation_(u.email)) throw new Error('You have already founded a nation.');
-    const st = readStudent_(ensureStudent_(u.email, u.name).sh, ensureStudent_(u.email, u.name).r);
+    const es = ensureStudent_(u.email, u.name, u.klass);
+    const st = readStudent_(es.sh, es.r);
     saveNation_({ email: u.email, leader: st.name, name, capital, motto, flag, plots: N_START.slice(), buildings: { [N_CAPITAL]: 'cityhall' }, spent: 0, income: 0, lastTax: '' });
     return nationState_(u.email);
   });
@@ -450,16 +552,17 @@ function nationTax(correct, guestCode) {
 }
 function nationWorld(guestCode) {
   const u = user_(guestCode);
-  return allNations_().map(n => {
-    const tr = treatiesOf_(n.email).accepted;
+  const kl = studentClasses_(), classes = classMap_(), diplo = diploRows_();
+  return allNations_().filter(n => n.email === u.email || sameWorld_(u, n.email, kl, classes)).map(n => {
+    const tr = treatiesFrom_(diplo, n.email).accepted;
     const st = nStats_(n, tr);
     return { email: n.email, leader: n.leader, name: n.name, capital: n.capital, motto: n.motto, flag: n.flag, score: st.score, pop: st.pop, buildings: Object.keys(n.buildings).length, embassy: Object.values(n.buildings).includes('embassy'), me: n.email === u.email };
   }).sort((a, b) => b.score - a.score);
 }
 function nationVisit(email, guestCode) {
-  user_(guestCode);
+  const u = user_(guestCode);
   const n = getNation_(String(email || '').toLowerCase().trim());
-  if (!n) throw new Error('That nation does not exist.');
+  if (!n || !sameWorld_(u, n.email, studentClasses_(), classMap_())) throw new Error('That nation does not exist.');
   const tr = treatiesOf_(n.email).accepted;
   return { nation: { leader: n.leader, name: n.name, capital: n.capital, motto: n.motto, flag: n.flag, plots: n.plots, buildings: n.buildings }, stats: nStats_(n, tr) };
 }
@@ -469,7 +572,7 @@ function nationSendTreaty(to, type, letter, guestCode) {
   if (!TREATY[type]) throw new Error('Unknown treaty.');
   return withLock_(() => {
     const me = getNation_(u.email), them = getNation_(to);
-    if (!me || !them || to === u.email) throw new Error('You cannot send a letter to that nation.');
+    if (!me || !them || to === u.email || !sameWorld_(u, to, studentClasses_(), classMap_())) throw new Error('You cannot send a letter to that nation.');
     if (!Object.values(me.buildings).includes('embassy')) throw new Error('Build an embassy first.');
     const sh = nSheet_('d'); const n = sh.getLastRow() - 1;
     const rows = n < 1 ? [] : sh.getRange(2, 1, n, DIPLO_HEAD.length).getValues();
