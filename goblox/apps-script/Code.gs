@@ -9,6 +9,10 @@
 // ====== CONFIGURACIÓN: cambia esto ======
 const CONFIG = {
   DOMAIN: 'iesgoya.es',
+  // Normalmente vacío. Solo si creaste el script desde script.google.com (y no desde la hoja
+  // con Extensiones → Apps Script), pega aquí el ID de tu hoja: la parte de su dirección entre
+  // /d/ y /edit. Ejemplo: '1AbCdEf...xyz'
+  SHEET_ID: '',
   // Administradores: tu correo. Los administradores añaden a los demás profesores desde el
   // panel del juego (Profesor → Profesores del departamento), sin tocar este código.
   ADMINS: ['tu.correo@iesgoya.es'],
@@ -63,6 +67,14 @@ function studentHead_() {
     .concat(GAME_IDS.map(id => 'Estrellas · ' + GAMES[id]));
 }
 
+/* The spreadsheet that stores everything: the one this script is attached to, or SHEET_ID */
+function ss_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss) return ss;
+  if (CONFIG.SHEET_ID) return SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  throw new Error('GOBLOX no encuentra su hoja de cálculo. Abre el script desde la hoja (Extensiones → Apps Script) o escribe SHEET_ID en CONFIG.');
+}
+
 /* ---------- web app ---------- */
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
@@ -103,7 +115,7 @@ function classMap_() { const m = {}; allClasses_().forEach(c => { m[c.code] = c;
 function visibleTo_(teacherEmail, klass, classes) { return !klass || !classes[klass] || classes[klass].owner === teacherEmail; }
 function randomCode_(n) { let c = ''; for (let i = 0; i < n; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
 function sheet_(key) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = ss_();
   const name = SHEETS[key];
   const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : key === 'classes' ? CLASS_HEAD : key === 'teachers' ? TEACHER_HEAD : GOYUX_HEAD;
   let sh = ss.getSheetByName(name);
@@ -307,7 +319,7 @@ function teacherList() {
   students.sort((a, b) => a.className.localeCompare(b.className, 'es') || a.name.localeCompare(b.name, 'es'));
   const mine = Object.values(classes).filter(c => c.owner === u.email)
     .map(c => Object.assign({}, c, { students: students.filter(s => s.klass === c.code).length }));
-  return { students, classes: mine, sheetUrl: SpreadsheetApp.getActiveSpreadsheet().getUrl() };
+  return { students, classes: mine, sheetUrl: ss_().getUrl() };
 }
 function checkVisible_(u, emails) {
   const sh = sheet_('students'), classes = classMap_();
@@ -471,7 +483,7 @@ function adjacent_(i, plots) {
 const NATION_HEAD = ['Correo', 'Presidente', 'País', 'Capital', 'Lema', 'Bandera', 'Terrenos', 'Edificios', 'GOYUX gastados', 'Impuestos cobrados', 'Último impuesto', 'Población', 'Felicidad', 'Economía', 'Seguridad', 'Cultura', 'Medio ambiente', 'Puntuación', 'Actualizado'];
 const DIPLO_HEAD = ['ID', 'Fecha', 'De', 'País origen', 'Para', 'País destino', 'Tipo', 'Estado', 'Carta', 'Respuesta', 'Fecha respuesta'];
 function nSheet_(which) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = ss_();
   const name = which === 'n' ? 'Países' : 'Diplomacia', head = which === 'n' ? NATION_HEAD : DIPLO_HEAD;
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
