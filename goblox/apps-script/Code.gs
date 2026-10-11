@@ -438,15 +438,15 @@ function teacherSetGuest(code, active) {
    MY NATION — every student founds and builds an English-speaking country.
    The rules below must match NATION_RULES in index.html.
    ===================================================================== */
-const N_SIZE = 7, N_CAPITAL = 24, N_START = [17, 23, 24, 25, 31];
+const N_SIZE = 9, N_CAPITAL = 40, N_START = [31, 39, 40, 41, 49];
 // id: [cost, population, happiness, economy, security, culture, environment]
 const BUILD = {
-  cityhall: [0, 0, 5, 5, 5, 0, 0], houses: [12, 40, 2, 0, 0, 0, -2], farm: [15, 10, 2, 6, 0, 0, 2], park: [10, 0, 6, 0, 0, 0, 8],
-  market: [25, 5, 5, 9, 0, 0, 0], school: [25, 5, 4, 4, 0, 8, 0], police: [25, 0, 3, 0, 12, 0, 0], factory: [30, 0, -3, 16, 0, 0, -10],
-  windfarm: [30, 0, 0, 8, 0, 0, 6], museum: [30, 0, 4, 3, 0, 12, 0], press: [30, 0, 3, 2, 0, 8, 0], embassy: [30, 0, 2, 2, 2, 4, 0],
-  hospital: [35, 25, 10, 0, 0, 0, 0], army: [35, 0, -2, 0, 18, 0, -2], parliament: [40, 0, 6, 4, 6, 4, 0], port: [40, 10, 0, 14, 0, 2, -4],
-  stadium: [40, 0, 12, 4, 0, 4, -2], airport: [50, 15, 2, 12, 0, 4, -6],
-  bigben: [60, 0, 6, 6, 0, 20, 0], castle: [60, 0, 6, 4, 6, 16, 0], cntower: [60, 0, 4, 8, 0, 18, 0], liberty: [70, 0, 8, 6, 0, 22, 0], opera: [70, 0, 8, 6, 0, 22, 0]
+  cityhall: [0, 0, 5, 5, 5, 0, 0], houses: [40, 40, 2, 0, 0, 0, -2], farm: [45, 10, 2, 6, 0, 0, 2], park: [30, 0, 6, 0, 0, 0, 8],
+  market: [70, 5, 5, 9, 0, 0, 0], school: [70, 5, 4, 4, 0, 8, 0], police: [70, 0, 3, 0, 12, 0, 0], factory: [90, 0, -3, 16, 0, 0, -10],
+  windfarm: [90, 0, 0, 8, 0, 0, 6], museum: [90, 0, 4, 3, 0, 12, 0], press: [90, 0, 3, 2, 0, 8, 0], embassy: [90, 0, 2, 2, 2, 4, 0],
+  hospital: [110, 25, 10, 0, 0, 0, 0], army: [110, 0, -2, 0, 18, 0, -2], parliament: [130, 0, 6, 4, 6, 4, 0], port: [130, 10, 0, 14, 0, 2, -4],
+  stadium: [130, 0, 12, 4, 0, 4, -2], airport: [160, 15, 2, 12, 0, 4, -6],
+  bigben: [200, 0, 6, 6, 0, 20, 0], castle: [200, 0, 6, 4, 6, 16, 0], cntower: [200, 0, 4, 8, 0, 18, 0], liberty: [240, 0, 8, 6, 0, 22, 0], opera: [240, 0, 8, 6, 0, 22, 0]
 };
 const UNIQUE = ['cityhall', 'parliament', 'embassy', 'port', 'stadium', 'airport', 'bigben', 'castle', 'cntower', 'liberty', 'opera'];
 // treaty type: [population, happiness, economy, security, culture, environment] — max 3 of each type count
@@ -461,8 +461,9 @@ function nStats_(n, treaties) {
   s.score = Math.round(s.pop / 5 + s.happy + s.econ + s.secu + s.cult + s.env + Object.keys(n.buildings || {}).length * 5);
   return s;
 }
-const plotPrice_ = owned => 10 + 3 * Math.max(0, owned - N_START.length);
-const taxAmount_ = st => Math.min(12, 3 + Math.floor(Math.max(0, st.econ) / 15));
+const plotPrice_ = owned => 30 + 4 * Math.max(0, owned - N_START.length);
+const moveCost_ = id => Math.max(10, Math.round(BUILD[id][0] / 2));
+const taxAmount_ = st => Math.min(30, 5 + Math.floor(Math.max(0, st.econ) / 10));
 function adjacent_(i, plots) {
   const r = Math.floor(i / N_SIZE), c = i % N_SIZE;
   return plots.some(p => Math.abs(Math.floor(p / N_SIZE) - r) + Math.abs(p % N_SIZE - c) === 1);
@@ -596,6 +597,19 @@ function nationBuild(i, id, guestCode) {
     if (UNIQUE.includes(id) && Object.values(n.buildings).includes(id)) throw new Error('Your nation already has one.');
     if (available_(u.email, n) < b[0]) throw new Error('You need ' + b[0] + ' GOYUX for this building.');
     n.buildings[i] = id; n.spent += b[0]; saveNation_(n);
+    return nationState_(u.email);
+  });
+}
+function nationMove(from, to, guestCode) {
+  const u = user_(guestCode);
+  from = Math.round(Number(from)); to = Math.round(Number(to));
+  return withLock_(() => {
+    const n = getNation_(u.email); if (!n) throw new Error('Found your nation first.');
+    const id = n.buildings[from];
+    if (!id || id === 'cityhall' || !n.plots.includes(to) || n.buildings[to]) throw new Error('You cannot move that building there.');
+    const cost = moveCost_(id);
+    if (available_(u.email, n) < cost) throw new Error('You need ' + cost + ' GOYUX to move it.');
+    delete n.buildings[from]; n.buildings[to] = id; n.spent += cost; saveNation_(n);
     return nationState_(u.email);
   });
 }

@@ -104,10 +104,12 @@ La dificultad de cada partida queda guardada en la hoja **Partidas**. El **nivel
 
 Cada alumno funda su propio país anglosajón en una isla 3D y lo hace crecer con sus GOYUX:
 
-- **Terreno:** cada parcela nueva cuesta un poco más que la anterior.
+- **Terreno:** la isla tiene 81 parcelas (9 × 9). Se empieza con 5 y cada parcela nueva cuesta 4 GOYUX más que la anterior (30, 34, 38…). Comprar la isla entera cuesta más de 13.000 GOYUX, así que hay terreno para muchos juegos.
+- **Precios:** los edificios cuestan entre 30 GOYUX (parque) y 240 (Estatua de la Libertad, Ópera de Sídney). Una partida da unos 100 GOYUX.
+- **Mover un edificio:** desde el edificio (tecla E → *Move to another plot*) se puede trasladar a otra parcela vacía propia, por la mitad de lo que costó.
 - **Edificios:** cada uno tiene un precio y un **test de inglés autocorregido**. Hay que acertar 4 de 5 para construirlo, y las preguntas cambian en cada intento. Cada edificio practica un tema: pasiva (fábrica), modales (parlamento), pasado simple (museo), *should* (hospital), primer condicional (puerto), estilo indirecto (TV), etc. Los monumentos (Big Ben, Estatua de la Libertad, Ópera de Sídney, CN Tower, castillo de Edimburgo) piden una **lectura comprensiva**.
 - **Indicadores:** población, felicidad, economía, seguridad, cultura y medio ambiente. Una fábrica da dinero pero contamina, así que tienen que equilibrar.
-- **Impuestos:** una vez al día pueden cobrar impuestos acertando una pregunta de inglés. Cuanta más economía, más cobran.
+- **Impuestos:** una vez al día pueden cobrar impuestos acertando una pregunta de inglés: entre 5 y 30 GOYUX, según la economía del país.
 - **Diplomacia:** con una embajada pueden escribir una **carta formal** a otro país de la clase para proponer un tratado comercial, cultural o de paz. Las cartas se construyen eligiendo frases correctas y formales. Si el otro país responde aceptando, también con una carta correcta, los dos ganan bonificaciones.
 - **Visitas:** pueden visitar los países de sus compañeros y ver sus edificios.
 

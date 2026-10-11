@@ -2628,35 +2628,35 @@ function review(t) {
 /* =====================================================================
    MY NATION — data. Rules and costs must match apps-script/Code.gs
    ===================================================================== */
-const NR = { size: 7, capital: 24, start: [17, 23, 24, 25, 31] };
+const NR = { size: 9, capital: 40, start: [31, 39, 40, 41, 49] };
 const N_KEYS = ['pop', 'happy', 'econ', 'secu', 'cult', 'env'];
 const N_LABEL = { pop: 'People', happy: 'Happiness', econ: 'Economy', secu: 'Security', cult: 'Culture', env: 'Environment' };
 const N_EMO = { pop: '👥', happy: '😊', econ: '💰', secu: '🛡', cult: '🎭', env: '🌳' };
 /* id: [name, emoji, cost, [pop, happy, econ, secu, cult, env], English test, description] */
 const BLD = {
   cityhall: ['City Hall', '🏛', 0, [0, 5, 5, 5, 0, 0], null, 'The heart of your capital. Your government works here.'],
-  houses: ['Houses', '🏘', 12, [40, 2, 0, 0, 0, -2], 'houses', 'Homes for 40 new citizens.'],
-  farm: ['Farm', '🌾', 15, [10, 2, 6, 0, 0, 2], 'farm', 'Fresh food for your people and for the market.'],
-  park: ['Park', '🌳', 10, [0, 6, 0, 0, 0, 8], 'park', 'Trees, a pond and benches. People love it.'],
-  market: ['Market', '🛒', 25, [5, 5, 9, 0, 0, 0], 'market', 'Shops and stalls where people buy and sell.'],
-  school: ['School', '🏫', 25, [5, 4, 4, 0, 8, 0], 'school', 'Educated citizens make a stronger nation.'],
-  police: ['Police Station', '🚓', 25, [0, 3, 0, 12, 0, 0], 'police', 'Keeps your streets safe.'],
-  factory: ['Factory', '🏭', 30, [0, -3, 16, 0, 0, -10], 'factory', 'Lots of jobs and money, but it pollutes.'],
-  windfarm: ['Wind Farm', '🌬', 30, [0, 0, 8, 0, 0, 6], 'windfarm', 'Clean electricity from the wind.'],
-  museum: ['History Museum', '🏺', 30, [0, 4, 3, 0, 12, 0], 'museum', 'Tells the story of your nation.'],
-  press: ['TV & Newspaper', '📰', 30, [0, 3, 2, 0, 8, 0], 'press', 'News for your citizens.'],
-  embassy: ['Embassy', '🕊', 30, [0, 2, 2, 2, 4, 0], 'embassy', 'Lets you write to other nations and sign treaties.'],
-  hospital: ['Hospital', '🏥', 35, [25, 10, 0, 0, 0, 0], 'hospital', 'Healthy people live longer and happier lives.'],
-  army: ['Army Base', '🪖', 35, [0, -2, 0, 18, 0, -2], 'army', 'Protects your borders.'],
-  parliament: ['Parliament', '⚖', 40, [0, 6, 4, 6, 4, 0], 'parliament', 'Where the laws of your nation are made.'],
-  port: ['Port', '⚓', 40, [10, 0, 14, 0, 2, -4], 'port', 'Ships bring goods from all over the world.'],
-  stadium: ['Stadium', '🏟', 40, [0, 12, 4, 0, 4, -2], 'stadium', 'Football, concerts and big celebrations.'],
-  airport: ['Airport', '✈', 50, [15, 2, 12, 0, 4, -6], 'airport', 'Tourists and business people fly in.'],
-  bigben: ['Big Ben (UK)', '🕰', 60, [0, 6, 6, 0, 20, 0], 'r:bigben', 'A famous monument from London.'],
-  castle: ['Edinburgh Castle (Scotland)', '🏰', 60, [0, 6, 4, 6, 16, 0], 'r:castle', 'A famous monument from Scotland.'],
-  cntower: ['CN Tower (Canada)', '🗼', 60, [0, 4, 8, 0, 18, 0], 'r:cntower', 'A famous monument from Toronto.'],
-  liberty: ['Statue of Liberty (USA)', '🗽', 70, [0, 8, 6, 0, 22, 0], 'r:liberty', 'A famous monument from New York.'],
-  opera: ['Sydney Opera House (Australia)', '🎭', 70, [0, 8, 6, 0, 22, 0], 'r:opera', 'A famous monument from Sydney.']
+  houses: ['Houses', '🏘', 40, [40, 2, 0, 0, 0, -2], 'houses', 'Homes for 40 new citizens.'],
+  farm: ['Farm', '🌾', 45, [10, 2, 6, 0, 0, 2], 'farm', 'Fresh food for your people and for the market.'],
+  park: ['Park', '🌳', 30, [0, 6, 0, 0, 0, 8], 'park', 'Trees, a pond and benches. People love it.'],
+  market: ['Market', '🛒', 70, [5, 5, 9, 0, 0, 0], 'market', 'Shops and stalls where people buy and sell.'],
+  school: ['School', '🏫', 70, [5, 4, 4, 0, 8, 0], 'school', 'Educated citizens make a stronger nation.'],
+  police: ['Police Station', '🚓', 70, [0, 3, 0, 12, 0, 0], 'police', 'Keeps your streets safe.'],
+  factory: ['Factory', '🏭', 90, [0, -3, 16, 0, 0, -10], 'factory', 'Lots of jobs and money, but it pollutes.'],
+  windfarm: ['Wind Farm', '🌬', 90, [0, 0, 8, 0, 0, 6], 'windfarm', 'Clean electricity from the wind.'],
+  museum: ['History Museum', '🏺', 90, [0, 4, 3, 0, 12, 0], 'museum', 'Tells the story of your nation.'],
+  press: ['TV & Newspaper', '📰', 90, [0, 3, 2, 0, 8, 0], 'press', 'News for your citizens.'],
+  embassy: ['Embassy', '🕊', 90, [0, 2, 2, 2, 4, 0], 'embassy', 'Lets you write to other nations and sign treaties.'],
+  hospital: ['Hospital', '🏥', 110, [25, 10, 0, 0, 0, 0], 'hospital', 'Healthy people live longer and happier lives.'],
+  army: ['Army Base', '🪖', 110, [0, -2, 0, 18, 0, -2], 'army', 'Protects your borders.'],
+  parliament: ['Parliament', '⚖', 130, [0, 6, 4, 6, 4, 0], 'parliament', 'Where the laws of your nation are made.'],
+  port: ['Port', '⚓', 130, [10, 0, 14, 0, 2, -4], 'port', 'Ships bring goods from all over the world.'],
+  stadium: ['Stadium', '🏟', 130, [0, 12, 4, 0, 4, -2], 'stadium', 'Football, concerts and big celebrations.'],
+  airport: ['Airport', '✈', 160, [15, 2, 12, 0, 4, -6], 'airport', 'Tourists and business people fly in.'],
+  bigben: ['Big Ben (UK)', '🕰', 200, [0, 6, 6, 0, 20, 0], 'r:bigben', 'A famous monument from London.'],
+  castle: ['Edinburgh Castle (Scotland)', '🏰', 200, [0, 6, 4, 6, 16, 0], 'r:castle', 'A famous monument from Scotland.'],
+  cntower: ['CN Tower (Canada)', '🗼', 200, [0, 4, 8, 0, 18, 0], 'r:cntower', 'A famous monument from Toronto.'],
+  liberty: ['Statue of Liberty (USA)', '🗽', 240, [0, 8, 6, 0, 22, 0], 'r:liberty', 'A famous monument from New York.'],
+  opera: ['Sydney Opera House (Australia)', '🎭', 240, [0, 8, 6, 0, 22, 0], 'r:opera', 'A famous monument from Sydney.']
 };
 const UNIQUE_B = ['cityhall', 'parliament', 'embassy', 'port', 'stadium', 'airport', 'bigben', 'castle', 'cntower', 'liberty', 'opera'];
 const MONUMENTS = ['bigben', 'castle', 'cntower', 'liberty', 'opera'];
@@ -2671,8 +2671,9 @@ function nStats(n, treaties) {
   s.score = Math.round(s.pop / 5 + s.happy + s.econ + s.secu + s.cult + s.env + Object.keys(n.buildings || {}).length * 5);
   return s;
 }
-const plotPrice = owned => 10 + 3 * Math.max(0, owned - NR.start.length);
-const taxAmount = st => Math.min(12, 3 + Math.floor(Math.max(0, st.econ) / 15));
+const plotPrice = owned => 30 + 4 * Math.max(0, owned - NR.start.length);
+const moveCost = id => Math.max(10, Math.round(BLD[id][2] / 2));
+const taxAmount = st => Math.min(30, 5 + Math.floor(Math.max(0, st.econ) / 10));
 const adjacentPlot = (i, plots) => { const r = Math.floor(i / NR.size), c = i % NR.size; return plots.some(p => Math.abs(Math.floor(p / NR.size) - r) + Math.abs(p % NR.size - c) === 1); };
 
 /* ---------- English tests: [question, correct answer, [wrong answers], tip] ---------- */
@@ -2884,6 +2885,14 @@ const NAPI = {
       n.buildings[i] = id; n.spent += b[2]; store.set('nation', n);
     });
   },
+  move(from, to) {
+    return NAPI.run('nationMove', [from, to], () => {
+      const s = NAPI.local(), n = s.nation, id = n.buildings[from];
+      if (!id || id === 'cityhall' || !n.plots.includes(to) || n.buildings[to]) throw new Error('You cannot move that building there.');
+      if (s.goyux.total < moveCost(id)) throw new Error(`You need ${moveCost(id)} GOYUX to move it.`);
+      delete n.buildings[from]; n.buildings[to] = id; n.spent += moveCost(id); store.set('nation', n);
+    });
+  },
   tax() {
     return NAPI.run('nationTax', [true], () => {
       const n = store.get('nation', null);
@@ -2917,7 +2926,8 @@ const flagChip = (f, w = 30) => `<i class="flag" style="width:${w}px;background:
 
 /* ---------- 3D island ---------- */
 const PLOT = 12, TILE = 10;
-const plotXZ = i => [((i % NR.size) - 3) * PLOT, (Math.floor(i / NR.size) - 3) * PLOT];
+const HALF = (NR.size - 1) / 2;
+const plotXZ = i => [((i % NR.size) - HALF) * PLOT, (Math.floor(i / NR.size) - HALF) * PLOT];
 function clockTex() {
   return canvasTex(128, 128, (g) => {
     g.fillStyle = '#c8a96a'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#fffbe6'; g.beginPath(); g.arc(64, 64, 52, 0, 7); g.fill();
@@ -3047,9 +3057,9 @@ function plotInteractions() {
     inter({
       at: () => ({ x, y: 0, z }), r: 6.2, h: 4.5,
       get obj() { const n = G.s.state.nation, b = n && n.buildings[i]; return b ? BLD[b][1] + ' ' + BLD[b][0] : (n && n.plots.includes(i) ? 'Your land' : 'Wild land'); },
-      get label() { const n = G.s.state.nation; if (!n) return ''; if (n.buildings[i]) return 'Look'; if (n.plots.includes(i)) return 'Build here'; return `Buy land · ${plotPrice(n.plots.length)} GOYUX`; },
+      get label() { const n = G.s.state.nation, mv = G.s.moving; if (!n) return ''; if (n.buildings[i]) return mv ? 'Occupied' : 'Look'; if (n.plots.includes(i)) return mv ? `Move ${BLD[mv.id][0]} here · ${moveCost(mv.id)} GOYUX` : 'Build here'; return `Buy land · ${plotPrice(n.plots.length)} GOYUX`; },
       when: () => { const n = G.s.state.nation; if (!n) return false; if (G.s.visit) return !!n.buildings[i]; return n.plots.includes(i) || adjacentPlot(i, n.plots); },
-      act: () => { const n = G.s.state.nation; if (n.buildings[i]) buildingInfo(n.buildings[i]); else if (n.plots.includes(i)) buildMenu(i); else buyPlot(i); }
+      act: () => { const n = G.s.state.nation; if (n.buildings[i]) buildingInfo(n.buildings[i], i); else if (n.plots.includes(i)) (G.s.moving ? moveHere(i) : buildMenu(i)); else buyPlot(i); }
     });
   }
 }
@@ -3083,7 +3093,7 @@ function nationHud() {
     { id: 'v3', text: n.motto ? `Motto: “${n.motto}”` : 'No motto', done: true }, { id: 'v4', text: `${blds.length} buildings · ${s.pop} people`, done: true }
   ] : [
     { id: 'g1', text: 'Found your nation', done: !!n },
-    { id: 'g2', text: 'Own 8 plots of land', done: !!n && n.plots.length >= 8 },
+    { id: 'g2', text: 'Own 10 plots of land', done: !!n && n.plots.length >= 10 },
     { id: 'g3', text: 'Build 3 new buildings', done: blds.length >= 4 },
     { id: 'g4', text: 'Reach 200 people', done: !!s && s.pop >= 200 },
     { id: 'g5', text: 'Build a famous monument', done: blds.some(b => MONUMENTS.includes(b)) },
@@ -3091,7 +3101,7 @@ function nationHud() {
     { id: 'g7', text: 'Reach 500 nation points', done: !!s && s.score >= 500 }
   ];
   renderObjectives(); updateBoard();
-  G.inv = G.s.visit ? [{ emoji: '🏠', label: 'Back to my nation', act: () => launchNation() }] : [
+  G.inv = G.s.visit ? [{ emoji: '🏠', label: 'Back to my nation', act: () => launchNation() }] : G.s.moving ? [{ emoji: '✖', label: 'Cancel moving ' + BLD[G.s.moving.id][0], act: () => { G.s.moving = null; nationHud(); } }] : [
     { emoji: '📜', label: 'Nation menu', act: nationMenu },
     { emoji: '💰', label: 'Collect taxes', act: collectTaxes, bad: () => !!st.taxReady },
     { emoji: '🌍', label: 'World ranking', act: worldPanel },
@@ -3114,10 +3124,10 @@ async function launchNation(visit) {
   newWorld();
   G = { id: 'nation', sc: SCEN.nation, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: { state: st, visit: visit || null, layers: [] } };
   W.spin = [];
-  W.bounds = { minX: -44, maxX: 44, minZ: -44, maxZ: 46 };
+  const ext = HALF * PLOT + 6; W.bounds = { minX: -ext + 1, maxX: ext - 1, minZ: -ext + 1, maxZ: ext + 1 };
   W.scene.fog = new THREE.Fog('#a8dcff', 110, 300);
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), new THREE.MeshLambertMaterial({ color: '#2f80d0' })); sea.rotation.x = -Math.PI / 2; sea.position.y = -0.5; W.scene.add(sea);
-  part(0, -2, 0, 92, 2, 94, '#e3d29b', { solid: false, shadow: false, mat: new THREE.MeshLambertMaterial({ map: studTex('#e3d29b', 46) }) });
+  part(0, -2, 0, ext * 2 + 4, 2, ext * 2 + 6, '#e3d29b', { solid: false, shadow: false, mat: new THREE.MeshLambertMaterial({ map: studTex('#e3d29b', ext + 2) }) });
   renderPlots(); plotInteractions();
   W.update = dt => { W.spin.forEach(h => { h.rotation.z += dt * 2.2; }); };
   if (!visit) {
@@ -3254,9 +3264,25 @@ function buildMenu(i) {
   });
   panel('What do you want to build?', `You have <b>${st.goyux.total} GOYUX</b>. To build, pass an English test (4 of 5 correct).`, grid, [], { onClose: () => {} });
 }
-function buildingInfo(id) {
-  const b = BLD[id];
-  panel(`${b[1]} ${b[0]}`, '', `<p class="panel-p">${escH(b[5])}</p><div class="fxs">${fxChips(b[3])}</div>${b[4] && b[4].startsWith('r:') ? `<div class="quiz-text">${escH(READING[b[4].slice(2)].text)}</div>` : ''}`, [{ t: 'Close', cls: 'primary', fn: closePanel }], { onClose: () => {} });
+function buildingInfo(id, plot) {
+  const b = BLD[id], own = !G.s.visit && plot != null && id !== 'cityhall', st = G.s.state;
+  const btns = [{ t: 'Close', cls: own ? '' : 'primary', fn: closePanel }];
+  if (own) btns.push({ t: `Move to another plot · ${moveCost(id)} GOYUX`, cls: 'primary', disabled: st.goyux.total < moveCost(id), fn: () => {
+    closePanel(); G.s.moving = { from: plot, id }; nationHud();
+    notify('🚚 Moving ' + b[0], `Walk to an empty plot of yours and press E. Moving costs ${moveCost(id)} GOYUX. Use ✖ in the bar to cancel.`);
+  } });
+  panel(`${b[1]} ${b[0]}`, '', `<p class="panel-p">${escH(b[5])}</p><div class="fxs">${fxChips(b[3])}</div>${b[4] && b[4].startsWith('r:') ? `<div class="quiz-text">${escH(READING[b[4].slice(2)].text)}</div>` : ''}`, btns, { onClose: () => {} });
+}
+function moveHere(to) {
+  const mv = G.s.moving, b = BLD[mv.id];
+  panel(`Move ${b[0]} here?`, `It costs ${moveCost(mv.id)} GOYUX. You have ${G.s.state.goyux.total} GOYUX.`, '<p class="panel-p">The building will be taken down and built again on this plot.</p>', [
+    { t: 'Cancel', fn: closePanel },
+    { t: `Move it · ${moveCost(mv.id)} GOYUX`, cls: 'primary', fn: async () => {
+      closePanel();
+      try { G.s.moving = null; applyNation(await NAPI.move(mv.from, to)); renderPlots(); notify('🚚 Moved!', `${b[0]} is on its new plot.`, 'good'); }
+      catch (e) { notify('⚠️ Not moved', e.message, 'bad'); nationHud(); }
+    } }
+  ], { onClose: () => {} });
 }
 
 /* ---------- nation menu, taxes, world, letters ---------- */
