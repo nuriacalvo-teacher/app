@@ -132,6 +132,46 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
 #hToast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--green);color:#fff;font-weight:800;padding:10px 16px;border-radius:10px;z-index:70;max-width:calc(100% - 32px)}
 #hToast.err{background:var(--red)}
 
+/* guest login, progress card */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hello-txt{flex:1;min-width:0}
+.hello{flex-wrap:wrap}
+.guest{background:var(--surface);border:2px solid var(--gold);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;max-width:560px}
+.guest h2{font-size:20px;font-weight:900}
+.guest p{margin:0;color:var(--muted);line-height:1.45}
+.guest-row{display:flex;gap:8px;flex-wrap:wrap}
+.guest-row input{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;color:var(--fg);font:800 16px var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+.guest-err{color:var(--red)!important;font-weight:800}
+.t-guests{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.t-guests h2{font-size:18px;font-weight:900}
+.code{font-family:var(--f-display);font-weight:900;letter-spacing:.06em;background:var(--card);padding:4px 8px;border-radius:6px}
+.modal.prog{width:min(560px,100%);padding:18px;display:flex;flex-direction:column;gap:12px}
+.pcard{border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#2c3a8f,#1d1f2b 60%);border:1px solid var(--line)}
+.pc-top{display:flex;gap:14px;align-items:center;padding:18px 18px 12px;flex-wrap:wrap}
+.pc-top .headshot{width:76px;height:76px;background:rgba(255,255,255,.12)}
+.pc-id{flex:1;min-width:0}
+.pc-id .logo{font-size:15px;opacity:.85}
+.pc-id .logo .o::after{color:#26305f}
+.pc-id h2{font-size:24px;font-weight:900;margin-top:4px;overflow-wrap:anywhere}
+.pc-id small{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.pc-lv{text-align:center;background:rgba(0,0,0,.3);border-radius:12px;padding:8px 12px;min-width:78px}
+.pc-lv b{display:block;font:900 30px/1 var(--f-display)}
+.pc-lv span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.08)}
+.pc-grid div{background:#20233a;padding:10px 12px}
+.pc-grid b{display:block;font:900 20px var(--f-display);font-variant-numeric:tabular-nums}
+.pc-grid span{font-size:12px;color:var(--muted)}
+.pc-sec{padding:12px 18px;display:flex;flex-direction:column;gap:6px;border-top:1px solid rgba(255,255,255,.08)}
+.pc-sec h3{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pc-row{display:flex;gap:8px;align-items:center;font-size:14px;font-variant-numeric:tabular-nums}
+.pc-row span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-row small{color:var(--muted)}
+.pc-foot{padding:10px 18px;font-size:12px;color:var(--muted);border-top:1px solid rgba(255,255,255,.08)}
+.shot-hint{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+.res-who{font-size:14px;color:var(--muted);font-weight:700;text-align:center;line-height:1.4}
+.res-who b{color:var(--fg)}
+@media (max-width:480px){.pc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* notebook */
 .vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
@@ -367,8 +407,15 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
     <section class="page" id="pageHome">
       <div class="hello">
         <div class="headshot" id="headshot"></div>
-        <div><h1 id="hello">Hello, Alex!</h1><p>Pick an experience and use your English to survive real life.</p></div>
+        <div class="hello-txt"><h1 id="hello">Hello!</h1><p>Pick an experience and use your English to survive real life.</p></div>
+        <button class="btn" id="progOpen">My progress card</button>
       </div>
+      <form class="guest" id="guestBox" hidden>
+        <h2>Enter your invite code</h2>
+        <p>You are not using an iesgoya.es account. Type the invite code your teacher gave you.</p>
+        <div class="guest-row"><label for="guestIn" class="sr">Invite code</label><input id="guestIn" placeholder="e.g. LUCIA-7K3P" autocomplete="off" maxlength="20"><button class="btn primary" id="guestGo">Enter</button></div>
+        <p class="guest-err" id="guestErr" hidden></p>
+      </form>
       <div class="note-bar" id="cloudNote" hidden></div>
       <div class="stats" id="stats"></div>
       <div class="grants" id="grantsBox" hidden></div>
@@ -406,6 +453,12 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
         <button class="btn primary" id="tGiveSel">Dar a los seleccionados</button>
       </div>
       <div class="tbl-wrap"><table class="tbl" id="tTable"></table></div>
+      <div class="t-guests">
+        <h2>Invitados sin cuenta de iesgoya.es</h2>
+        <p class="t-hint">Crea un código para cada persona (por ejemplo, tu hija). Entra con el <b>enlace para invitados</b> y escribe su código; su progreso se guarda aquí como el de un alumno. Desactiva un código para cortarle el acceso.</p>
+        <div class="t-tools"><label for="gName">Nombre<input id="gName" placeholder="Nombre del invitado" maxlength="30" autocomplete="off"></label><button class="btn primary" id="gCreate">Crear código</button></div>
+        <div class="tbl-wrap"><table class="tbl" id="gTable"></table></div>
+      </div>
       <p class="t-hint">Los alumnos aparecen aquí la primera vez que entran con su cuenta de iesgoya.es. Usa una cantidad negativa para quitar GOYUX (por ejemplo, cuando un alumno los canjea por un premio). Todo queda registrado en la hoja de cálculo.</p>
     </section>
     <section class="page" id="pageNotebook" hidden>
@@ -446,6 +499,13 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
   </div>
 </div>
 <div id="hToast" hidden></div>
+<div class="overlay" id="progModal" hidden>
+  <div class="modal prog">
+    <button class="x" id="progX" aria-label="Close">✕</button>
+    <div class="pcard" id="pcard"></div>
+    <p class="shot-hint">📸 Take a screenshot to send it to your teacher: <b>Windows</b> Win + Shift + S · <b>Mac</b> Cmd + Shift + 4 · <b>Chromebook</b> Ctrl + Shift + ⧉ · <b>Phone</b> power + volume down.</p>
+  </div>
+</div>
 
 <div id="loading" hidden>
   <div class="load-box">
@@ -519,6 +579,7 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
       <div class="res-card">
         <div class="res-top">
           <h2 id="resTitle">Mission complete!</h2>
+          <div class="res-who" id="resWho"></div>
           <div id="resStars"></div>
           <div class="res-fob"><i class="gx">G</i><span id="resFob"></span></div>
         </div>
@@ -563,11 +624,14 @@ let profile = Object.assign({ name: 'Player', skin: '#f5cd30', shirt: '#0d69ac',
 const CLOUD = !!(window.google && google.script && google.script.run);
 const api = (fn, ...args) => new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(e => rej(new Error((e && e.message) || String(e))))[fn](...args));
 let account = null, XP_PER_LEVEL = 200, profT = 0;
+let guestCode = store.get('guestCode', '');
+/* calls that identify the player also send the guest invite code (ignored for school accounts) */
+const apiU = (fn, ...args) => api(fn, ...args, guestCode || '');
 const levelOf = xp => 1 + Math.floor((xp || 0) / XP_PER_LEVEL);
 const goyuxTotal = () => (profile.xp || 0) + (profile.granted || 0);
 function saveProfile() {
   store.set('profile', profile);
-  if (CLOUD && account) { clearTimeout(profT); profT = setTimeout(() => api('saveProfile', { name: profile.name, skin: profile.skin, shirt: profile.shirt, pants: profile.pants }).catch(() => {}), 900); }
+  if (CLOUD && account) { clearTimeout(profT); profT = setTimeout(() => apiU('saveProfile', { name: profile.name, skin: profile.skin, shirt: profile.shirt, pants: profile.pants }).catch(() => {}), 900); }
 }
 function hToast(msg, err) { const t = $('#hToast'); t.textContent = msg; t.className = err ? 'err' : ''; t.hidden = false; clearTimeout(hToast.t); hToast.t = setTimeout(() => t.hidden = true, 3500); }
 async function boot() {
@@ -579,8 +643,9 @@ async function boot() {
   }
   $('#whoName').textContent = 'Connecting…';
   try {
-    const me = await api('getMe');
-    account = { email: me.email, isTeacher: me.isTeacher }; XP_PER_LEVEL = me.xpPerLevel || 200;
+    const me = await apiU('getMe');
+    account = { email: me.email, isTeacher: me.isTeacher, guest: me.guest }; XP_PER_LEVEL = me.xpPerLevel || 200;
+    $('#guestBox').hidden = true;
     const seen = store.get('seenGrants:' + me.email, 0);
     Object.assign(profile, me.profile, { grants: me.grants || [] });
     store.set('profile', profile);
@@ -593,10 +658,22 @@ async function boot() {
       store.set('seenGrants:' + me.email, Math.max(...fresh.map(g => Date.parse(g.date))));
     }
   } catch (e) {
-    const n = $('#cloudNote'); n.hidden = false; n.classList.add('err'); n.textContent = 'Could not connect to your account: ' + e.message;
     $('#whoName').textContent = profile.name;
+    if (/GUEST_(REQUIRED|INVALID)/.test(e.message)) {
+      if (/INVALID/.test(e.message) && guestCode) { $('#guestErr').textContent = 'That invite code is not valid. Check it with your teacher.'; $('#guestErr').hidden = false; }
+      guestCode = ''; store.set('guestCode', '');
+      $('#guestBox').hidden = false; $('#guestIn').focus();
+      return;
+    }
+    const n = $('#cloudNote'); n.hidden = false; n.classList.add('err'); n.textContent = 'Could not connect to your account: ' + e.message;
   }
 }
+$('#guestBox').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = $('#guestIn').value.trim().toUpperCase();
+  if (!v) { $('#guestErr').textContent = 'Type your invite code.'; $('#guestErr').hidden = false; return; }
+  $('#guestErr').hidden = true; guestCode = v; store.set('guestCode', v); boot();
+});
 let settings = Object.assign({ voice: true }, store.get('settings', {}));
 
 /* ---------------- games catalogue ---------------- */
@@ -622,7 +699,7 @@ function av2d(o) {
 function renderHome() {
   $('#hello').textContent = `Hello, ${profile.name}!`;
   $('#whoName').textContent = profile.name;
-  $('#whoMail').textContent = account ? account.email : '';
+  $('#whoMail').textContent = account ? (account.guest ? 'Guest player' : account.email) : 'Offline';
   $('#goyuxN').textContent = goyuxTotal();
   $('#headshot').innerHTML = av2d(profile);
   const starsTotal = Object.values(profile.best).reduce((a, b) => a + b, 0);
@@ -1212,6 +1289,7 @@ function showResults(o) {
   G.over = true; closeDialog(); closePanel();
   const overall = Math.round(o.overall); const stars = overall >= 85 ? 3 : overall >= 65 ? 2 : 1;
   $('#resTitle').textContent = o.title;
+  $('#resWho').innerHTML = `<b>${escH(profile.name)}</b>${account ? ' · ' + escH(account.guest ? 'Guest' : account.email) : ''} · ${escH(G.sc.title)} · ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
   $('#resStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">★</span>`).join('');
   $('#resFob').textContent = `+${overall} GOYUX · score ${overall}/100`;
   const col = v => v >= 80 ? 'var(--green)' : v >= 55 ? 'var(--gold)' : 'var(--red)';
@@ -1232,9 +1310,11 @@ function showResults(o) {
       vocab: G.sc.vocab.map(([en, es]) => ({ en, es, g: G.sc.title }))
     };
     $('#resFob').textContent += ' · saving…';
-    api('saveRun', run).then(r => {
+    apiU('saveRun', run).then(r => {
+      const id = r.runId; delete r.runId;
       Object.assign(profile, r); store.set('profile', profile);
       $('#resFob').textContent = `+${r.earned} GOYUX · score ${overall}/100 · saved ✓` + (r.earned < overall ? ' (missions finished too quickly earn no GOYUX)' : '');
+      if (id) $('#resWho').innerHTML += ` · Mission code <b>${escH(id)}</b>`;
     }).catch(e => { $('#resFob').textContent = `Score ${overall}/100 · not saved: ${e.message}`; });
   }
   $('#results').hidden = false;
@@ -2319,6 +2399,38 @@ function review(t) {
   }), 'See my results');
 }
 
+/* ---------------- progress card (made to be screenshotted and sent to the teacher) ---------------- */
+async function openProgress() {
+  const lv = levelOf(profile.xp), into = (profile.xp || 0) % XP_PER_LEVEL;
+  const games = GAMES.filter(g => !g.soon);
+  const now = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const render = runs => {
+    $('#pcard').innerHTML = `
+      <div class="pc-top">
+        <div class="headshot">${av2d(profile)}</div>
+        <div class="pc-id"><div class="logo">G<span class="o"></span>BLOX</div><h2>${escH(profile.name)}</h2><small>${account ? escH(account.guest ? 'Guest player' : account.email) : 'Offline player'}</small></div>
+        <div class="pc-lv"><b>${lv}</b><span>Level</span></div>
+      </div>
+      <div class="lvl" style="margin:0 18px 14px"><i style="width:${into / XP_PER_LEVEL * 100}%"></i></div>
+      <div class="pc-grid">
+        <div><b>${goyuxTotal()}</b><span>GOYUX</span></div>
+        <div><b>${profile.plays}</b><span>missions</span></div>
+        <div><b>${Object.values(profile.best).reduce((a, b) => a + b, 0)} / ${games.length * 3}</b><span>stars</span></div>
+        <div><b>${profile.xp || 0}</b><span>XP from games</span></div>
+        <div><b>${profile.granted || 0}</b><span>GOYUX from teacher</span></div>
+        <div><b>${profile.vocab.length}</b><span>phrases learnt</span></div>
+      </div>
+      <div class="pc-sec"><h3>Best result per mission</h3>${games.map(g => `<div class="pc-row"><span>${g.emoji} ${escH(g.title)}</span><span class="stars">${'★'.repeat(profile.best[g.id] || 0)}${'☆'.repeat(3 - (profile.best[g.id] || 0))}</span></div>`).join('')}</div>
+      ${runs ? `<div class="pc-sec"><h3>Latest missions</h3>${runs.length ? runs.slice(0, 5).map(r => `<div class="pc-row"><span>${escH(r.game)}</span><small>${new Date(r.date).toLocaleDateString('en-GB')}</small><b>${r.score}/100</b><small>${money(r.moneyLeft)} left</small>${r.id ? `<small>#${escH(r.id)}</small>` : ''}</div>`).join('') : '<div class="pc-row"><span>No missions saved yet.</span></div>'}</div>` : ''}
+      <div class="pc-foot">Card created ${now}</div>`;
+  };
+  render(null); $('#progModal').hidden = false;
+  if (CLOUD && account) { try { render(await apiU('myRuns')); } catch (e) {} }
+}
+$('#progOpen').onclick = openProgress;
+$('#progX').onclick = () => $('#progModal').hidden = true;
+$('#progModal').addEventListener('click', e => { if (e.target.id === 'progModal') $('#progModal').hidden = true; });
+
 /* ---------------- teacher panel (Spanish: it is for the teacher) ---------------- */
 const T = { list: [], sel: new Set(), loading: false };
 const fmtDate = d => d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -2327,7 +2439,16 @@ async function loadTeacher() {
   if (!CLOUD || !account || !account.isTeacher) { $('#tTable').innerHTML = '<tr><td>El panel funciona cuando GOBLOX está publicado con Google Apps Script y entras con una cuenta de profesor. Consulta apps-script/LEEME.md.</td></tr>'; return; }
   $('#tTable').innerHTML = '<tr><td>Cargando alumnos…</td></tr>';
   try { applyTeacher(await api('teacherList')); } catch (e) { $('#tTable').innerHTML = `<tr><td>${escH(e.message)}</td></tr>`; }
+  try { renderGuests(await api('teacherGuests')); } catch (e) {}
 }
+function renderGuests(list) {
+  $('#gTable').innerHTML = '<tr><th>Código</th><th>Nombre</th><th>Estado</th><th></th></tr>' + (list.map(g => `<tr><td><span class="code">${escH(g.code)}</span></td><td>${escH(g.name)}</td><td>${g.active ? 'Activo' : 'Desactivado'}</td><td><button class="mini ${g.active ? 'neg' : 'pos'}" data-g="${escH(g.code)}" data-on="${g.active ? 0 : 1}">${g.active ? 'Desactivar' : 'Activar'}</button></td></tr>`).join('') || '<tr><td colspan="4">Todavía no hay invitados.</td></tr>');
+  $('#gTable').querySelectorAll('[data-g]').forEach(b => b.onclick = async () => { try { renderGuests(await api('teacherSetGuest', b.dataset.g, b.dataset.on === '1')); } catch (e) { hToast(e.message, true); } });
+}
+$('#gCreate').onclick = async () => {
+  const name = $('#gName').value.trim(); if (!name) { hToast('Escribe el nombre del invitado.', true); return; }
+  try { const list = await api('teacherCreateGuest', name); renderGuests(list); $('#gName').value = ''; const g = list[list.length - 1]; hToast(`Código para ${g.name}: ${g.code}`); } catch (e) { hToast(e.message, true); }
+};
 function applyTeacher(r) {
   T.list = r.students || [];
   if (r.sheetUrl) { $('#tSheet').href = r.sheetUrl; $('#tSheet').hidden = false; }

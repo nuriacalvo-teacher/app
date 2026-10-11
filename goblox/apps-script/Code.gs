@@ -25,10 +25,14 @@ const GAME_IDS = Object.keys(GAMES);
 const SHEETS = {
   students: 'Alumnos',
   runs: 'Partidas',
-  goyux: 'GOYUX'
+  goyux: 'GOYUX',
+  guests: 'Invitados'
 };
-const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles'];
+const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida'];
 const GOYUX_HEAD = ['Fecha', 'Correo', 'Nombre', 'Cantidad', 'Motivo', 'Profesor'];
+// Invitados: personas sin cuenta del instituto que entran con un código que crea el profesor
+const GUEST_HEAD = ['Código', 'Nombre', 'Activo', 'Creado', 'Notas'];
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 // Columnas de la hoja Alumnos (0 = columna A)
 const C = { email: 0, name: 1, level: 2, plays: 3, xp: 4, granted: 5, total: 6, seen: 7, lastRun: 8, avatar: 9, vocab: 10, stars: 11 };
 function studentHead_() {
@@ -44,18 +48,32 @@ function doGet() {
 }
 
 /* ---------- helpers ---------- */
-function user_() {
-  const email = String(Session.getActiveUser().getEmail() || '').toLowerCase().trim();
-  if (!email) throw new Error('No se ha podido leer tu cuenta. Entra con tu cuenta @' + CONFIG.DOMAIN + '.');
-  const isTeacher = CONFIG.TEACHERS.some(t => String(t).toLowerCase().trim() === email);
-  if (!isTeacher && !email.endsWith('@' + CONFIG.DOMAIN)) throw new Error('GOBLOX solo está disponible para cuentas @' + CONFIG.DOMAIN + '.');
-  return { email, isTeacher };
+/* Who is calling? A school account (or a teacher), or a guest with a valid invite code.
+   Errors GUEST_REQUIRED / GUEST_INVALID make the game ask for an invite code. */
+function user_(guestCode) {
+  let email = '';
+  try { email = String(Session.getActiveUser().getEmail() || '').toLowerCase().trim(); } catch (e) {}
+  const isTeacher = !!email && CONFIG.TEACHERS.some(t => String(t).toLowerCase().trim() === email);
+  if (isTeacher || (email && email.endsWith('@' + CONFIG.DOMAIN))) return { email, isTeacher, guest: false };
+  const code = String(guestCode || '').trim().toUpperCase();
+  if (!code) throw new Error('GUEST_REQUIRED');
+  const g = findGuest_(code);
+  if (!g || !g.active) throw new Error('GUEST_INVALID');
+  return { email: 'invitado:' + code.toLowerCase(), isTeacher: false, guest: true, name: g.name };
 }
 function teacher_() { const u = user_(); if (!u.isTeacher) throw new Error('Esta función es solo para el profesorado.'); return u; }
+function findGuest_(code) {
+  const sh = sheet_('guests');
+  const n = sh.getLastRow() - 1;
+  if (n < 1) return null;
+  const v = sh.getRange(2, 1, n, GUEST_HEAD.length).getValues().find(r => String(r[0]).trim().toUpperCase() === code);
+  return v ? { code, name: String(v[1] || 'Guest'), active: !/^(no|n|false|0)$/i.test(String(v[2]).trim()) } : null;
+}
+function randomCode_(n) { let c = ''; for (let i = 0; i < n; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
 function sheet_(key) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const name = SHEETS[key];
-  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : GOYUX_HEAD;
+  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : GOYUX_HEAD;
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   const cur = sh.getRange(1, 1, 1, head.length).getValues()[0];
@@ -84,13 +102,13 @@ function setFormulas_(sh, r) {
   sh.getRange(r, C.granted + 1).setFormula('=SUMIF(GOYUX!B:B,A' + r + ',GOYUX!D:D)');
   sh.getRange(r, C.total + 1).setFormula('=E' + r + '+F' + r);
 }
-function ensureStudent_(email) {
+function ensureStudent_(email, name) {
   sheet_('goyux');
   const sh = sheet_('students');
   let r = findStudentRow_(sh, email);
   if (r < 0) {
     const row = studentHead_().map(() => '');
-    row[C.email] = email; row[C.name] = nameFromEmail_(email); row[C.plays] = 0; row[C.xp] = 0; row[C.avatar] = '{}'; row[C.vocab] = '[]';
+    row[C.email] = email; row[C.name] = name || nameFromEmail_(email); row[C.plays] = 0; row[C.xp] = 0; row[C.avatar] = '{}'; row[C.vocab] = '[]';
     GAME_IDS.forEach((id, i) => { row[C.stars + i] = 0; });
     sh.appendRow(row);
     r = sh.getLastRow();
@@ -133,31 +151,31 @@ function withLock_(fn) {
 }
 
 /* ---------- API for students ---------- */
-function getMe() {
-  const u = user_();
+function getMe(guestCode) {
+  const u = user_(guestCode);
   return withLock_(() => {
-    const { sh, r } = ensureStudent_(u.email);
+    const { sh, r } = ensureStudent_(u.email, u.name);
     sh.getRange(r, C.seen + 1).setValue(new Date());
     const st = readStudent_(sh, r);
     return {
-      email: u.email, isTeacher: u.isTeacher, xpPerLevel: CONFIG.XP_PER_LEVEL,
+      email: u.email, isTeacher: u.isTeacher, guest: u.guest, xpPerLevel: CONFIG.XP_PER_LEVEL,
       profile: Object.assign({ name: st.name, plays: st.plays, xp: st.xp, granted: st.granted, best: st.best, vocab: st.vocab }, cleanAvatar_(st.avatar)),
       grants: grantsOf_(u.email, 8)
     };
   });
 }
-function saveProfile(p) {
-  const u = user_();
+function saveProfile(p, guestCode) {
+  const u = user_(guestCode);
   const name = String((p && p.name) || '').replace(/[^\p{L}\p{N} .'-]/gu, '').trim().slice(0, 20);
   return withLock_(() => {
-    const { sh, r } = ensureStudent_(u.email);
+    const { sh, r } = ensureStudent_(u.email, u.name);
     if (name) sh.getRange(r, C.name + 1).setValue(name);
     sh.getRange(r, C.avatar + 1).setValue(JSON.stringify(cleanAvatar_(p)));
     return true;
   });
 }
-function saveRun(run) {
-  const u = user_();
+function saveRun(run, guestCode) {
+  const u = user_(guestCode);
   if (!run || !GAMES[run.game]) throw new Error('Partida no válida.');
   const cache = CacheService.getScriptCache();
   const key = 'run:' + u.email;
@@ -168,12 +186,13 @@ function saveRun(run) {
   const earned = secs < CONFIG.MIN_SECONDS_FOR_GOYUX ? 0 : score;
   const mistakes = Array.isArray(run.mistakes) ? run.mistakes.slice(0, 10).map(m => ({ said: String(m.said || '').slice(0, 200), tip: String(m.tip || '').slice(0, 300) })) : [];
   return withLock_(() => {
-    const { sh, r } = ensureStudent_(u.email);
+    const { sh, r } = ensureStudent_(u.email, u.name);
     const st = readStudent_(sh, r);
+    const runId = randomCode_(5);
     sheet_('runs').appendRow([
       new Date(), u.email, st.name, GAMES[run.game], score, stars, num_(run.budget), num_(run.moneyLeft),
       clamp_(num_(run.english), 0, 100), clamp_(num_(run.manners), 0, 100), Math.round(secs / 6) / 10, mistakes.length, earned,
-      JSON.stringify({ metrics: run.metrics || {}, events: run.events || [], mistakes }).slice(0, 40000)
+      JSON.stringify({ metrics: run.metrics || {}, events: run.events || [], mistakes }).slice(0, 40000), runId
     ]);
     sh.getRange(r, C.plays + 1).setValue(st.plays + 1);
     sh.getRange(r, C.xp + 1).setValue(st.xp + earned);
@@ -188,8 +207,23 @@ function saveRun(run) {
     sh.getRange(r, C.vocab + 1).setValue(JSON.stringify(vocab.slice(0, 400)));
     cache.put(key, '1', CONFIG.MIN_SECONDS_BETWEEN_RUNS);
     const after = readStudent_(sh, r);
-    return { xp: after.xp, granted: after.granted, plays: after.plays, best: after.best, vocab: after.vocab, earned };
+    return { xp: after.xp, granted: after.granted, plays: after.plays, best: after.best, vocab: after.vocab, earned, runId };
   });
+}
+
+function runsOf_(email, limit) {
+  const sh = sheet_('runs');
+  const n = sh.getLastRow() - 1;
+  if (n < 1) return [];
+  return sh.getRange(2, 1, n, RUN_HEAD.length).getValues()
+    .filter(v => String(v[1]).toLowerCase().trim() === email)
+    .map(v => ({ date: iso_(v[0]), game: String(v[3]), score: Number(v[4]) || 0, stars: Number(v[5]) || 0, budget: Number(v[6]) || 0, moneyLeft: Number(v[7]) || 0, english: Number(v[8]) || 0, manners: Number(v[9]) || 0, minutes: Number(v[10]) || 0, id: String(v[14] || '') }))
+    .reverse().slice(0, limit);
+}
+/* The student's own recent missions, for the progress card */
+function myRuns(guestCode) {
+  const u = user_(guestCode);
+  return runsOf_(u.email, 8);
 }
 
 /* ---------- API for teachers ---------- */
@@ -222,11 +256,37 @@ function teacherGrant(emails, amount, reason) {
 function teacherRuns(email) {
   teacher_();
   email = String(email || '').toLowerCase().trim();
-  const sh = sheet_('runs');
+  return { runs: runsOf_(email, 60), grants: grantsOf_(email, 60) };
+}
+function teacherGuests() {
+  teacher_();
+  const sh = sheet_('guests');
   const n = sh.getLastRow() - 1;
-  const runs = n < 1 ? [] : sh.getRange(2, 1, n, RUN_HEAD.length).getValues()
-    .filter(v => String(v[1]).toLowerCase().trim() === email)
-    .map(v => ({ date: iso_(v[0]), game: String(v[3]), score: Number(v[4]) || 0, stars: Number(v[5]) || 0, budget: Number(v[6]) || 0, moneyLeft: Number(v[7]) || 0, english: Number(v[8]) || 0, manners: Number(v[9]) || 0, minutes: Number(v[10]) || 0 }))
-    .reverse().slice(0, 60);
-  return { runs, grants: grantsOf_(email, 60) };
+  if (n < 1) return [];
+  return sh.getRange(2, 1, n, GUEST_HEAD.length).getValues().filter(v => v[0])
+    .map(v => ({ code: String(v[0]), name: String(v[1] || ''), active: !/^(no|n|false|0)$/i.test(String(v[2]).trim()), created: iso_(v[3]) }));
+}
+function teacherCreateGuest(name) {
+  teacher_();
+  name = String(name || '').replace(/[^\p{L}\p{N} .'-]/gu, '').trim().slice(0, 30);
+  if (!name) throw new Error('Escribe el nombre del invitado.');
+  withLock_(() => {
+    const sh = sheet_('guests');
+    let code;
+    do { code = (name.split(' ')[0].normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 8) || 'GUEST') + '-' + randomCode_(4); } while (findGuest_(code));
+    sh.appendRow([code, name, 'SÍ', new Date(), '']);
+  });
+  return teacherGuests();
+}
+function teacherSetGuest(code, active) {
+  teacher_();
+  code = String(code || '').trim().toUpperCase();
+  withLock_(() => {
+    const sh = sheet_('guests');
+    const n = sh.getLastRow() - 1;
+    if (n < 1) return;
+    const vals = sh.getRange(2, 1, n, 1).getValues();
+    for (let i = 0; i < n; i++) if (String(vals[i][0]).trim().toUpperCase() === code) sh.getRange(i + 2, 3).setValue(active ? 'SÍ' : 'NO');
+  });
+  return teacherGuests();
 }
