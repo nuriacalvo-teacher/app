@@ -1096,7 +1096,7 @@ function showResults(o) {
   const col = v => v >= 80 ? 'var(--green)' : v >= 55 ? 'var(--gold)' : 'var(--red)';
   $('#resMetrics').innerHTML = o.metrics.map(([k, v]) => `<div class="metric"><span>${k}</span><div class="bar"><i style="width:${v}%;background:${col(v)}"></i></div><span>${Math.round(v)}%</span></div>`).join('');
   $('#resGood').innerHTML = (o.good.length ? o.good : ['You finished the mission. Keep practising!']).map(x => `<li>${escH(x)}</li>`).join('');
-  const bad = o.bad.concat(G.mistakes.slice(0, 6).map(m => `“${m.said}” → ${m.tip}`));
+  const bad = o.bad.concat(G.mistakes.filter((m, i, a) => a.findIndex(x => x.said === m.said) === i).slice(0, 6).map(m => `“${m.said}” → ${m.tip}`));
   $('#resBad').innerHTML = (bad.length ? bad : ['Nothing! That was excellent.']).map(x => `<li>${escH(x)}</li>`).join('');
   $('#resVocab').innerHTML = G.sc.vocab.map(([en, es]) => `<span class="chip" title="${escH(es)}">${escH(en)}</span>`).join('');
   profile.fobux += overall; profile.plays++;
