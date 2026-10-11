@@ -531,6 +531,12 @@ a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
         <h1>Panel del profesor</h1>
         <div class="t-actions"><button class="btn" id="tRefresh">Actualizar</button><a class="btn" id="tSheet" target="_blank" rel="noopener" hidden>Abrir hoja de cálculo</a></div>
       </div>
+      <div class="t-classes" id="tAdmin" hidden>
+        <h2>Profesores del departamento</h2>
+        <p class="t-hint">Añade el correo de cada compañero o compañera. Al abrir el enlace de GOBLOX con su cuenta de iesgoya.es verán la pestaña <b>Profesor</b>, crearán sus clases y solo verán a sus alumnos. No necesitan tocar Apps Script.</p>
+        <div class="t-tools"><label for="aEmail">Correo<input id="aEmail" placeholder="nombre.apellido@iesgoya.es" maxlength="80" autocomplete="off"></label><label for="aName">Nombre<input id="aName" placeholder="Nombre" maxlength="40" autocomplete="off"></label><button class="btn primary" id="aAdd">Añadir profesor</button></div>
+        <div class="tbl-wrap"><table class="tbl" id="aTable"></table></div>
+      </div>
       <div class="t-classes">
         <h2>Mis clases</h2>
         <p class="t-hint">Crea una clase por grupo y dale el <b>código</b> a esos alumnos: lo escriben la primera vez que entran. Así solo juegan tus alumnos aunque el enlace llegue a otros, y cada clase tiene su propio ranking de países.</p>
@@ -740,7 +746,7 @@ async function boot() {
   $('#whoName').textContent = 'Connecting…';
   try {
     const me = await apiU('getMe');
-    account = { email: me.email, isTeacher: me.isTeacher, guest: me.guest, className: me.className || '' }; XP_PER_LEVEL = me.xpPerLevel || 200;
+    account = { email: me.email, isTeacher: me.isTeacher, isAdmin: !!me.isAdmin, guest: me.guest, className: me.className || '' }; XP_PER_LEVEL = me.xpPerLevel || 200;
     $('#guestBox').hidden = true; $('#classBox').hidden = true;
     const seen = store.get('seenGrants:' + me.email, 0);
     Object.assign(profile, me.profile, { grants: me.grants || [] });
@@ -800,9 +806,9 @@ const GAMES = [
 
 /* ---------------- difficulty ---------------- */
 const DIFF = {
-  easy: { label: 'Easy', cefr: 'A2', bad: 1, mult: 0.8, info: 'Two answers to choose from, Spanish translation always visible, a bigger budget and fewer surprises.' },
-  normal: { label: 'Normal', cefr: 'A2–B1', bad: 2, mult: 1, info: 'Three answers to choose from, Spanish translation on demand (ES button).' },
-  hard: { label: 'Hard', cefr: 'B1+', bad: 3, mult: 1.25, info: 'Four answers to choose from, no Spanish help, a tighter budget and every surprise. +25% GOYUX.' }
+  easy: { label: 'Easy', cefr: 'A2', bad: 2, mult: 1, es: true, info: 'Three answers to choose from, Spanish translation with the ES button, a normal budget and some surprises.' },
+  normal: { label: 'Normal', cefr: 'A2–B1', bad: 3, mult: 1.25, es: false, info: 'Four answers to choose from, no Spanish help, a tighter budget and more surprises. +25% GOYUX.' },
+  hard: { label: 'Hard', cefr: 'B1+', bad: 3, mult: 1.5, es: false, info: 'Four answers to choose from, no Spanish help, just enough money and every surprise. +50% GOYUX.' }
 };
 let difficulty = DIFF[store.get('difficulty', 'normal')] ? store.get('difficulty', 'normal') : 'normal';
 
@@ -1295,8 +1301,9 @@ function showDialog(n, text, es, options) {
   $('#dlgText').textContent = text;
   $('#dlgEsText').textContent = es || 'Traducción no disponible.';
   const dk = G && G.diff;
-  $('#dlgEs').hidden = dk === 'hard';
-  $('#dlgEsText').hidden = dk === 'hard' || (dk !== 'easy' && $('#dlgEs').getAttribute('aria-pressed') !== 'true');
+  const esOk = !dk || !DIFF[dk] || DIFF[dk].es;
+  $('#dlgEs').hidden = !esOk;
+  $('#dlgEsText').hidden = !esOk || $('#dlgEs').getAttribute('aria-pressed') !== 'true';
   if (n) { say(n, text); speak(text, n.voice); }
   const box = $('#dlgOpts'); box.innerHTML = '';
   options.forEach((o, i) => {
@@ -1559,11 +1566,11 @@ SCEN.diner = {
 function buildDiner() {
   const s = G.s = {
     phase: 'enter', order: [], main: null, declared: false, wrong: null, acceptedWrong: false, discount: 0, reaction: false, tipPct: null, paidShort: false,
-    budget: pick1({ easy: [23, 25], normal: [18, 20, 22], hard: [18] }[G.diff] || [20]), allergy: pick1(Object.keys(ALLERGY)), veg: Math.random() < 0.4,
+    budget: pick1({ easy: [18, 20, 22], normal: [17, 18], hard: [15, 16] }[G.diff] || [20]), allergy: pick1(Object.keys(ALLERGY)), veg: Math.random() < 0.4,
     reason: pick1(['finished football practice', 'had a long day at school', 'come back from swimming lessons', 'spent all afternoon at the skate park', 'finished a basketball match']),
     ev: {}, drinkFree: false, coldDone: false, ateCold: false, extra: null, extraRemoved: false, overpaid: 0, falseClaim: false, dietBroken: false
   };
-  sample(['A', 'B', 'C', 'D'], { easy: 2, normal: 3, hard: 4 }[G.diff] || 3).forEach(k => s.ev[k] = true);
+  sample(['A', 'B', 'C', 'D', 'E'], { easy: 3, normal: 4, hard: 5 }[G.diff] || 3).forEach(k => s.ev[k] = true);
   if (s.ev.A) s.ev.A = pick1(['kid', 'phone', 'spill']);
   G.money = s.budget;
   MENU = MENU_BASE.map(m => Object.assign({}, m, { price: m.price ? Math.max(1.5, m.price + pick1([-0.5, 0, 0, 0.5, 1])) : 0 }));
@@ -1644,6 +1651,7 @@ function buildDiner() {
   if (s.ev.A) G.obj.push({ id: 'evA', secret: true, text: { kid: 'Ask the noisy family to keep it down, politely', phone: 'Ask the man on the phone to speak more quietly', spill: 'Stay calm when the waiter spills your drink' }[s.ev.A] });
   if (s.ev.B) G.obj.push({ id: 'dish', secret: true, text: 'Check your food: is it what you ordered?' });
   G.obj.push({ id: 'eat', text: 'Eat your meal' });
+  if (s.ev.E) G.obj.push({ id: 'drink', secret: true, text: 'Ask for the drink they forgot to bring' });
   if (s.ev.C) G.obj.push({ id: 'cold', secret: true, text: 'Send back your cold food, politely' });
   G.obj.push({ id: 'bill', text: 'Ask for the check and leave a fair tip' });
   if (s.ev.D) G.obj.push({ id: 'check', secret: true, text: 'Find the mistake on the check' });
@@ -1658,13 +1666,17 @@ function buildDiner() {
       if (kidT < 0) { kidT = 2.6; say(kid, pick1(KID_LINES)); }
     }
     if (s.phoneLoud) { phoneT -= dt; if (phoneT < 0) { phoneT = 2.8; say(dad, pick1(PHONE_LINES)); } }
+    if (s.ev.E && s.phase === 'eat' && !s.drinkMissing) {
+      s.drinkMissing = true; reveal('drink');
+      notify('🥤 Hmm…', `Your food is here, but your ${s.order.find(i => i.drink).name.toLowerCase()} never arrived. Call the waiter before you eat.`, 'warn');
+    }
   };
 
   inter({ obj: `${HN} (Host)`, label: 'Talk', at: () => host.pos, r: 4, when: () => s.phase === 'enter', act: hostGreet });
   inter({ obj: `${HN} (Host)`, label: 'Say goodbye', at: () => host.pos, r: 4, when: () => s.phase === 'leave', act: hostBye });
   inter({ obj: 'Table 4', label: 'Sit down', at: () => ({ x: -7, y: 0, z: 4.4 }), r: 2.6, h: 2.6, when: () => s.phase === 'seat', act: sitDown });
   inter({ obj: 'Olaf (Dad)', label: 'Talk', at: () => dad.pos, r: 6, when: () => s.phase === 'noise', act: dadTalk });
-  inter({ obj: 'Your meal', label: 'Eat', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'eat', act: eat });
+  inter({ obj: 'Your meal', get label() { return s.drinkMissing && !s.drinkDone ? 'Call the waiter about your drink 🛎' : 'Eat'; }, at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'eat', act: () => s.drinkMissing && !s.drinkDone ? drinkTalk() : eat() });
   inter({ obj: `${WN} (Waiter)`, label: 'Call the waiter 🛎', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'bill', act: callWaiter });
   inter({ obj: 'Nuria (Customer)', label: 'Say hello', at: () => lady.pos, r: 3.5, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
 
@@ -1878,6 +1890,25 @@ function buildDiner() {
     say(waiter, 'Enjoy!'); s.phase = 'eat'; wGo(toKitchen, () => faceTo(waiter, 0, 0));
   }
   function eaten() { return s.order.map(i => (i.cat === 'Mains' && s.acceptedWrong) ? s.wrong : i); }
+  /* ---- event E: the waiter forgot the drink */
+  function drinkTalk() {
+    const d = s.order.find(i => i.drink), dn = d.name.toLowerCase();
+    s.phase = 'drinkwait';
+    wGo(toTable, () => {
+      faceTo(waiter, -7, 4.35);
+      ask(waiter, 'Yes? Is everything OK?', '¿Sí? ¿Va todo bien?', phr([`Excuse me, I'm still waiting for my ${dn}. Could you bring it, please?`, `Sorry, but my ${dn} hasn't arrived yet. Could you check, please?`], [
+        { t: `I am waiting my ${dn} since twenty minutes.`, kind: 'grammar', tip: 'We wait FOR something, and with a period of time we use "for": "I\'ve been waiting for my drink for twenty minutes."' },
+        { t: 'Where is my drink?! Hurry up!', kind: 'rude', tip: 'Ask politely: "Excuse me, I\'m still waiting for my drink."' },
+        { t: `Excuse me, my ${dn} still don't arrive.`, kind: 'grammar', tip: 'Use the present perfect: "My drink hasn\'t arrived yet."' },
+        { t: `Sorry, you forgot me the ${dn}.`, kind: 'grammar', tip: '"Forget" doesn\'t take a person like that. Say "I think you forgot my drink."' }
+      ]).concat([{ t: 'Oh, never mind. It doesn\'t matter.', kind: 'fact', fn: () => { s.noDrink = true; s.drinkDone = true; complete('drink', true); say(waiter, 'OK! Enjoy your meal.'); s.phase = 'eat'; backLater(0.8); } }]), () => {
+        line(waiter, `Oh no, I completely forgot! I'll bring your ${dn} right away. Sorry!`, '¡Ay, se me olvidó por completo! Te lo traigo ahora mismo.', () => {
+          s.drinkDone = true; complete('drink'); s.phase = 'eat';
+          wGo(toKitchen, () => later(1, () => wGo(toTable, () => { faceTo(waiter, -7, 4.35); say(waiter, `Here's your ${dn}. Enjoy!`); backLater(1.2); })));
+        }, 'Thank you!');
+      });
+    });
+  }
   /* ---- eating: event C (cold food) */
   function eat() {
     s.phase = 'eating'; P.av.userData.eating = true;
@@ -2024,6 +2055,7 @@ function buildDiner() {
     if (s.veg) { if (s.dietBroken) bad.push('You are vegetarian, but your meal had meat or fish in it.'); else good.push('You kept to your vegetarian diet.'); }
     if (s.ev.A) { if (s.ev.A === 'spill') good.push('You stayed calm when the waiter spilled the drink.'); else good.push('You dealt with your noisy neighbour politely.'); }
     if (s.ev.B) { if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got $3 off!'); else bad.push('You accepted a dish you didn\'t order and paid for it.'); }
+    if (s.ev.E) { if (s.noDrink) bad.push('Your drink never arrived and you didn\'t ask for it, but it was still on the check.'); else good.push('You politely asked for the drink they forgot.'); }
     if (s.ev.C) { if (s.ateCold) bad.push('You ate your cold food without saying anything. It\'s OK to ask: "Could you heat it up, please?"'); else good.push('You sent back your cold food politely.'); }
     if (s.ev.D) { if (s.extraRemoved) good.push(`You found the ${s.extra.name.toLowerCase()} on the check that you didn't order.`); else bad.push(`The check had a ${s.extra.name.toLowerCase()} you didn't order, and you paid for it.`); }
     if (s.falseClaim) bad.push('You complained about something on the check that you really ordered. Read carefully!');
@@ -2117,12 +2149,12 @@ function genShops(s) {
 function buildMall() {
   const s = G.s = {
     info: {}, discount: false, sale: false, tried: {}, said: {}, fitted: {}, broke: false, brokeItem: null, uid: 0, credit: { bargain: 0, campus: 0, luxe: 0 },
-    budget: pick1({ easy: [110, 120], normal: [95, 100, 110], hard: [90, 95] }[G.diff] || [100]), code: { polo: pick1(['Navy blue', 'Dark green', 'Burgundy']), bottom: pick1(['Grey', 'Black', 'Navy blue']) },
+    budget: pick1({ easy: [95, 100, 110], normal: [90, 95], hard: [90] }[G.diff] || [100]), code: { polo: pick1(['Navy blue', 'Dark green', 'Burgundy']), bottom: pick1(['Grey', 'Black', 'Navy blue']) },
     fav: pick1(['Blue', 'Green', 'Red', 'Purple', 'Black', 'Orange']), school: pick1(['Lincoln High', 'Riverside High', 'Oakwood Academy', 'Westbrook School']),
     discPct: pick1([10, 15, 20]), saleCat: pick1(['trainers', 'backpack', 'polo', 'shoes']), fragileCat: pick1(['trainers', 'backpack', 'shoes']),
     ev: {}, purchases: 0, overAt: pick1([1, 2, 3]), overpaid: 0, overDone: false, soldDone: false, soldItem: null, soldOK: null
   };
-  sample(['broken', 'overcharge', 'soldout'], { easy: 1, normal: 2, hard: 3 }[G.diff] || 2).forEach(e => s.ev[e] = true);
+  sample(['broken', 'overcharge', 'soldout', 'queue'], { easy: 2, normal: 3, hard: 4 }[G.diff] || 2).forEach(e => s.ev[e] = true);
   G.money = s.budget;
   MY = { shirt: pick1(['S', 'M', 'L']), trousers: pick1(['28', '30', '32']), shoes: pick1(['6', '7', '8', '9']) };
   CATS = {
@@ -2133,6 +2165,11 @@ function buildMall() {
     backpack: { label: 'A backpack', emoji: '🎒', size: null }
   };
   const items = genShops(s);
+  if (G.diff === 'hard') {   // "just enough": the cheapest valid uniform that won't break, plus a small margin
+    const all = Object.values(items).flat();
+    const min = Object.keys(CATS).reduce((a, c) => a + Math.min(...all.filter(i => i.cat === c && i.ok && !i.fragile).map(i => i.price)), 0);
+    s.budget = Math.ceil(min * 1.15 / 5) * 5; G.money = s.budget;
+  }
   const xs = shuffle([-24, 0, 24]);
   SHOPS = {};
   ['bargain', 'campus', 'luxe'].forEach((k, i) => SHOPS[k] = Object.assign({}, SHOP_STYLE[k], { x: xs[i], items: items[k] }));
@@ -2190,6 +2227,7 @@ function buildMall() {
   if (s.ev.broken) G.obj.push({ id: 'broken', text: 'Replace your broken item', secret: true });
   if (s.ev.overcharge) G.obj.push({ id: 'over', text: 'Check the price at the till', secret: true });
   if (s.ev.soldout) G.obj.push({ id: 'soldout', text: 'Find a solution when your size is sold out', secret: true });
+  if (s.ev.queue) G.obj.push({ id: 'queue', text: 'Keep your place in the queue, politely', secret: true });
   G.obj.push({ id: 'school', text: `Show your things to ${tP.name} at ${s.school}` });
   W.update = () => {};
 }
@@ -2348,8 +2386,26 @@ function tryOn(k, it) {
     { t: 'I go to try this.', kind: 'grammar', tip: 'Ask for permission: "Can I try this on?"' }
   ]), () => { s.tried[k] = true; go(); });
 }
+/* surprise: somebody tries to push in at the till */
+function queueJump(k, next) {
+  const s = G.s, sh = SHOPS[k], gd = pick1(['f', 'm']);
+  s.queueDone = true; reveal('queue');
+  const q = npc(`${NPC_NAME[gd]} (Customer)`, Object.assign({ shirt: pick1(['#8e24aa', '#ef6c00', '#00838f']), pants: '#37474f', sleeves: true }, pick1(STAFF_LOOKS[gd])), sh.x + 2.5, -9.5, Math.PI, { color: '#ffcc80', voice: NPC_VOICE[gd], speed: 5 });
+  q.pos.y = q.baseY = 0.27; q.badge = '#6d4c41';
+  walkTo(q, [[sh.x + 0.8, -13.1]], () => faceTo(q, sh.x, -15.6));
+  const leave = () => walkTo(q, [[sh.x + 1, -5], [sh.x + 1, 2]], () => { W.scene.remove(q.av); W.npcs = W.npcs.filter(x => x !== q); if (q.av.userData.bubble) q.av.userData.bubble.remove(); });
+  ask(q, pick1(['Sorry, I\'m in a hurry! I\'ll just go first, OK?', 'Excuse me, I only have one thing. Me first!']), '¡Perdona, tengo prisa! Paso yo primero, ¿vale?', phr(['Excuse me, I think I was here first. There\'s a queue.', 'Sorry, but I was next. Could you wait your turn, please?'], [
+    { t: 'Hey! Get out of my way!', kind: 'rude', tip: 'Stay polite: "Excuse me, I think I was here first."' },
+    { t: 'Excuse me, I was before than you.', kind: 'grammar', tip: 'Say "I was here before you" or "I was first".' },
+    { t: 'Please, make the queue like everyone.', kind: 'grammar', tip: '"Hacer cola" = queue / wait in line: "Please wait in line."' },
+    { t: 'Excuse me, is my turn.', kind: 'grammar', tip: 'English sentences need a subject: "It\'s my turn."' }
+  ]).concat([{ t: 'Oh… OK, go ahead.', kind: 'fact', fn: () => { s.queueLost = true; complete('queue', true); say(q, 'Thanks!'); later(2.5, () => { leave(); notify('⏳ Waiting…', 'You waited ten more minutes. It\'s OK to say "Excuse me, I was here first."', 'warn'); next(); }); } }]), () => {
+    line(q, 'Oh, I\'m sorry! I didn\'t see you there.', '¡Uy, perdona! No te había visto.', () => { complete('queue'); leave(); next(); }, 'No problem');
+  });
+}
 function checkout(k) {
   const n = SHOPS[k].npc, s = G.s;
+  if (s.ev.queue && !s.queueDone) { queueJump(k, () => checkout(k)); return; }
   const items = basketOf(k).map(id => itemOf(k, id));
   const many = items.length > 1, sizes = {};
   const q = k === 'luxe' ? pick1([many ? 'An excellent selection. Shall I wrap them for you?' : 'An excellent choice. Shall I wrap it for you?', 'Will you be taking ' + (many ? 'these' : 'this') + ' today?'])
@@ -2374,7 +2430,9 @@ function checkout(k) {
     if (j >= items.length) return payStep();
     const it = items[j], t = CATS[it.cat] && CATS[it.cat].size;
     if (!t) return sizeStep(j + 1);
-    if (s.ev.soldout && !s.soldDone) {
+    /* sold out only when another shop sells a valid alternative at a similar price, so the mission stays winnable */
+    const hasAlt = Object.entries(SHOPS).some(([k2, sh2]) => k2 !== k && sh2.items.some(o => o.cat === it.cat && o.ok && !o.fragile && priceOf(k2, o) <= priceOf(k, it) + 4));
+    if (s.ev.soldout && !s.soldDone && it.ok && hasAlt) {
       s.soldDone = true; s.soldItem = it.id; reveal('soldout');
       const near = SIZES[t].filter(x => Math.abs(SIZES[t].indexOf(x) - SIZES[t].indexOf(MY[t])) === 1);
       const iname = it.name.toLowerCase();
@@ -2554,6 +2612,7 @@ function review(t) {
   if (s.sale) good.push('You found the half-price offer at Luxe Label by asking.');
   if (s.brokeItem) bad.push('A cheap Bargain Barn item broke. Cheap things can be expensive in the end!');
   if (s.ev.overcharge && s.overDone) { if (s.overpaid) bad.push(`The shop assistant charged you ${money(s.overpaid)} too much and you didn't notice.`); else good.push('You noticed the wrong price at the till and said so politely.'); }
+  if (s.ev.queue && s.queueDone) { if (s.queueLost) bad.push('Someone pushed in at the till and you let them. You can say "Excuse me, I was here first."'); else good.push('You kept your place in the queue and asked politely.'); }
   if (s.ev.soldout && s.soldDone) { if (s.soldOK) good.push('When your size was sold out, you decided to look somewhere else.'); else if (s.soldOK === false) bad.push('You bought the wrong size because your size was sold out.'); }
   const save = clamp(G.money * 4, 0, 100);
   const eng = engPct();
@@ -3352,7 +3411,17 @@ async function loadTeacher() {
   $('#tTable').innerHTML = '<tr><td>Cargando alumnos…</td></tr>';
   try { applyTeacher(await api('teacherList')); } catch (e) { $('#tTable').innerHTML = `<tr><td>${escH(e.message)}</td></tr>`; }
   try { renderGuests(await api('teacherGuests')); } catch (e) {}
+  $('#tAdmin').hidden = !account.isAdmin;
+  if (account.isAdmin) { try { renderAdmin(await api('adminTeachers')); } catch (e) {} }
 }
+function renderAdmin(list) {
+  $('#aTable').innerHTML = '<tr><th>Profesor</th><th class="num">Clases</th><th class="num">Alumnos</th><th>Estado</th><th></th></tr>' + list.map(t => `<tr><td><b>${escH(t.name || t.email)}</b><small>${escH(t.email)}</small></td><td class="num">${t.classes}</td><td class="num">${t.students}</td><td>${t.admin ? 'Administración' : t.active ? 'Activo' : 'Sin acceso'}</td><td>${t.admin ? '' : `<button class="mini ${t.active ? 'neg' : 'pos'}" data-te="${escH(t.email)}" data-on="${t.active ? 0 : 1}">${t.active ? 'Quitar acceso' : 'Dar acceso'}</button>`}</td></tr>`).join('');
+  $('#aTable').querySelectorAll('[data-te]').forEach(b => b.onclick = async () => { try { renderAdmin(await api('adminSetTeacher', b.dataset.te, b.dataset.on === '1')); } catch (e) { hToast(e.message, true); } });
+}
+$('#aAdd').onclick = async () => {
+  const em = $('#aEmail').value.trim(); if (!em) { hToast('Escribe el correo del profesor.', true); return; }
+  try { renderAdmin(await api('adminAddTeacher', em, $('#aName').value.trim())); $('#aEmail').value = ''; $('#aName').value = ''; hToast('Profesor añadido. Ya puede entrar con el enlace de GOBLOX.'); } catch (e) { hToast(e.message, true); }
+};
 function renderGuests(list) {
   $('#gTable').innerHTML = '<tr><th>Código</th><th>Nombre</th><th>Clase</th><th>Estado</th><th></th></tr>' + (list.map(g => `<tr><td><span class="code">${escH(g.code)}</span></td><td>${escH(g.name)}</td><td>${escH(g.className || '—')}</td><td>${g.active ? 'Activo' : 'Desactivado'}</td><td><button class="mini ${g.active ? 'neg' : 'pos'}" data-g="${escH(g.code)}" data-on="${g.active ? 0 : 1}">${g.active ? 'Desactivar' : 'Activar'}</button></td></tr>`).join('') || '<tr><td colspan="5">Todavía no hay invitados.</td></tr>');
   $('#gTable').querySelectorAll('[data-g]').forEach(b => b.onclick = async () => { try { renderGuests(await api('teacherSetGuest', b.dataset.g, b.dataset.on === '1')); } catch (e) { hToast(e.message, true); } });

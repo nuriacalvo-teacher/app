@@ -9,8 +9,9 @@
 // ====== CONFIGURACIÓN: cambia esto ======
 const CONFIG = {
   DOMAIN: 'iesgoya.es',
-  // Correos del profesorado que puede ver el panel y dar GOYUX
-  TEACHERS: ['tu.correo@iesgoya.es'],
+  // Administradores: tu correo. Los administradores añaden a los demás profesores desde el
+  // panel del juego (Profesor → Profesores del departamento), sin tocar este código.
+  ADMINS: ['tu.correo@iesgoya.es'],
   // Segundos mínimos entre dos partidas guardadas por el mismo alumno
   MIN_SECONDS_BETWEEN_RUNS: 60,
   // Una misión hecha en menos tiempo no da GOYUX (evita trampas)
@@ -21,7 +22,7 @@ const CONFIG = {
   // Así solo juegan tus alumnos aunque el enlace llegue a otros alumnos del instituto.
   REQUIRE_CLASS_CODE: true,
   // GOYUX por dificultad (la puntuación se multiplica por este valor)
-  DIFFICULTY: { easy: 0.8, normal: 1, hard: 1.25 }
+  DIFFICULTY: { easy: 1, normal: 1.25, hard: 1.5 }
 };
 // ========================================
 
@@ -32,8 +33,22 @@ const SHEETS = {
   runs: 'Partidas',
   goyux: 'GOYUX',
   guests: 'Invitados',
-  classes: 'Clases'
+  classes: 'Clases',
+  teachers: 'Profesores'
 };
+const TEACHER_HEAD = ['Correo', 'Nombre', 'Activo', 'Añadido por', 'Fecha'];
+const ADMINS_ = () => (CONFIG.ADMINS || CONFIG.TEACHERS || []).map(t => String(t).toLowerCase().trim());
+/* Teachers: the admins in CONFIG plus the active rows of the Profesores sheet */
+function teacherRows_() {
+  const sh = sheet_('teachers'); const n = sh.getLastRow() - 1;
+  return n < 1 ? [] : sh.getRange(2, 1, n, TEACHER_HEAD.length).getValues().filter(v => v[0])
+    .map(v => ({ email: String(v[0]).toLowerCase().trim(), name: String(v[1] || ''), active: active_(v[2]), by: String(v[3] || ''), date: iso_(v[4]) }));
+}
+function isTeacherEmail_(email) {
+  if (!email) return false;
+  if (ADMINS_().includes(email)) return true;
+  return teacherRows_().some(t => t.email === email && t.active);
+}
 const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida', 'Dificultad'];
 const GOYUX_HEAD = ['Fecha', 'Correo', 'Nombre', 'Cantidad', 'Motivo', 'Profesor'];
 // Invitados: personas sin cuenta del instituto que entran con un código que crea el profesor
@@ -61,8 +76,8 @@ function doGet() {
 function user_(guestCode) {
   let email = '';
   try { email = String(Session.getActiveUser().getEmail() || '').toLowerCase().trim(); } catch (e) {}
-  const isTeacher = !!email && CONFIG.TEACHERS.some(t => String(t).toLowerCase().trim() === email);
-  if (isTeacher || (email && email.endsWith('@' + CONFIG.DOMAIN))) return { email, isTeacher, guest: false };
+  const isTeacher = isTeacherEmail_(email);
+  if (isTeacher || (email && email.endsWith('@' + CONFIG.DOMAIN))) return { email, isTeacher, isAdmin: ADMINS_().includes(email), guest: false };
   const code = String(guestCode || '').trim().toUpperCase();
   if (!code) throw new Error('GUEST_REQUIRED');
   const g = findGuest_(code);
@@ -90,7 +105,7 @@ function randomCode_(n) { let c = ''; for (let i = 0; i < n; i++) c += CODE_CHAR
 function sheet_(key) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const name = SHEETS[key];
-  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : key === 'classes' ? CLASS_HEAD : GOYUX_HEAD;
+  const head = key === 'students' ? studentHead_() : key === 'runs' ? RUN_HEAD : key === 'guests' ? GUEST_HEAD : key === 'classes' ? CLASS_HEAD : key === 'teachers' ? TEACHER_HEAD : GOYUX_HEAD;
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   const cur = sh.getRange(1, 1, 1, head.length).getValues()[0];
@@ -186,7 +201,7 @@ function getMe(guestCode) {
     const st = readStudent_(sh, r);
     const c = classMap_()[st.klass];
     return {
-      email: u.email, isTeacher: u.isTeacher, guest: u.guest, xpPerLevel: CONFIG.XP_PER_LEVEL, className: c ? c.name : '',
+      email: u.email, isTeacher: u.isTeacher, isAdmin: !!u.isAdmin, guest: u.guest, xpPerLevel: CONFIG.XP_PER_LEVEL, className: c ? c.name : '',
       profile: Object.assign({ name: st.name, plays: st.plays, xp: st.xp, granted: st.granted, nationNet: st.nation, best: st.best, vocab: st.vocab }, cleanAvatar_(st.avatar)),
       grants: grantsOf_(u.email, 8)
     };
@@ -280,6 +295,8 @@ function teacherList() {
     .filter(v => v[C.email])
     .map(v => { const s = rowToStudent_(v); delete s.vocab; delete s.avatar; return s; })
     .filter(s => visibleTo_(u.email, s.klass, classes));
+  const staff = new Set(ADMINS_().concat(teacherRows_().map(t => t.email)));
+  for (let i = students.length - 1; i >= 0; i--) if (students[i].email !== u.email && staff.has(students[i].email)) students.splice(i, 1);
   const nations = {}, diplo = diploRows_();
   allNations_().forEach(x => { nations[x.email] = x; });
   students.forEach(s => {
@@ -316,6 +333,38 @@ function teacherRuns(email) {
   if (!checkVisible_(u, [email]).length) throw new Error('Este alumno no está en tus clases.');
   return { runs: runsOf_(email, 60), grants: grantsOf_(email, 60) };
 }
+/* ---------- admin: department teachers ---------- */
+function admin_() { const u = user_(); if (!u.isAdmin) throw new Error('Solo la administradora o el administrador puede gestionar profesores.'); return u; }
+function adminTeachers() {
+  admin_();
+  const classes = allClasses_(), kl = studentClasses_();
+  const count = email => { const mine = classes.filter(c => c.owner === email).map(c => c.code); return { classes: mine.length, students: Object.values(kl).filter(k => mine.includes(k)).length }; };
+  const list = ADMINS_().map(e => Object.assign({ email: e, name: 'Administración', active: true, admin: true }, count(e)))
+    .concat(teacherRows_().filter(t => !ADMINS_().includes(t.email)).map(t => Object.assign(t, count(t.email))));
+  return list;
+}
+function adminAddTeacher(email, name) {
+  const u = admin_();
+  email = String(email || '').toLowerCase().trim();
+  if (!/^[^@\s]+@[^@\s]+$/.test(email) || !email.endsWith('@' + CONFIG.DOMAIN)) throw new Error('Escribe un correo @' + CONFIG.DOMAIN + '.');
+  name = String(name || '').replace(/[^\p{L}\p{N} .'-]/gu, '').trim().slice(0, 40);
+  withLock_(() => {
+    const sh = sheet_('teachers'); const rows = teacherRows_(); const i = rows.findIndex(t => t.email === email);
+    if (i >= 0) sh.getRange(i + 2, 2, 1, 2).setValues([[name || rows[i].name, 'SÍ']]);
+    else sh.appendRow([email, name, 'SÍ', u.email, new Date()]);
+  });
+  return adminTeachers();
+}
+function adminSetTeacher(email, active) {
+  admin_();
+  email = String(email || '').toLowerCase().trim();
+  withLock_(() => {
+    const sh = sheet_('teachers'); const rows = teacherRows_(); const i = rows.findIndex(t => t.email === email);
+    if (i >= 0) sh.getRange(i + 2, 3).setValue(active ? 'SÍ' : 'NO');
+  });
+  return adminTeachers();
+}
+
 function teacherCreateClass(name) {
   const u = teacher_();
   name = String(name || '').replace(/[^\p{L}\p{N} .ºª'-]/gu, '').trim().slice(0, 30);
