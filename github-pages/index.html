@@ -334,7 +334,7 @@ summary{cursor:pointer;font-weight:800}
   <div class="ex" data-block="m_mc"></div>
 
   <div class="ex-head"><h3>Ejercicio 1.B · Segmenta las palabras de la ficha de clase</h3><span class="tag">35 palabras</span></div>
-  <p>Escribe cada segmento en su casilla. Si hay dos, sepáralos con un espacio o guion (por ejemplo, en Sufijos: <i>a miento</i>). Deja vacías las casillas que no tengan nada. No importan las tildes ni los guiones. La solución es la de la corrección de clase.</p>
+  <p>Escribe <b>un solo segmento en cada casilla</b>. Si hay varios prefijos o sufijos, usa Prefijo 1, Prefijo 2, Sufijo 1, Sufijo 2… en orden (por ejemplo, <i>abultamiento</i>: Sufijo 1 <i>a</i>, Sufijo 2 <i>miento</i>). Hay siempre cuatro casillas de sufijo, aunque la palabra tenga menos. Si juntas dos sufijos en una casilla, cuenta como error. Deja vacías las casillas que no tengan nada. No importan las tildes ni los guiones. La solución es la de la corrección de clase.</p>
   <div class="ex" data-block="seg_a"></div>
 </section>
 
@@ -864,7 +864,8 @@ B.m_mc = {type:'mc', sec:'morfologia', items:[
  {q:'¿Qué es la base léxica de «lentitud»?', o:['lent-','lento','-itud','lenti-'], a:1, e:'La base léxica es la palabra independiente (lento); la raíz es lent-.'}
 ]};
 
-const SEGCOLS = [['p','Prefijos','pf'],['r','Raíz','rz'],['m','Marca','mk'],['i','Interfijo','in'],['s','Sufijos','sf'],['d','Desinencias','fx'],['g','Género','fx'],['n','Número','fx']];
+/* Casillas del análisis: prefijos y sufijos tienen varias, una por segmento (como la plantilla de clase). */
+const SEGCOLS = [['p','Prefijo',2],['r','Raíz',1],['m','Marca de palabra',1],['i','Interfijo',1],['s','Sufijo',4],['d','Desinencias',1],['g','Género',1],['n','Número',1]];
 B.seg_a = {type:'seg', sec:'morfologia', items:[
  {w:'reconocimiento', p:'re', r:'conoc', s:'i miento'},
  {w:'lodazales', r:'lod', i:'az', s:'al', n:'es'},
@@ -882,21 +883,21 @@ B.seg_a = {type:'seg', sec:'morfologia', items:[
  {w:'mileurista', r:'mil eur', s:'ista', note:'Compuesta: mil + euro + -ista.'},
  {w:'secador', r:'sec', s:'a dor'},
  {w:'canallada', r:'canall', s:'ada'},
- {w:'cinematógrafo', r:['cinemato grafo','cinemato graf'], m:['','o'], note:'Compuesto culto: cinemato + grafo.'},
+ {w:'cinematógrafo', r:'cinemato grafo', alt:[{r:'cinemato graf', m:'o'}], note:'Compuesto culto: cinemato + grafo.'},
  {w:'acristalado', p:'a', r:'cristal', s:'ad', g:'o', note:'Parasintética: *acristal, *cristalado.'},
  {w:'cleptómano', r:'clepto man', g:'o', note:'Compuesto culto.'},
  {w:'cafetera', r:'cafe', i:'t', s:'era'},
  {w:'desalmado', p:'des', r:'alm', s:'a d', g:'o', note:'Parasintética: *desalmar, *almado.'},
  {w:'atesorar', p:'a', r:'tesor', s:'a', d:'r'},
  {w:'buenismo', r:'buen', s:'ismo'},
- {w:'rompecorazones', r:['rompe corazones','rompe corazon'], n:['','es'], note:'Compuesta: verbo + sustantivo.'},
+ {w:'rompecorazones', r:'rompe corazones', alt:[{r:'rompe corazon', n:'es'}], note:'Compuesta: verbo + sustantivo.'},
  {w:'desengañadas', p:'des', r:'engañ', s:'a d', g:'a', n:'s'},
  {w:'malintencionado', r:'mal intencion', s:'a d', g:'o'},
  {w:'desastroso', r:'desastr', s:'os', g:'o'},
  {w:'entorpecidos', p:'en', r:'torp', s:'ec id', g:'o', n:'s', note:'En la corrección de clase -ec- va en la columna de 1.er sufijo (verbo entorpecer).'},
  {w:'sobremesa', r:'sobre mes', m:'a', note:'En la corrección de clase aparece como compuesta: sobre + mesa.'},
- {w:'santificación', r:'sant', i:['ific',''], s:['a cion','ific a cion'], note:'La corrección de clase coloca -ific- como interfijo; también se acepta como sufijo (santificar).'},
- {w:'temblorosamente', r:'tembl', i:['or',''], s:['osa mente','or osa mente'], note:'Clase: -or- interfijo, -osa- y -mente sufijos. También se acepta -or- como sufijo (temblor).'},
+ {w:'santificación', r:'sant', i:'ific', s:'a cion', alt:[{i:'', s:'ific a cion'}], note:'La corrección de clase coloca -ific- como interfijo; también se acepta como sufijo (santificar).'},
+ {w:'temblorosamente', r:'tembl', i:'or', s:'osa mente', alt:[{i:'', s:'or osa mente'}], note:'Clase: -or- interfijo, -osa- y -mente sufijos. También se acepta -or- como sufijo (temblor).'},
  {w:'precalentamiento', p:'pre', r:'calent', s:'a miento'},
  {w:'golpetazo', r:'golp', i:'et', s:'azo'},
  {w:'rompecabezas', r:'rompe cabezas'},
@@ -1038,15 +1039,15 @@ B.seg_b = {type:'seg', sec:'formacion', cls:true, items:[
  {w:'llamarada', r:'llam', i:'ar', s:'ada', cl:'Sustantivo', pr:'Derivada', note:'De llama; -ar- es interfijo (como polv-ar-eda).'},
  {w:'desacertado', p:'des', r:'acert', s:'a d', g:'o', cl:'Adjetivo', pr:'Derivada', note:'Participio de desacertar.'},
  {w:'herbolario', r:'herb', i:'ol', s:'ario', cl:'Sustantivo', pr:'Derivada'},
- {w:'entreacto', p:['entre',''], r:['act','entre act'], m:'o', cl:'Sustantivo', pr:['Derivada','Compuesta'], note:'entre- como prefijo (derivada); también se acepta como compuesta con la preposición entre.'},
- {w:'sobresalto', p:['sobre',''], r:['salt','sobre salt'], m:'o', cl:'Sustantivo', pr:['Derivada','Compuesta'], note:'sobre- como prefijo; también aceptable como compuesta.'},
+ {w:'entreacto', p:'entre', r:'act', m:'o', cl:'Sustantivo', pr:'Derivada', alt:[{p:'', r:'entre act', pr:'Compuesta'}], note:'entre- como prefijo (derivada); también se acepta como compuesta con la preposición entre.'},
+ {w:'sobresalto', p:'sobre', r:'salt', m:'o', cl:'Sustantivo', pr:'Derivada', alt:[{p:'', r:'sobre salt', pr:'Compuesta'}], note:'sobre- como prefijo; también aceptable como compuesta.'},
  {w:'barbudos', r:'barb', s:'ud', g:'o', n:'s', cl:'Adjetivo', pr:'Derivada'},
  {w:'frialdad', r:'fri', i:'al', s:'dad', cl:'Sustantivo', pr:'Derivada', note:'*Frial no existe: -al- es interfijo.'},
  {w:'descubrimiento', p:'des', r:'cubr', s:'i miento', cl:'Sustantivo', pr:'Derivada'},
  {w:'asimismo', r:'asi mism', m:'o', cl:'Adverbio', pr:'Compuesta', note:'así + mismo; en un adverbio la -o no es género.'},
  {w:'hipermercado', p:'hiper', r:'mercad', m:'o', cl:'Sustantivo', pr:'Derivada'},
  {w:'impensable', p:'im', r:'pens', s:'a ble', cl:'Adjetivo', pr:'Derivada', note:'im- es alomorfo de in-. Existe pensable.'},
- {w:'vaivén', r:['va i ven','va ven'], i:['','i'], cl:'Sustantivo', pr:'Compuesta', note:'va + y + ven (verbo + conjunción + verbo).'},
+ {w:'vaivén', r:'va i ven', alt:[{r:'va ven', i:'i'}], cl:'Sustantivo', pr:'Compuesta', note:'va + y + ven (verbo + conjunción + verbo).'},
  {w:'endulzar', p:'en', r:'dulz', s:'a', d:'r', cl:'Verbo', pr:'Parasintética', note:'No existen *endulce ni *dulzar.'},
  {w:'cejijunto', r:'cej junt', i:'i', g:'o', cl:'Adjetivo', pr:'Compuesta', note:'ceja + junto con vocal de enlace -i- (como pelirrojo).'},
  {w:'enviudar', p:'en', r:'viud', s:'a', d:'r', cl:'Verbo', pr:'Parasintética', note:'No existen *enviuda ni *viudar.'},
@@ -1069,7 +1070,7 @@ B.seg_b = {type:'seg', sec:'formacion', cls:true, items:[
  {w:'hispanohablante', r:'hispan habl', i:'o', s:'a nte', cl:['Adjetivo','Sustantivo'], pr:'Compuesta', note:'hispano + hablante (vocal de enlace -o-).'},
  {w:'inquietud', p:'in', r:'quiet', s:'ud', cl:'Sustantivo', pr:'Derivada'},
  {w:'disimuladamente', p:'di', r:'simul', s:'a d a mente', cl:'Adverbio', pr:'Derivada', note:'di- (alomorfo de dis-) + simular; -a-d-a- + -mente.'},
- {w:'desmilitarización', p:'des', r:['milit','militar'], s:['ar iz a cion','iz a cion'], cl:'Sustantivo', pr:'Derivada'}
+ {w:'desmilitarización', p:'des', r:'milit', s:'ar iz a cion', alt:[{r:'militar', s:'iz a cion'}], cl:'Sustantivo', pr:'Derivada'}
 ]};
 B.f_molino = {type:'open', sec:'formacion', items:[
  {q:'a) Determina el tema del texto y la opinión manifestada por el autor.', model:'<b>Tema:</b> la sustitución de las lealtades tribales por afinidades electivas en las sociedades urbanas.<br><b>Opinión:</b> el autor sostiene que las sociedades urbanas complejas han reemplazado la pertenencia tribal heredada, que conducía a la violencia, por afinidades cambiantes y elegidas, y las valora como un avance porque son libres y no enfrentan a unos grupos con otros.', check:['El tema es un SN sin verbos y con sustantivo abstracto','No paso de 10 palabras plenas en el tema','La opinión empieza por «El autor + verbo»','Recojo la valoración positiva de las afinidades elegidas','No resumo todo el texto']},
@@ -1255,7 +1256,7 @@ B.seg_c = {type:'seg', sec:'adjetivo', items:[
  {w:'semiesféricos', p:'semi', r:'esfer', s:'ic', g:'o', n:'s'},
  {w:'desleales', p:'des', r:'leal', n:'es'},
  {w:'extraplanas', p:'extra', r:'plan', g:'a', n:'s'},
- {w:'prerrománico', p:'pre', r:['rom','roman'], s:['an ic','ic'], g:'o', note:'Roma → romano → románico.'},
+ {w:'prerrománico', p:'pre', r:'rom', s:'an ic', alt:[{r:'roman', s:'ic'}], g:'o', note:'Roma → romano → románico.'},
  {w:'indescifrable', p:'in des', r:'cifr', s:'a ble', note:'Dos prefijos: in- y des-.'},
  {w:'enfermizos', r:'enferm', s:'iz', g:'o', n:'s'}
 ]};
@@ -1539,28 +1540,61 @@ function renderFill(box, id, b){
   function show(){ rows.forEach((r,k)=>{ const fb=r.querySelector('.fb'); fb.hidden=false; fb.innerHTML='<span class="sol">'+esc(solTxt(b.items[k]))+'</span>'; }); }
 }
 
-function segDisplay(it){
-  const order = [['p','pf','-'],['r','rz',''],['i','in','-'],['s','sf','-'],['m','mk','-'],['d','fx','-'],['g','fx','-'],['n','fx','-']];
+function segChips(v){
+  const order = [['p','pf'],['r','rz'],['i','in'],['s','sf'],['m','mk'],['d','fx'],['g','fx'],['n','fx']];
   let html = '<div class="seg">';
-  order.forEach(([k,c])=>{ const v = arr(it[k])[0]; if(!v) return; v.split(' ').forEach(part=>{ html += `<span class="${c}">${esc(k==='p'?part+'-':k==='r'?part:'-'+part)}</span>`; }); });
-  html += '</div>';
-  const lab = [];
-  if(it.p) lab.push('Prefijos: '+arr(it.p).filter(Boolean).join(' o ')||'—');
-  const parts = [['p','Prefijos'],['r','Raíz'],['m','Marca'],['i','Interfijo'],['s','Sufijos'],['d','Desinencias'],['g','Género'],['n','Número']]
-    .filter(([k])=>arr(it[k]).some(Boolean)).map(([k,l])=>`${l}: <b>${arr(it[k]).filter(Boolean).map(esc).join('</b> o <b>')}</b>${arr(it[k]).includes('')?' (o vacío)':''}`);
-  let extra = '';
-  if(it.cl) extra += ` · Clase: <b>${arr(it.cl).join(' / ')}</b>`;
-  if(it.pr) extra += ` · Procedimiento: <b>${arr(it.pr).join(' / ')}</b>`;
-  return html + `<p>${parts.join(' · ')}${extra}</p>` + (it.note?`<p class="ej">${esc(it.note)}</p>`:'');
+  order.forEach(([k,c])=>{ const x = arr(v[k])[0]; if(!x) return; x.split(' ').forEach(part=>{ html += `<span class="${c}">${esc(k==='p'?part+'-':k==='r'?part:'-'+part)}</span>`; }); });
+  return html + '</div>';
+}
+function segSlots(v){
+  const out=[];
+  SEGCOLS.forEach(([k,l,n])=>{ const x=arr(v[k])[0]; if(!x) return;
+    if(n>1) x.split(' ').filter(Boolean).forEach((part,j)=>out.push(`${l} ${j+1}: <b>${esc(part)}</b>`));
+    else out.push(`${l}: <b>${esc(arr(v[k]).filter(Boolean).join(' o '))}</b>`); });
+  if(v.cl) out.push(`Clase: <b>${arr(v.cl).join(' / ')}</b>`);
+  if(v.pr) out.push(`Procedimiento: <b>${arr(v.pr).join(' / ')}</b>`);
+  return out.join(' · ');
+}
+function segDisplay(it){
+  const vs = segVariants(it);
+  let html = segChips(it) + `<p>${segSlots(it)}</p>`;
+  vs.slice(1).forEach(v=>{ html += `<p>También se acepta: ${segChips(v)}<br>${segSlots(v)}</p>`; });
+  return html + (it.note?`<p class="ej">${esc(it.note)}</p>`:'');
 }
 
-function segOk(it, k, val){ return arr(it[k]).some(a=>norm(a)===norm(val)); }
+function segVariants(it){ return [it, ...(it.alt||[]).map(a=>Object.assign({}, it, a))]; }
+/* Valores esperados de un campo en cada casilla: los multi-casilla se trocean por espacios. */
+function segExpected(v, k, n){
+  return arr(v[k]).map(x=>{ const parts = n>1 ? String(x||'').split(' ').filter(Boolean).map(norm) : [norm(x)];
+    while(parts.length<n) parts.push(''); return parts; });
+}
+function gradeSeg(card, it){
+  let best=null;
+  segVariants(it).forEach(v=>{
+    const marks=new Map(); let okCount=0, total=0;
+    SEGCOLS.forEach(([k,,n])=>{
+      const inputs=[...card.querySelectorAll(`[data-k="${k}"]`)];
+      const user=inputs.map(i=>norm(i.value));
+      const exp=segExpected(v,k,n);
+      const fieldOk = exp.some(e=>e.length===user.length && e.every((x,j)=>x===user[j]));
+      const ref = exp.reduce((a,e)=>{ const sc=e.filter((x,j)=>x===user[j]).length; return sc>a.sc?{e,sc}:a; }, {e:exp[0], sc:-1}).e;
+      inputs.forEach((inp,j)=>{ const ok = fieldOk || ref[j]===user[j]; marks.set(inp, ok); total++; if(ok) okCount++; });
+    });
+    card.querySelectorAll('select[data-k]').forEach(sel=>{ const ok=arr(v[sel.dataset.k]).includes(sel.value); marks.set(sel,ok); total++; if(ok) okCount++; });
+    const all = okCount===total;
+    if(!best || all || okCount>best.okCount) best = best && best.all ? best : {marks, okCount, all};
+  });
+  best.marks.forEach((ok,inp)=>{ inp.classList.toggle('ok',ok); inp.classList.toggle('ko',!ok); });
+  return best.all;
+}
 
 function renderSeg(box, id, b, opts={}){
   box.innerHTML = '';
   const cards = b.items.map((it,idx)=>{
     const c = document.createElement('div'); c.className='wcard';
-    let f = SEGCOLS.map(([k,l])=>`<label>${l}<input type="text" data-k="${k}" id="${id}_${idx}_${k}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`).join('');
+    let f = '';
+    SEGCOLS.forEach(([k,l,n])=>{ for(let j=1;j<=n;j++){ const key = n>1 ? k+j : k; const lab = n>1 ? `${l} ${j}` : l;
+      f += `<label>${lab}<input type="text" data-k="${k}" id="${id}_${idx}_${key}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`; } });
     if(b.cls){
       f += `<label>Clase<select data-k="cl" id="${id}_${idx}_cl"><option value=""></option><option>Sustantivo</option><option>Adjetivo</option><option>Verbo</option><option>Adverbio</option></select></label>`;
       f += `<label>Procedimiento<select data-k="pr" id="${id}_${idx}_pr"><option value=""></option><option>Simple</option><option>Derivada</option><option>Compuesta</option><option>Parasintética</option></select></label>`;
@@ -1573,13 +1607,7 @@ function renderSeg(box, id, b, opts={}){
   function check(){
     let got=0;
     cards.forEach((c,idx)=>{
-      const it=b.items[idx]; let all=true;
-      c.querySelectorAll('[data-k]').forEach(inp=>{
-        const k=inp.dataset.k; let ok;
-        if(k==='cl'||k==='pr') ok = arr(it[k]).includes(inp.value);
-        else ok = segOk(it,k,inp.value);
-        inp.classList.toggle('ok',ok); inp.classList.toggle('ko',!ok); if(!ok) all=false;
-      });
+      const it=b.items[idx]; const all=gradeSeg(c,it);
       c.className='wcard '+(all?'ok':'ko'); if(all) got++;
       const s=c.querySelector('.wsol'); s.hidden=false; s.innerHTML=(all?'✓ Perfecta. ':'✗ Revisa las casillas en rojo. Solución: ')+segDisplay(it);
     });
