@@ -130,6 +130,15 @@ summary{cursor:pointer;font-weight:800}
 .sync{font-size:14px;color:var(--ink2);margin:6px 0 0}
 .ex .qt,.ex .lab,.ex .fb,.ex .wsol,.ex .model,.ex .wtitle,.ex .opts span,#simBox .qt{-webkit-user-select:none;user-select:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-weight:700;z-index:20;max-width:calc(100% - 32px)}
+.gsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:8px 0 6px}
+.gsum>div{background:var(--sheet);border:1px solid var(--rule);border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;min-width:0}
+.gsum .big{font-family:var(--f-display);font-size:38px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.gsum .lbl{font-size:13.5px;color:var(--ink2)}
+.dnota{display:block;font-family:var(--f-display);font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;margin:2px 0}
+.dtable td.n{text-align:center;font-variant-numeric:tabular-nums}
+.btn.sm{font-size:13.5px;padding:5px 10px;white-space:nowrap}
+.btn.retry{background:var(--red);border-color:var(--red);color:var(--paper)}
+.blockstat{font-size:15px;color:var(--ink2);margin:2px 0 8px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 @media (max-width:520px){.row{grid-template-columns:1fr}body{font-size:16.5px}}
 </style>
@@ -162,14 +171,21 @@ summary{cursor:pointer;font-weight:800}
   <h2>Cómo usar este cuaderno</h2>
   <ol>
     <li><b>Lee la teoría de cada bloque.</b> Está ordenada como en los apuntes de clase. Los recuadros amarillos marcan lo que más se pregunta y los errores que más bajan la nota.</li>
-    <li><b>Haz los ejercicios y pulsa «Corregir».</b> Los fallos salen en rojo con la explicación. Puedes repetirlos tantas veces como quieras con «Reiniciar».</li>
+    <li><b>Haz los ejercicios y pulsa «Corregir».</b> Los fallos salen en rojo con la explicación. Después pulsa <b>«Repetir solo los fallos»</b> para volver a hacer únicamente las preguntas que tenías mal; si las aciertas, la nota del ejercicio sube.</li>
     <li><b>Ejercicios de redacción</b> (tema, opinión, expresiones no literales): escribe tu respuesta, abre la respuesta modelo y puntúate con la lista de criterios.</li>
     <li><b>Cuando domines los seis bloques, haz el simulacro.</b> Cada vez saca preguntas distintas y te da una nota sobre 10.</li>
   </ol>
   <p class="lead">Tus respuestas y tus notas se guardan solas en tu cuenta de Claude (y en este navegador como copia). En los ejercicios no se puede copiar, cortar ni pegar.</p>
 
-  <h3>Tu progreso por bloques</h3>
+  <h3>Tu progreso</h3>
+  <div class="gsum" id="gsum"></div>
+  <h4>Nota por bloques</h4>
   <div class="dash" id="dash"></div>
+  <h4>Detalle de cada ejercicio</h4>
+  <p class="lead">«Último intento» son los aciertos de la última vez que pulsaste Corregir. «Nota» es la del ejercicio entero: si repites los fallos y los aciertas, sube.</p>
+  <div class="tw"><table class="dtable"><thead><tr><th>Ejercicio</th><th>Bloque</th><th>Intentos</th><th>Último intento</th><th>Nota</th><th>Fallos</th><th></th></tr></thead><tbody id="detail"></tbody></table></div>
+  <h4>Tus simulacros</h4>
+  <ul id="simhist"></ul>
 
   <h3>Las 14 trampas del examen</h3>
   <div class="card">
@@ -1416,7 +1432,7 @@ function persist(){
   }, 1500); }
 }
 function setSync(t){ const el=document.getElementById('sync'); if(el) el.textContent=t; }
-function save(id, got, tot){ store[id] = {got, tot}; persist(); renderProgress(); }
+function save(id, got, tot){ const prev=store[id]||{}; store[id] = {got, tot, tries:1}; persist(); renderProgress(); }
 function clearAnswers(prefix){ Object.keys(answers).forEach(k=>{ if(k.startsWith(prefix+'_')) delete answers[k]; }); persist(); }
 function restoreAnswers(root=document){
   root.querySelectorAll('.ex input, .ex select, .ex textarea').forEach(el=>{
@@ -1463,81 +1479,123 @@ function scoreLine(el, got, tot){
   el.className = 'score ' + (pct>=80?'good':'bad');
   el.textContent = `${got} / ${tot} (${pct} %)`;
 }
-function btnBar(onCheck, onShow, onReset){
-  const d = document.createElement('div'); d.className = 'btns';
-  d.innerHTML = '<button class="btn" type="button">Corregir</button><button class="btn ghost" type="button">Ver soluciones</button><button class="btn ghost" type="button">Reiniciar</button><span class="score"></span>';
-  const [c, s, r] = d.querySelectorAll('button');
-  c.onclick = onCheck; s.onclick = onShow; r.onclick = onReset;
-  return d;
+const nota10 = (g,t) => t ? (g/t*10) : 0;
+const fmtNota = n => (Math.round(n*10)/10).toFixed(1).replace('.',',');
+const fmtFecha = d => { try { return new Date(d).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
+
+/* Nota de un ejercicio: con resultados por pregunta (ok) o, en los de autoevaluación, got/tot. */
+function scoreOf(key){
+  const s=store[key]; if(!s) return null;
+  if(s.ok) return {got:Object.values(s.ok).filter(Boolean).length, tot:s.tot};
+  return {got:s.got, tot:s.tot};
+}
+function failsOf(id){ const s=store[id]; if(!s||!s.ok) return []; return Object.keys(s.ok).filter(k=>!s.ok[k]).map(Number).sort((x,y)=>x-y); }
+function recordBlock(id, results, tot){
+  const prev = (store[id] && store[id].ok) ? store[id] : {ok:{}, tries:0, hist:[]};
+  const ok = Object.assign({}, prev.ok, results);
+  const vals = Object.values(results);
+  const hist = (prev.hist||[]).concat([{d:Date.now(), g:vals.filter(Boolean).length, t:vals.length}]).slice(-12);
+  const got = Object.values(ok).filter(Boolean).length;
+  store[id] = {ok, tot, tries:(prev.tries||0)+1, hist, best:Math.max(prev.best||0, got)};
+  persist(); renderProgress();
+}
+function clearItem(id, k){ delete answers[id+'_'+k]; clearAnswers(id+'_'+k); }
+
+/* Renderizadores por tipo: dibujan las preguntas idxs y devuelven grade() -> {k: acierto} y show(). */
+const RENDER = {
+  mc(box, id, b, idxs){
+    const qs = idxs.map(k=>{ const it=b.items[k];
+      const q=document.createElement('div'); q.className='q';
+      q.innerHTML = `<p class="qt">${k+1}. ${it.q}</p><div class="opts">` + it.o.map((o,j)=>`<label><input type="radio" name="${id}_${k}" value="${j}"> <span>${o}</span></label>`).join('') + `</div><div class="fb" hidden></div>`;
+      box.appendChild(q); return [k,q]; });
+    return {
+      grade(){ const r={}; qs.forEach(([k,q])=>{ const it=b.items[k]; const sel=q.querySelector('input:checked'); const ok=!!sel && +sel.value===it.a; r[k]=ok;
+        q.className='q '+(ok?'ok':'ko'); const fb=q.querySelector('.fb'); fb.hidden=false;
+        fb.innerHTML=(ok?'✓ Correcto. ':'✗ Respuesta correcta: <span class="sol">'+it.o[it.a]+'</span>. ')+(it.e||''); }); return r; },
+      show(){ qs.forEach(([k,q])=>{ const it=b.items[k]; const fb=q.querySelector('.fb'); fb.hidden=false; fb.innerHTML='Solución: <span class="sol">'+it.o[it.a]+'</span>. '+(it.e||''); }); }
+    };
+  },
+  cls(box, id, b, idxs){
+    const list=document.createElement('div'); list.className='list'; box.appendChild(list);
+    const rows = idxs.map(k=>{ const it=b.items[k]; const r=document.createElement('div'); r.className='row';
+      r.innerHTML=`<div class="lab">${esc(it.t)}</div><select id="${id}_${k}" aria-label="${esc(it.t)}"><option value="">— elige —</option>${b.opts.map(o=>`<option>${esc(o)}</option>`).join('')}</select><div class="fb" hidden></div>`;
+      list.appendChild(r); return [k,r]; });
+    return {
+      grade(){ const res={}; rows.forEach(([k,r])=>{ const it=b.items[k]; const ok=arr(it.a).includes(r.querySelector('select').value); res[k]=ok;
+        r.className='row '+(ok?'ok':'ko'); const fb=r.querySelector('.fb');
+        if(!ok||it.e){ fb.hidden=false; fb.innerHTML=(ok?'✓ ':'✗ Es <span class="sol">'+esc(arr(it.a).join(' / '))+'</span>. ')+(it.e?esc(it.e):''); } else fb.hidden=true; }); return res; },
+      show(){ rows.forEach(([k,r])=>{ const it=b.items[k]; const fb=r.querySelector('.fb'); fb.hidden=false; fb.innerHTML='<span class="sol">'+esc(arr(it.a).join(' / '))+'</span>'+(it.e?'. '+esc(it.e):''); }); }
+    };
+  },
+  fill(box, id, b, idxs){
+    const list=document.createElement('div'); list.className='list'; box.appendChild(list);
+    const solTxt = it => it.e || it.a[0];
+    const rows = idxs.map(k=>{ const it=b.items[k]; const r=document.createElement('div'); r.className='row';
+      r.innerHTML=`<label class="lab" for="${id}_${k}">${esc(it.t)}</label><input type="text" id="${id}_${k}" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="fb" hidden></div>`;
+      list.appendChild(r); return [k,r]; });
+    return {
+      grade(){ const res={}; rows.forEach(([k,r])=>{ const it=b.items[k]; const v=norm(r.querySelector('input').value); const ok=!!v && it.a.some(a=>norm(a)===v); res[k]=ok;
+        r.className='row '+(ok?'ok':'ko'); const fb=r.querySelector('.fb'); fb.hidden=ok; if(!ok) fb.innerHTML='✗ Solución: <span class="sol">'+esc(solTxt(it))+'</span>'; }); return res; },
+      show(){ rows.forEach(([k,r])=>{ const fb=r.querySelector('.fb'); fb.hidden=false; fb.innerHTML='<span class="sol">'+esc(solTxt(b.items[k]))+'</span>'; }); }
+    };
+  },
+  seg(box, id, b, idxs){
+    const cards = idxs.map(idx=>{ const it=b.items[idx]; const c=document.createElement('div'); c.className='wcard';
+      let f='';
+      SEGCOLS.forEach(([k,l,n])=>{ for(let j=1;j<=n;j++){ const key=n>1?k+j:k; const lab=n>1?`${l} ${j}`:l;
+        f+=`<label>${lab}<input type="text" data-k="${k}" id="${id}_${idx}_${key}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`; } });
+      if(b.cls){
+        f+=`<label>Clase<select data-k="cl" id="${id}_${idx}_cl"><option value=""></option><option>Sustantivo</option><option>Adjetivo</option><option>Verbo</option><option>Adverbio</option></select></label>`;
+        f+=`<label>Procedimiento<select data-k="pr" id="${id}_${idx}_pr"><option value=""></option><option>Simple</option><option>Derivada</option><option>Compuesta</option><option>Parasintética</option></select></label>`;
+      }
+      c.innerHTML=`<div class="wtitle">${esc(it.w.toUpperCase())}</div><div class="fields">${f}</div><div class="wsol" hidden></div>`;
+      box.appendChild(c); return [idx,c]; });
+    return {
+      grade(){ const res={}; cards.forEach(([idx,c])=>{ const it=b.items[idx]; const all=gradeSeg(c,it); res[idx]=all;
+        c.className='wcard '+(all?'ok':'ko');
+        const s=c.querySelector('.wsol'); s.hidden=false; s.innerHTML=(all?'✓ Perfecta. ':'✗ Revisa las casillas en rojo. Solución: ')+segDisplay(it); }); return res; },
+      show(){ cards.forEach(([idx,c])=>{ const s=c.querySelector('.wsol'); s.hidden=false; s.innerHTML='Solución: '+segDisplay(b.items[idx]); }); }
+    };
+  }
+};
+
+function blockStat(id){
+  const sc=scoreOf(id); if(!sc) return 'Aún no lo has corregido.';
+  const f=failsOf(id).length, s=store[id];
+  return `Nota del ejercicio: <b>${fmtNota(nota10(sc.got,sc.tot))}</b> / 10 (${sc.got} de ${sc.tot}) · ${f?`<b>${f}</b> fallos por repasar`:'sin fallos pendientes'} · ${s.tries||1} ${ (s.tries||1)===1?'intento':'intentos'}`;
 }
 
-function renderMC(box, id, items, opts={}){
-  box.innerHTML = '';
-  const qs = items.map((it, k) => {
-    const q = document.createElement('div'); q.className = 'q';
-    const name = id + '_' + k;
-    q.innerHTML = `<p class="qt">${k+1}. ${it.q}</p><div class="opts">` + it.o.map((o,j)=>`<label><input type="radio" name="${name}" value="${j}"> <span>${o}</span></label>`).join('') + `</div><div class="fb" hidden></div>`;
-    box.appendChild(q); return q;
-  });
-  const bar = btnBar(check, show, reset); box.appendChild(bar);
-  const sc = bar.querySelector('.score');
-  function check(){
-    let got = 0;
-    qs.forEach((q,k)=>{
-      const it = items[k]; const sel = q.querySelector('input:checked');
-      const ok = sel && +sel.value === it.a; if (ok) got++;
-      q.className = 'q ' + (ok?'ok':'ko');
-      const fb = q.querySelector('.fb'); fb.hidden = false;
-      fb.innerHTML = (ok?'✓ Correcto. ':'✗ Respuesta correcta: <span class="sol">'+it.o[it.a]+'</span>. ') + (it.e||'');
-    });
-    scoreLine(sc, got, items.length);
-    if (opts.onScore) opts.onScore(got, items.length); else save(id, got, items.length);
+/* Ejercicio completo o solo las preguntas falladas (opts.only = índices). */
+function renderBlock(box, id, b, opts={}){
+  box.innerHTML='';
+  const only = opts.only || null;
+  const idxs = b.items.map((_,k)=>k).filter(k=>!only || only.includes(k));
+  if(only){ const ban=document.createElement('div'); ban.className='note';
+    ban.innerHTML=`<b>Repaso de fallos:</b> solo aparecen las ${idxs.length} preguntas que tenías mal. Al corregirlas se actualiza la nota del ejercicio.`; box.appendChild(ban); }
+  const R = RENDER[b.type](box, id, b, idxs);
+  const bar=document.createElement('div'); bar.className='btns';
+  bar.innerHTML='<button class="btn" type="button" data-a="check">Corregir</button><button class="btn ghost" type="button" data-a="show">Ver soluciones</button><button class="btn ghost" type="button" data-a="reset">Borrar respuestas</button><button class="btn retry" type="button" data-a="retry" hidden></button><button class="btn ghost" type="button" data-a="full" hidden>Ver el ejercicio completo</button><span class="score"></span>';
+  box.appendChild(bar);
+  const stat=document.createElement('p'); stat.className='blockstat'; box.appendChild(stat);
+  const sc=bar.querySelector('.score'), btn = a => bar.querySelector(`[data-a="${a}"]`);
+  function refresh(){
+    if(opts.onScore){ stat.hidden=true; return; }
+    stat.innerHTML=blockStat(id);
+    const f=failsOf(id).length; const r=btn('retry');
+    r.hidden=!f; r.textContent=`Repetir solo los fallos (${f})`;
+    btn('full').hidden=!only;
   }
-  function show(){ qs.forEach((q,k)=>{ const fb=q.querySelector('.fb'); fb.hidden=false; fb.innerHTML='Solución: <span class="sol">'+items[k].o[items[k].a]+'</span>. '+(items[k].e||''); }); }
-  function reset(){ clearAnswers(id); renderMC(box, id, items, opts); }
-  return {check};
-}
-
-function renderCls(box, id, b){
-  box.innerHTML = '';
-  const list = document.createElement('div'); list.className = 'list';
-  const rows = b.items.map((it,k)=>{
-    const r = document.createElement('div'); r.className = 'row';
-    r.innerHTML = `<div class="lab">${esc(it.t)}</div><select id="${id}_${k}" aria-label="${esc(it.t)}"><option value="">— elige —</option>${b.opts.map(o=>`<option>${esc(o)}</option>`).join('')}</select><div class="fb" hidden></div>`;
-    list.appendChild(r); return r;
-  });
-  box.appendChild(list);
-  const bar = btnBar(check, show, ()=>{clearAnswers(id); renderCls(box,id,b);}); box.appendChild(bar);
-  const sc = bar.querySelector('.score');
-  function check(){
-    let got=0;
-    rows.forEach((r,k)=>{ const it=b.items[k]; const v=r.querySelector('select').value; const ok = arr(it.a).includes(v); if(ok) got++;
-      r.className='row '+(ok?'ok':'ko'); const fb=r.querySelector('.fb');
-      if(!ok || it.e){ fb.hidden=false; fb.innerHTML=(ok?'✓ ':'✗ Es <span class="sol">'+esc(arr(it.a).join(' / '))+'</span>. ')+(it.e?esc(it.e):''); } else fb.hidden=true; });
-    scoreLine(sc, got, b.items.length); save(id, got, b.items.length);
-  }
-  function show(){ rows.forEach((r,k)=>{ const it=b.items[k]; const fb=r.querySelector('.fb'); fb.hidden=false; fb.innerHTML='<span class="sol">'+esc(arr(it.a).join(' / '))+'</span>'+(it.e?'. '+esc(it.e):''); }); }
-}
-
-function renderFill(box, id, b){
-  box.innerHTML = '';
-  const list = document.createElement('div'); list.className = 'list';
-  const rows = b.items.map((it,k)=>{
-    const r = document.createElement('div'); r.className='row';
-    r.innerHTML = `<label class="lab" for="${id}_${k}">${esc(it.t)}</label><input type="text" id="${id}_${k}" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="fb" hidden></div>`;
-    list.appendChild(r); return r;
-  });
-  box.appendChild(list);
-  const bar = btnBar(check, show, ()=>{clearAnswers(id); renderFill(box,id,b);}); box.appendChild(bar);
-  const sc = bar.querySelector('.score');
-  const solTxt = it => it.e || it.a[0];
-  function check(){
-    let got=0;
-    rows.forEach((r,k)=>{ const it=b.items[k]; const v=norm(r.querySelector('input').value); const ok = v && it.a.some(a=>norm(a)===v); if(ok) got++;
-      r.className='row '+(ok?'ok':'ko'); const fb=r.querySelector('.fb'); fb.hidden=ok; if(!ok) fb.innerHTML='✗ Solución: <span class="sol">'+esc(solTxt(it))+'</span>'; });
-    scoreLine(sc, got, b.items.length); save(id, got, b.items.length);
-  }
-  function show(){ rows.forEach((r,k)=>{ const fb=r.querySelector('.fb'); fb.hidden=false; fb.innerHTML='<span class="sol">'+esc(solTxt(b.items[k]))+'</span>'; }); }
+  btn('check').onclick=()=>{
+    const res=R.grade(); const vals=Object.values(res); const got=vals.filter(Boolean).length;
+    scoreLine(sc, got, vals.length);
+    if(opts.onScore) opts.onScore(got, vals.length); else recordBlock(id, res, b.items.length);
+    refresh();
+  };
+  btn('show').onclick=()=>R.show();
+  btn('reset').onclick=()=>{ idxs.forEach(k=>clearItem(id,k)); persist(); renderBlock(box,id,b,opts); };
+  btn('retry').onclick=()=>{ const f=failsOf(id); f.forEach(k=>clearItem(id,k)); persist(); renderBlock(box,id,b,{only:f}); box.scrollIntoView({block:'start'}); };
+  btn('full').onclick=()=>{ renderBlock(box,id,b); box.scrollIntoView({block:'start'}); };
+  restoreAnswers(box); refresh();
 }
 
 function segChips(v){
@@ -1588,36 +1646,6 @@ function gradeSeg(card, it){
   return best.all;
 }
 
-function renderSeg(box, id, b, opts={}){
-  box.innerHTML = '';
-  const cards = b.items.map((it,idx)=>{
-    const c = document.createElement('div'); c.className='wcard';
-    let f = '';
-    SEGCOLS.forEach(([k,l,n])=>{ for(let j=1;j<=n;j++){ const key = n>1 ? k+j : k; const lab = n>1 ? `${l} ${j}` : l;
-      f += `<label>${lab}<input type="text" data-k="${k}" id="${id}_${idx}_${key}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`; } });
-    if(b.cls){
-      f += `<label>Clase<select data-k="cl" id="${id}_${idx}_cl"><option value=""></option><option>Sustantivo</option><option>Adjetivo</option><option>Verbo</option><option>Adverbio</option></select></label>`;
-      f += `<label>Procedimiento<select data-k="pr" id="${id}_${idx}_pr"><option value=""></option><option>Simple</option><option>Derivada</option><option>Compuesta</option><option>Parasintética</option></select></label>`;
-    }
-    c.innerHTML = `<div class="wtitle">${esc(it.w.toUpperCase())}</div><div class="fields">${f}</div><div class="wsol" hidden></div>`;
-    box.appendChild(c); return c;
-  });
-  const bar = btnBar(check, show, ()=>{clearAnswers(id); renderSeg(box,id,b,opts);}); box.appendChild(bar);
-  const sc = bar.querySelector('.score');
-  function check(){
-    let got=0;
-    cards.forEach((c,idx)=>{
-      const it=b.items[idx]; const all=gradeSeg(c,it);
-      c.className='wcard '+(all?'ok':'ko'); if(all) got++;
-      const s=c.querySelector('.wsol'); s.hidden=false; s.innerHTML=(all?'✓ Perfecta. ':'✗ Revisa las casillas en rojo. Solución: ')+segDisplay(it);
-    });
-    scoreLine(sc, got, b.items.length);
-    if(opts.onScore) opts.onScore(got, b.items.length); else save(id, got, b.items.length);
-  }
-  function show(){ cards.forEach((c,idx)=>{ const s=c.querySelector('.wsol'); s.hidden=false; s.innerHTML='Solución: '+segDisplay(b.items[idx]); }); }
-  return {check};
-}
-
 function renderOpen(box, id, b){
   box.innerHTML='';
   b.items.forEach((it,k)=>{
@@ -1634,14 +1662,13 @@ function renderOpen(box, id, b){
   });
 }
 
+const TITLES = {};
 function mount(){
   document.querySelectorAll('.ex[data-block]').forEach(box=>{
     const id=box.dataset.block, b=B[id]; if(!b) return;
-    if(b.type==='mc') renderMC(box,id,b.items);
-    else if(b.type==='cls') renderCls(box,id,b);
-    else if(b.type==='fill') renderFill(box,id,b);
-    else if(b.type==='seg') renderSeg(box,id,b);
-    else if(b.type==='open') renderOpen(box,id,b);
+    let h=box.previousElementSibling; while(h && !h.classList.contains('ex-head')) h=h.previousElementSibling;
+    TITLES[id] = h ? h.querySelector('h3').textContent : id;
+    if(b.type==='open') renderOpen(box,id,b); else renderBlock(box,id,b);
   });
 }
 
@@ -1649,20 +1676,44 @@ function mount(){
 function blockKeys(sec){
   const ks=[]; Object.entries(B).forEach(([id,b])=>{ if(b.sec!==sec) return; if(b.type==='open') b.items.forEach((_,k)=>ks.push(id+'_'+k)); else ks.push(id); }); return ks;
 }
+function keyTitle(k){ if(TITLES[k]) return TITLES[k]; const m=k.match(/^(.*)_(\d+)$/); return m && TITLES[m[1]] ? `${TITLES[m[1]]} (${+m[2]+1})` : k; }
+function keyBlock(k){ return B[k] ? k : k.replace(/_\d+$/,''); }
+function gotoBlock(id, retry){
+  const b=B[id]; show(b.sec);
+  const box=document.querySelector(`.ex[data-block="${id}"]`);
+  if(retry){ const f=failsOf(id); f.forEach(k=>clearItem(id,k)); persist(); renderBlock(box,id,b,{only:f}); }
+  setTimeout(()=>box.scrollIntoView({block:'start'}),30);
+}
 function renderProgress(){
-  const all = Object.keys(SECS).filter(s=>s!=='inicio');
-  let done=0,total=0,g=0,t=0;
-  const dash=$('#dash'); if(dash) dash.innerHTML='';
-  all.forEach(sec=>{
-    const ks=blockKeys(sec); let d=0,sg=0,st=0;
-    ks.forEach(k=>{ if(store[k]){ d++; sg+=store[k].got; st+=store[k].tot; } });
-    done+=d; total+=ks.length; g+=sg; t+=st;
-    if(dash){ const btn=document.createElement('button'); btn.type='button';
-      btn.innerHTML=`<b>${SECS[sec]}</b><small>${d} de ${ks.length} ejercicios corregidos${st?` · acierto ${Math.round(sg/st*100)} %`:''}</small>`;
-      btn.onclick=()=>show(sec); dash.appendChild(btn); }
+  const secs = Object.keys(SECS).filter(s=>s!=='inicio');
+  let done=0,total=0,g=0,t=0,fails=0;
+  const per = secs.map(sec=>{
+    const ks=blockKeys(sec); let d=0,sg=0,st=0,sf=0;
+    ks.forEach(k=>{ const sc=scoreOf(k); if(sc){ d++; sg+=sc.got; st+=sc.tot; } if(B[k]) sf+=failsOf(k).length; });
+    done+=d; total+=ks.length; g+=sg; t+=st; fails+=sf;
+    return {sec,ks,d,sg,st,sf};
   });
   $('#pbar').style.width = (total? done/total*100 : 0)+'%';
-  $('#ptext').textContent = done ? `${done} de ${total} ejercicios corregidos · acierto medio ${t?Math.round(g/t*100):0} %` : 'Aún no has corregido ningún ejercicio';
+  $('#ptext').textContent = done ? `Nota global ${fmtNota(nota10(g,t))} / 10 · ${done} de ${total} ejercicios corregidos · ${fails} fallos por repasar` : 'Aún no has corregido ningún ejercicio';
+  const dash=$('#dash'); if(!dash) return;
+  dash.innerHTML='';
+  per.forEach(p=>{ const btn=document.createElement('button'); btn.type='button';
+    btn.innerHTML=`<b>${SECS[p.sec]}</b><span class="dnota">${p.st?fmtNota(nota10(p.sg,p.st)):'—'}<small> / 10</small></span><small>${p.d} de ${p.ks.length} ejercicios corregidos${p.sf?` · ${p.sf} fallos por repasar`:''}</small>`;
+    btn.onclick=()=>show(p.sec); dash.appendChild(btn); });
+  const sum=$('#gsum');
+  if(sum) sum.innerHTML = `<div><span class="lbl">Nota global</span><span class="big">${t?fmtNota(nota10(g,t)):'—'}</span><span class="lbl">sobre 10, de lo que has corregido</span></div><div><span class="lbl">Avance</span><span class="big">${total?Math.round(done/total*100):0} %</span><span class="lbl">${done} de ${total} ejercicios</span></div><div><span class="lbl">Fallos por repasar</span><span class="big">${fails}</span><span class="lbl">preguntas falladas</span></div>`;
+  const tb=$('#detail');
+  if(tb){
+    const rows=[];
+    per.forEach(p=>p.ks.forEach(k=>{ const sc=scoreOf(k); if(!sc) return; const s=store[k]; const f=B[k]?failsOf(k).length:0;
+      const last = s.hist && s.hist.length ? s.hist[s.hist.length-1] : null;
+      rows.push(`<tr><td>${esc(keyTitle(k))}</td><td>${SECS[p.sec].replace(/^\d · /,'')}</td><td class="n">${s.tries||1}</td><td class="n">${last?`${last.g}/${last.t}`:`${sc.got}/${sc.tot}`}</td><td class="n"><b>${fmtNota(nota10(sc.got,sc.tot))}</b></td><td class="n">${f||'—'}</td><td>${f?`<button class="btn sm" type="button" data-go="${keyBlock(k)}" data-retry="1">Repetir fallos</button>`:`<button class="btn ghost sm" type="button" data-go="${keyBlock(k)}">Ir</button>`}</td></tr>`); }));
+    tb.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7">Cuando corrijas un ejercicio, aparecerá aquí con su nota.</td></tr>';
+    tb.querySelectorAll('[data-go]').forEach(bt=>bt.onclick=()=>gotoBlock(bt.dataset.go, !!bt.dataset.retry));
+  }
+  const sh=$('#simhist');
+  if(sh){ const h=(store.simulacros&&store.simulacros.hist)||[];
+    sh.innerHTML = h.length ? h.slice().reverse().map(x=>`<li><b>${fmtNota(x.n)}</b> / 10 · ${fmtFecha(x.d)} · test ${x.mc}, segmentación ${x.seg}</li>`).join('') : '<li>Todavía no has hecho ningún simulacro.</li>'; }
 }
 
 /* navegación */
@@ -1684,7 +1735,7 @@ function newSim(){
   const mcs=shuffle(pool).slice(0,20);
   const segPool=[...B.seg_a.items, ...B.seg_c.items];
   const segs=shuffle(segPool).slice(0,5);
-  let mcScore=null, segScore=null;
+  let mcScore=null, segScore=null; const simId=Date.now();
   const h1=document.createElement('h3'); h1.textContent='Parte 1 · Test (6 puntos)'; box.appendChild(h1);
   const b1=document.createElement('div'); box.appendChild(b1);
   const h2=document.createElement('h3'); h2.textContent='Parte 2 · Segmentación (4 puntos)'; box.appendChild(h2);
@@ -1695,14 +1746,16 @@ function newSim(){
     const nota = mcScore[0]/mcScore[1]*6 + segScore[0]/segScore[1]*4;
     const n = Math.round(nota*100)/100;
     res.innerHTML=`<div class="grade" style="color:var(${n>=5?'--green':'--red'})">${n.toFixed(2).replace('.',',')}</div><p>Test: ${mcScore[0]}/${mcScore[1]} · Segmentación: ${segScore[0]}/${segScore[1]}. ${n>=9?'Nivel de 10: repasa solo los fallos.':n>=7?'Buen nivel. Vuelve a la teoría de los bloques donde has fallado.':'Repasa la teoría y repite los ejercicios de cada bloque antes de otro simulacro.'}</p>`;
-    save('simulacro', Math.round(n*10), 100);
+    const sm = store.simulacros || {hist:[]}; const h=(sm.hist||[]).filter(x=>x.id!==simId);
+    h.push({id:simId, d:Date.now(), n, mc:`${mcScore[0]}/${mcScore[1]}`, seg:`${segScore[0]}/${segScore[1]}`});
+    store.simulacros = {hist:h.slice(-20)}; persist(); renderProgress();
   }
-  renderMC(b1,'sim_mc',mcs,{onScore:(g,t)=>{mcScore=[g,t];upd();}});
-  renderSeg(b2,'sim_seg',{items:segs},{onScore:(g,t)=>{segScore=[g,t];upd();}});
+  renderBlock(b1,'sim_mc',{type:'mc',items:mcs},{onScore:(g,t)=>{mcScore=[g,t];upd();}});
+  renderBlock(b2,'sim_seg',{type:'seg',items:segs},{onScore:(g,t)=>{segScore=[g,t];upd();}});
 }
 $('#simNew').onclick=newSim;
 
-mount(); restoreAnswers(); newSim(); renderProgress(); connectCloud();
+mount(); newSim(); renderProgress(); connectCloud();
 let start='inicio'; const h=(location.hash||'').slice(1);
 if(h && document.getElementById(h)) start=h; else { try{ start=localStorage.getItem('cuaderno-lengua-tab')||'inicio'; }catch(e){} }
 show(start);

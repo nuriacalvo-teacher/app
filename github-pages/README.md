@@ -24,4 +24,6 @@ Incluye simulacro de examen con nota sobre 10.
 - Las respuestas y las notas se guardan en el navegador (`localStorage`): se conservan al recargar,
   pero solo en ese navegador y dispositivo. Si se borran los datos del navegador o se usa una ventana
   privada, se pierden.
+- En Inicio se ve la nota global, la nota de cada bloque y de cada ejercicio, los fallos pendientes y el historial de simulacros.
+- Cada ejercicio tiene un botón «Repetir solo los fallos».
 - En los ejercicios no se puede copiar, cortar, pegar ni arrastrar texto.
