@@ -551,8 +551,10 @@ function nationGet(guestCode) { const u = user_(guestCode); return withLock_(() 
 const flagKey_ = f => (f && f.layout || 'h') + '|' + ((f && f.c) || []).map(c => String(c).toLowerCase()).join(',');
 function takenFlags_(u) {
   const kl = studentClasses_(), classes = classMap_();
-  return allNations_().filter(n => n.email !== u.email && sameWorld_(u, n.email, kl, classes)).map(n => ({ name: n.name, key: flagKey_(n.flag) }));
+  return allNations_().filter(n => n.email !== u.email && sameWorld_(u, n.email, kl, classes)).map(n => ({ name: n.name, key: flagKey_(n.flag), nameKey: nameKey_(n.name) }));
 }
+/* nation names can't repeat inside a class either (ignoring case, accents and spaces) */
+const nameKey_ = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function nationFlags(guestCode) { return takenFlags_(user_(guestCode)); }
 function nationFound(d, guestCode) {
   const u = user_(guestCode);
@@ -565,7 +567,9 @@ function nationFound(d, guestCode) {
   return withLock_(() => {
     if (needsClass_(u)) throw new Error('CLASS_REQUIRED');
     if (getNation_(u.email)) throw new Error('You have already founded a nation.');
-    const same = takenFlags_(u).find(t => t.key === flagKey_(flag));
+    const taken = takenFlags_(u);
+    if (taken.some(t => t.nameKey === nameKey_(name))) throw new Error('There is already a nation called ' + name + ' in your class. Choose a different name.');
+    const same = taken.find(t => t.key === flagKey_(flag));
     if (same) throw new Error('That flag already belongs to ' + same.name + '. Choose a different pattern or different colours.');
     const es = ensureStudent_(u.email, u.name, u.klass);
     const st = readStudent_(es.sh, es.r);

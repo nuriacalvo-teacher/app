@@ -2944,6 +2944,7 @@ function flagTex(f) {
     c.forEach((col, i) => { g.fillStyle = col; if (f && f.layout === 'v') g.fillRect(i * w / c.length, 0, w / c.length + 1, h); else g.fillRect(0, i * h / c.length, w, h / c.length + 1); });
   });
 }
+const nameKey = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const flagKey = f => (f && f.layout || 'h') + '|' + ((f && f.c) || []).map(c => String(c).toLowerCase()).join(',');
 const flagChip = (f, w = 30) => `<i class="flag" style="width:${w}px;background:${flagCss(f)}"></i>`;
 
@@ -3193,17 +3194,22 @@ function foundNation() {
   const f = { name: '', capital: '', motto: MOTTOS[0], layout: 'h', c: ['#1d3fbf', '#fafafa', '#c62828'], taken: [] };
   const box = el('div', 'found');
   const clash = () => f.taken.find(t => t.key === flagKey({ c: f.c, layout: f.layout }));
+  const nameClash = () => nameKey(f.name) && f.taken.find(t => (t.nameKey || nameKey(t.name)) === nameKey(f.name));
   const draw = () => {
     const same = clash();
     box.innerHTML = `
       <div class="found-flag" style="background:${flagCss({ c: f.c, layout: f.layout })}"></div>
       ${same ? `<p class="flag-warn" role="alert">⚠️ This flag already belongs to <b>${escH(same.name)}</b>. Choose a different pattern or different colours.</p>` : ''}
       <label for="fName">Name of your nation<input id="fName" maxlength="24" placeholder="e.g. The United Islands of Goya" value="${escH(f.name)}" autocomplete="off"></label>
+      <p class="flag-warn" id="nameWarn" role="alert" hidden></p>
       <label for="fCap">Name of your capital city<input id="fCap" maxlength="24" placeholder="e.g. New Selgua" value="${escH(f.capital)}" autocomplete="off"></label>
       <label for="fMotto">National motto<select id="fMotto">${MOTTOS.map(m => `<option ${m === f.motto ? 'selected' : ''}>${m}</option>`).join('')}</select></label>
       <div class="found-row"><span>Flag design</span>${[['h', 'Horizontal'], ['v', 'Vertical'], ['cross', 'Cross']].map(([k, t]) => `<button class="mini ${f.layout === k ? 'pos' : ''}" data-l="${k}">${t}</button>`).join('')}</div>
       ${[0, 1, 2].map(i => `<div class="found-row"><span>Colour ${i + 1}</span>${FLAG_COLS.map(c => `<button class="sw sm" style="background:${c}" aria-label="Colour ${c}" aria-pressed="${f.c[i] === c}" data-i="${i}" data-c="${c}"></button>`).join('')}</div>`).join('')}`;
-    box.querySelector('#fName').oninput = e => f.name = e.target.value;
+    const nw = box.querySelector('#nameWarn');
+    const checkName = () => { const c = nameClash(); nw.hidden = !c; if (c) nw.innerHTML = `⚠️ There is already a nation called <b>${escH(c.name)}</b> in your class. Choose a different name.`; };
+    box.querySelector('#fName').oninput = e => { f.name = e.target.value; checkName(); };
+    checkName();
     box.querySelector('#fCap').oninput = e => f.capital = e.target.value;
     box.querySelector('#fMotto').onchange = e => f.motto = e.target.value;
     box.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { f.layout = b.dataset.l; draw(); });
@@ -3216,11 +3222,13 @@ function foundNation() {
       const clean = t => t.replace(/[^\p{L}\p{N} .,'&-]/gu, '').replace(/\s+/g, ' ').trim();
       f.name = clean(f.name); f.capital = clean(f.capital);
       if (f.name.length < 2 || f.capital.length < 2) { notify('✏️ Almost', 'Write a name for your nation and for its capital.', 'warn'); return; }
+      const sameName = nameClash();
+      if (sameName) { notify('🏳 Name already taken', `There is already a nation called ${sameName.name} in your class.`, 'warn'); return; }
       const same = clash();
       if (same) { notify('🏳 Flag already taken', `That flag belongs to ${same.name}. Change the pattern or the colours.`, 'warn'); return; }
       runQuiz({ title: 'Declaration of Independence', topic: 'found', n: 4, onClose: foundNation, onPass: async () => {
         try { applyNation(await NAPI.found({ name: f.name, capital: f.capital, motto: f.motto, flag: { c: f.c, layout: f.layout } })); notify('🎉 A new nation is born!', `Long live ${f.name}! Your capital is ${f.capital}.`, 'good'); if (G.s.adv) say(G.s.adv, `Congratulations, President! Welcome to ${f.name}!`); }
-        catch (e) { notify('⚠️ Not saved', e.message, 'bad'); if (/flag already belongs/.test(e.message)) later(0.3, foundNation); }
+        catch (e) { notify('⚠️ Not saved', e.message, 'bad'); if (/flag already belongs|already a nation called/.test(e.message)) later(0.3, foundNation); }
       } });
     }
   }], { onClose: () => {} });
