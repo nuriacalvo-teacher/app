@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>听书 TīngShū · Audiolibros de chino HSK 3.0</title>
+<style>
+:root{--bg:#faf6ef;--card:#fff;--tx:#241c15;--mu:#7a6c5d;--ac:#c0392b;--ok:#2e8b57;--bd:#e6dccb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1b1713;--card:#272019;--tx:#f3ebe0;--mu:#a89883;--ac:#e8695a;--ok:#5cc08a;--bd:#3a3128}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans SC","PingFang SC",sans-serif}
+#app{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:2.4rem;margin:.2em 0}h2{margin:.3em 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin:12px 0}
+button,input,select{font:inherit;color:inherit}
+button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+input,select{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
+.mu{color:var(--mu);font-size:.9rem}
+.top{display:flex;justify-content:space-between;align-items:center}
+.tp{display:flex;justify-content:space-between;width:100%;text-align:left;margin:6px 0;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.tp.lock{opacity:.45;cursor:default}
+.hz{font-size:2rem;line-height:2.2;font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+.h{cursor:pointer;border-radius:4px}.h:hover,.h:active{background:rgba(192,57,43,.2)}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;background:var(--card);color:var(--tx);border:1px solid var(--bd);font-size:1.4rem}
+.opt.ok{background:var(--ok);color:#fff}.opt.bad{background:var(--ac);color:#fff}
+.tabs{display:flex;gap:8px}.tabs button{flex:1}
+.v{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}.v b{font-size:1.4rem;min-width:90px}
+#pop{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ac);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:none;z-index:9;box-shadow:0 -6px 24px rgba(0,0,0,.2)}
+#pop .big{font-size:3rem}.big+div{font-size:1.3rem;color:var(--ac)}
+.sc{font-size:4rem;text-align:center;color:var(--ac);margin:10px 0}
+</style></head><body><div id="app"></div><div id="pop"></div>
+<script>
+const D={},V={1:[],2:[]};
+function P(s,l){s.split(';').forEach(x=>{const[a,b,c]=x.split('|');D[a]={p:b,e:c,l};V[l].push(a)})}
+P(`你好|nǐ hǎo|hola;我|wǒ|yo;叫|jiào|llamarse;王|wáng|Wang (apellido);李|lǐ|Li (apellido);张|zhāng|Zhang (apellido);明|míng|Ming (nombre);红|hóng|rojo, Hong (nombre);是|shì|ser, es;中国人|zhōng guó rén|chino/a;他|tā|él;她|tā|ella;什么|shén me|qué;名字|míng zi|nombre;早上好|zǎo shang hǎo|buenos días;你|nǐ|tú;吗|ma|partícula interrogativa;很|hěn|muy;好|hǎo|bien, bueno;谢谢|xiè xie|gracias;怎么样|zěn me yàng|¿cómo está?;不|bù|no;忙|máng|ocupado;小|xiǎo|pequeño;再见|zài jiàn|adiós;明天|míng tiān|mañana;见|jiàn|ver;我们|wǒ men|nosotros;朋友|péng you|amigo/a;老师|lǎo shī|profesor/a;学生|xué sheng|estudiante;他们|tā men|ellos;的|de|de (posesión);姓|xìng|apellidarse;北京|běi jīng|Pekín;人|rén|persona;对不起|duì bu qǐ|perdón;没关系|méi guān xi|no pasa nada;请|qǐng|por favor;坐|zuò|sentarse;说|shuō|decir, hablar`,1);
+P(`早上|zǎo shang|por la mañana;面包|miàn bāo|pan;吃|chī|comer;喝|hē|beber;牛奶|niú nǎi|leche;茶|chá|té;水|shuǐ|agua;中午|zhōng wǔ|mediodía;和|hé|y, con;去|qù|ir;饭馆|fàn guǎn|restaurante;米饭|mǐ fàn|arroz cocido;好吃|hǎo chī|delicioso;家人|jiā rén|familia;想|xiǎng|querer;一|yī|uno;杯|bēi|taza, vaso;多少钱|duō shao qián|¿cuánto cuesta?;五|wǔ|cinco;块|kuài|yuan (kuai);钱|qián|dinero;三|sān|tres;十|shí|diez;喜欢|xǐ huan|gustar;鱼|yú|pescado;鸡蛋|jī dàn|huevo;苹果|píng guǒ|manzana;晚上|wǎn shang|por la noche;妈妈|mā ma|mamá;爸爸|bà ba|papá;做饭|zuò fàn|cocinar;在|zài|en, estar en;家|jiā|casa;菜|cài|plato, verdura;多|duō|mucho;谁|shéi|quién`,2);
+P(`也|yě|también`,1);P(`个|gè|clasificador general;吧|ba|partícula de sugerencia;买|mǎi|comprar;两|liǎng|dos;这|zhè|este, esto;哪儿|nǎr|¿dónde?`,2);
+const LV={
+1:{n:'HSK 1',tp:[['问候','Saludos'],['家人','Familia'],['数字','Números'],['时间','Tiempo'],['饮食','Comida'],['学校','Escuela'],['天气','Clima'],['购物','Compras'],['颜色','Colores'],['身体','Cuerpo'],['动物','Animales'],['交通','Transporte'],['爱好','Aficiones'],['房子','Casa'],['日常','Rutina']],
+T:{0:[
+['你好！我叫王明。我是中国人。','他叫什么名字？',['王明','李明','王红'],0],
+['小明：早上好！你好吗？小王：我很好，谢谢。','小王怎么样？',['很好','不好','很忙'],0],
+['再见！明天见。我们是朋友。','他们是什么？',['朋友','老师','学生'],0],
+['她是我的老师。她姓李。她是北京人。','老师姓什么？',['王','李','张'],1],
+['小明：对不起。小王：没关系。请坐。','小王说什么？',['没关系','对不起','再见'],0],
+['小明：你是学生吗？小王：是，我是学生。','小王是什么？',['学生','老师','朋友'],0],
+['小明：你叫什么名字？小王：我叫小王。','小王叫什么名字？',['小王','小明','王明'],0],
+['你好！她是我的朋友。她叫李红。她是学生。','李红是老师吗？',['是','不是'],1],
+['老师：你好！请坐。学生：谢谢老师！','学生说什么？',['谢谢','再见','对不起'],0],
+['我不是老师。我是学生。他也是学生。','他是什么？',['学生','老师','中国人'],0]]}},
+2:{n:'HSK 2',tp:[['吃饭','Comer'],['旅行','Viajes'],['医院','Hospital'],['工作','Trabajo'],['电话','Teléfono'],['节日','Fiestas'],['运动','Deporte'],['城市','Ciudad'],['衣服','Ropa'],['朋友','Amigos'],['房间','Habitación'],['天气','Clima'],['学习','Estudio'],['银行','Dinero'],['方向','Direcciones']],
+T:{0:[
+['我早上吃面包，喝牛奶。','他早上喝什么？',['牛奶','茶','水'],0],
+['中午我和朋友去饭馆吃米饭。米饭很好吃。','他和谁去饭馆？',['朋友','老师','家人'],0],
+['我想喝一杯茶。茶多少钱？五块钱。','茶多少钱？',['五块钱','三块钱','十块钱'],0],
+['我不喜欢吃鱼，我喜欢吃鸡蛋和苹果。','他喜欢吃什么？',['鱼','鸡蛋','面包'],1],
+['晚上妈妈做饭。我们在家吃，菜很多。','晚上谁做饭？',['妈妈','爸爸','老师'],0],
+['我喜欢喝水，不喜欢喝茶。','他喜欢喝什么？',['水','茶','牛奶'],0],
+['早上我吃一个鸡蛋，喝一杯牛奶。','他早上吃什么？',['鸡蛋','面包','米饭'],0],
+['你想吃什么？我想吃鱼。我们去饭馆吧。','他想吃什么？',['鱼','鸡蛋','面包'],0],
+['这个苹果多少钱？三块钱。我想买两个。','他想买什么？',['苹果','鱼','茶'],0],
+['晚上我不想做饭。我们去饭馆吃饭，好吗？','晚上他们去哪儿吃饭？',['饭馆','家','北京'],0]]}}};
+const VOC={1:`爱|ài|amar;爱好|ài hào|afición;八|bā|ocho;爸|bà|papá;爸爸|bà ba|papá;吧|bā|partícula de sugerencia;白|Bái|blanco;白天|bái tiān|de día;百|Bǎi|cien;班|Bān|clase (grupo);半|bàn|medio, mitad;半年|bàn nián|medio año;半天|bàn tiān|medio día;帮|bāng|ayudar;帮忙|bāng máng|ayudar;包|Bāo|bolsa, paquete;包子|bāo zi|baozi (bollo relleno);杯|bēi|taza, vaso;杯子|bēi zi|vaso, taza;北|běi|norte;北边|běi biān|lado norte;北京|Běi jīng|Pekín;本|běn|clasificador de libros;本子|běn zi|cuaderno;比|Bǐ|más que (comparación);别|Bié|no (imperativo);别的|bié de|otra cosa;别人|bié ren|otras personas;病|bìng|enfermedad;病人|bìng rén|enfermo, paciente;不|bù|no;不大|bù dà|no muy grande;不对|bù duì|incorrecto;不客气|bù kè qi|de nada;不用|bù yòng|no hace falta;菜|cài|plato, verdura;茶|chá|té;差|chā|diferencia, malo;常|Cháng|a menudo;常常|cháng cháng|a menudo;唱|chàng|cantar;唱歌|chàng gē|cantar (una canción);车|Chē|coche, vehículo;车票|chē piào|billete (de transporte);车上|chē shàng|en el vehículo;车站|chē zhàn|estación (de autobús o tren);吃|chī|comer;吃饭|chī fàn|comer (una comida);出|chū|salir;出来|chū lái|salir;出去|chū qù|salir;穿|chuān|vestir, llevar puesto;床|chuáng|cama;次|cì|vez;从|cóng|desde;错|Cuò|equivocado;打|dá|llamar (por teléfono), golpear;打车|dǎ chē|tomar un taxi;打电话|dǎ diàn huà|llamar por teléfono;打开|dǎ kāi|abrir, encender;打球|dǎ qiú|jugar a la pelota;大|dà|grande;大学|Dà xué|universidad;大学生|dà xué shēng|universitario/a;到|dào|llegar;地|de|partícula adverbial;地点|dì diǎn|lugar;地方|dì fāng|lugar;地上|dì shang|en el suelo;地图|dì tú|mapa;的|de|de (posesión);得到|dé dào|obtener;等|děng|esperar;弟|dì|hermano menor;弟弟|dì di|hermano menor;第|dì|prefijo ordinal;第二|dì èr|segundo;点|diǎn|hora, en punto;电|diàn|electricidad;电话|diàn huà|teléfono;电脑|diàn nǎo|ordenador;电视|diàn shì|televisión;电视机|diàn shì jī|televisor;电影|diàn yǐng|película;电影院|diàn yǐng yuàn|cine;东|Dōng|este (punto cardinal);东边|dōng bian|lado este;东西|dōng xī|cosa, objeto;动|dòng|mover(se);动作|dòng zuò|movimiento, acción;都|Dū|todos, todo;读|dòu|leer (en voz alta);读书|dú shū|leer, estudiar;对|duì|correcto, sí;对不起|duì bu qǐ|perdón;多|duō|mucho;多少|duō shǎo|cuánto, cuántos;饿|è|hambriento;儿子|ér zi|hijo;二|èr|dos;饭|fàn|comida, arroz;饭店|fàn diàn|restaurante, hotel;房间|fáng jiān|habitación;房子|fáng zi|casa, edificio;放|fàng|poner, dar (vacaciones);放假|fàng jià|tener vacaciones;放学|fàng xué|salir de la escuela;飞|fēi|volar;飞机|fēi jī|avión;非常|fēi cháng|muy, extremadamente;分|fēn|minuto, dividir;风|fēng|viento;干|gān|hacer;干净|gān jìng|limpio;干什么|gàn shén me|¿qué haces?;高|Gāo|alto;高兴|gāo xìng|contento;告诉|gào sù|decir, informar;哥|gē|hermano mayor;哥哥|gē ge|hermano mayor;歌|gē|canción;个|gě|clasificador general;给|gěi|a, dar;跟|gēn|con, seguir;工人|gōng rén|obrero;工作|gōng zuò|trabajar, trabajo;关|Guān|cerrar;关上|guān shàng|cerrar;贵|guì|caro;国|Guó|país;国家|guó jiā|país;国外|guó wài|extranjero (fuera del país);过|Guō|partícula de experiencia;还|Huán|además;还是|hái shi|o (en preguntas);还有|hái yǒu|además, también hay;孩子|hái zi|niño/a;汉语|Hàn yǔ|chino (idioma);汉字|hàn zì|carácter chino;好|hǎo|bien, bueno;好吃|hǎo chī|delicioso;好看|hǎo kàn|bonito;好听|hǎo tīng|agradable de oír;好玩儿|hǎo wán r|divertido;号|háo|número, día del mes;喝|hē|beber;和|hé|y, con;很|hěn|muy;后|Hòu|detrás, después;后边|hòu bian|parte de atrás;后天|hòu tiān|pasado mañana;花|Huā|gastar;话|huà|palabras, habla;坏|huài|malo, estropeado;回|huí|volver, devolver;回答|huí dá|responder;回到|huí dào|volver a;回家|huí jiā|volver a casa;回来|huí lai|volver (hacia aquí);回去|huí qu|volver (hacia allí);会|huì|saber, poder;火车|huǒ chē|tren;机场|jī chǎng|aeropuerto;机票|jī piào|billete de avión;鸡蛋|jī dàn|huevo;几|jī|¿cuántos?;记|jì|anotar, recordar;记得|jì de|recordar;记住|jì zhu|memorizar;家|jiā|casa;家里|jiā lǐ|en casa;家人|jiā rén|familia;间|jiān|clasificador de habitaciones;见|jiàn|ver;见面|jiàn miàn|encontrarse;叫|jiào|llamarse;教|Jiào|enseñar;教学楼|jiào xué lóu|edificio de aulas;介绍|jiè shào|presentar;姐|jiě|hermana mayor;姐姐|jiě jie|hermana mayor;今年|jīn nián|este año;今天|jīn tiān|hoy;进|jìn|entrar;进来|jìn lái|entrar (hacia aquí);进去|jìn qù|entrar (hacia allí);九|jiǔ|nueve;就|jiù|justo, precisamente;觉得|jué de|pensar, opinar;开|kāi|salir (un transporte), abrir, conducir;开车|kāi chē|conducir;开会|kāi huì|tener una reunión;开玩笑|kāi wán xiào|bromear;看|kān|mirar, leer;看病|kàn bìng|ir al médico;看到|kàn dào|ver, percibir;看见|kàn jiàn|ver;考|kǎo|examinar, hacer un examen;考试|kǎo shì|examen;渴|kě|sediento;课|kè|clase;课本|kè běn|libro de texto;课文|kè wén|texto de la lección;口|kǒu|clasificador de miembros de familia;块|kuài|yuan (kuai);快|kuài|rápido, pronto;来|lái|venir;来到|lái dào|llegar a;老|lǎo|viejo;老人|lǎo rén|anciano;老师|lǎo shī|profesor/a;了|le|partícula de acción cumplida;累|lěi|cansado;冷|Lěng|frío;里|lǐ|dentro;里边|lǐ bian|dentro;两|liǎng|dos;零|líng|cero;六|liù|seis;楼|Lóu|piso, planta;楼上|lóu shàng|arriba;楼下|lóu xià|abajo;路|Lù|camino, carretera;路口|lù kǒu|cruce;路上|lù shang|en el camino;妈|mā|mamá;妈妈|mā ma|mamá;马路|mǎ lù|calle, carretera;马上|mǎ shàng|enseguida;吗|má|partícula interrogativa;买|mǎi|comprar;慢|màn|lento;忙|máng|ocupado;毛|Máo|décima de yuan;没|méi|no (negación del pasado);没关系|méi guān xi|no pasa nada;没什么|méi shén me|nada, no es nada;没事儿|méi shì r|no pasa nada;没有|méi yǒu|no tener, no haber;妹|mèi|hermana menor;妹妹|mèi mei|hermana menor;门|Mén|puerta;门口|mén kǒu|entrada, puerta;门票|mén piào|entrada (a un lugar);们|men|sufijo plural (personas);米饭|mǐ fàn|arroz cocido;面包|miàn bāo|pan;面条儿|miàn tiáo r|fideos;名字|míng zi|nombre;明白|míng bai|entender;明年|míng nián|el año que viene;明天|míng tiān|mañana;拿|ná|coger, llevar;哪|nǎ|¿cuál?;哪儿|nǎ r|¿dónde?;哪里|nǎ lǐ|¿dónde?;哪些|nǎ xiē|¿cuáles?;那|Nā|entonces, aquel;那边|nà bian|por allá;那儿|nà r|allí;那里|nà li|allí;那些|nà xiē|esos, aquellos;奶|nǎi|leche;奶奶|nǎi nai|abuela paterna;男|nán|hombre, masculino;男孩儿|nán hái r|niño;男朋友|nán péng you|novio;男人|nán rén|hombre;男生|nán shēng|chico (estudiante);南|Nán|sur;南边|nán bian|lado sur;难|nán|difícil;呢|ne|¿y tú? (partícula);能|Néng|poder;你|nǐ|tú;你们|nǐ men|vosotros;年|Nián|año;您|nín|usted;牛奶|niú nǎi|leche;女|nǚ|mujer, femenino;女儿|nǚ ér|hija;女孩儿|nǚ hái r|niña;女朋友|nǚ péng you|novia;女人|nǚ rén|mujer;女生|nǚ shēng|chica (estudiante);旁边|páng biān|al lado;跑|páo|correr;朋友|péng you|amigo/a;票|piào|billete, entrada;七|qī|siete;起|qǐ|levantarse;起床|qǐ chuáng|levantarse;起来|qǐ lai|levantarse;汽车|qì chē|autobús, coche;前|qián|delante;前边|qián bian|parte de delante;前天|qián tiān|anteayer;钱|Qián|dinero;钱包|qián bāo|cartera;请|qǐng|por favor;请假|qǐng jià|pedir permiso;请进|qǐng jìn|pase, por favor;请问|qǐng wèn|disculpe, por favor;请坐|qǐng zuò|siéntese, por favor;球|qiú|pelota, balón;去|qù|ir;去年|qù nián|el año pasado;热|rè|calor;人|rén|persona;认识|rèn shi|conocer;认真|rèn zhēn|serio, con atención;日|Rì|día, sol;日期|rì qī|fecha;肉|ròu|carne;三|Sān|tres;山|Shān|montaña;商场|shāng chǎng|centro comercial;商店|shāng diàn|tienda;上|shǎng|encima, sobre;上班|shàng bān|ir a trabajar;上边|shàng bian|parte de arriba;上车|shàng chē|subir al vehículo;上次|shàng cì|la última vez;上课|shàng kè|asistir a clase;上网|shàng wǎng|conectarse a internet;上午|shàng wǔ|mañana (hasta mediodía);上学|shàng xué|ir a la escuela;少|shǎo|poco;身上|shēn shang|en el cuerpo, encima;身体|shēn tǐ|cuerpo, salud;什么|shén me|qué;生病|shēng bìng|enfermar;生气|shēng qì|enfadarse;生日|shēng rì|cumpleaños;十|shí|diez;时候|shí hou|momento, cuando;时间|shí jiān|tiempo;事|shì|asunto, cosa;试|shì|probar;是|shì|ser, es;是不是|shì bù shì|¿es o no es?;手|shǒu|mano;手机|shǒu jī|teléfono móvil;书|Shū|libro;书包|shū bāo|mochila;书店|shū diàn|librería;树|shù|árbol;谁|shéi|quién;水|Shuǐ|agua;水果|shuǐ guǒ|fruta;睡|shuì|dormir;睡觉|shuì jiào|dormir;说|shuì|decir, hablar;说话|shuō huà|hablar;四|sì|cuatro;送|sòng|regalar, acompañar;岁|suì|años (de edad);他|tā|él;他们|tā men|ellos;她|tā|ella;她们|tā men|ellas;太|tài|demasiado;天|tiān|día;天气|tiān qì|clima;听|yǐn|escuchar;听到|tīng dào|oír, escuchar;听见|tīng jiàn|oír;听写|tīng xiě|dictado;同学|tóng xué|compañero/a de clase;图书馆|tú shū guǎn|biblioteca;外|wài|fuera;外边|wài bian|afuera;外国|wài guó|extranjero;外语|wài yǔ|idioma extranjero;玩儿|wán r|jugar;晚|wǎn|tarde, tardío;晚饭|wǎn fàn|cena;晚上|wǎn shang|por la noche;网上|wǎng shàng|en internet;网友|wǎng yǒu|amigo de internet;忘|wàng|olvidar;忘记|wàng jì|olvidar;问|wèn|preguntar;我|wǒ|yo;我们|wǒ men|nosotros;五|wǔ|cinco;午饭|wǔ fàn|almuerzo;洗|xǐ|lavar;洗手间|xǐ shǒu jiān|baño;喜欢|xǐ huan|gustar;西|Xī|oeste;西边|xī biān|lado oeste;下|xià|bajar, caer (lluvia, nieve);下班|xià bān|salir del trabajo;下边|xià bian|parte de abajo;下车|xià chē|bajar del vehículo;下次|xià cì|la próxima vez;下课|xià kè|terminar la clase;下午|xià wǔ|tarde;下雨|xià yǔ|llover;先|xiān|primero;先生|xiān sheng|señor, profesor;现在|xiàn zài|ahora;想|xiǎng|querer;小|xiǎo|pequeño;小孩儿|xiǎo hái r|niño pequeño;小姐|xiǎo jie|señorita;小朋友|xiǎo péng yǒu|niño (trato cariñoso);小时|xiǎo shí|hora (duración);小学|xiǎo xué|escuela primaria;小学生|xiǎo xué shēng|alumno de primaria;笑|xiào|reír, sonreír;写|xiě|escribir;谢谢|xiè xie|gracias;新|Xīn|nuevo;新年|xīn nián|Año Nuevo;星期|xīng qī|semana;星期日|Xīng qī rì|domingo;星期天|Xīng qī tiān|domingo;行|háng|estar bien, valer;休息|xiū xi|descansar;学|xué|aprender, estudiar;学生|xué sheng|estudiante;学习|xué xí|estudiar;学校|xué xiào|escuela;学院|xué yuàn|facultad, instituto;要|yāo|querer, necesitar;也|Yě|también;页|xié|página;爷爷|yé ye|abuelo paterno;一|yī|uno;一半|yī bàn|la mitad;一边|yī biān|al mismo tiempo (一边…一边…);一点儿|yī diǎn r|un poco;一会儿|yī huì r|un rato;一块儿|yī kuài r|juntos;一起|yī qǐ|juntos;一下儿|yī xià r|un momento (suaviza el verbo);一些|yī xiē|algunos, unos;一样|yī yàng|igual;衣服|yī fu|ropa;医生|yī shēng|médico;医院|yī yuàn|hospital;用|yòng|usar;有|yǒu|tener, haber;有的|yǒu de|algunos;有名|yǒu míng|famoso;有时|yǒu shí|a veces;有时候|yǒu shí hou|a veces;有些|yǒu xiē|algunos;有一些|yǒu yī xiē|un poco, algo;有用|yǒu yòng|útil;右|yòu|derecha;右边|yòu bian|lado derecho;雨|yǔ|lluvia;元|Yuán|yuan;远|yuǎn|lejos;月|yuè|mes;再|zài|otra vez, de nuevo;再见|zài jiàn|adiós;在|zài|en, estar en;在家|zài jiā|estar en casa;早|zǎo|temprano;早饭|zǎo fàn|desayuno;早上|zǎo shang|por la mañana;怎么|zěn me|cómo;站|zhàn|parada, estación;找|zhǎo|buscar;找到|zhǎo dào|encontrar;这|zhè|este, esto;这边|zhè biān|por aquí;这儿|zhè r|aquí;这里|zhè lǐ|aquí;这些|zhè xiē|estos;着|zhāo|partícula de duración;真|zhēn|realmente;真的|zhēn de|de verdad;正|zhēng|justo, precisamente;正在|zhèng zài|estar haciendo;知道|zhī dào|saber;知识|zhī shi|conocimiento;中|Zhōng|medio, dentro;中国|Zhōng guó|China;中间|zhōng jiān|en medio;中文|Zhōng wén|idioma chino;中午|zhōng wǔ|mediodía;中学|zhōng xué|escuela secundaria;中学生|zhōng xué shēng|alumno de secundaria;重|chóng|pesado;重要|zhòng yào|importante;住|zhù|vivir, alojarse;准备|zhǔn bèi|preparar;桌子|zhuō zi|mesa;字|zì|carácter, letra;子|zǐ|sufijo nominal;走|zǒu|caminar, ir;走路|zǒu lù|caminar;最|zuì|el más;最好|zuì hǎo|lo mejor es;最后|zuì hòu|al final, finalmente;昨天|zuó tiān|ayer;左|Zuǒ|izquierda;左边|zuǒ bian|lado izquierdo;坐|Zuò|sentarse;坐下|zuò xia|sentarse;做|zuò|hacer`,2:`啊|ā|partícula de énfasis;爱情|ài qíng|amor (romántico);爱人|ài ren|pareja, cónyuge;安静|ān jìng|tranquilo;安全|ān quán|seguro;白色|bái sè|blanco;班长|bān zhǎng|delegado de clase;办|bàn|hacer, gestionar;办法|bàn fǎ|manera, solución;办公室|bàn gōng shì|oficina;半夜|bàn yè|medianoche;帮助|bāng zhù|ayuda;饱|bǎo|estar lleno (de comer);报名|bào míng|inscribirse;报纸|bào zhǐ|periódico;北方|běi fāng|norte (región);背|bēi|llevar a cuestas, espalda;比如|bǐ rú|por ejemplo;比如说|bǐ rú shuō|por ejemplo;笔|bǐ|bolígrafo;笔记|bǐ jì|apuntes;笔记本|bǐ jì běn|cuaderno;必须|bì xū|deber, tener que;边|biān|lado;变|biàn|cambiar;变成|biàn chéng|convertirse en;便宜|biàn yí|barato;遍|biàn|vez (repetición completa);表|biǎo|reloj, tabla, formulario;不错|bù cuò|bastante bien;不但|bù dàn|no solo;不够|bù gòu|no ser suficiente;不过|bù guò|pero, sin embargo;不好意思|bù hǎo yì si|disculpe, qué vergüenza;不久|bù jiǔ|poco después;不满|bù mǎn|insatisfecho;不如|bù rú|no ser tan bueno como;不少|bù shǎo|bastantes, mucho;不太|bù tài|no muy;不同|bù tóng|diferente;不行|bù xíng|no está bien, no vale;不要|bù yào|no hagas, no;不一定|bù yī dìng|no necesariamente;不一会儿|bù yīhuǐr5|al poco rato;部分|bù fen|parte;才|cái|solo entonces, apenas;菜单|cài dān|menú;参观|cān guān|visitar;参加|cān jiā|participar;草|cǎo|hierba;草地|cǎo dì|césped;层|céng|piso, capa;查|Zhā|comprobar;差不多|chà bu duō|casi;常见|cháng jiàn|común;常用|cháng yòng|de uso común;场|cháng|clasificador de eventos;超过|chāo guò|superar;超市|chāo shì|supermercado;车辆|chē liàng|vehículo;称|chèn|llamar, pesar;成|Chéng|convertirse, lograr;成绩|chéng jì|resultado, nota;成为|chéng wéi|llegar a ser;出发|chū fā|partir, salir;出国|chū guó|ir al extranjero;出口|chū kǒu|salida;出门|chū mén|salir de casa;出生|chū shēng|nacer;出现|chū xiàn|aparecer;出院|chū yuàn|recibir el alta;出租|chū zū|alquilar (dar en alquiler);出租车|chū zū chē|taxi;船|chuán|barco;吹|chuī|soplar;春节|Chūn jié|Año Nuevo chino;春天|chūn tiān|primavera;词|cí|palabra;词典|cí diǎn|diccionario;词语|cí yǔ|palabra, vocablo;从小|cóng xiǎo|desde pequeño;答应|dā ying|aceptar, responder;打工|dǎ gōng|trabajar a tiempo parcial;打算|dǎ suàn|pensar, planear;打印|dǎ yìn|imprimir;大部分|dà bù fen|la mayor parte;大大|dà dà|enormemente;大多数|dà duō shù|la mayoría;大海|dà hǎi|mar;大家|dà jiā|todos, todo el mundo;大量|dà liàng|gran cantidad;大门|Dà mén|puerta principal;大人|dà ren|adulto;大声|dà shēng|en voz alta;大小|dà xiǎo|tamaño;大衣|dà yī|abrigo largo;大自然|dà zì rán|naturaleza;带|dài|llevar;带来|dài lái|traer;单位|dān wèi|unidad (organización);但|dàn|pero;但是|dàn shì|pero;蛋|Dàn|huevo;当|dāng|en el momento de, ser;当时|dāng shí|en aquel momento;到处|dào chù|por todas partes;倒|dǎo|caer, volcar;道|dào|camino, principio;道理|dào li|razón, lógica;道路|dào lù|camino, carretera;地球|dì qiú|la Tierra;地铁|dì tiě|metro;地铁站|dì tiě zhàn|estación de metro;的话|de huà|si (en caso de);得|dé|partícula de complemento;得出|dé chū|obtener (resultado);灯|dēng|luz, lámpara;等到|děng dào|esperar hasta que;等于|děng yú|ser igual a;低|dī|bajo;点头|diǎn tóu|asentir con la cabeza;店|diàn|tienda;掉|diào|caer, perder;东北|Dōng běi|noreste;东方|Dōng fāng|oriente;东南|dōng nán|sureste;冬天|dōng tiān|invierno;懂|dǒng|entender;懂得|dǒng de|comprender;动物|dòng wù|animal;动物园|dòng wù yuán|zoo;读音|dú yīn|pronunciación;度|dù|grado;短|duǎn|corto;短信|duǎn xìn|mensaje de texto;段|Duàn|tramo, trozo;队|duì|equipo;队长|duì zhǎng|capitán;对话|duì huà|diálogo;对面|duì miàn|enfrente;多久|duō jiǔ|¿cuánto tiempo?;多么|duō me|qué (tan);多数|duō shù|la mayoría;多云|duō yún|nublado;而且|ér qiě|y además;发|fā|enviar;发现|fā xiàn|descubrir;饭馆|fàn guǎn|restaurante;方便|fāng biàn|cómodo, práctico;方便面|fāng biàn miàn|fideos instantáneos;方法|fāng fǎ|método;方面|fāng miàn|aspecto;方向|fāng xiàng|dirección;放下|fàng xià|dejar, soltar;放心|fàng xīn|tranquilizarse;分开|fēn kāi|separar;分数|fēn shù|puntuación;分钟|fēn zhōng|minuto;份|fèn|porción, ejemplar;封|Fēng|clasificador de cartas;服务|fú wù|servicio, servir;复习|fù xí|repasar;该|gāi|deber, debería;改|gǎi|cambiar, corregir;改变|gǎi biàn|cambiar;感到|gǎn dào|sentir;感动|gǎn dòng|emocionar;感觉|gǎn jué|sensación, sentir;感谢|gǎn xiè|agradecer;干杯|gān bēi|brindar;干活儿|gàn huó r|trabajar;刚|gāng|hace un momento;刚才|gāng cái|hace un momento;刚刚|gāng gang|hace un instante;高级|gāo jí|avanzado;高中|gāo zhōng|bachillerato;个子|gè zi|estatura;更|gēng|más;公共汽车|gōng gòng qì chē|autobús urbano;公交车|gōng jiāo chē|autobús;公斤|gōng jīn|kilogramo;公里|gōng lǐ|kilómetro;公路|gōng lù|carretera;公平|gōng píng|justo;公司|gōng sī|empresa;公园|gōng yuán|parque;狗|gǒu|perro;够|gòu|ser suficiente;故事|gù shì|historia, cuento;故意|gù yì|a propósito;顾客|gù kè|cliente;关机|guān jī|apagar (aparato);关心|guān xīn|preocuparse por;观点|guān diǎn|punto de vista;广场|guǎng chǎng|plaza;广告|guǎng gào|anuncio;国际|guó jì|internacional;过来|guò lái|venir hacia aquí;过年|guò nián|celebrar el Año Nuevo;过去|guò qù|pasar al otro lado;海|Hǎi|mar;海边|hǎi biān|costa;喊|hǎn|gritar;好处|hǎo chǔ|ventaja, beneficio;好多|hǎo duō|muchos;好久|hǎo jiǔ|mucho tiempo;好人|hǎo rén|buena persona;好事|hǎo shì|cosa buena;好像|hǎo xiàng|parecer;合适|hé shì|adecuado;河|hé|río;黑|Hēi|oscuro, negro;黑板|hēi bǎn|pizarra;黑色|hēi sè|negro;红|Hóng|rojo, Hong (nombre);红色|hóng sè|rojo;后来|hòu lái|después, luego;忽然|hū rán|de repente;湖|hú|lago;护照|hù zhào|pasaporte;花园|huā yuán|jardín;画|huà|dibujar;画儿|huà r|dibujo;画家|huà jiā|pintor;坏处|huài chu|desventaja, daño;坏人|huài rén|mala persona;换|huàn|cambiar;欢迎|huān yíng|dar la bienvenida;黄|Huáng|amarillo;黄色|huáng sè|amarillo;回国|huí guó|volver al país;活动|huó dòng|actividad, hacer ejercicio;或|huò|o;或者|huò zhě|o;机会|jī huì|oportunidad;鸡|jī|pollo, gallina;级|jí|nivel, curso;急|jí|urgente;计划|jì huà|plan;计算机|jì suàn jī|ordenador;加|Jiā|más, sumar;加油|jiā yóu|¡ánimo!;家庭|jiā tíng|familia;家长|jiā zhǎng|padres de alumno;假|gēi|vacaciones;假期|jià qī|vacaciones;检查|jiǎn chá|revisar, examen;见到|jiàn dào|ver, encontrar;见过|jiànguò|haber visto;件|jiàn|clasificador de prendas;健康|jiàn kāng|salud;讲|jiǎng|hablar, explicar;讲话|jiǎng huà|discurso;交|jiāo|entregar;交给|jiāo gěi|entregar a;交朋友|jiāo péng you|hacer amigos;交通|jiāo tōng|tráfico, transporte;角|Jué|jiao (décima de yuan), esquina;角度|jiǎo dù|ángulo, punto de vista;饺子|jiǎo zi|dumplings;脚|jiǎo|pie;叫作|jiào zuò|llamarse;教师|jiào shī|profesor;教室|jiào shì|aula;教学|jiāo xué|enseñanza;教育|jiào yù|educación;接|jiē|recibir, recoger;接到|jiē dào|recibir;接受|jiē shòu|aceptar;接下来|jiē xià lái|a continuación;接着|jiē zhe|a continuación, seguir;街|jiē|calle;节|jiē|sección, festividad;节目|jié mù|programa;节日|jié rì|fiesta;结果|jiē guǒ|resultado;借|jiè|pedir prestado, prestar;今后|jīn hòu|de ahora en adelante;斤|jīn|jin (medio kilo);近|jìn|cerca;进入|jìn rù|entrar;进行|jìn xíng|realizar, llevar a cabo;经常|jīng cháng|a menudo;经过|jīng guò|pasar por;经理|jīng lǐ|gerente;酒|jiǔ|alcohol, licor;酒店|jiǔ diàn|hotel;就要|jiù yào|estar a punto de;举|jǔ|levantar;举手|jǔ shǒu|levantar la mano;举行|jǔ xíng|celebrar;句|gōu|frase;句子|jù zi|oración;卡|kǎ|tarjeta;开机|kāi jī|encender (aparato);开心|kāi xīn|estar contento;开学|kāi xué|empezar el curso;看法|kàn fǎ|opinión;考生|kǎo shēng|candidato a examen;靠|kào|apoyarse, depender de;科|kē|departamento;科学|kē xué|ciencia;科学家|kē xué jiā|científico;可爱|kě ài|adorable;可能|kě néng|posible, quizá;可怕|kě pà|terrible;可是|kě shì|pero;可以|kě yǐ|poder, se puede;克|Kè|gramo;刻|kè|cuarto de hora;客人|kè rén|invitado;课堂|kè táng|aula;空气|kōng qì|aire;哭|kū|llorar;快餐|kuài cān|comida rápida;快点儿|kuài diǎn r|¡rápido!;快乐|kuài lè|feliz, alegre;快要|kuài yào|estar a punto de;筷子|kuài zi|palillos;拉|lā|tirar;来自|lái zì|proceder de;蓝|Lán|azul;蓝色|lán sè|azul;篮球|lán qiú|baloncesto;老年|lǎo nián|tercera edad;老朋友|lǎo péng you|viejo amigo;老是|lǎo shi|siempre;离|chī|distancia desde;离开|lí kāi|salir, dejar;礼物|lǐ wù|regalo;里头|lǐ tou|dentro;理想|lǐ xiǎng|ideal;例如|lì rú|por ejemplo;例子|lì zi|ejemplo;脸|liǎn|cara;练|liàn|practicar;练习|liàn xí|practicar;凉|Liáng|frío (al tacto);凉快|liáng kuai|fresco;亮|liàng|luminoso;辆|liàng|clasificador de vehículos;零下|líng xià|bajo cero;流|liú|fluir;流利|liú lì|fluido;流行|liú xíng|estar de moda, extenderse;留|liú|quedarse, dejar;留下|liú xià|dejar atrás;留学生|liú xué shēng|estudiante extranjero;路边|lù biān|borde de la calle;旅客|lǚ kè|viajero;旅行|lǚ xíng|viajar;旅游|lǚ yóu|viajar, turismo;绿|lǜ|verde;绿色|lǜ sè|verde;卖|mài|vender;满|Mǎn|lleno;满意|mǎn yì|satisfecho;猫|māo|gato;米|Mǐ|metro;面|miàn|cara, superficie, fideos;面前|miàn qián|delante de;名|míng|nombre;名称|míng chēng|denominación;名单|míng dān|lista de nombres;明星|míng xīng|estrella, famoso;目的|mù dì|objetivo;拿出|ná chū|sacar;拿到|ná dào|conseguir;那会儿|nà huì r|en aquel entonces;那么|nà me|así;那时|nà shí|en aquel momento;那时候|nà shí hou|en aquel momento;那样|nà yàng|de esa manera;南方|nán fāng|sur;难过|nán guò|estar triste;难看|nán kàn|feo;难受|nán shòu|sentirse mal;难题|nán tí|problema difícil;难听|nán tīng|desagradable de oír;能够|néng gòu|poder, ser capaz;年级|nián jí|curso, grado;年轻|nián qīng|joven;鸟|diǎo|pájaro;弄|lòng|hacer, manipular;努力|nǔ lì|esforzarse;爬|pá|trepar, gatear;爬山|pá shān|hacer senderismo;怕|Pà|temer;排|pái|fila;排队|pái duì|hacer cola;排球|pái qiú|voleibol;碰|pèng|chocar, tocar;碰到|pèng dào|encontrarse con;碰见|pèng jiàn|encontrarse con;篇|piān|clasificador de textos;片|piān|trozo;漂亮|piào liang|bonito, hermoso;平|Píng|plano, llano;平安|píng ān|sano y salvo;平常|píng cháng|normal;平等|píng děng|igualdad;平时|píng shí|normalmente;瓶|píng|botella;瓶子|píng zi|botella;普通|pǔ tōng|común;普通话|pǔ tōng huà|mandarín;其他|qí tā|otro;其中|qí zhōng|entre ellos;骑|jì|montar (bici, caballo);骑车|qí chē|ir en bici;起飞|qǐ fēi|despegar;气|qì|gas, aire, enfado;气温|qì wēn|temperatura ambiente;千|qiān|mil;千克|qiān kè|kilogramo;前年|qián nián|hace dos años;墙|qiáng|pared;青年|qīng nián|joven (persona);青少年|qīng shào nián|adolescentes;轻|qīng|ligero;清楚|qīng chu|claro;晴|qíng|despejado;晴天|qíng tiān|día soleado;请客|qǐng kè|invitar a comer;请求|qǐng qiú|pedir, solicitar;秋天|qiū tiān|otoño;求|qiú|pedir, buscar;球场|qiú chǎng|campo de deportes;球队|qiú duì|equipo deportivo;球鞋|qiú xié|zapatillas deportivas;取|qǔ|retirar;取得|qǔ dé|obtener;全|Quán|todo;全部|quán bù|todo, completo;全国|quán guó|todo el país;全家|quán jiā|toda la familia;全年|quán nián|todo el año;全身|quán shēn|todo el cuerpo;全体|quán tǐ|todos;然后|rán hòu|después;让|ràng|dejar, pedir que;热情|rè qíng|cordial;人口|rén kǒu|población;人们|rén men|la gente;人数|rén shù|número de personas;认为|rèn wéi|creer, considerar;日报|rì bào|diario;日子|rì zi|día, fecha;如果|rú guǒ|si;入口|rù kǒu|entrada;商量|shāng liang|consultar, discutir;商人|shāng rén|comerciante;上周|shàng zhōu|la semana pasada;少年|shào nián|adolescente;少数|shǎo shù|minoría;身边|shēn biān|a su lado;什么样|shén me yàng|¿qué tipo de?;生|shēng|nacer, vivir;生词|shēng cí|palabra nueva;生活|shēng huó|vida, vivir;声音|shēng yīn|voz, sonido;省|shěng|ahorrar;十分|shí fēn|muy;实际|shí jì|real;实习|shí xí|hacer prácticas;实现|shí xiàn|realizar, lograr;实在|shí zài|realmente;食物|shí wù|alimento;使用|shǐ yòng|usar;市|shì|ciudad, mercado;市长|shì zhǎng|alcalde;事情|shì qing|asunto;收|shōu|recibir;收到|shōu dào|recibir;收入|shōu rù|ingresos;手表|shǒu biǎo|reloj de pulsera;受到|shòu dào|recibir, sufrir;舒服|shū fu|cómodo, bien;熟|shú|maduro, familiar;数|shǔ|contar;数字|shù zì|número, cifra;水平|shuǐ píng|nivel;顺利|shùn lì|sin problemas;说明|shuō míng|explicar;司机|sī jī|conductor;送到|sòng dào|entregar (en destino);送给|sòng gěi|regalar, enviar a;算|suàn|contar como, calcular;虽然|suī rán|aunque;随便|suí biàn|como quieras;随时|suí shí|en cualquier momento;所以|suǒ yǐ|por eso;所有|suǒ yǒu|todo, todos;它|tā|ello (animal);它们|tā men|ellos (cosas);太太|tài tai|señora;太阳|tài yang|sol;态度|tài du|actitud;讨论|tǎo lùn|discutir;套|tào|funda, juego;特别|tè bié|especial, especialmente;特点|tè diǎn|característica;疼|téng|doler;提|dī|levantar, llevar;提出|tí chū|plantear, proponer;提到|tí dào|mencionar;提高|tí gāo|mejorar, elevar;题|Tí|pregunta, tema;体育|tǐ yù|deportes;体育场|tǐ yù chǎng|estadio;体育馆|tǐ yù guǎn|gimnasio;天上|tiān shàng|en el cielo;条|tiáo|clasificador (pantalones, falda);条件|tiáo jiàn|condición;听讲|tīng jiǎng|asistir a una clase;听说|tīng shuō|oír decir;停|tíng|parar;停车|tíng chē|estacionar;停车场|tíng chē chǎng|aparcamiento;挺|tǐng|bastante;挺好|tǐng hǎo|muy bien;通|tōng|pasar, comunicar;通过|tōng guò|a través de, aprobar;通知|tōng zhī|avisar;同时|tóng shí|al mismo tiempo;同事|tóng shì|compañero de trabajo;同样|tóng yàng|igual;头|tóu|cabeza;头发|tóu fa|pelo;图片|tú piàn|imagen, foto;推|tuī|empujar;腿|tuǐ|pierna;外地|wài dì|otro lugar (fuera de la ciudad);外卖|wài mài|comida a domicilio;完|wán|terminar;完成|wán chéng|completar;完全|wán quán|completamente;晚安|wǎn ān|buenas noches;晚报|wǎn bào|periódico vespertino;晚餐|wǎn cān|cena;晚会|wǎn huì|fiesta nocturna;碗|wǎn|cuenco;万|mò|diez mil;网|wǎng|red;网球|wǎng qiú|tenis;网站|wǎng zhàn|sitio web;往|wǎng|hacia;为|wéi|ser, por;为什么|wèi shén me|¿por qué?;位|wèi|puesto, persona (cortés);味道|wèi dao|sabor;喂|wéi|¿hola? (al teléfono);温度|wēn dù|temperatura;闻|Wén|oír, oler;问路|wèn lù|preguntar el camino;问题|wèn tí|pregunta, problema;午餐|wǔ cān|almuerzo;午睡|wǔ shuì|siesta;习惯|xí guàn|costumbre;洗衣机|xǐ yī jī|lavadora;洗澡|xǐ zǎo|bañarse;西北|Xī běi|noroeste;西餐|xī cān|comida occidental;西方|Xī fāng|occidente;西南|xī nán|suroeste;西医|xī yī|medicina occidental;下雪|xià xuě|nevar;下周|xià zhōu|la próxima semana;夏天|xià tiān|verano;相机|xiàng jī|cámara;相同|xiāng tóng|igual;相信|xiāng xìn|creer, confiar;响|xiǎng|sonar;想到|xiǎng dào|pensar en;想法|xiǎng fǎ|opinión, idea;想起|xiǎng qǐ|recordar;向|Xiàng|hacia;像|xiàng|parecerse;小声|xiǎo shēng|en voz baja;小时候|xiǎo shí hou|en la infancia;小说|xiǎo shuō|novela;小心|xiǎo xīn|tener cuidado;小组|xiǎo zǔ|grupo;校园|xiào yuán|campus;校长|xiào zhǎng|director (de escuela);笑话|xiào hua|chiste;笑话儿|xiàohuar5|chiste;鞋|xié|zapatos;心里|xīn li|en el corazón;心情|xīn qíng|estado de ánimo;心中|xīn zhōng|en el corazón;新闻|xīn wén|noticias;信|xìn|carta, creer;信号|xìn hào|señal;信息|xìn xī|mensaje;信心|xìn xīn|confianza;信用卡|xìn yòng kǎ|tarjeta de crédito;星星|xīng xing|estrella;行动|xíng dòng|acción;行人|xíng rén|peatón;行为|xíng wéi|conducta;姓|xìng|apellidarse;姓名|xìng míng|nombre completo;休假|xiū jià|estar de vacaciones;许多|xǔ duō|muchos;选|xuǎn|elegir;学期|xué qī|semestre;雪|Xuě|nieve;颜色|yán sè|color;眼|yǎn|ojo;眼睛|yǎn jing|ojos;养|yǎng|criar, mantener;样子|yàng zi|aspecto;药|yào|medicina;药店|yào diàn|farmacia;药片|yào piàn|pastilla;药水|Yào shuǐ|medicina líquida;要求|yāo qiú|pedir, exigir;也许|yě xǔ|quizá;夜|yè|noche;夜里|yè li|de noche;一般|yī bān|normal, general;一部分|yī bù fen|una parte;一点点|yī diǎn diǎn|un poquito;一定|yī dìng|seguro, sin duda;一共|yī gòng|en total;一路平安|yī lù píng ān|buen viaje;一路顺风|yī lù shùn fēng|buen viaje;一生|yī shēng|toda la vida;一直|yī zhí|todo recto;已经|yǐ jīng|ya;以后|yǐ hòu|después;以前|yǐ qián|antes;以上|yǐ shàng|más de, arriba;以外|yǐ wài|aparte de, fuera de;以为|yǐ wéi|creer (erróneamente);以下|yǐ xià|menos de, abajo;椅子|yǐ zi|silla;亿|yì|cien millones;意见|yì jiàn|opinión;意思|yì si|significado;因为|yīn wèi|porque;阴|Yīn|nublado;阴天|yīn tiān|día nublado;音节|yīn jié|sílaba;音乐|yīn yuè|música;音乐会|yīn yuè huì|concierto;银行|yín háng|banco;银行卡|yín háng kǎ|tarjeta bancaria;应该|yīng gāi|deber;英文|Yīng wén|inglés;英语|Yīng yǔ|inglés;影片|yǐng piàn|película;影响|yǐng xiǎng|influencia, influir;永远|yǒng yuǎn|para siempre;油|yóu|aceite;游客|yóu kè|turista;有点儿|yǒu diǎn r|un poco (algo);有空儿|yǒukòngr5|tener tiempo libre;有人|yǒu rén|alguien;有一点儿|yǒu yī diǎn r|un poco;有意思|yǒu yì si|interesante;又|yòu|otra vez;友好|Yǒu hǎo|amistoso;鱼|Yú|pescado;语言|yǔ yán|idioma;原来|yuán lái|originalmente;原因|yuán yīn|causa;院|yuàn|patio, institución;院长|yuàn zhǎng|director;院子|yuàn zi|patio;愿意|yuàn yì|estar dispuesto;月份|yuè fèn|mes;月亮|yuè liang|luna;越|Yuè|más (越…越…);越来越|yuè lái yuè|cada vez más;云|yún|nube;运动|yùn dòng|deporte, hacer ejercicio;咱|zán|nosotros;咱们|zán men|nosotros (incluyéndote);脏|zàng|sucio;早餐|zǎo cān|desayuno;早晨|zǎo chén|madrugada;早就|zǎo jiù|ya desde hace tiempo;怎么办|zěn me bàn|¿qué hacer?;怎么样|zěn me yàng|¿cómo está?;怎样|zěn yàng|¿cómo?;占|zhàn|ocupar;站住|zhàn zhù|detenerse;长|cháng|largo;长大|zhǎng dà|crecer;找出|zhǎo chū|encontrar;照顾|zhào gu|cuidar;照片|zhào piàn|foto;照相|zhào xiàng|hacer una foto;这么|zhè me|tan, así;这时|zhè shí|en este momento;这时候|zhè shíhòu|en este momento;这样|zhè yàng|así;真正|zhēn zhèng|verdadero;正常|zhèng cháng|normal;正好|zhèng hǎo|justo a tiempo;正确|zhèng què|correcto;正是|zhèng shì|es precisamente;直接|zhí jiē|directo;只|zhǐ|clasificador de animales;只能|zhǐ néng|solo poder;只要|zhǐ yào|con tal de que;纸|zhǐ|papel;中餐|zhōng cān|almuerzo;中级|zhōng jí|nivel intermedio;中年|zhōng nián|edad madura;中小学|zhōng xiǎo xué|primaria y secundaria;中心|zhōng xīn|centro;中医|Zhōng yī|medicina china;重点|chóng diǎn|punto clave;重复|chóng fù|repetir;重视|zhòng shì|dar importancia;重新|chóng xīn|de nuevo;周|Zhōu|semana, ciclo;周末|zhōu mò|fin de semana;周年|zhōu nián|aniversario;主人|zhǔ rén|dueño, anfitrión;主要|zhǔ yào|principal;住房|zhù fáng|vivienda;住院|zhù yuàn|estar ingresado;装|zhuāng|instalar, fingir;准确|zhǔn què|preciso;字典|zì diǎn|diccionario de caracteres;自己|zì jǐ|uno mismo;自行车|zì xíng chē|bicicleta;自由|zì yóu|libertad;走过|zǒu guò|pasar de largo;走进|zǒu jìn|entrar caminando;走开|zǒu kāi|apartarse;租|zū|alquilar (tomar en alquiler);组|Zǔ|grupo;组成|zǔ chéng|formar;组长|zǔ zhǎng|jefe de grupo;嘴|zuǐ|boca;最近|zuì jìn|últimamente;作家|zuò jiā|escritor;作文|zuò wén|redacción;作业|zuò yè|deberes;作用|zuò yòng|función, efecto;座|zuò|asiento, edificio;座位|zuò wèi|asiento;做到|zuò dào|lograr;做法|zuò fǎ|manera de hacer;做饭|zuò fàn|cocinar`};
+const D2={};[1,2].forEach(l=>{VOC[l]=VOC[l].split(';').map(x=>x.split('|'));VOC[l].forEach(v=>D2[v[0]]={p:v[1],e:v[2]})});
+const VH=w=>[...w].map((c,k)=>`<span class="h" data-w="${w}" data-k="${k}">${c}</span>`).join('');
+function vl(q){q=(q||'').trim().toLowerCase();return VOC[S.l].filter(v=>!q||v[0].includes(q)||v[1].toLowerCase().includes(q)||v[2].toLowerCase().includes(q)).map(v=>`<div class="v"><b>${VH(v[0])}</b><div style="flex:1"><div>${v[1]}</div><div class="mu">${v[2]}</div></div><button class="g" onclick="say('${v[0]}',.7)">🔊</button></div>`).join('')||'<p class="mu">Sin resultados.</p>'}
+const S={v:'home',l:1,t:0,i:0,sc:0,name:'',tab:'t',ans:null,show:false,rate:.8,done:{}};
+const $=s=>document.querySelector(s);
+function H(s){let o='',i=0;while(i<s.length){let m=null;for(let L=4;L>0;L--){const w=s.substr(i,L);if(D[w]){m=w;break}}
+if(m){[...m].forEach((c,k)=>o+=`<span class="h" data-w="${m}" data-k="${k}">${c}</span>`);i+=m.length}
+else{const c=s[i];o+=/[\u4e00-\u9fff]/.test(c)?`<span class="h" data-w="${c}" data-k="0">${c}</span>`:c;i++}}return o}
+let VS=[],voice=null,voice2=null,vname='';
+const vsc=v=>{const n=v.name;let x=0;if(/natural|neural|online/i.test(n))x+=100;if(/xiaoxiao|yunxi|xiaoyi|yunjian|yunyang|xiaochen|xiaohan|xiaomeng|xiaoxuan|yunfeng|yunhao|yunxia|xiaoshuang|xiaorui|xiaomo/i.test(n))x+=50;if(/premium|enhanced|增强|mejorad/i.test(n))x+=50;if(/google/i.test(n))x+=40;if(/ting-?ting|mei-?jia|li-?mu|lilian/i.test(n))x+=30;if(/^zh[-_]CN|cmn/i.test(v.lang))x+=20;if(/huihui|kangkang|yaoyao/i.test(n))x-=20;return x};
+const vmale=v=>/yun|kangkang|li-?mu|male|danny|wanlong|zhiwei/i.test(v.name)&&!/female/i.test(v.name);
+function pick(){if(!('speechSynthesis' in window))return;VS=speechSynthesis.getVoices().filter(v=>/^(zh|cmn)/i.test(v.lang)||/chinese|中文|普通话|mandarin/i.test(v.name)).sort((a,b)=>vsc(b)-vsc(a));voice=VS.find(v=>v.name==vname)||VS[0]||null;vname=voice?voice.name:'';voice2=voice?(VS.find(v=>v!=voice&&vmale(v)!=vmale(voice)&&/^zh[-_]CN|cmn/i.test(v.lang))||VS.find(v=>v!=voice&&vmale(v)!=vmale(voice))||null):null;if(S.v=='read'&&!speechSynthesis.speaking)R()}
+if('speechSynthesis' in window){pick();speechSynthesis.onvoiceschanged=pick}
+function setVoice(n){useRec=n=='__rec';if(!useRec){vname=n;pick()}say('你好，我是你的新声音。',.9)}
+let spk=0,useRec=true;
+const AU=new Audio();AU.preload='auto';
+const hk=s=>{let x=0x811c9dc5;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,0x01000193)}return(x>>>0).toString(16).padStart(8,'0')};
+function stopS(){spk++;AU.onended=AU.onerror=null;try{AU.pause()}catch(e){}if('speechSynthesis' in window)speechSynthesis.cancel()}
+function say(t,r){if(!useRec&&!('speechSynthesis' in window))return alert('Tu navegador no admite síntesis de voz.');stopS();const my=spk,re=/(小李妈妈|小王|小李|服务员|医生|护士|司机|老师|学生|妈妈|经理)：/g,T=[];let m,c=null,l=0;
+while((m=re.exec(t))){if(c!==null)T.push([c,t.slice(l,m.index)]);c=m[1];l=re.lastIndex}T.push([c,t.slice(l)]);
+const sp=[...new Set(T.map(x=>x[0]))],Q=[];
+T.forEach(x=>{const vi=sp.indexOf(x[0]),ps=x[1].trim().split(/(?<=[。！？!?])/).map(y=>y.trim()).filter(Boolean);ps.forEach((y,j)=>Q.push([y,vi,j==ps.length-1]))});
+const next=i=>{if(my==spk)setTimeout(()=>run(i+1),Q[i][2]?650:250)};
+const tts=i=>{if(!('speechSynthesis' in window))return next(i);const u=new SpeechSynthesisUtterance(Q[i][0]),second=Q[i][1]%2==1;u.lang='zh-CN';const vv=second&&voice2?voice2:voice;if(vv)u.voice=vv;u.rate=r||S.rate;u.pitch=second&&!voice2?1.12:1;u.onend=()=>next(i);u.onerror=()=>{};speechSynthesis.speak(u)};
+const rec=i=>{let done=0;const fail=()=>{if(done++||my!=spk)return;AU.onended=AU.onerror=null;const y=Q[i][0],ps=y.split('，').map(z=>z.trim()).filter(Boolean);if(ps.length>1){Q.splice(i,1,...ps.map((z,j)=>[z,Q[i][1],j==ps.length-1&&Q[i][2]]));rec(i)}else tts(i)};
+AU.onended=()=>{if(!done++)next(i)};AU.onerror=fail;AU.src='audio/'+hk(Q[i][1]%2+Q[i][0])+'.mp3';AU.playbackRate=AU.defaultPlaybackRate=(r||S.rate)+.1;const p=AU.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name!='AbortError')fail()})};
+const run=i=>{if(my!=spk||i>=Q.length)return;useRec?rec(i):tts(i)};run(0)}
+function pop(w,k){const e=D[w]||D2[w],c=[...w][k],py=e?e.p.split(' ')[k]:'';
+$('#pop').style.display='block';
+$('#pop').innerHTML=`<div class="top"><div><span class="big">${c}</span><div>${py||'—'}</div></div><button class="g" onclick="$('#pop').style.display='none'">✕</button></div>
+${e?`<p><b>${w}</b> · ${e.p}<br>${e.e}</p>`:'<p class="mu">Sin entrada en el diccionario.</p>'}
+<div class="row"><button onclick="say('${c}',.6)">🔊 ${c}</button>${w.length>1?`<button onclick="say('${w}',.6)">🔊 ${w}</button>`:''}</div>`}
+document.addEventListener('click',e=>{const h=e.target.closest('.h');if(h)pop(h.dataset.w,+h.dataset.k)});
+function go(v,o){stopS();Object.assign(S,{v},o||{});$('#pop').style.display='none';R();scrollTo(0,0)}
+function R(){$('#app').innerHTML=VW[S.v]()}
+const rates=[[.5,'Muy lenta'],[.7,'Lenta'],[.9,'Normal'],[1.1,'Rápida']];
+function TP(L){let n=0,k=0,g='';return L.tp.map((t,i)=>{let h='',lb;if(t[2]){if(t[2]!=g){g=t[2];n++;k=0;h=`<div class="mu" style="margin:14px 0 2px;font-weight:600">${n}. ${g}</div>`}k++;lb=`${n}.${k}`}else{g='';n++;lb=n}
+const ind=t[2]?'style="margin-left:14px;width:calc(100% - 14px)"':'';
+return h+(L.T[i]?`<button class="tp" ${ind} onclick="go('read',{t:${i},i:0,sc:0,ans:null,show:false,done:{}})"><span>${lb} ${t[0]} · ${t[1]}</span><span>${L.T[i].length} textos ▶</span></button>`:`<button class="tp lock" ${ind}><span>${lb} ${t[0]} · ${t[1]}</span><span>🔒</span></button>`)}).join('')}
+const VW={
+home(){return`<div style="text-align:center;padding:30px 0"><div style="font-size:4rem">🎧</div><h1>听书</h1><h2>TīngShū</h2><p class="mu">Audiolibros de chino por niveles · HSK 3.0</p></div>
+<div class="card"><label class="mu">Tu nombre (opcional)</label><input id="nm" placeholder="Nombre" value="${S.name}"></div>
+<div class="row"><button onclick="S.name=$('#nm').value;go('lvl',{l:1,tab:'t'})">HSK 1</button><button onclick="S.name=$('#nm').value;go('lvl',{l:2,tab:'t'})">HSK 2</button></div>
+<p class="mu" style="text-align:center">Toca cualquier hanzi para ver pinyin, traducción y escuchar su pronunciación.</p>`},
+lvl(){const L=LV[S.l];return`<div class="top"><button class="g" onclick="go('home')">←</button><h2>${L.n}</h2><span></span></div>
+<div class="tabs" style="margin:10px 0"><button class="${S.tab=='t'?'':'g'}" onclick="S.tab='t';R()">Temas</button><button class="${S.tab=='v'?'':'g'}" onclick="S.tab='v';R()">Vocabulario (${VOC[S.l].length})</button></div>`+
+(S.tab=='t'?TP(L):
+`<input id="q" placeholder="Buscar en hanzi, pinyin o español" oninput="$('#vl').innerHTML=vl(this.value)" style="margin-bottom:8px"><div class="card" id="vl">${vl('')}</div>`)},
+read(){const L=LV[S.l],x=L.T[S.t][S.i],tp=L.tp[S.t],N=L.T[S.t].length;
+return`<div class="top"><button class="g" onclick="go('lvl')">←</button><span class="mu">${tp[0]} · Texto ${S.i+1}/${N}</span><span class="mu">★ ${S.sc}</span></div><div class="row" style="margin:10px 0"><button class="g" ${S.i?'':'disabled'} onclick="mv(-1)">← Texto anterior</button><button class="g" onclick="mv(1)">${S.i<N-1?'Texto siguiente →':'Terminar'}</button></div>
+<div class="card"><div class="hz">${H(x[0])}</div><div class="mu" style="margin-top:4px">${GR(x[0])}</div>
+<div class="row" style="margin-top:10px"><button onclick="say(LV[S.l].T[S.t][S.i][0])">▶ Escuchar</button><button class="g" onclick="stopS()">■ Parar</button>
+<select onchange="S.rate=+this.value">${rates.map(r=>`<option value="${r[0]}" ${r[0]==S.rate?'selected':''}>${r[1]} (${r[0]}×)</option>`).join('')}</select><select onchange="setVoice(this.value)" title="Voz"><option value="__rec" ${useRec?'selected':''}>Voz nativa (grabada)</option>${VS.map(v=>`<option value="${v.name}" ${!useRec&&v==voice?'selected':''}>${v.name.replace(/Microsoft |Google /,'')}</option>`).join('')}</select></div>${useRec||VS.some(v=>/natural|neural|premium|enhanced/i.test(v.name))?'':'<div class="mu" style="margin-top:6px">Para una voz más natural, abre la app en Microsoft Edge (voces «Natural») o instala una voz china en tu sistema.</div>'}</div>
+${S.show?`<div class="card"><div class="mu">Pregunta ${S.i+1}/${N}</div><div class="hz" style="font-size:1.7rem">${H(x[1])}</div><div class="row" style="margin-bottom:6px"><button class="g" onclick="say(LV[S.l].T[S.t][S.i][1])">🔊 Pregunta</button><button class="g" onclick="say(LV[S.l].T[S.t][S.i][2].join('，'))">🔊 Opciones</button></div>
+${x[2].map((o,j)=>`<button class="opt ${S.ans==null?'':j==x[3]?'ok':j==S.ans?'bad':''}" ${S.ans==null?`onclick="ans(${j})"`:'disabled'}>${H(o)}</button>`).join('')}
+${S.ans!=null?`<button style="width:100%;margin-top:6px" onclick="nx()">${S.i<N-1?'Siguiente texto →':'Ver puntuación'}</button>`:''}</div>`:
+`<button style="width:100%" onclick="S.show=true;R();say(LV[S.l].T[S.t][S.i][1])">Responder la pregunta</button>`}`},
+score(){const s=S.sc,N=LV[S.l].T[S.t].length,m=s==N?'¡Perfecto! 太棒了！':s>=N*.6?'¡Muy bien! 很好！':'¡Sigue practicando! 加油！';
+return`<div class="card" style="text-align:center;margin-top:40px"><h2>${S.name?S.name+', t':'T'}u puntuación</h2><div class="mu">${LV[S.l].tp[S.t][0]} · ${LV[S.l].tp[S.t][1]}</div><div class="sc">${s}/${N}</div><p>${m}</p>
+<div class="row"><button onclick="go('read',{t:S.t,i:0,sc:0,ans:null,show:false,done:{}})">Repetir</button><button class="g" onclick="go('lvl')">Temas</button></div></div>`}};
+function ans(j){const x=LV[S.l].T[S.t][S.i];S.ans=j;const k=S.l+'.'+S.t+'.'+S.i;if(j==x[3]&&!S.done[k]){S.sc++;S.done[k]=1}R()}
+function mv(d){const n=LV[S.l].T[S.t].length,i=S.i+d;if(i<0)return;if(i>=n)go('score');else go('read',{i,ans:null,show:false})}
+function nx(){if(S.i<LV[S.l].T[S.t].length-1)go('read',{i:S.i+1,ans:null,show:false});else go('score')}
+
+P(`有|yǒu|tener, haber;几|jǐ|¿cuántos?;哥哥|gē ge|hermano mayor;姐姐|jiě jie|hermana mayor;二|èr|dos;四|sì|cuatro;六|liù|seis;七|qī|siete;八|bā|ocho;九|jiǔ|nueve;加|jiā|más, sumar;今天|jīn tiān|hoy;星期|xīng qī|semana;现在|xiàn zài|ahora;点|diǎn|hora, en punto;学校|xué xiào|escuela;学习|xué xí|estudiar;看|kàn|mirar, leer;书|shū|libro;天气|tiān qì|clima;冷|lěng|frío;热|rè|calor;要|yào|querer, necesitar;颜色|yán sè|color;红色|hóng sè|rojo;白色|bái sè|blanco;黑色|hēi sè|negro;头|tóu|cabeza;大|dà|grande;手|shǒu|mano;眼睛|yǎn jing|ojos;做|zuò|hacer;只|zhī|clasificador de animales;猫|māo|gato;狗|gǒu|perro;它|tā|ello (animal);车|chē|coche, vehículo;走路|zǒu lù|caminar;飞机|fēi jī|avión;听|tīng|escuchar;歌|gē|canción;打球|dǎ qiú|jugar a la pelota;房间|fáng jiān|habitación;起床|qǐ chuáng|levantarse;睡觉|shuì jiào|dormir`,1);
+P(`上海|shàng hǎi|Shanghái;旅行|lǚ xíng|viajar;舒服|shū fu|cómodo, bien;医院|yī yuàn|hospital;医生|yī shēng|médico;工作|gōng zuò|trabajar, trabajo;请问|qǐng wèn|disculpe, por favor;打电话|dǎ diàn huà|llamar por teléfono;给|gěi|a, dar;春节|chūn jié|Año Nuevo chino;饺子|jiǎo zi|dumplings;新年快乐|xīn nián kuài lè|¡feliz año nuevo!;每天|měi tiān|cada día;跑步|pǎo bù|correr;游泳|yóu yǒng|nadar;城市|chéng shì|ciudad;远|yuǎn|lejos;衣服|yī fu|ropa;了|le|partícula de acción cumplida;件|jiàn|clasificador de prendas;好看|hǎo kàn|bonito;一起|yì qǐ|juntos;高|gāo|alto;床|chuáng|cama;桌子|zhuō zi|mesa;里|lǐ|dentro;还|hái|además;上|shàng|encima, sobre;本|běn|clasificador de libros;下雨|xià yǔ|llover;汉语|hàn yǔ|chino (idioma);英语|yīng yǔ|inglés;好玩|hǎo wán|divertido;银行|yín háng|banco;百|bǎi|cien;前面|qián miàn|delante;后面|hòu miàn|detrás;左|zuǒ|izquierda;右|yòu|derecha;向|xiàng|hacia;走|zǒu|caminar, ir`,2);
+const X=a=>a.map(s=>{const z=s.split('|');return[z[0],z[1],[z[2],z[3],z[4]],0]});
+[[
+'我家有爸爸、妈妈和我。|我家有几个人？|三个人|两个人|五个人','他是我哥哥。她是我姐姐。|他是我的什么人？|哥哥|姐姐|爸爸'],
+['一、二、三、四、五。我有五个苹果。|我有几个苹果？|五个|三个|四个','六加四是十。|六加四是几？|十|八|九'],
+['今天星期一。明天星期二。|明天星期几？|星期二|星期一|星期三','现在八点。我去学校。|现在几点？|八点|九点|十点'],
+['小明：你喝什么？小王：我喝茶。|小王喝什么？|茶|水|牛奶','米饭很好吃，我很喜欢。|他喜欢什么？|米饭|鱼|面包'],
+['我是学生。我在学校学习。|他在哪儿学习？|学校|家|饭馆','老师说：请看书。|老师说什么？|请看书|请坐|再见'],
+['今天天气很好。我们去北京。|今天天气怎么样？|很好|不好|很冷','明天很冷。我不去学校。|明天天气怎么样？|很冷|很好|很热'],
+['这个多少钱？八块。我要两个。|他要几个？|两个|三个|八个','苹果很好。我买五个苹果。|他买什么？|苹果|鱼|茶'],
+['我的书是红色的。|书是什么颜色？|红色|白色|黑色','她的家是白色的。|她的什么是白色的？|家|书|茶'],
+['我的头很大。我的手很小。|他的什么很小？|手|头|书','我的眼睛很大。我喜欢看书。|他喜欢做什么？|看书|做饭|喝茶'],
+['我有一只猫。我喜欢猫。|他有什么？|猫|狗|鱼','这是狗。它很大。|狗怎么样？|很大|很小|很好'],
+['我坐车去学校。|他怎么去学校？|坐车|走路|坐飞机','明天我坐飞机去北京。|他去哪儿？|北京|学校|家'],
+['我喜欢看书，也喜欢听歌。|他喜欢听什么？|歌|书|茶','她喜欢打球。她不喜欢看书。|她喜欢什么？|打球|看书|听歌'],
+['我的家很大。我家有三个房间。|我家有几个房间？|三个|两个|五个','我在房间看书。|他在哪儿看书？|房间|学校|饭馆'],
+['我七点起床。八点去学校。|他几点起床？|七点|八点|九点','晚上我看书，十点睡觉。|他几点睡觉？|十点|八点|七点']
+].forEach((a,i)=>LV[1].T[i+1]=X(a));
+[[
+'我想去上海旅行。我坐飞机去。|他怎么去上海？|坐飞机|坐车|走路','上海很大，人很多。我很喜欢。|上海怎么样？|人很多|很冷|很小'],
+['我不舒服。我去医院。|他去哪儿？|医院|学校|饭馆','医生说：多喝水。|医生说什么？|多喝水|多吃鱼|多看书'],
+['我爸爸是医生。他在医院工作。|爸爸在哪儿工作？|医院|学校|饭馆','妈妈今天很忙。她不在家。|妈妈今天怎么样？|很忙|很冷|很好'],
+['小王打电话。他说：你好，小明！|谁打电话？|小王|小明|老师','明天我给你打电话，好吗？|他明天做什么？|打电话|看书|去学校'],
+['今天是春节。我们吃饺子。|春节吃什么？|饺子|面包|米饭','朋友说：新年快乐！|朋友说什么？|新年快乐|再见|谢谢'],
+['我每天跑步。跑步很好。|他每天做什么？|跑步|看书|做饭','他喜欢游泳。我喜欢打球。|我喜欢什么？|打球|游泳|跑步'],
+['北京是一个大城市。人很多。|北京怎么样？|很大|很小|很冷','我家在北京。学校很远。|他家在哪儿？|北京|上海|学校'],
+['我买了一件衣服。|他买了什么？|衣服|苹果|书','这件衣服很好看。多少钱？|他问什么？|多少钱|几点|哪儿'],
+['他是我的好朋友。我们一起学习。|他们一起做什么？|学习|做饭|打球','我的朋友很高。他喜欢打球。|朋友喜欢什么？|打球|游泳|看书'],
+['我的房间里有一个床，还有一个桌子。|房间里有什么？|床|车|猫','桌子上有一本书。|桌子上有什么？|书|猫|茶'],
+['今天下雨。我不去学校。|今天天气怎么样？|下雨|很热|很好','明天很热。我想喝水。|他想喝什么？|水|茶|牛奶'],
+['我学习汉语。汉语很好玩。|他学习什么？|汉语|英语|书','老师说汉语。我听汉语。我也说汉语。|我也做什么？|说汉语|看书|听歌'],
+['我去银行。我想要一百块。|他去哪儿？|银行|医院|学校','这本书三十块。我有五十块。|我有多少钱？|五十块|三十块|一百块'],
+['学校在北京。医院在学校前面。|医院在哪儿？|学校前面|学校后面|家','请问，银行在哪儿？向左走。|银行怎么走？|向左走|向右走|不走']
+].forEach((a,i)=>LV[2].T[i+1]=X(a));
+
+P(`弟弟|dì di|hermano menor;妹妹|mèi mei|hermana menor;蓝色|lán sè|azul;绿色|lǜ sè|verde;黄色|huáng sè|amarillo;耳朵|ěr duo|oreja;嘴|zuǐ|boca;脚|jiǎo|pie;疼|téng|doler;鸟|niǎo|pájaro;马|mǎ|caballo;牛|niú|vaca;火车|huǒ chē|tren;地铁|dì tiě|metro;船|chuán|barco;看电影|kàn diàn yǐng|ver una película;电视|diàn shì|televisión;电脑|diàn nǎo|ordenador;椅子|yǐ zi|silla;门|mén|puerta`,1);
+P(`中国|zhōng guó|China;日本|rì běn|Japón;美国|měi guó|Estados Unidos;法国|fǎ guó|Francia;西班牙|xī bān yá|España;西班牙语|xī bān yá yǔ|español (idioma);警察|jǐng chá|policía;司机|sī jī|conductor;工人|gōng rén|obrero;面条|miàn tiáo|fideos;月饼|yuè bǐng|pastel de luna;节日|jié rì|fiesta;踢球|tī qiú|jugar al fútbol;跳舞|tiào wǔ|bailar;骑车|qí chē|ir en bici;广州|guǎng zhōu|Cantón;成都|chéng dū|Chengdú;西安|xī ān|Xi'an;马德里|mǎ dé lǐ|Madrid;裤子|kù zi|pantalones;鞋|xié|zapatos;帽子|mào zi|gorro;裙子|qún zi|falda;下雪|xià xuě|nevar;数学|shù xué|matemáticas;音乐|yīn yuè|música;左边|zuǒ biān|lado izquierdo;右边|yòu biān|lado derecho;里面|lǐ miàn|dentro;外面|wài miàn|fuera`,2);
+P(`会|huì|saber, poder;能|néng|poder;可以|kě yǐ|poder, se puede;没有|méi yǒu|no tener, no haber;没|méi|no (negación del pasado);都|dōu|todos, todo;呢|ne|¿y tú? (partícula)`,1);
+P(`过|guò|partícula de experiencia;比|bǐ|más que (comparación);因为|yīn wèi|porque;所以|suǒ yǐ|por eso;但是|dàn shì|pero;还是|hái shi|o (en preguntas);正在|zhèng zài|estar haciendo;太|tài|demasiado;觉得|jué de|pensar, opinar;贵|guì|caro`,2);
+P(`怎么|zěn me|cómo`,1);P(`问|wèn|preguntar;吃饭|chī fàn|comer (una comida);学|xué|aprender, estudiar`,2);
+const G=(old,fr,pool)=>{const used=new Set(old.map(x=>x[0])),out=[],sh=a=>a.slice().sort(()=>Math.random()-.5);for(let k=0;out.length<8&&k<400;k++){const f=fr[k%fr.length].split('|'),Q=pool.length,i=(Math.floor(k/fr.length)+2*(k%fr.length))%Q,n=pool[i],m=pool[(i+1)%Q],two=f[0].includes('{m}'),t=f[0].replace(/\{n\}/g,n).replace(/\{m\}/g,m);if(used.has(t))continue;used.add(t);const c=two&&f[4]!='n'?m:n,o=c==m?n:m,r=sh(pool.filter(x=>x!=n&&x!=m)),d=two?[o,r[0]]:sh(pool.filter(x=>x!=c)).slice(0,2),fm=x=>(f[2]||'')+x+(f[3]||'');out.push([t,f[1],[c,...d].map(fm),0])}return out};
+const GM=[[/因为/,'因为…所以… (causa y efecto)'],[/但是/,'但是 (contraste)'],[/还是/,'还是 (o, en preguntas)'],[/比/,'比 (comparación)'],[/正在/,'正在 + verbo (acción en curso)'],[/过/,'过 (experiencia pasada)'],[/太.*了/,'太…了 (demasiado)'],[/没有/,'没有 (no tener/haber)'],[/没/,'没 (negación del pasado)'],[/了/,'了 (acción cumplida)'],[/吗/,'吗 (pregunta sí/no)'],[/呢/,'呢 (¿y tú?)'],[/(?<!成)都/,'都 (todos)'],[/也/,'也 (también)'],[/会/,'会 (saber, poder)'],[/可以/,'可以 (poder, permiso)'],[/想/,'想 + verbo (querer)'],[/要/,'要 (querer, necesitar)'],[/几|多少|什么|谁|哪儿|怎么/,'Palabras interrogativas'],[/(?<![现正])在/,'在 + lugar'],[/有/,'有 (tener, haber)'],[/的/,'的 (posesión)'],[/很/,'很+ adjetivo'],[/不/,'不 (negación)'],[/吧/,'吧 (sugerencia)'],[/是/,'是 (ser)']];
+const GR=t=>{const a=GM.filter(g=>g[0].test(t)).slice(0,2).map(g=>g[1]);return a.length?'Gramática: '+a.join(' · '):''};
+[[['{n}是我的家人。|谁是我的家人？','你的{n}在家吗？|我问谁在家？','我的{n}也很忙。|谁也很忙？','我喜欢我的{n}。|我喜欢谁？'],'爸爸,妈妈,哥哥,姐姐,弟弟,妹妹'],
+[['我有{n}个苹果。|我有几个苹果？||个','我家有{n}个人。|我家有几个人？||个','我想买{n}个鸡蛋。|我想买几个鸡蛋？||个','我要{n}杯茶。|我要几杯茶？||杯'],'一,二,三,四,五,六,七,八,九,十'],
+[['现在{n}点。|现在几点？||点','我{n}点吃饭，你呢？|我几点吃饭？||点','我{n}点去学校。|我几点去学校？||点','我{n}点睡觉了。|我几点睡觉？||点'],'一,二,三,四,五,六,七,八,九,十'],
+[['我想吃{n}。|我想吃什么？','你想吃{n}吗？|我问你想吃什么？','我们都喜欢吃{n}。|我们都喜欢吃什么？','我不喜欢吃{n}，我喜欢吃{m}。|我喜欢吃什么？'],'面包,米饭,鱼,鸡蛋,苹果,饺子'],
+[['{n}在学校。|谁在学校？','我和{n}在学校学习。|我和谁学习？','{n}也喜欢学习。|谁也喜欢学习？','{n}会说汉语。|谁会说汉语？'],'小明,小王,李红,老师,学生,朋友,他'],
+[['今天{n}。|今天天气怎么样？','明天{n}，你呢？|明天天气怎么样？','北京今天{n}。|北京今天天气怎么样？','今天{n}，我不去学校。|今天天气怎么样？'],'很冷,很热,很好,下雨,不好'],
+[['我想买{n}。|我想买什么？','我买了{n}。|我买了什么？','我要{n}，不要{m}。|我要什么？|||n','你有{n}吗？|我问你有什么？'],'苹果,茶,衣服,书,鸡蛋,鱼,牛奶'],
+[['我的书是{n}的。|书是什么颜色？','我的衣服是{n}的。|衣服是什么颜色？','我的猫是{n}的。|猫是什么颜色？','我喜欢{n}，不喜欢{m}。|我喜欢什么颜色？|||n'],'红色,白色,黑色,蓝色,绿色,黄色'],
+[['我的{n}不舒服。|什么不舒服？','你的{n}好吗？|我问什么好吗？','我的{n}很疼。|什么很疼？','医生看我的{n}。|医生看什么？'],'头,手,眼睛,耳朵,嘴,脚'],
+[['我喜欢{n}。|我喜欢什么？','我没有{n}，我有{m}。|我有什么？','你喜欢{n}吗？|我问你喜欢什么？','我家有{n}。|我家有什么？'],'猫,狗,鱼,鸟,马,牛'],
+[['我坐{n}去学校。|我怎么去学校？|坐','明天我坐{n}去北京。|我怎么去北京？|坐','我不坐{n}，坐{m}。|我坐什么？','今天我坐{n}。|我坐什么？'],'车,飞机,火车,地铁,船'],
+[['我喜欢{n}。|我喜欢什么？','明天我想{n}，你呢？|明天我想做什么？','我不喜欢{n}，我喜欢{m}。|我喜欢什么？','朋友说：我们一起{n}吧。|朋友想做什么？'],'看书,听歌,打球,跑步,游泳,做饭,看电影'],
+[['我家有{n}。|我家有什么？','房间里没有{n}，有{m}。|房间里有什么？','我想买{n}。|我想买什么？','{n}在房间里吗？|我问什么在房间里？'],'床,桌子,电视,电脑,椅子,门'],
+[['我每天{n}。|我每天做什么？','我现在想{n}。|我现在想做什么？','我正在{n}。|我正在做什么？','我{n}了。|我做了什么？'],'起床,吃饭,看书,睡觉,喝茶,听歌,去学校']
+].forEach(([fr,p],i)=>{const T=LV[1].T[i+1];T.push(...G(T,fr,p.split(',')))});
+[[['我去过{n}。|我去过哪儿？','我想去{n}，但是我没有钱。|我想去哪儿？','我们坐飞机去{n}吧。|我们去哪儿？','我去{n}旅行了。|我去哪儿旅行了？'],'北京,上海,中国,日本,美国,法国,西班牙'],
+[['因为我的{n}很疼，所以我去医院。|什么很疼？','我的{n}不舒服，所以我去医院。|什么不舒服？','医生看了我的{n}。|医生看了什么？','我的{n}很疼。|什么很疼？'],'头,手,眼睛,耳朵,嘴,脚'],
+[['我爸爸是{n}，他很忙。|爸爸是什么？','我妈妈是{n}。|妈妈是什么？','你是{n}吗？|我问你是什么？','我想做{n}。|我想做什么？'],'医生,老师,警察,司机,工人,学生'],
+[['我给{n}打电话。|我给谁打电话？','{n}给我打电话了。|谁给我打电话了？','我正在给{n}打电话。|我正在给谁打电话？','明天我可以给{n}打电话吗？|我想给谁打电话？'],'爸爸,妈妈,朋友,老师,医生,哥哥,姐姐'],
+[['春节我们吃{n}。|春节吃什么？','我吃过{n}。|我吃过什么？','我喜欢{n}，但是不喜欢{m}。|我喜欢什么？|||n','朋友买了{n}。|朋友买了什么？'],'饺子,鱼,月饼,鸡蛋,苹果,面条,米饭'],
+[['我每天{n}。|我每天做什么？','我会{n}。|我会做什么？','我喜欢{n}，但是不会{m}。|我喜欢什么？|||n','你喜欢{n}还是{m}？我喜欢{n}。|我喜欢什么？|||n'],'跑步,游泳,打球,踢球,跳舞,骑车'],
+[['我家在{n}。|我家在哪儿？','{n}是一个大城市。|什么是大城市？','我去过{n}，没去过{m}。|我没去过哪儿？','朋友在{n}工作。|朋友在哪儿工作？'],'北京,上海,广州,成都,西安,马德里'],
+[['我想买{n}。|我想买什么？','我觉得{n}比{m}好看。|我觉得什么好看？|||n','我买了{n}，太贵了。|我买了什么？','妈妈给我买了{n}。|妈妈给我买了什么？'],'衣服,裤子,鞋,帽子,裙子'],
+[['我的朋友很{n}。|朋友怎么样？|很','她是我的朋友，她比我{n}。|她怎么样？|比我','他是我的好朋友，他也很{n}。|他怎么样？|很','我的朋友太{n}了。|朋友怎么样？|太|了'],'高,忙,好,好看,好玩'],
+[['房间里有{n}。|房间里有什么？','房间里有{n}，没有{m}。|房间里没有什么？','你的房间里有{n}吗？|我问你的房间里有什么？','我的{n}在房间里。|什么在房间里？'],'床,桌子,电视,电脑,椅子,书,门'],
+[['今天{n}。|今天天气怎么样？','明天{n}，所以我不去学校。|明天天气怎么样？','因为今天{n}，所以我在家。|今天天气怎么样？','北京明天{n}。|北京明天天气怎么样？'],'很冷,很热,下雨,下雪'],
+[['我学习{n}。|我学习什么？','我正在学习{n}。|我正在学习什么？','我学过{n}。|我学过什么？','我喜欢{n}，但是不喜欢{m}。|我喜欢什么？|||n'],'汉语,英语,西班牙语,数学,音乐'],
+[['我有{n}块钱。|我有多少钱？||块','我没有{n}块钱。|我没有多少钱？||块','我去银行要{n}块。|我要多少钱？||块','这本书{n}块，我买了。|书多少钱？||块'],'一百,五十,三十,二十,八十,十'],
+[['医院在学校{n}。|医院在哪儿？|学校','银行在饭馆{n}。|银行在哪儿？|饭馆','我家在医院{n}。|我家在哪儿？|医院','饭馆在银行{n}。|饭馆在哪儿？|银行'],'前面,后面,左边,右边,里面,外面']
+].forEach(([fr,p],i)=>{const T=LV[2].T[i+1];T.push(...G(T,fr,p.split(',')))});
+P(`火车票|huǒ chē piào|billete de tren;飞机票|fēi jī piào|billete de avión;汽车票|qì chē piào|billete de autobús;票|piào|billete, entrada;一张|yì zhāng|un/una (billetes, papeles);火车站|huǒ chē zhàn|estación de tren;汽车站|qì chē zhàn|estación de autobuses;汽车|qì chē|autobús, coche;机场|jī chǎng|aeropuerto;站台|zhàn tái|andén;站|zhàn|parada, estación;座位|zuò wèi|asiento;号|hào|número, día del mes;哪|nǎ|¿cuál?;哪个|nǎ ge|¿cuál?;那个|nà ge|aquel, ese;到|dào|llegar;从|cóng|desde;这儿|zhèr|aquí;前|qián|delante;一直|yì zhí|todo recto;往|wǎng|hacia;开|kāi|salir (un transporte), abrir, conducir;晚点|wǎn diǎn|con retraso;大概|dà gài|aproximadamente;多长时间|duō cháng shí jiān|¿cuánto tiempo?;小时|xiǎo shí|hora (duración);分钟|fēn zhōng|minuto;等|děng|esperar;来|lái|venir;为什么|wèi shén me|¿por qué?;公共汽车|gōng gòng qì chē|autobús urbano;出租车|chū zū chē|taxi;上车|shàng chē|subir al vehículo;换车|huàn chē|cambiar de vehículo;换|huàn|cambiar;不客气|bú kè qi|de nada;酒店|jiǔ diàn|hotel;预订|yù dìng|reservar;护照|hù zhào|pasaporte;行李|xíng li|equipaje;先|xiān|primero;然后|rán hòu|después;服务员|fú wù yuán|camarero/a;几位|jǐ wèi|¿cuántas personas?;两位|liǎng wèi|dos personas;菜单|cài dān|menú;辣|là|picante;一共|yí gòng|en total;买单|mǎi dān|pedir la cuenta;手机|shǒu jī|teléfono móvil;付钱|fù qián|pagar;用|yòng|usar;啊|a|partícula de énfasis`,2);
+P(`找|zhǎo|buscar;路|lù|camino, carretera;再|zài|otra vez, de nuevo`,2);
+LV[2].T[1]=X([
+'小王：你好，我要买一张去上海的火车票。小李：好的，明天早上八点的，可以吗？小王：可以。多少钱？小李：三百块。|小王买什么票？|火车票|飞机票|汽车票',
+'小王：请问，我的座位在哪儿？小李：你的票是几号？小王：十二号。小李：在前面，左边。|小王在找什么？|座位|行李|护照',
+'小王：请问，去北京的火车在哪个站台？小李：在三号站台。从这儿一直往前走。|去北京的火车在哪儿？|三号站台|五号站台|二号站台',
+'小李：去上海的火车几点开？小王：八点开，但是今天晚点了。小李：要等多长时间？小王：大概四十分钟。|火车晚点了多长时间？|四十分钟|一个小时|十分钟',
+'小王：这个公共汽车去机场吗？司机：去。小王：到机场要多长时间？司机：大概一个小时。上车吧。|公共汽车去哪儿？|机场|火车站|酒店',
+'小李：汽车怎么还没来？小王：对不起，汽车晚点了。因为下雨，路上车很多。小李：好，我们再等十分钟。|汽车为什么晚点？|因为下雨|因为很冷|因为没有司机',
+'司机：你好，你去哪儿？小王：我去火车站。司机：请上车。小王：到火车站要多少钱？司机：大概五十块。|小王去哪儿？|火车站|机场|酒店',
+'小王：请问，去酒店怎么走？小李：你坐地铁，在前面那个站换车。小王：谢谢！小李：不客气。|小王想去哪儿？|酒店|医院|学校',
+'小王：你好，我预订了一个房间。小李：请给我你的护照。小王：给你。小李：你的房间在三号，在左边。|小王给小李什么？|护照|火车票|行李',
+'小李：你有几个行李？小王：两个。小李：好。请给我你的护照，然后去一号门。|小王有几个行李？|两个|三个|一个']);
+LV[2].T[0].splice(5,5,...X([
+'服务员：你好，几位？小王：两位。服务员：请坐。这是菜单。|服务员给小王什么？|菜单|票|护照',
+'小王：我要一个鱼，一个米饭。小李：我不吃鱼，我吃面条。小王：你想喝什么？小李：我喝茶。|小李想吃什么？|面条|鱼|米饭',
+'小王：这个菜太辣了！小李：你不吃辣吗？小王：我不能吃辣。请给我一杯水。|小王为什么要水？|菜太辣了|菜太贵了|菜很好吃',
+'小李：服务员，买单！服务员：一共八十五块。小李：我可以用手机付钱吗？服务员：可以。|一共多少钱？|八十五块|五十八块|八十块',
+'小王：今天我们在家吃饭，好吗？小李：好啊。你想吃什么？小王：我想吃饺子，但是家里没有鸡蛋。小李：我去买吧。|小李要去做什么？|买鸡蛋|做饭|看书']));
+P(`早饭|zǎo fàn|desayuno;饿|è|hambriento;别的|bié de|otra cosa;肉|ròu|carne;书店|shū diàn|librería;一本|yì běn|un (libro);看看|kàn kan|echar un vistazo;欢迎光临|huān yíng guāng lín|bienvenido;商店|shāng diàn|tienda;开门|kāi mén|abrir (un negocio)`,1);
+P(`药|yào|medicina;度|dù|grado;次|cì|vez;一天|yì tiān|un día;天|tiān|día;咳嗽|ké sou|toser;休息|xiū xi|descansar;挂号|guà hào|sacar cita;护士|hù shi|enfermero/a;科|kē|departamento;内科|nèi kē|medicina interna;肚子|dù zi|barriga;饭后|fàn hòu|después de comer;饭前|fàn qián|antes de comer;生病|shēng bìng|enfermar;就|jiù|justo, precisamente`,2);
+P(`发烧|fā shāo|tener fiebre;时候|shí hou|momento, cuando`,2);
+LV[1].T[4]=X([
+'小王：你吃早饭吗？小李：吃。我吃面包，喝牛奶。|小李早上喝什么？|牛奶|茶|水',
+'小王：你想喝什么？小李：我想喝茶。你呢？小王：我喝水。|小王喝什么？|水|茶|牛奶',
+'小李：你喜欢吃鱼吗？小王：不喜欢，我喜欢吃鸡蛋。|小王喜欢吃什么？|鸡蛋|鱼|面包',
+'小王：你吃米饭还是面条？小李：我吃面条。|小李吃什么？|面条|米饭|饺子',
+'小李：我很饿，我想吃饭。小王：我们去饭馆吧。小李：好。|他们去哪儿？|饭馆|学校|家',
+'小王：这个苹果多少钱？小李：五块。小王：我要两个。|小王要几个苹果？|两个|五个|三个',
+'小李：你吃过饺子吗？小王：吃过，很好吃！|饺子怎么样？|很好吃|不好吃|很贵',
+'小王：请给我一杯水。服务员：好的。还要别的吗？小王：不要了，谢谢。|小王要什么？|一杯水|一杯茶|一个面包',
+'妈妈：晚上吃什么？小王：我想吃鱼和米饭。妈妈：好，我来做。|谁做饭？|妈妈|小王|爸爸',
+'小李：你不吃肉吗？小王：我不吃肉，我吃菜和鸡蛋。|小王不吃什么？|肉|菜|鸡蛋']);
+LV[1].T[7]=X([
+'小王：你好，苹果多少钱？小李：五块一个。小王：我要三个。|苹果多少钱一个？|五块|三块|十块',
+'小王：这件衣服多少钱？小李：八十块。小王：太贵了！|小王觉得衣服怎么样？|太贵了|很好看|很小',
+'小李：你好，你要什么？小王：我要一杯茶。小李：好的，五块钱。|小王要什么？|一杯茶|一杯水|一个苹果',
+'小王：这个有红色的吗？小李：有。小王：我要红色的。|小王要什么颜色的？|红色|白色|黑色',
+'小王：我想买一本书。小李：书店在前面。|小王想买什么？|书|衣服|苹果',
+'小李：你买什么？小王：我买鸡蛋和牛奶。小李：一共二十块。|一共多少钱？|二十块|十块|三十块',
+'小王：我可以看看吗？小李：可以。小王：谢谢。|小王想做什么？|看看|买|吃',
+'小王：太大了，有小的吗？小李：有。|小王要什么？|小的|大的|红的',
+'小李：欢迎光临！小王：我想买一个手机。|小王想买什么？|手机|电脑|电视',
+'小王：明天商店开门吗？小李：开，早上九点开。|商店几点开门？|九点|八点|十点']);
+LV[2].T[2]=X([
+'医生：你哪儿不舒服？小王：我头疼，也不想吃饭。|小王哪儿不舒服？|头|脚|手',
+'医生：你发烧了，三十八度。小王：要吃药吗？医生：要，一天吃三次。|医生说药怎么吃？|一天三次|一天一次|一天五次',
+'小王：医生，我咳嗽两天了。医生：多喝水，多休息。|医生说什么？|多喝水|多吃肉|多看书',
+'小李：你好，我想挂号。护士：你看什么科？小李：内科。|小李想做什么？|挂号|买药|付钱',
+'小王：我的肚子很疼。小李：你吃了什么？小王：我吃了很多苹果。|小王哪儿疼？|肚子|头|脚',
+'护士：这是你的药。小王：谢谢。怎么吃？护士：饭后吃。|药什么时候吃？|饭后|饭前|早上',
+'小李：你今天怎么没去学校？小王：我生病了，在家休息。|小王为什么没去学校？|他生病了|他很忙|天气不好',
+'小王：医院在哪儿？小李：就在前面，右边。|医院在哪儿？|前面右边|前面左边|后面',
+'医生：你要多休息，不要吃辣的。小王：好的，谢谢医生。|医生说不要吃什么？|辣的|肉|鱼',
+'小王：医生，我的眼睛很不舒服。医生：你每天看电脑多长时间？小王：十个小时。|小王每天看几个小时电脑？|十个小时|五个小时|三个小时']);
+P(`岁|suì|años (de edad)`,1);
+P(`喂|wèi|¿hola? (al teléfono);电话|diàn huà|teléfono;时间|shí jiān|tiempo;怎么了|zěn me le|¿qué pasa?;清楚|qīng chu|claro;号码|hào mǎ|número;地址|dì zhǐ|dirección;没电|méi diàn|sin batería;不见|bú jiàn|desaparecer;对|duì|correcto, sí;发|fā|enviar;信息|xìn xī|mensaje;看到|kàn dào|ver, percibir;马上|mǎ shàng|enseguida;回|huí|volver, devolver;着急|zháo jí|impacientarse;外套|wài tào|abrigo, chaqueta;您|nín|usted;试|shì|probar;试衣间|shì yī jiān|probador;那边|nà biān|por allá;穿|chuān|vestir, llevar puesto;一点|yì diǎn|un poco;大号|dà hào|talla grande;条|tiáo|clasificador (pantalones, falda);长|cháng|largo;短|duǎn|corto;双|shuāng|par;便宜|pián yi|barato;有点儿|yǒu diǎnr|un poco (algo);打折|dǎ zhé|hacer descuento;八折|bā zhé|20% de descuento;真的|zhēn de|de verdad;刷卡|shuā kǎ|pagar con tarjeta;小票|xiǎo piào|ticket, recibo;知道|zhī dào|saber;大衣|dà yī|abrigo largo`,2);
+P(`写|xiě|escribir;多少|duō shao|cuánto, cuántos;打|dǎ|llamar (por teléfono), golpear;最后|zuì hòu|al final, finalmente`,2);
+LV[2].T[4]=X([
+'小王：喂，你好！我是小王，请问小李在吗？小李：我就是。|小王找谁？|小李|小明|老师',
+'小李：你现在有时间吗？小王：有，怎么了？小李：我们明天一起吃饭，好吗？|小李想做什么？|一起吃饭|看电影|去医院',
+'小王：喂，我听不清楚。你可以再说一次吗？小李：好，我再说一次。|小王请小李做什么？|再说一次|写一次|打电话',
+'小李：喂，你在哪儿？小王：我在火车站，火车晚点了。小李：好，我在家等你。|小王在哪儿？|火车站|机场|家',
+'小王：你的手机号码是多少？小李：一三八，五五五二，八八九九。|小王问什么？|手机号码|地址|名字',
+'小王：喂，小李在吗？小李妈妈：他不在，他去学校了。小王：谢谢，我晚上再打。|小李在哪儿？|学校|家|医院',
+'小李：喂，我手机没电了。小王：你用我的手机吧。|小李的手机怎么了？|没电了|很贵|不见了',
+'小王：喂，你好，这是医院吗？护士：是，你要挂号吗？小王：对，我想明天看内科。|小王打电话做什么？|挂号|买药|找医生',
+'小李：我给你发了一个信息，你看到了吗？小王：看到了，我马上回电话。|小王现在要做什么？|回电话|发信息|买票',
+'小王：喂，我在路上，大概十分钟到。小李：好的，不要着急。|小王大概几分钟到？|十分钟|二十分钟|五分钟']);
+LV[2].T[8]=X([
+'小王：你好，我想买一件外套。小李：您要什么颜色的？小王：黑色的。|小王想买什么？|外套|裤子|鞋',
+'小王：我可以试试吗？小李：可以，试衣间在那边。|小王想做什么？|试衣服|买鞋|付钱',
+'小王：这件有大一点的吗？小李：有，你穿多大的？小王：我穿大号的。|小王要什么？|大一点的|小一点的|红色的',
+'小李：这条裤子怎么样？小王：太长了。有短一点的吗？|裤子怎么样？|太长了|太短了|太贵了',
+'小王：这双鞋多少钱？小李：三百块。小王：能便宜一点吗？小李：可以，二百五十块。|鞋最后多少钱？|二百五十块|三百块|二百块',
+'小王：这条裙子很好看，但是有点儿贵。小李：现在打折，八折。|现在怎么样？|打折|不开门|没有了',
+'小李：这件衣服你穿很好看。小王：真的吗？我也觉得很好看。|小王觉得衣服怎么样？|很好看|太大|太贵',
+'小王：我买这件，可以刷卡吗？小李：可以。|小王想怎么付钱？|刷卡|用手机|给钱',
+'小王：我想换一件，这件太小了。小李：好的，你有小票吗？|小王为什么要换？|太小了|太贵了|不好看',
+'小李：天气冷了，你要多穿衣服。小王：我知道，我想买一件大衣。|小王想买什么？|大衣|裙子|帽子']);
+LV[1].T[1]=X([
+'小王：你家有几个人？小李：有四个人。爸爸、妈妈、哥哥和我。|小李家有几个人？|四个人|三个人|五个人',
+'小王：你爸爸做什么工作？小李：他是老师。|小李的爸爸是什么？|老师|医生|学生',
+'小王：这是你姐姐吗？小李：是，她叫李红。她是学生。|小李的姐姐叫什么？|李红|李明|王红',
+'小李：你有哥哥吗？小王：没有，我有一个妹妹。|小王有什么人？|妹妹|哥哥|弟弟',
+'小王：你妈妈好吗？小李：她很好，谢谢。你爸爸呢？小王：他很忙。|小王的爸爸怎么样？|很忙|很好|不好',
+'小李：你今天去哪儿？小王：我和妈妈去商店。|小王和谁去商店？|妈妈|爸爸|姐姐',
+'小王：你弟弟几岁？小李：他八岁。|弟弟几岁？|八岁|九岁|七岁',
+'小王：你爸爸妈妈在家吗？小李：爸爸在家，妈妈不在。|谁在家？|爸爸|妈妈|哥哥',
+'小李：我们家人都喜欢吃饺子。小王：我也喜欢！|他们都喜欢吃什么？|饺子|面包|鱼',
+'小王：你的家人在北京吗？小李：不在，他们在上海。|小李的家人在哪儿？|上海|北京|学校']);
+P(`们|men|sufijo plural (personas);电影|diàn yǐng|película;大学生|dà xué shēng|universitario/a;课|kè|clase;第|dì|prefijo ordinal;页|yè|página;写字|xiě zì|escribir (caracteres);遍|biàn|vez (repetición completa);同学|tóng xué|compañero/a de clase;教室|jiào shì|aula;考试|kǎo shì|examen`,1);
+P(`银行卡|yín háng kǎ|tarjeta bancaria;取|qǔ|retirar;存|cún|ingresar, ahorrar;输入|shū rù|introducir;密码|mì mǎ|contraseña;欧元|ōu yuán|euro;人民币|rén mín bì|renminbi (yuan);帮|bāng|ayudar;卡|kǎ|tarjeta;扫|sǎo|escanear;自动|zì dòng|automático;取款机|qǔ kuǎn jī|cajero;这里|zhè lǐ|aquí;每|měi|cada;月|yuè|mes;千|qiān|mil;够|gòu|ser suficiente;花|huā|gastar;上班|shàng bān|ir a trabajar;下班|xià bān|salir del trabajo;上午|shàng wǔ|mañana (hasta mediodía);下午|xià wǔ|tarde;开会|kāi huì|tener una reunión;会议|huì yì|reunión;这么|zhè me|tan, así;报告|bào gào|informe;公司|gōng sī|empresa;离|lí|distancia desde;近|jìn|cerca;请假|qǐng jià|pedir permiso;好好|hǎo hǎo|bien, con cuidado;累|lèi|cansado;容易|róng yì|fácil;经理|jīng lǐ|gerente;一点儿|yì diǎnr|un poco;找到|zhǎo dào|encontrar;下个|xià ge|próximo;开始|kāi shǐ|empezar`,2);
+LV[2].T[13]=X([
+'小王：你好，我想开一个银行卡。小李：请给我你的护照。|小王想做什么？|开银行卡|买票|挂号',
+'小王：我想取一百块钱。小李：好的，请输入密码。|小王想做什么？|取钱|存钱|换钱',
+'小王：我想存五百块。小李：好，请给我钱。|小王想存多少钱？|五百块|五十块|三百块',
+'小王：我想换钱。今天一欧元换多少人民币？小李：大概八块。|一欧元大概换多少人民币？|八块|五块|十块',
+'小李：你的卡在哪儿？小王：对不起，我的卡不见了。小李：不要着急，我们可以帮你。|小王的什么不见了？|银行卡|手机|护照',
+'小李：一共二十块。小王：我可以用手机付钱吗？小李：可以，你扫这个。|小王怎么付钱？|用手机|刷卡|给钱',
+'小王：请问，这里有自动取款机吗？小李：有，在银行外面。|取款机在哪儿？|银行外面|银行里面|学校后面',
+'小李：你每个月有多少钱？小王：我每个月有三千块，但是不太够。|小王每个月有多少钱？|三千块|三百块|五千块',
+'小王：我想买手机，但是没有钱。小李：你可以先存钱。|小李说什么？|先存钱|先买手机|先去银行',
+'小王：这个月我花了很多钱。小李：你买了什么？小王：我买了衣服和鞋。|小王买了什么？|衣服和鞋|手机|书']);
+LV[2].T[3]=X([
+'小王：你好，请问你做什么工作？小李：我是医生，在医院工作。你呢？小王：我是老师。|小王做什么工作？|老师|医生|学生',
+'小李：你每天几点上班？小王：我早上八点上班，下午六点下班。|小王几点下班？|下午六点|下午五点|晚上八点',
+'小王：明天下午有会议，你知道吗？小李：知道，几点开会？小王：两点。|几点开会？|两点|三点|四点',
+'小李：你今天为什么这么忙？小王：因为我有很多工作，还要写报告。|小王为什么忙？|工作很多|没有钱|生病了',
+'小王：你的公司在哪儿？小李：在北京，离地铁站很近。|小李的公司在哪儿？|北京|上海|广州',
+'小李：我想请假，我明天不舒服。小王：好，你好好休息。|小李为什么请假？|不舒服|很忙|要去旅行',
+'小王：你喜欢你的工作吗？小李：喜欢，但是有时候很累。|小李的工作怎么样？|有时候很累|很容易|不忙',
+'小王：经理，我可以明天去医院吗？经理：可以，你休息一天吧。|经理说什么？|休息一天|不可以|明天开会',
+'小李：你会说汉语吗？小王：会一点儿。我在学习。|小王会说汉语吗？|会一点儿|不会|很好',
+'小王：你找到工作了吗？小李：找到了，下个星期开始上班。|小李什么时候上班？|下个星期|明天|下个月']);
+LV[1].T[5]=X([
+'小王：你是学生吗？小李：是，我是大学生。你呢？小王：我是老师。|小李是什么？|大学生|老师|医生',
+'小李：你在哪儿学习汉语？小王：我在学校学习。|小王在哪儿学习汉语？|学校|家|饭馆',
+'老师：你叫什么名字？学生：我叫王明。老师：你好，王明。|老师问什么？|名字|地址|电话',
+'小王：今天有汉语课吗？小李：有，早上八点。|汉语课几点？|早上八点|早上九点|下午三点',
+'老师：请看书，第五页。学生：好的，老师。|老师说什么？|看书|写字|说汉语',
+'小王：老师，请再说一遍。老师：好，我再说一遍。|学生请老师做什么？|再说一遍|写字|看书',
+'小李：你喜欢你的老师吗？小王：喜欢，她很好。|小王喜欢老师吗？|喜欢|不喜欢|不知道',
+'小王：你的同学在哪儿？小李：他们在教室。|同学们在哪儿？|教室|家|学校外面',
+'小李：明天有考试吗？小王：有，我很忙。|明天有什么？|考试|课|电影',
+'老师：现在休息十分钟。学生：谢谢老师！|学生休息多长时间？|十分钟|五分钟|一个小时']);
+P(`生日|shēng rì|cumpleaños;已经|yǐ jīng|ya;星期天|xīng qī tiān|domingo`,1);
+P(`早|zǎo|temprano;冬天|dōng tiān|invierno;夏天|xià tiān|verano;方便|fāng biàn|cómodo, práctico;住|zhù|vivir, alojarse;地方|dì fang|lugar;公园|gōng yuán|parque;那儿|nàr|allí;大家|dà jiā|todos, todo el mundo;你们|nǐ men|vosotros;机会|jī huì|oportunidad;附近|fù jìn|cerca, alrededores;超市|chāo shì|supermercado;旁边|páng biān|al lado;新|xīn|nuevo;大卫|dà wèi|David;认识|rèn shi|conocer;高兴|gāo xìng|contento;周末|zhōu mò|fin de semana;空|kòng|tiempo libre;担心|dān xīn|preocuparse;生日快乐|shēng rì kuài lè|¡feliz cumpleaños!;礼物|lǐ wù|regalo;日子|rì zi|día, fecha;邻居|lín jū|vecino/a;晚|wǎn|tarde, tardío;刚|gāng|hace un momento;爬山|pá shān|hacer senderismo;带|dài|llevar;最|zuì|el más;年|nián|año;应该|yīng gāi|deber`,2);
+LV[2].T[7]=X([
+'小王：你家在哪个城市？小李：我家在成都。你呢？小王：我在北京。|小李家在哪个城市？|成都|北京|上海',
+'小李：北京冬天冷吗？小王：很冷，有时候下雪。|北京冬天怎么样？|很冷|很热|下雨',
+'小王：上海的地铁方便吗？小李：很方便，去哪儿都可以坐地铁。|上海的地铁怎么样？|很方便|很贵|很远',
+'小李：你喜欢住在大城市吗？小王：不太喜欢，人太多了，也很贵。|小王为什么不喜欢大城市？|人太多，也很贵|太冷|没有地铁',
+'小王：这个城市有什么好玩的地方？小李：公园很好玩，你可以去看看。|小李说可以去哪儿？|公园|学校|银行',
+'小李：你去过西安吗？小王：去过，那儿的面条很好吃。|西安的什么很好吃？|面条|饺子|米饭',
+'小王：请问，这儿离地铁站远吗？小李：不远，走五分钟就到。|地铁站远不远？|不远|很远|没有',
+'小李：你们那儿夏天热吗？小王：很热，所以大家都喜欢游泳。|夏天怎么样？|很热|很冷|下雪',
+'小王：你想去哪个城市工作？小李：我想去上海，因为那儿的工作机会多。|小李为什么想去上海？|工作机会多|天气好|没有人',
+'小李：你家附近有超市吗？小王：有，就在地铁站旁边。|超市在哪儿？|地铁站旁边|学校前面|医院后面']);
+LV[2].T[9]=X([
+'小王：这是我的新朋友，他叫大卫，是西班牙人。小李：你好，认识你很高兴！|小李见到大卫，说什么？|认识你很高兴|对不起|再见',
+'小李：周末你有空吗？小王：有，我们去看电影吧。小李：好啊！|他们周末做什么？|看电影|去学校|做饭',
+'小王：你怎么不高兴？小李：我的朋友生病了，我很担心。|小李为什么不高兴？|朋友生病了|没有钱|有考试',
+'小李：生日快乐！这是给你的礼物。小王：谢谢，我很喜欢！|今天是什么日子？|小王的生日|春节|考试',
+'小王：你和你的朋友是怎么认识的？小李：我们是同学，一起学习汉语。|他们是怎么认识的？|是同学|是邻居|在医院',
+'小李：你的朋友多吗？小王：不太多，但是都很好。|小王的朋友怎么样？|不太多，但是很好|很多|没有朋友',
+'小王：对不起，我来晚了。小李：没关系，我也刚到。|小李什么时候到的？|刚到|很早|没来',
+'小李：这个周末我们去爬山吧。小王：好，但是要带水。|周末他们做什么？|爬山|看电影|做饭',
+'小王：你最好的朋友是谁？小李：是我的同学小明，我们认识五年了。|他们认识多长时间了？|五年|五个月|五天',
+'小李：谢谢你帮我。小王：不客气，朋友应该帮朋友。|小王说什么？|不客气|对不起|再见']);
+LV[1].T[3]=X([
+'小王：现在几点？小李：现在三点。|现在几点？|三点|四点|五点',
+'小王：今天星期几？小李：今天星期三。|今天星期几？|星期三|星期二|星期四',
+'小李：你几点起床？小王：我七点起床。你呢？小李：我六点。|小李几点起床？|六点|七点|八点',
+'小王：明天你有时间吗？小李：明天上午有，下午没有。|小李什么时候有时间？|明天上午|明天下午|明天晚上',
+'小李：你几点吃饭？小王：中午十二点。|小王几点吃饭？|十二点|十一点|一点',
+'小王：今天几月几号？小李：十月十号。|今天是几月几号？|十月十号|十月二号|九月十号',
+'小李：你的生日是几月？小王：我的生日是五月。|小王的生日是几月？|五月|四月|六月',
+'小王：你几点去学校？小李：八点。小王：现在已经七点五十了。|现在几点了？|七点五十|八点|七点',
+'小李：你今天忙吗？小王：不忙。现在是下午，我想休息。|现在是什么时候？|下午|早上|晚上',
+'小王：明天星期六，你想做什么？小李：我想在家睡觉。|明天星期几？|星期六|星期天|星期五']);
+P(`楼|lóu|piso, planta;客厅|kè tīng|salón;厨房|chú fáng|cocina;请进|qǐng jìn|pase, por favor;真|zhēn|realmente;口|kǒu|clasificador de miembros de familia`,1);
+P(`假|jià|vacaciones;快乐|kuài lè|feliz, alegre;让|ràng|dejar, pedir que;雨|yǔ|lluvia;快|kuài|rápido, pronto;过年|guò nián|celebrar el Año Nuevo;红包|hóng bāo|sobre rojo;中秋节|zhōng qiū jié|Fiesta del Medio Otoño;月亮|yuè liang|luna;国庆节|guó qìng jié|Día Nacional;放假|fàng jià|tener vacaciones;放|fàng|poner, dar (vacaciones);端午节|duān wǔ jié|Fiesta del Bote del Dragón;粽子|zòng zi|zongzi;圣诞节|shèng dàn jié|Navidad;计划|jì huà|plan;热闹|rè nao|animado, bullicioso;街|jiē|calle;是的|shì de|sí, así es;过节|guò jié|celebrar una fiesta;国家|guó jiā|país;阴天|yīn tiān|día nublado;晴天|qíng tiān|día soleado;可能|kě néng|posible, quizá;伞|sǎn|paraguas;经常|jīng cháng|a menudo;季节|jì jié|estación del año;春天|chūn tiān|primavera;秋天|qiū tiān|otoño;风|fēng|viento;天气预报|tiān qì yù bào|previsión del tiempo;大雨|dà yǔ|lluvia fuerte;那|nà|entonces, aquel;漂亮|piào liang|bonito, hermoso;玩|wán|jugar, divertirse;停|tíng|parar;出去|chū qù|salir`,2);
+LV[2].T[5]=X([
+'小王：春节快到了，你回家吗？小李：回，我想和家人一起过年。|小李春节想做什么？|回家|旅行|工作',
+'小李：新年快乐！小王：新年快乐！这是红包，给你。|小王给小李什么？|红包|手机|书',
+'小王：你们春节吃什么？小李：我们吃饺子，还吃鱼。|春节他们吃什么？|饺子和鱼|面条|月饼',
+'小李：中秋节你做什么？小王：我和家人一起吃月饼，看月亮。|中秋节他做什么？|吃月饼，看月亮|去旅行|上班',
+'小王：国庆节放假几天？小李：放七天，我想去旅行。|国庆节放几天假？|七天|三天|五天',
+'小李：端午节快到了。小王：我们去吃粽子吧！|他们想吃什么？|粽子|月饼|饺子',
+'小王：圣诞节你有什么计划？小李：我想在家休息，也想看电影。|小李圣诞节想做什么？|在家休息|去旅行|上班',
+'小李：今天很热闹，街上有很多人。小王：是的，今天是节日。|今天为什么有很多人？|今天是节日|有考试|天气好',
+'小王：节日快乐！你们家怎么过节？小李：我们一起做饭，大家都很高兴。|小李家怎么过节？|一起做饭|去饭馆|去旅行',
+'小李：你的国家有什么节日？小王：西班牙有很多节日，我最喜欢圣诞节。|小王最喜欢什么节日？|圣诞节|春节|国庆节']);
+LV[2].T[11]=X([
+'小王：今天天气怎么样？小李：今天阴天，可能会下雨。|今天天气怎么样？|阴天|晴天|下雪',
+'小李：带伞吧，外面下雨了。小王：好的，谢谢。|小李让小王带什么？|伞|水|书',
+'小王：明天天气好吗？小李：明天是晴天，不冷也不热。|明天天气怎么样？|晴天，不冷不热|下雨|很冷',
+'小李：今天多少度？小王：三十五度，太热了！|今天多少度？|三十五度|二十五度|十五度',
+'小王：北京冬天冷不冷？小李：很冷，经常下雪。|北京冬天怎么样？|很冷，经常下雪|很热|经常下雨',
+'小李：你喜欢什么季节？小王：我喜欢春天，因为不冷也不热。|小王喜欢什么季节？|春天|夏天|冬天',
+'小王：今天风很大，你多穿点衣服。小李：好，我知道了。|小王让小李做什么？|多穿衣服|多喝水|多休息',
+'小李：天气预报说明天有大雨。小王：那我们不去爬山了。|他们明天不去做什么？|爬山|上班|吃饭',
+'小王：这个城市秋天最漂亮。小李：是吗？我想秋天去玩。|小李想什么时候去玩？|秋天|春天|夏天',
+'小李：雨停了，天气好了。小王：太好了，我们出去玩吧！|现在天气怎么样？|雨停了|下雪了|很冷']);
+LV[1].T[13]=X([
+'小王：你家大吗？小李：不太大，有三个房间。|小李家有几个房间？|三个|两个|四个',
+'小王：你的房间里有什么？小李：有一个床和一个桌子。|房间里有什么？|床和桌子|电视|车',
+'小李：你家在几楼？小王：我家在五楼。|小王家在几楼？|五楼|三楼|八楼',
+'小王：你家有电视吗？小李：有，在客厅。|电视在哪儿？|客厅|房间|学校',
+'小李：妈妈在哪儿？小王：她在厨房做饭。|妈妈在哪儿？|厨房|客厅|房间',
+'小王：你的书在哪儿？小李：在桌子上。|书在哪儿？|桌子上|床上|车上',
+'小李：请进！小王：谢谢，你家真漂亮！|小王觉得小李家怎么样？|很漂亮|很小|很大',
+'小王：你家有几口人？小李：五口人。|小李家有几口人？|五口人|四口人|三口人',
+'小李：你家离学校远吗？小王：不远，走路十分钟。|小王怎么去学校？|走路|坐车|坐地铁',
+'小王：你家有猫吗？小李：有，它在床上睡觉。|猫在哪儿？|床上|桌子上|门里']);
+P(`下|xià|bajar, caer (lluvia, nieve);跑|pǎo|correr;运动|yùn dòng|deporte, hacer ejercicio;得|de|partícula de complemento;最近|zuì jìn|últimamente;胖|pàng|gordo;减肥|jiǎn féi|adelgazar;少|shǎo|poco;腿|tuǐ|pierna;篮球|lán qiú|baloncesto;比赛|bǐ sài|partido, competición;队|duì|equipo;赢|yíng|ganar;游|yóu|nadar;难|nán|difícil;声调|shēng diào|tono;有意思|yǒu yì si|interesante;汉字|hàn zì|carácter chino;语法|yǔ fǎ|gramática;词|cí|palabra;意思|yì si|significado;练习|liàn xí|practicar;音频|yīn pín|audio;说话|shuō huà|hablar;准备|zhǔn bèi|preparar;复习|fù xí|repasar;今晚|jīn wǎn|esta noche;昨天|zuó tiān|ayer;问题|wèn tí|pregunta, problema;教|jiāo|enseñar;慢|màn|lento;大声|dà shēng|en voz alta;网上|wǎng shàng|en internet`,2);
+LV[2].T[6]=X([
+'小王：你喜欢什么运动？小李：我喜欢游泳，你呢？小王：我喜欢打球。|小李喜欢什么运动？|游泳|打球|跑步',
+'小李：你每天跑步吗？小王：不是每天，一个星期三次。|小王一个星期跑几次？|三次|五次|每天',
+'小王：明天下午我们去踢球，你来吗？小李：好啊，几点？小王：三点。|他们几点踢球？|三点|四点|两点',
+'小李：你游泳游得真好！小王：谢谢，我学了三年。|小王学游泳学了多长时间？|三年|三个月|三天',
+'小王：我最近胖了，想减肥。小李：那你要多运动，少吃肉。|小李让小王做什么？|多运动，少吃肉|多睡觉|多吃饭',
+'小李：这个周末你想做什么？小王：我想去爬山，你想一起去吗？|小王想做什么？|爬山|看电影|做饭',
+'小王：我的腿很疼，不能跑步了。小李：你去医院看看吧。|小王为什么不能跑步？|腿很疼|很忙|下雨了',
+'小李：你会打篮球吗？小王：会，但是打得不好。|小王篮球打得怎么样？|不好|很好|不会',
+'小王：比赛几点开始？小李：下午两点。我们快走吧。|比赛几点开始？|下午两点|上午两点|晚上两点',
+'小李：我们中国队赢了！小王：太好了！|他们为什么高兴？|他们队赢了|下雨了|放假了']);
+LV[2].T[12]=X([
+'小王：你学汉语多长时间了？小李：学了一年了。|小李学汉语多长时间了？|一年|三年|五年',
+'小李：汉语难吗？小王：声调很难，但是很有意思。|小王觉得什么很难？|声调|汉字|语法',
+'小王：老师，这个词是什么意思？老师：是“朋友”的意思。|这个词是什么意思？|朋友|老师|学生',
+'小李：你每天怎么学汉语？小王：我听音频，还和朋友练习说话。|小王怎么学汉语？|听音频，练习说话|看电影|做饭',
+'小王：明天考试，你准备好了吗？小李：还没有，我今晚复习。|小李什么时候复习？|今晚|明天|昨天',
+'小李：这个问题我不会。你可以教我吗？小王：可以，我们一起看。|小李想让小王做什么？|教他|买书|打电话',
+'小王：老师，请说慢一点。老师：好，我说慢一点。|学生请老师怎么说？|慢一点|快一点|大声一点',
+'小李：你的汉语说得真好！小王：谢谢，我还要多练习。|小王说什么？|还要多练习|不会说|很难',
+'小王：你在哪儿学汉语？小李：我在网上学，每天一个小时。|小李在哪儿学汉语？|网上|学校|医院',
+'小李：你为什么学汉语？小王：因为我喜欢中国，也想去中国工作。|小王为什么学汉语？|喜欢中国，想去中国工作|有考试|朋友让他学']);
+LV[1].T[6]=X([
+'小王：今天天气怎么样？小李：很好，不冷也不热。|今天天气怎么样？|很好|很冷|很热',
+'小李：外面下雨了吗？小王：下了，很大。|外面怎么样？|下雨了|很热|很好',
+'小王：明天冷吗？小李：很冷，你多穿衣服。|明天怎么样？|很冷|很热|下雨',
+'小李：今天很热，我想喝水。小王：给你一杯水。|小李想做什么？|喝水|吃饭|睡觉',
+'小王：北京今天怎么样？小李：不太好，下雪了。|北京今天怎么样？|下雪了|很热|很好',
+'小李：明天天气好吗？小王：很好，我们去北京吧。|他们明天去哪儿？|北京|上海|学校',
+'小王：你喜欢什么天气？小李：我喜欢冷天，我不喜欢热天。|小李不喜欢什么天气？|热天|冷天|下雨天',
+'小王：今天下雨，我不去学校。小李：我也不去。|他们今天去学校吗？|不去|去|不知道',
+'小李：上海冷吗？小王：不冷，今天很好。|上海今天怎么样？|很好|很冷|下雨',
+'小王：今天很冷，你的手冷吗？小李：很冷。|小李怎么样？|很冷|很热|很好']);
+P(`线|xiàn|línea;头发|tóu fa|pelo;凉|liáng|frío (al tacto);张开|zhāng kāi|abrir (la boca)`,1);
+P(`拐|guǎi|girar;对面|duì miàn|enfrente;迷路|mí lù|perderse;地图|dì tú|mapa;洗手间|xǐ shǒu jiān|baño;电梯|diàn tī|ascensor;红绿灯|hóng lǜ dēng|semáforo;过去|guò qù|pasar al otro lado;过马路|guò mǎ lù|cruzar la calle;米|mǐ|metro;路边|lù biān|borde de la calle;东边|dōng biān|lado este;边|biān|lado;太阳|tài yáng|sol;出来|chū lái|salir;带路|dài lù|guiar`,2);
+LV[1].T[11]=X([
+'小王：你怎么去学校？小李：我坐地铁。|小李怎么去学校？|坐地铁|走路|坐车',
+'小李：去北京坐什么？小王：坐飞机，很快。|去北京坐什么？|飞机|火车|船',
+'小王：你家离学校远吗？小李：不远，我走路去。|小李怎么去学校？|走路|坐车|坐地铁',
+'小李：请问，地铁站在哪儿？小王：在前面。|地铁站在哪儿？|前面|后面|左边',
+'小王：这是去机场的车吗？司机：是的。|这是去哪儿的车？|机场|火车站|学校',
+'小李：你坐几号线？小王：我坐一号线。|小王坐几号线？|一号线|二号线|三号线',
+'小王：明天我坐火车去上海。小李：几点的车？小王：早上八点。|火车几点？|早上八点|早上九点|下午三点',
+'小李：你有车吗？小王：没有，我坐公共汽车。|小王有车吗？|没有|有|不知道',
+'小王：我想去医院，坐几路车？小李：坐五路车。|小王坐几路车？|五路|三路|八路',
+'小李：你坐船吗？小王：不坐，我不喜欢船。|小王喜欢坐船吗？|不喜欢|喜欢|不知道']);
+LV[1].T[9]=X([
+'小王：你怎么了？小李：我头疼。|小李哪儿不舒服？|头|手|脚',
+'小李：你的手怎么了？小王：我的手很疼。|小王哪儿疼？|手|脚|头',
+'小王：医生，我的眼睛不舒服。医生：请坐，我看看。|小王哪儿不舒服？|眼睛|耳朵|嘴',
+'小李：我的脚很大。小王：你穿多大的鞋？小李：四十三号。|小李的什么很大？|脚|手|头',
+'小王：你的耳朵疼吗？小李：不疼，我的嘴疼。|小李哪儿疼？|嘴|耳朵|眼睛',
+'医生：你哪儿不舒服？小王：我肚子疼，头也疼。|小王哪儿疼？|肚子和头|手和脚|眼睛',
+'小李：你的眼睛很大。小王：谢谢，你的头发很好看。|小王说什么好看？|头发|眼睛|手',
+'小王：我的腿疼，不能走路。小李：坐下休息吧。|小王为什么不能走路？|腿疼|头疼|很忙',
+'小王：你的手很凉。小李：天气很冷。|小李的手怎么样？|很凉|很热|很大',
+'医生：张开嘴，说啊。小王：啊。|医生让小王做什么？|张开嘴|看书|坐下']);
+LV[2].T[14]=X([
+'小王：请问，银行在哪儿？小李：一直往前走，然后向左拐。|银行怎么走？|往前走，向左拐|向右拐|往回走',
+'小李：地铁站离这儿远吗？小王：不远，走十分钟就到。|地铁站远吗？|不远|很远|不知道',
+'小王：医院在哪儿？小李：在学校对面，右边。|医院在哪儿？|学校对面|学校旁边|学校后面',
+'小李：我迷路了。你可以给我看看地图吗？小王：可以。|小李怎么了？|迷路了|生病了|没有钱',
+'小王：请问，洗手间在哪儿？小李：在二楼，电梯旁边。|洗手间在哪儿？|二楼|三楼|一楼',
+'小王：我怎么过去？小李：前面有红绿灯，你过马路就到了。|小王要怎么过去？|过马路|坐地铁|坐出租车',
+'小李：请问，去火车站远吗？小王：不太远，大概五百米。|火车站有多远？|五百米|五十米|五千米',
+'小王：你坐出租车吧，很方便。小李：好，我在路边等车。|小李在哪儿等车？|路边|家里|学校里',
+'小李：我不知道哪边是东边。小王：太阳从这边出来，这边是东边。|东边在哪儿？|太阳出来的地方|学校前面|医院旁边',
+'小王：到了，就是这个酒店。小李：太好了，谢谢你带路！|小王做了什么？|带路|买票|换钱']);
+P(`动物|dòng wù|animal;可爱|kě ài|adorable`,1);
+LV[1].T[2]=X([
+'小王：你的手机号码是多少？小李：一三六，二四五八，九七三一。|小王问什么？|手机号码|地址|名字',
+'小李：你有几个苹果？小王：我有五个。|小王有几个苹果？|五个|四个|六个',
+'小王：这个多少钱？小李：十块。小王：两个呢？小李：二十块。|两个多少钱？|二十块|十块|三十块',
+'小李：你家有几口人？小王：四口人。|小王家有几口人？|四口人|三口人|五口人',
+'小王：我要三个鸡蛋和两杯牛奶。小李：好的。|小王要几个鸡蛋？|三个|两个|五个',
+'小李：你几岁？小王：我二十岁。你呢？小李：我二十五岁。|小李几岁？|二十五岁|二十岁|三十岁',
+'小王：明天几号？小李：九号。|明天是几号？|九号|八号|十号',
+'小李：你的房间是几号？小王：八号。|小王的房间是几号？|八号|六号|九号',
+'小王：一加二是几？小李：三。小王：三加四呢？小李：七。|三加四是几？|七|六|八',
+'小李：你坐几路车？小王：我坐九路车。|小王坐几路车？|九路|五路|七路']);
+LV[1].T[8]=X([
+'小王：你喜欢什么颜色？小李：我喜欢红色。|小李喜欢什么颜色？|红色|白色|黑色',
+'小李：你的书是什么颜色的？小王：是蓝色的。|书是什么颜色的？|蓝色|绿色|黄色',
+'小王：这件衣服有白色的吗？小李：有。|小王要什么颜色的衣服？|白色|红色|黑色',
+'小李：你的猫是什么颜色的？小王：黑色的，很小。|小王的猫是什么颜色？|黑色|白色|黄色',
+'小王：你的房间是什么颜色的？小李：绿色的。|房间是什么颜色？|绿色|红色|蓝色',
+'小李：你喜欢黑色吗？小王：不喜欢，我喜欢黄色。|小王喜欢什么颜色？|黄色|黑色|白色',
+'小王：苹果是什么颜色的？小李：红色的，也有绿色的。|苹果有什么颜色？|红色和绿色|白色|黑色',
+'小李：你的鞋是红色的，很好看。小王：谢谢！|什么是红色的？|鞋|手机|书',
+'小王：你的手机是什么颜色的？小李：白色的。|手机是什么颜色？|白色|黑色|红色',
+'小李：你想买红色的还是白色的？小王：我想买白色的。|小王想买什么颜色的？|白色的|红色的|黑色的']);
+LV[1].T[10]=X([
+'小王：你有狗吗？小李：没有，我有一只猫。|小李有什么？|猫|狗|鱼',
+'小李：你的猫几岁了？小王：两岁了。|猫几岁了？|两岁|三岁|五岁',
+'小王：这只狗很大。小李：是的，它很好。|狗怎么样？|很大|很小|很贵',
+'小李：你喜欢什么动物？小王：我喜欢马。|小王喜欢什么动物？|马|牛|鸟',
+'小王：你的鱼在哪儿？小李：在水里。|鱼在哪儿？|水里|床上|桌子上',
+'小李：这只鸟是什么颜色的？小王：是黄色的。|鸟是什么颜色的？|黄色|白色|黑色',
+'小王：你的狗吃什么？小李：它吃肉和米饭。|狗吃什么？|肉和米饭|鱼|面包',
+'小李：你家有几只猫？小王：有两只。|小王家有几只猫？|两只|三只|一只',
+'小王：你喜欢牛吗？小李：喜欢，牛很大。|小李觉得牛怎么样？|很大|很小|不好',
+'小李：我的猫在床上睡觉。小王：它很可爱。|小李的猫在哪儿？|床上|桌子上|门里']);
+P(`爱好|ài hào|afición`,1);P(`酒|jiǔ|alcohol, licor;壶|hú|tetera (clasificador);麻婆豆腐|má pó dòu fu|mapo tofu;一会儿|yí huìr|un rato`,2);
+LV[1].T[12]=X([
+'小王：你喜欢做什么？小李：我喜欢看书。你呢？小王：我喜欢听歌。|小王喜欢做什么？|听歌|看书|打球',
+'小李：你喜欢看电影吗？小王：喜欢，我也喜欢看书。|小王喜欢什么？|看电影和看书|打球|游泳',
+'小王：这个周末你想做什么？小李：我想打球，你想去吗？|小李想做什么？|打球|看书|睡觉',
+'小李：你会游泳吗？小王：会，我每天游泳。|小王每天做什么？|游泳|跑步|打球',
+'小王：你喜欢听什么歌？小李：我喜欢中国歌。|小李喜欢听什么歌？|中国歌|英语歌|不听歌',
+'小李：你会做饭吗？小王：会一点，我会做饺子。|小王会做什么？|饺子|面条|鱼',
+'小王：我喜欢跑步，早上六点跑。小李：这么早！|小王几点跑步？|早上六点|早上七点|晚上六点',
+'小李：你的爱好是什么？小王：我的爱好是看电影。|小王的爱好是什么？|看电影|打球|听歌',
+'小王：我们一起去打球吧。小李：好啊，几点？小王：下午三点。|他们几点打球？|下午三点|下午四点|晚上三点',
+'小李：你不喜欢跑步吗？小王：不喜欢，我喜欢游泳。|小王喜欢什么？|游泳|跑步|打球']);
+LV[1].T[14]=X([
+'小王：你几点起床？小李：我七点起床。|小李几点起床？|七点|六点|八点',
+'小李：你早上吃什么？小王：我吃面包，喝牛奶。|小王早上喝什么？|牛奶|茶|水',
+'小王：你几点去学校？小李：八点。|小李几点去学校？|八点|七点|九点',
+'小李：中午你在哪儿吃饭？小王：在学校。|小王在哪儿吃饭？|学校|家|饭馆',
+'小王：晚上你做什么？小李：我看书，也听歌。|小李晚上做什么？|看书和听歌|看电影|打球',
+'小李：你几点睡觉？小王：十点。|小王几点睡觉？|十点|九点|十一点',
+'小王：你每天都喝茶吗？小李：是的，我很喜欢喝茶。|小李每天喝什么？|茶|水|牛奶',
+'小李：你今天忙吗？小王：很忙，我要去医院。|小王要去哪儿？|医院|学校|家',
+'小王：你每天坐车去学校吗？小李：不坐，我走路去。|小李怎么去学校？|走路|坐车|坐地铁',
+'小李：晚上我们一起吃饭吧。小王：好，几点？小李：六点。|他们几点吃饭？|六点|五点|七点']);
+LV[2].T[0].splice(0,5,...X([
+'小王：早上好！你吃早饭了吗？小李：吃了，我吃了面包和鸡蛋。|小李早上吃了什么？|面包和鸡蛋|米饭|饺子',
+'小李：中午我们去哪儿吃饭？小王：去学校旁边的饭馆吧，那儿的菜很好吃。|他们想去哪儿吃饭？|学校旁边的饭馆|家里|公司',
+'小王：请问，这个菜叫什么？服务员：这是麻婆豆腐，很好吃。小王：好，我要一个。|小王要了什么？|麻婆豆腐|面条|饺子',
+'小李：你喝酒吗？小王：不喝，我喝茶。小李：好，请给我们一壶茶。|小王喝什么？|茶|酒|水',
+'小王：这家饭馆的菜很好吃，但是人太多了。小李：我们等一会儿吧。|他们为什么要等？|人太多|没有菜|太贵了']));
+P(`干净|gān jìng|limpio;东西|dōng xi|cosa, objeto;乱|luàn|desordenado;整理|zhěng lǐ|ordenar;空调|kōng tiáo|aire acondicionado;凉快|liáng kuai|fresco;黑|hēi|oscuro, negro;灯|dēng|luz, lámpara;窗户|chuāng hu|ventana;朝|cháo|orientado hacia;亮|liàng|luminoso;房租|fáng zū|alquiler`,2);
+LV[2].T[10]=X([
+'小王：你的房间大吗？小李：不太大，但是很干净。|小李的房间怎么样？|很干净|很大|很贵',
+'小李：你的房间里有什么？小王：有一张床、一个桌子和一个电脑。|房间里有什么？|床、桌子和电脑|电视|车',
+'小王：我的东西太多了，房间很乱。小李：我们一起整理吧。|小王的房间怎么样？|很乱|很干净|很小',
+'小李：你的房间有空调吗？小王：有，夏天很凉快。|小王的房间夏天怎么样？|很凉快|很热|很冷',
+'小王：房间太黑了，我看不见。小李：我去开灯。|小李去做什么？|开灯|开门|开会',
+'小李：窗户在哪儿？小王：在床旁边。|窗户在哪儿？|床旁边|桌子旁边|门旁边',
+'小王：你的房间朝东边，对吗？小李：对，早上很亮。|小李的房间早上怎么样？|很亮|很黑|很小',
+'小李：我想换一个大一点的房间。小王：房租多少钱？小李：一个月三千块。|一个月房租多少钱？|三千块|三百块|五千块',
+'小王：你一个人住吗？小李：不是，我和朋友一起住。|小李和谁一起住？|朋友|家人|同学',
+'小李：你的房间里有书吗？小王：有很多书，我喜欢在房间里看书。|小王喜欢在房间里做什么？|看书|看电影|打球']);
+{const n=X([
+'小王：你好！我叫王明。你叫什么名字？小李：我叫李红。我是中国人。|李红是什么人？|中国人|北京人|学生',
+'小王：再见！明天见。小李：明天见！|他们什么时候再见？|明天|今天|晚上',
+'小王：她是谁？小李：她是我的老师，她姓李，是北京人。|老师姓什么？|李|王|张',
+'小李：你好！这是我的朋友，她叫李红。小王：你好！|李红是谁？|小李的朋友|老师|学生',
+'小王：你是老师吗？小李：不是，我是学生。他也是学生。|小李是什么？|学生|老师|医生']);
+[0,2,3,7,9].forEach((k,i)=>LV[1].T[0][k]=n[i])}
+const AD=(i,a)=>LV[1].T[i].push(...X(a));
+AD(1,[
+'小王：这是你的儿子吗？小李：是的，这是我的儿子，这是我的女儿。他们都是小孩儿。|小李有几个孩子？|两个|三个|一个',
+'小王：你的奶奶和爷爷身体好吗？小李：他们身体很好，都是老人了，但是每天都去公园。|小李的爷爷奶奶怎么样？|身体很好|身体不好|不在家',
+'小李：你有女朋友吗？小王：没有。你有男朋友吗？小李：我也没有。|小王有女朋友吗？|没有|有|不知道',
+'小王：那个男孩儿和女孩儿是谁？小李：男孩儿是我弟弟，女孩儿是我妹妹。|男孩儿是谁？|小李的弟弟|小李的哥哥|小王的朋友',
+'小李：那个先生是谁？小王：他是我们的老师。那个小姐是他的朋友。|谁是老师？|那个先生|那个小姐|小王',
+'小王：男生和女生都在教室。小李：男人和女人呢？小王：他们在外面。|谁在教室？|男生和女生|男人和女人|老师',
+'小李：她们是谁？小王：她们是我的网友。别人说她们很好。|她们是谁？|小王的网友|小王的同学|小王的老师',
+'小王：你爸爸是工人吗？小李：不是，他是老师。|小李的爸爸是什么？|老师|工人|医生']);
+AD(3,[
+'小王：你是今年来的吗？小李：不是，我去年来的，明年回国。|小李什么时候回国？|明年|今年|去年',
+'小李：前天我去医院了，后天我还要去。小王：你好吗？小李：没什么，不用担心。|小李后天要做什么？|去医院|上班|旅行',
+'小王：今天几号？小李：十五号，星期日。小王：请告诉我日期，我要写在本子上。|今天是星期几？|星期日|星期六|星期一',
+'小李：你白天做什么？小王：我白天工作，常常很忙。晚上学习半个小时。|小王白天做什么？|工作|学习|睡觉',
+'小王：你学汉语半年了吗？小李：对，半年了。这是我第二次来。|小李学了多长时间？|半年|一年|三个月',
+'小李：上次你说一半，下次你说完吧。小王：好，下次我告诉你。|小王下次做什么？|说完|买票|看书',
+'小李：现在几点？小王：差五分八点。|现在几点？|七点五十五分|八点五分|八点']);
+AD(11,[
+'小李：请问，商场在哪里？小王：在南边，那里有很多人。|商场在哪边？|南边|北边|东边',
+'小王：饭店在北边。小李：路口的饭店吗？小王：对，就在路口。|饭店在哪儿？|路口|学校|医院',
+'小李：你在楼上还是楼下？小王：我在楼上，门口有个书包，是你的吗？|小王在哪儿？|楼上|楼下|门口',
+'小王：里边有人吗？小李：没有，外边也没有。前边是学校，后边是公园。|学校在哪儿？|前边|后边|里边',
+'小李：地上有一个钱包，是你的吗？小王：是的，谢谢！上边有我的名字。|钱包在哪儿？|地上|桌子上|书包里',
+'小李：约会的地点在哪儿？小王：在电影院，下边是地铁站。|他们在哪儿见面？|电影院|饭店|商场',
+'小王：你去过国外吗？小李：去过，我去过很多外国。小王：你的外语很好吧？|小李去过哪儿？|国外|学校|医院',
+'小李：我们打车去电影院吧。小王：不用，坐地铁就行。|他们怎么去？|坐地铁|打车|开车',
+'小王：你会开车吗？小李：会，我每天开车上班。小王：车上有人吗？小李：没有。|小李怎么上班？|开车|坐地铁|走路',
+'小李：到站了，请下车。小王：等一下，我的门票在哪儿？|小王在找什么？|门票|钱包|书包']);
+AD(5,[
+'老师：现在上课。请打开课本，读第二课的课文。学生：好的。|老师让学生做什么？|读课文|听写|看电影',
+'老师：下课了，大家休息。小王：老师，我不明白，请再说一次。老师：好，你认真听。|小王为什么问老师？|他不明白|他很饿|他生病了',
+'小李：今天放学后，我们去图书馆吧。小王：好，我想读书，也想做听写。|他们放学后去哪儿？|图书馆|商场|饭店',
+'小李：你是中学生还是小学生？小王：我是中学生，在学院学中文。|小王学什么？|中文|数学|英语',
+'小李：你记得我的名字吗？小王：我忘记了，对不起。小李：没关系，请记住：我叫李明。|小王忘了什么？|小李的名字|电话|地址',
+'小王：你知道这个知识吗？小李：知道，这很重要，也很有用。|小李觉得这个知识怎么样？|很重要，也很有用|很难|很贵']);
+AD(9,[
+'小李：医院里有很多病人。小王：我去看病，也想买水果。|小王去医院做什么？|看病|工作|上课',
+'小李：你渴吗？我有水果。小王：谢谢，我很渴。你为什么生气？小李：没事儿，我不生气。|小王怎么样？|很渴|很饿|很累']);
+AD(4,[
+'小王：这个包子很好吃。小李：我想要一杯水，有杯子吗？小王：有，在饭店里。|小李想要什么？|一杯水|一个包子|茶',
+'小李：你午饭吃什么？小王：我吃包子。晚饭我想吃饺子。|小王午饭吃什么？|包子|饺子|面条']);
+AD(7,['小李：这个多少钱？小王：三块五毛。小李：有零钱吗？|多少钱？|三块五毛|三块|五块']);
+AD(13,[
+'小王：电视机坏了，怎么办？小李：我帮忙看看。|什么坏了？|电视机|电脑|手机',
+'小王：你的房子大吗？小李：不大，但是里边很干净。|小李的房子怎么样？|不大|很大|很小',
+'小王：门打开了吗？小李：没有。你帮忙关上吧。|小李让小王做什么？|关上门|打开门|买票']);
+AD(12,[
+'小李：我很喜欢唱歌。小王：你唱得非常好听！|小王觉得小李唱歌怎么样？|非常好听|不好听|很难听',
+'小王：你一边吃饭一边看电视吗？小李：不，我一边听歌一边做饭。|小李一边做饭一边做什么？|听歌|看书|睡觉',
+'小王：他在做什么？小李：他正在读书。他的动作很慢。|他正在做什么？|读书|看电影|睡觉',
+'小李：公园里有很多树。小王：是的，树下有一个孩子，他在笑。|孩子在哪儿？|树下|房子里|车上']);
+AD(14,[
+'小李：你什么时候回去？小王：明天回去。我来到这儿三天了，回到家就给你打电话。|小王什么时候回去？|明天|后天|今天',
+'小王：请进来！小李：谢谢，我进去了。|小李说什么？|谢谢|再见|对不起',
+'小李：你看见小王了吗？小王：我听见他在里边。小李：我听到了，他在唱歌。|小王在哪儿？|里边|外边|学校',
+'小王：请介绍一下儿你的朋友。小李：好，他叫大卫。我们跟他一块儿去吧。|小李想怎么去？|跟他一块儿去|一个人去|不去',
+'小王：我想拿一些水果。小李：好，你拿这些，那些我送给你。|小李做什么？|送水果|买水果|吃水果',
+'小王：哪些是你的？小李：有的是我的，有些是朋友的。|有些是谁的？|朋友的|小李的|老师的',
+'小王：我们的书一样吗？小李：不一样，我的有一些不对。|他们的书怎么样？|不一样|一样|很贵',
+'小王：他很有名吗？小李：对，他非常有名。|他怎么样？|很有名|很忙|很大',
+'小王：你的汉字写错了。小李：哪儿错了？小王：这个字不对。|小李怎么了？|写错了|生病了|没有钱',
+'小李：你在干什么？小王：我在读书。你是不是生病了？小李：不是，我只是很累。|小李怎么了？|很累|生病了|很忙'
+]);
+P(`约会|yuē huì|quedada, cita;钟|zhōng|reloj, minutos`,1);
+AD(14,[
+'小王：老师的问题你回答了吗？小李：回答了，我想了半天。|小李想了多长时间？|半天|半年|一天',
+'小李：你得到那个机会了吗？小王：得到了！还有，我明天去上海。|小王得到了什么？|机会|手机|钱',
+'小王：你起来了吗？小李：起来了。我回来的时候你还在睡觉。|小李什么时候回来的？|早上|晚上|中午',
+'小李：教学楼在哪儿？小王：在学院的西边，中间是图书馆。|教学楼在哪儿？|西边|东边|北边',
+'小王：你开玩笑吧？小李：不，我没开玩笑。我在上网，身上没带钱。|小李在做什么？|上网|看书|睡觉',
+'小李：这个小朋友几岁了？小王：他五岁了。|小朋友几岁？|五岁|四岁|六岁']);
+P(`意|yì|sentido, idea;祝|zhù|desear;合作|hé zuò|cooperar;注意|zhù yì|prestar atención;吵|chǎo|ruidoso;感冒|gǎn mào|resfriado;严重|yán zhòng|grave;房|fáng|casa, vivienda;互相|hù xiāng|mutuamente;照|zhào|fotografiar, iluminar;输|shū|perder;种|zhòng|plantar;建|jiàn|construir;时|shí|cuando, hora`,2);
+P(`味|wèi|sabor;景|jǐng|paisaje;美|měi|bonito;色|sè|color;需|xū|necesitar;闲|xián|libre, ocioso;清|qīng|claro;方|fāng|lado, cuadrado;堵|dǔ|atascar;村|cūn|pueblo;总|zǒng|siempre;矮|ǎi|bajo (estatura);化|huà|transformar;语|yǔ|lengua;把|bǎ|partícula de objeto;哦|ò|ah;漫画|màn huà|cómic;漫|màn|largo, lento;儿|ér|hijo, sufijo;经验|jīng yàn|experiencia;步|bù|paso;所|suǒ|clasificador de instituciones;希望|xī wàng|esperar, esperanza`,2);
+const AE=(i,a)=>LV[2].T[i].push(...X(a));
+AE(12,[
+'小王：这个词典里有这个词语吗？小李：有，你可以查一下。读音和意思都在这儿。|小王想找什么？|词语|地图|电话',
+'小李：你的笔记本里有笔记吗？小王：有，我每天都做笔记，成绩也很不错。|小王的成绩怎么样？|很不错|不好|不知道',
+'老师：这次作业你们必须交。小王：我们应该怎么写作文？老师：写一个故事，也可以写你的生活。|老师让学生写什么？|作文|报告|信',
+'小李：我想参加汉语班，你可以帮助我吗？小王：可以，你先报名，然后问老师。|小李想做什么？|报名参加汉语班|买书|去旅行',
+'老师：现在对话练习。班长，你先来。班长：好的。|谁先练习？|班长|老师|小王',
+'小王：我不懂这个句子。小李：我来讲一下，你懂了吗？小王：懂了，谢谢！|小王懂了吗？|懂了|不懂|不知道',
+'小李：新学期开学了，你在几年级？小王：我在二年级，我的班长也是我的好朋友。|小王在几年级？|二年级|三年级|一年级',
+'小王：考试的分数出来了。小李：你考得怎么样？小王：不太好，我要更努力。|小王考得怎么样？|不太好|很好|不知道',
+'小李：怎么记住生词？小王：我常常复习，也用字典和词典，还要重复练习。|小王怎么记住生词？|复习和重复练习|不学习|看电影',
+'老师：请大家认真听讲，不要说话。小王：老师，我想问一个问题。老师：好，请举手。|老师说什么？|请举手|请坐|再见',
+'小王：我想去中国当留学生，以后成为汉语教师。小李：你一定可以。|小王以后想做什么？|汉语教师|医生|司机',
+'小李：学习汉语有什么好处？小王：好处很多，可以交朋友，也可以去中国旅游。|汉语有什么好处？|可以交朋友|可以不工作|可以不吃饭',
+'小王：我的汉语水平还不高。小李：你要多听多说，不要怕错。|小李让小王做什么？|多听多说|多睡觉|少说话',
+'小李：快点儿，课堂快开始了。小王：别着急，老师还没来。|课堂开始了吗？|还没有|已经开始|不知道']);
+AE(3,[
+'小王：你们公司的办公室在哪儿？小李：在二十层，你坐电梯上去。|办公室在几层？|二十层|十层|五层',
+'小李：我下个月想找工作，你有什么办法？小王：你可以先打工，也可以在网站上看。|小李想做什么？|找工作|买房|去旅行',
+'小王：这个单位的同事都很热情。小李：我们的经理对每个人的态度都很好。|同事们怎么样？|很热情|很忙|不好',
+'小李：请打印这份报告。小王：要几份？小李：三份。|要打印几份？|三份|两份|五份',
+'小王：你的收入怎么样？小李：不太高，但是工作很顺利，我也很满意。|小李对工作满意吗？|满意|不满意|不知道',
+'小李：会议改时间了吗？小王：改了，改到下周三，请你通知大家。|会议改到什么时候？|下周三|下周一|今天',
+'小王：这个周末我想休假。小李：好，你好好休息，也照顾一下家人。|小王想做什么？|休假|上班|开会']);
+AE(2,[
+'小王：医生，我感觉不舒服。医生：先检查一下，也许只是感冒。|医生要做什么？|检查|买药|出院',
+'小李：你的病好了吗？小王：好多了，明天可以出院。我很感谢医生的照顾。|小王明天做什么？|出院|住院|上班',
+'小王：你怎么这么健康？小李：我每天运动，心情也很好。|小李为什么健康？|每天运动|不吃饭|不睡觉',
+'小李：我想去药店买药。小王：这个药片一天吃两次，药水一天吃三次。|药片一天吃几次？|两次|三次|一次',
+'小王：他住院了，但是不太严重。小李：我们去看他吧，不过先买水果。|他们要先做什么？|买水果|买药|上班',
+'小李：你要小心，别感冒了。小王：谢谢，我会注意。|小李说什么？|要小心|要上班|要吃药']);
+AE(1,[
+'小王：我想去国外旅游，你想去吗？小李：好啊，但是我们要先办护照，也要出国准备。|他们要先办什么？|护照|信用卡|手机',
+'小李：飞机几点起飞？小王：下午三点起飞，我们要提前出发。|飞机几点起飞？|下午三点|上午三点|晚上三点',
+'小王：这是我们的出口吗？小李：不是，出口在前面，入口在后面。|出口在哪儿？|前面|后面|左边',
+'小李：旅行时要注意安全。小王：对，也要带好信用卡和手机。|旅行要注意什么？|安全|吃饭|睡觉',
+'小王：酒店的服务怎么样？小李：服务很好，房间很安静，也很干净。|酒店的房间怎么样？|很安静|很吵|很小',
+'小李：这个地方人多吗？小王：现在是假期，游客很多，大多数人是来参观的。|现在为什么人多？|是假期|有比赛|下雨了',
+'小王：我们去海边吧。小李：好啊，我想看大海，也想去花园走走。|他们想去哪儿？|海边|山上|学校',
+'小李：旅客朋友们，火车就要到站了。小王：我们快拿行李。|他们要做什么？|拿行李|买票|吃饭',
+'小王：请问，公交车去广场吗？小李：去，大概二十公里。|广场有多远？|二十公里|二十公斤|二十块']);
+AE(0,[
+'小王：你吃饱了吗？小李：饱了，这个快餐不错。我们可以走了。|小李吃饱了吗？|吃饱了|没吃饱|不知道',
+'小李：请用筷子和碗，这个是方便面。小王：好，我想要一碗热的。|小王想要什么？|方便面|米饭|饺子',
+'小王：你今天的早餐吃什么？小李：我早餐吃面包，午餐吃米饭，晚餐吃面条。|小李晚餐吃什么？|面条|米饭|面包',
+'小李：这个菜的味道怎么样？小王：味道不错，就是有一点儿辣。我想点一些西餐。|小王想点什么？|西餐|快餐|面条',
+'小王：干杯！小李：干杯！祝我们友好合作。|他们在做什么？|干杯|买单|排队']);
+AE(9,[
+'小李：我的老朋友来了，我们一起去机场接他吧。小王：好。|他们去哪儿接朋友？|机场|火车站|学校',
+'小王：你的朋友是什么样的人？小李：他是一个好人，也很有名。|小李的朋友是什么样的人？|好人|坏人|不知道',
+'小李：你和他是怎么认识的？小王：我们从小就是好朋友，小时候在一个学校。|他们什么时候认识的？|小时候|昨天|去年',
+'小王：我昨天碰到了一个老朋友。小李：是吗？你们碰见的地方是哪儿？小王：在超市。|他们在哪儿碰见的？|超市|学校|医院',
+'小王：今晚我请客，大家都来吧。小李：太好了，谢谢！|今晚谁请客？|小王|小李|老师',
+'小李：我们已经好久没见面了。小王：对，你变了很多。|他们好久没做什么？|见面|吃饭|旅行']);
+AE(4,[
+'小李：我收到了你的短信。小王：你看到了吗？我想问问明天的活动。|小王想问什么？|明天的活动|电话号码|地址',
+'小李：你好，请问明天可以见面吗？小王：可以，我们见面再商量。|他们要做什么？|商量|买票|吃饭',
+'小李：你的手机关机了。小王：对不起，我刚才在开会。|小王刚才在做什么？|开会|吃饭|睡觉',
+'小王：电话里的声音不清楚。小李：信号不好。我换个地方打给你。|电话有什么问题？|信号不好|没有钱|没有人']);
+AE(5,[
+'小王：春节的节目你看了吗？小李：看了，节目很好看，我很开心。|小李觉得节目怎么样？|很好看|不好看|很短',
+'小李：国庆节的广告你看到了吗？小王：看到了，大商场都在打折。|广告说什么？|打折|放假|比赛',
+'小李：节日时人们都很高兴。小王：对，人们互相送礼物，也说新年快乐。|节日时人们做什么？|送礼物|上班|学习',
+'小李：这是老师送给我的一张照片。小王：真好看，是在国庆节照的吗？|这是什么？|照片|地图|信用卡']);
+AE(6,[
+'小王：体育馆里有比赛，你去看吗？小李：去，我们球队的球场也在那儿。|比赛在哪儿？|体育馆|学校|公园',
+'小李：我喜欢排球和网球。小王：我更喜欢骑车，我的自行车是新买的。|小王喜欢什么？|骑车|排球|网球',
+'小王：这双球鞋很合适。小李：多少钱？小王：不贵，才一百块。|球鞋多少钱？|一百块|二百块|五十块',
+'小李：我们队赢了吗？小王：赢了！队长说，大家都很努力，所以取得了好成绩。|他们队怎么样？|赢了|输了|没比赛']);
+AE(7,[
+'小李：这个城市很安静，空气也很好。小王：对，市长说要多种草，也要多建公园和花园。|这个城市怎么样？|很安静|很吵|很小',
+'小王：这是什么地方？小李：这是动物园，那边是广场。|这是什么地方？|动物园|医院|银行',
+'小李：东北的冬天很冷。小王：东方和南方不一样，南方的冬天不太冷。|南方的冬天怎么样？|不太冷|很冷|很热',
+'小王：你们那里的人口多吗？小李：人口很多，全国第三，交通也方便。|那里的人口怎么样？|很多|很少|不知道']);
+AE(8,[
+'小王：这件衣服的样子不错，我很满意。小李：你可以试试，大小也许合适。|小王觉得衣服怎么样？|样子不错|太贵|太小',
+'小王：这个手表是你的吗？小李：是的，是我的生日礼物。|手表是什么？|生日礼物|新年礼物|工作',
+'小李：这件衣服的颜色太难看了。小王：我觉得不难看，很特别。|小王觉得衣服怎么样？|很特别|很难看|很贵',
+'小王：这件太小了，我想选一个别的颜色。小李：好的，你可以看看。|小王想做什么？|选别的颜色|买手表|付钱']);
+AE(11,[
+'小李：天气预报说明天多云，气温零下五度。小王：太冷了，要多穿一些。|明天天气怎么样？|多云|晴天|下雨',
+'小王：今天的温度很高，要多喝水。小李：对，我们去海边游泳吧。|今天怎么样？|温度很高|很冷|下雪',
+'小李：这几天一直下雨，我们很难出门。小王：是啊，不过周末会晴。|周末天气怎么样？|会晴|会下雨|很冷']);
+AE(13,[
+'小李：银行门口有很多人。小王：是啊，大家都在排队。|银行门口有什么？|很多人|很多车|很多水果',
+'小王：我的钱不够了。小李：没关系，我借你。|小李怎么帮助小王？|借钱|送礼物|做饭',
+'小李：你每个月的收入怎么样？小王：不少，但是花得更多。|小王的收入怎么样？|不少|很少|没有']);
+AE(14,[
+'小王：请问，去公园怎么走？小李：先往前走，经过广场，一直走到路口，再向右。|去公园要经过哪儿？|广场|学校|医院',
+'小李：我们走错了，应该往回走。小王：对，我们走过了。|他们怎么了？|走错了|迷路了|没有钱',
+'小王：这条道路很安静。小李：对，车辆也不多。|这条道路怎么样？|很安静|很吵|很长',
+'小李：对不起，我来晚了。小王：没关系。你在哪儿？小李：我在公路旁边，马上到。|小李在哪儿？|公路旁边|学校里|家里'
+]);
+AE(12,[
+'小王：你的汉语说得很流利，是怎么学的？小李：我平时多听多说，也常看新闻和小说。|小李怎么学汉语？|多听多说，看新闻和小说|只看书|不学习',
+'老师：这篇课文的重点是什么？学生：重点是这个句子的方法。老师：对，这个方法很常用。|这篇课文的重点是什么？|句子的方法|地图|电话',
+'小王：你的普通话真好！小李：谢谢，我不但学普通话，而且学英文。|小李学什么语言？|普通话和英文|西班牙语|日语',
+'小李：我哥哥是高中生，他想学科学，以后当科学家。小王：真好。|哥哥想当什么？|科学家|画家|作家',
+'老师：全体同学，请把作业交给班长。|作业交给谁？|班长|老师|校长',
+'小王：这个例子我不太懂。小李：比如说，你想去商场，就说：我想去商场。例如这样。小王：哦，我懂了。|小王懂了吗？|懂了|不懂|不知道',
+'小李：这个学期我有很多想法，我想提高汉语水平。小王：你的目的是什么？小李：我想去中国工作。|小李的目的是什么？|去中国工作|买房|看电影',
+'老师：写作文时要有自己的看法。小王：我的看法是，学习要认真，也要有信心。|小王觉得学习要怎么样？|认真，有信心|不认真|很快',
+'小王：你每天读报纸吗？小李：读，我读日报和晚报，也读一点儿小说。|小李读什么？|日报和晚报|漫画|信',
+'小李：老师，您的讲话我听不懂。老师：对不起，我说得太快了，我慢点儿说。|老师怎么说？|慢点儿说|快点儿说|不说',
+'小王：这个词有几个音节？小李：两个音节，意思是“音乐”。|音乐是什么？|一个词|一个人|一个城市',
+'小李：学校办了一个音乐会，你去吗？小王：去，我想听音乐。|小王想做什么？|听音乐会|看电影|上班',
+'小王：我不懂这个道理。小李：你认真想想，就会懂得。|小李让小王做什么？|认真想想|不想|去睡觉',
+'小王：我想背课文。小李：背课文是一个好方法，你可以背一部分，再背一部分。|小李觉得背课文怎么样？|是个好方法|很难|没用',
+'小李：你想当作家吗？小王：我想写小说，也想当画家，画一些画儿。|小王想画什么？|画儿|地图|手机',
+'小王：你们的校园很大，有河和湖，还有大草地。小李：是的，校长常说这是我们的大自然。|校园里有什么？|河和湖|海|山',
+'小李：我听说你在实习，怎么样？小王：很好，我在实际工作中学到了很多。|小王学到了很多什么？|工作经验|钱|电影',
+'小王：你的汉语有进步！小李：谢谢，今后我会更努力，也想进入一所好大学。|小李今后想做什么？|进入好大学|工作|旅行']);
+AE(3,[
+'小王：这家公司的顾客越来越多。小李：对，他们提出了很多好的意见。|公司的顾客怎么样？|越来越多|越来越少|没有',
+'小李：你们的工作时间长吗？小王：一般八点上班，有时候要干活儿到很晚。|小王有时候怎么样？|工作到很晚|很早下班|休假',
+'小王：这个计算机坏了。小李：可能是原因很多，我们找人来看看。|什么坏了？|计算机|手表|相机',
+'小王：这件事情需要大家一起讨论。小李：好，我们开一个小组会议，请组长来说一下。|谁来说？|组长|经理|顾客',
+'小李：我们组有十个人，大部分是年轻人，也有一些中年人。|组里大部分是什么人？|年轻人|老人|孩子',
+'小王：公司要求我们完成这个工作。小李：好的，我们一定做到，请放心。|小李怎么说？|一定做到|不做|很难',
+'小李：我想找这个工作，你觉得怎么样？小王：你的条件不错，我相信你可以。|小王相信什么？|小李可以|小李不行|工作很难',
+'小王：这个工作有好处，也有坏处。小李：对，要看你怎么用时间。|小李说什么？|要看怎么用时间|不好|很好',
+'小王：商人的生活怎么样？小李：很忙，他们常常出差，也要跟顾客说话。|商人的生活怎么样？|很忙|很闲|很安静']);
+AE(2,[
+'小李：你的脸色不好，是不是感到不舒服？小王：我有点难受，晚上睡不着。|小王怎么了？|有点难受|很高兴|很饿',
+'医生：你要多休息，不要吃太油的东西。小王：好的，我会注意。|医生说不要吃什么？|太油的东西|水果|米饭',
+'小李：他得的是什么病？小王：医生说是小病，但是要住几天，家人都很关心他。|家人怎么样？|很关心他|不知道|不在',
+'小王：我想看西医，你觉得中医怎么样？小李：我觉得中医也很好，很多人相信中医。|小李觉得中医怎么样？|也很好|不好|很贵',
+'小王：你为什么这么难过？小李：我的朋友病了，我很担心。小王：别难过，他会好的。|小李为什么难过？|朋友病了|没有钱|没有时间',
+'小王：每天洗澡对身体好吗？小李：对，洗澡以后要多喝水。|洗澡以后要做什么？|多喝水|多睡觉|多吃饭']);
+AE(1,[
+'小王：我明天出发了。小李：祝你一路平安！小王：谢谢你！小李：一路顺风！|小李说什么？|一路平安|生日快乐|新年快乐',
+'小李：你去过西方国家吗？小王：去过，我去过北方，也去过东南和西南的城市，还没去过西北。|小王没去过哪儿？|西北|北方|西南',
+'小王：我们在大门前照相吧。小李：好，我带了相机。|他们要做什么？|照相|吃饭|买票',
+'小李：停车场在哪儿？小王：在酒店外面，你可以在那儿停车。|停车场在哪儿？|酒店外面|酒店里面|学校',
+'小李：听说那里的风景很美，也有不少外地游客。小王：对，所以人很多。|那里为什么人很多？|风景美|天气冷|有比赛',
+'小王：我们去国际机场接他。小李：他当时说几点到？小王：下午两点，等到他出来，我们一起吃饭。|他们等到什么时候吃饭？|他出来以后|下班以后|明天',
+'小李：刚刚听说，飞机要晚点。小王：真的吗？那我们买一份外卖，在这儿等吧。|飞机怎么了？|要晚点|已经起飞|没有了',
+'小王：你的车票呢？小李：我找不到了。小王：别急，也许掉在包里了。|小李在找什么？|车票|手机|护照']);
+AE(0,[
+'小王：你不喜欢吃这个菜吗？小李：我不是不喜欢，只是不太习惯。|小李为什么不吃？|不习惯|不饿|没有钱',
+'小王：这个菜不好吃。小李：是吗？我觉得很好吃。每个人的口味不同。|他们的口味怎么样？|不同|一样|很好',
+'小李：今天我请客，你想吃中餐还是西餐？小王：我想吃中餐。|小王想吃什么？|中餐|西餐|快餐',
+'小王：这里的食物很多，大家可以随便吃。小李：太好了，我们随时都可以来。|这里怎么样？|食物很多|很贵|很远',
+'小李：夜里的饭馆很热闹，半夜也有人。小王：对，我们也去吧。|夜里的饭馆怎么样？|很热闹|很安静|不开门']);
+AE(9,[
+'小王：他身边总是有很多人，大家都喜欢他。小李：因为他很热情，也很有名。|大家为什么喜欢他？|他很热情|他很高|他很有钱',
+'小李：你的朋友是什么样的人？小王：他的个子很高，也很爱笑，常常讲笑话。|他的朋友怎么样？|个子很高|很矮|很胖',
+'小王：对不起，我不好意思，我忘记你的名字了。小李：没关系，我叫李明。|小王为什么不好意思？|忘了名字|来晚了|没带钱',
+'小李：你答应我的事做了吗？小王：对不起，我忘了，我现在就去做。|小王做了吗？|没有|做了|不知道',
+'小王：爱情是什么？小李：爱情是两个人互相关心。他是我的爱人。|小李说爱情是什么？|互相关心|很贵|很难',
+'小李：咱们一起去爬山吧。小王：好，咱们明天早晨出发。|他们什么时候出发？|明天早晨|今天晚上|下周',
+'小王：他的行为不好，常常故意来晚。小李：我们应该告诉他。|他的行为怎么样？|不好|很好|很忙',
+'小李：你为什么哭了？小王：我很感动，这件好事让我想起了很多。|小王为什么哭？|很感动|很饿|很累',
+'小李：我们是青年，要多交朋友。小王：对，朋友有很多好处。|小李说什么？|要多交朋友|要多睡觉|要上班']);
+AE(4,[
+'小王：喂，你的声音很小，我听不清。小李：我在外面，我小声说，你听到了吗？|小李为什么小声说？|在外面|生病了|没电了',
+'小李：我想起来了，你是小王的朋友！小王：对，我们那时候见过。|他们以前见过吗？|见过|没见过|不知道']);
+AE(5,[
+'小李：今年的国庆节，我们家全家去旅游。小王：真好，全家人一起。|小李家国庆节做什么？|全家旅游|工作|上课',
+'小王：节日的时候，到处都是人。小李：对，到处都有节目，大门口也很热闹。|节日时怎么样？|到处都是人|很安静|没有人',
+'小李：春节在一月或者二月。小王：对，每年春节的日期不同。|春节的日期怎么样？|每年不同|每年一样|不知道']);
+AE(14,[
+'小李：请问，哪个方向是北方？小王：你面对太阳，右边是南方。小李：谢谢，那么东南在哪儿？|太阳在哪边？|前面|后面|旁边',
+'小王：你走过来，这边！小李：好的，我马上过来。小王：不要走开，等我一会儿。|小李要做什么？|走过去|走开|回家',
+'小李：这条路对吗？小王：不对，请走进那个门，里头就是出口。|出口在哪儿？|门里头|门外面|学校',
+'小李：你到哪儿了？小王：我快要到了，在大门前面，你站住等我。|小王快到了吗？|快要到了|还很远|不知道',
+'小王：从这里到那里有多远？小李：不太远，差不多一公里，走路大概十分钟。|有多远？|差不多一公里|十公里|很远',
+'小李：你走了多久？小王：不久，才半小时，我走得有点累，想停下休息。|小王走了多长时间？|半小时|一小时|五分钟']);
+AE(11,[
+'小王：风吹得很大，我的帽子在草地上。小李：我们去找找吧。|帽子在哪儿？|草地上|桌子上|车上',
+'小李：这几天的天气变化很大。小王：对，昨天很热，今天变成了冷天。|今天天气怎么样？|很冷|很热|多云',
+'小王：好像要下雨了。小李：对，那我们不去了，在家看电影吧。|他们要做什么？|在家看电影|去海边|去爬山',
+'小李：今天的空气好，天上有很多星星。小王：真美，我们看一会儿吧。|天上有什么？|星星|云|雨']);
+AE(13,[
+'小王：你的数字写错了。小李：是吗？应该是一百万，我写成了十万。|小李应该写多少？|一百万|十万|一千万',
+'小李：今年的收入比去年高一点点。小王：太好了，希望明年更好。|今年的收入怎么样？|高一点点|低很多|没有变',
+'小王：这个公平吗？小李：很公平，大家都一样。|小李觉得公平吗？|公平|不公平|不知道']);
+AE(7,[
+'小李：这个城市有一个大体育场。小王：对，听说那儿常常举行比赛，来的人数很多。|体育场常常举行什么？|比赛|音乐会|考试',
+'小王：这里的交通怎么样？小李：不错，到处都有公交车，一般不堵车，也很安全。|这里的交通怎么样？|不错|很差|很贵',
+'小李：这个地方原来是一个小村子，现在变成了大城市。小王：真的吗？|这个地方现在怎么样？|变成了大城市|还是小村子|没有人',
+'小王：你为什么住在这里？小李：我喜欢这里的空气，也喜欢这个院子。|小李为什么喜欢这里？|空气好|工作好|车多']);
+AE(10,[
+'小王：我的房间里有一个椅子，墙上有一个画儿。小李：很好看，还有一个洗衣机吗？小王：有。|墙上有什么？|画儿|椅子|洗衣机',
+'小李：你的住房大吗？小王：不大，只有两个房间。|小王的住房怎么样？|不大|很大|很贵',
+'小王：房间里很脏。小李：对，我们要打扫一下，也要放好东西。|房间怎么样？|很脏|很干净|很大']);
+AE(6,[
+'小王：我要实现我的想法：每天跑步，一年以后就可以超过我的朋友。|小王想超过谁？|朋友|老师|哥哥',
+'小李：比赛的结果怎么样？小王：不好，我们的队不如他们，但是我们很努力。|他们的队怎么样？|不如对方|赢了|没比赛']);
+AE(12,[
+'小王：你对这个难题有什么观点？小李：我认为要换一个角度想，答案等于十二。|小李怎么想问题？|换一个角度|不想|问老师',
+'老师：请看黑板，这个字叫作“人”。学生：老师，我看不清。老师：好，我写大一点。|这个字叫作什么？|人|大|天',
+'小王：我们学校的教育很好，所有老师都很认真。小李：对，每个家长都很放心。|家长为什么放心？|教育很好|学校很大|离家近',
+'小李：考试八点一刻开始，考生要提前到。小王：好的。|考试几点开始？|八点一刻|八点|九点',
+'老师：今天我们进行听写。接下来请打开课本，接着读课文。|老师先做什么？|听写|读课文|下课',
+'小王：这个题我们可以得出两个答案吗？小李：不一定，你再想想，也许只有一个。|小李觉得有几个答案？|也许一个|两个|三个',
+'小李：我想参加高级班。小王：你的水平够吗？小李：我已经学完了中级，也通过了考试。|小李想参加什么班？|高级班|中级班|音乐班',
+'小王：你们的中小学几点上课？小李：都是八点，学生要靠自己完成作业。|学生要靠谁完成作业？|自己|老师|家长',
+'小李：全年的学习计划我已经做好了。小王：你打算怎么学？小李：我打算每天学习一个小时。|小李打算每天学多久？|一个小时|两个小时|半个小时',
+'小王：你的理想是什么？小李：我想当老师，所以我愿意多学习。|小李的理想是什么？|当老师|当医生|当司机',
+'小李：这个方法的特点是什么？小王：很快，也很准确。|这个方法怎么样？|很快，也很准确|很慢|很贵',
+'小王：学习汉语的各个方面都很重要。小李：对，听、说、读、写，我们都要重视。|小李觉得什么重要？|各个方面|只有听|只有写',
+'小李：你要多复习，要重新学一遍。小王：好的，我只能多花时间了。|小王要怎么学？|重新学一遍|不学|少学',
+'小王：看中文影片对学汉语有很大影响。小李：对，我常常看，大大有用。|看影片有什么作用？|有用|没用|很贵',
+'小李：只要认真，你就能够学好汉语。小王：谢谢，我会加油的！|小李说什么？|只要认真就能学好|很难学好|不用学',
+'小王：这些图片很好看，是哪个月份拍的？小李：是五月份。|图片是几月拍的？|五月|四月|六月',
+'小李：老师刚才提到了明天的考试。小王：我也听到了，要好好准备。|老师提到了什么？|明天的考试|放假|电影',
+'小王：这个道理我想到了。小李：你想到了什么？小王：只有努力才能成功。|小王想到了什么？|要努力|要休息|要吃饭',
+'小李：我接受你的请求，请你留下你的名字。小王：好的，谢谢。|小李让小王做什么？|留下名字|走开|等一会儿']);
+AE(3,[
+'小王：请把这封信送到院长办公室。小李：好的，我马上送到。|信要送到哪儿？|院长办公室|学校|银行',
+'小李：公司的名单出来了吗？小王：出来了，我拿到名单了。|小王拿到了什么？|名单|电话|地图',
+'小王：你们的客人什么时候来？小李：上周已经通知了，客人说下周来。|客人什么时候来？|下周|上周|今天',
+'小李：你的工作怎么样？小王：虽然很忙，但是很有意思，我受到了经理的帮助。|小王的工作怎么样？|很忙，也有意思|很闲|很难',
+'小王：这个工作的好处是时间自由，而且收入不错。小李：可是，有时候也很累。|这个工作有什么好处？|时间自由|不累|不用工作',
+'小李：这个月我们全部完成了。小王：太好了，你们的行动真快！|他们完成了吗？|全部完成了|没完成|不知道',
+'小王：我们的小组成员来自不同的地方。小李：对，有人来自北方，也有人来自南方。|成员来自哪儿？|不同的地方|一个地方|不知道',
+'小李：这个工作有什么作用？小王：作用很大，可以提高大家的水平。|这个工作的作用怎么样？|很大|很小|没有',
+'小王：他很看重家庭，每天都早点回家。小李：对，他觉得家庭很重要。|他觉得什么重要？|家庭|工作|钱',
+'小李：你们的做法很好。小王：我们先通知，然后一起讨论，同时听大家的意见。|他们的做法怎么样？|很好|不好|很慢',
+'小王：这个季节，大量的旅客来这里。小李：对，所以我们的工作忙了。许多同事都加班。|为什么工作忙？|旅客很多|天气冷|放假',
+'小李：他又来了，不一会儿就走了。小王：他有什么事情吗？|他待了很久吗？|没有|很久|不知道']);
+AE(2,[
+'小李：你的身体怎么样？小王：我老是觉得累，全身都不舒服。|小王怎么了？|全身不舒服|很高兴|很饿',
+'医生：你平常运动吗？小王：平常不太运动。医生：那你要多运动。|医生让小王做什么？|多运动|多睡觉|少吃饭',
+'小李：医生，我怕我生病。医生：别怕，我给你检查一下。你的身体挺好，只是有点儿累。|医生说什么？|身体挺好|很严重|要住院',
+'小李：医生说我要午睡一会儿。小王：对，午睡对身体好，可是不要睡太久。|午睡要怎么样？|不要太久|越久越好|不用睡',
+'小李：我的孩子是去年出生的。小王：那会儿你在哪儿？小李：我在医院，很高兴。|孩子什么时候出生的？|去年|前年|今年',
+'医生：青少年每天要睡八个小时，大人可以少睡一点。|青少年每天睡几个小时？|八个|六个|十个',
+'小李：我的体重是七十千克。小王：有一点儿重，你要少吃油。|小李的体重是多少？|七十千克|六十千克|八十千克',
+'小王：这个瓶子里是药水吗？小李：是，一瓶药水，一天三次。|瓶子里是什么？|药水|牛奶|茶',
+'小王：老年人更需要健康的生活。小李：对，老年人要多运动。|老年人要做什么？|多运动|多睡觉|少说话',
+'小李：药店里有许多药，所有药都有名称。小王：对，你要看清楚名称。|买药要看什么？|名称|价格|颜色',
+'小王：医生说我的病很常见，不用担心。小李：太好了，你可以放心了。|小王的病怎么样？|很常见|很严重|很难',
+'小李：我发现我最近老是忘事。小王：你出现这个问题多久了？|小王问什么？|多久了|多贵|多远']);
+AE(1,[
+'小王：我们放下行李吧，酒店的房间很大。小李：好，我也想午睡一会儿。|他们先做什么？|放下行李|吃饭|出去玩',
+'小李：路上有很多行人，车辆也很多。小王：对，过马路要小心。|路上怎么样？|行人和车辆很多|没有人|很安静',
+'小王：这个城市的中心有一个广场，人们喜欢在那儿活动。小李：我们到那儿去吧。|人们喜欢在哪儿活动？|广场|学校|医院',
+'小李：行李里还有其他东西吗？小王：其中有一些衣服，其他的是书。|行李里有什么？|衣服和书|水果|电话',
+'小李：这段时间我们玩得很开心。小王：对，我也很高兴。|他们这段时间怎么样？|很开心|很累|很忙',
+'小李：真正的旅行要多走路。小王：我同样觉得，走路可以看到许多东西。|小王觉得走路怎么样？|可以看很多东西|很累|很慢',
+'小李：机场以外的地方我不熟。小王：没关系，我熟这儿，我来带路。|谁熟这儿？|小王|小李|司机',
+'小王：地球很大，我们不能全部都去。小李：对，我们只能去一些地方。|他们能去哪儿？|一些地方|所有地方|没有地方',
+'小李：请问，我想问路。小王：好，你要去哪儿？小李：去火车站。小王：向前走，然后向右。|小李想做什么？|问路|买票|吃饭']);
+AE(14,[
+'小李：请问，我们现在的位置在哪儿？小王：在中小学前面，往前走不一会儿就到。|他们在哪儿？|学校前面|医院前面|公园前面',
+'小王：这个路口看起来一样，我们离开这里吧。小李：好，我们换个方向。|他们要做什么？|离开路口|买票|休息']);
+AE(9,[
+'小王：你的电话号码我早就有了。小李：我的姓名你也知道吗？小王：知道，你叫李明。|小王知道什么？|电话和姓名|地址|生日',
+'小李：你的手机开机了吗？小王：开机了，你什么时候打给我？小李：这时候就打。|小王的手机怎么样？|开机了|没电了|坏了',
+'小王：喂，我是小王。小李：我接到你的电话很高兴。小王：那样太好了。|小李为什么高兴？|接到电话|放假|考试',
+'小李：他刚刚点头了，说他愿意。小王：好，我们可以开始。|他怎么回答？|点头|摇头|不说',
+'小王：好久不见！我们分开十年了。小李：是啊，你一点儿没变。|他们分开多长时间了？|十年|一年|五年',
+'小王：他喊了一声，我回头看，是我的老朋友！小李：真的吗？|谁喊了一声？|他|小李|老师',
+'小李：我以为你不来了。小王：我忽然想起来，我还要给你带来礼物。|小王带来了什么？|礼物|水果|书',
+'小王：你们太太也来吗？小李：来，我太太和孩子都来。|谁也来？|太太和孩子|爸爸|同学',
+'小李：你们是怎么变成朋友的？小王：我们刚认识时，不太熟，后来一起学习，就越来越好。|他们后来怎么样？|越来越好|不认识|不见面',
+'小王：他是一个很可怕的人吗？小李：不是，他很好，我们不要这样想。|小李觉得他怎么样？|很好|很可怕|很忙',
+'小李：这个明星你认识吗？小王：认识，他非常有名，他的歌很流行。|这个明星怎么样？|很有名|不有名|很老',
+'小李：每个人都应该平等。小王：对，平等很重要，也要给大家自由。|他们觉得什么重要？|平等|钱|工作']);
+AE(4,[
+'小李：新年快到了，晚安！小王：晚安！明天见！|他们说什么？|晚安|你好|再见吧',
+'小李：你听，外面有声音在响。小王：是下雨了吧？我们在家，别出去了。|外面怎么了？|在响|很安静|没有人']);
+AE(5,[
+'小王：我们家庭的晚会九点开始，请你也来。小李：好，我一定到。|晚会几点开始？|九点|八点|十点',
+'小李：今年的春节，你有什么打算？小王：我打算回老家，也想拿出一些礼物给家人。|小王打算做什么？|回老家|工作|旅行',
+'小李：前年我来过这里，现在变了很多。小王：对，改变太大了。|这里怎么样？|改变很大|没变|很小']);
+AE(11,[
+'小李：今天天气很正常，温度正好。小王：对，不冷不热，正是出去玩的好时候。|今天天气怎么样？|不冷不热|很冷|很热']);
+AE(0,[
+'小李：请倒一杯水。小王：好的。这个瓶子里装着水。|小王倒了什么？|水|茶|酒',
+'小王：这个菜多么好吃啊！小李：对，我实在太喜欢了。|小李觉得菜怎么样？|太好吃了|不好吃|太贵了',
+'小李：我们占了一张桌子。小王：真好，快坐下吧。|他们做什么？|占桌子|买单|排队']);
+AE(13,[
+'小王：这是一百亿！小李：不是一亿，而是十亿。|小李说是多少？|十亿|一亿|一百亿',
+'小王：请告诉我，你的年龄在三十岁以上还是以下？小李：三十岁以下。|小李多大？|三十岁以下|三十岁以上|不知道',
+'小王：我想省一点钱。小李：你可以少买一些东西，省下来买别的。|小王想做什么？|省钱|花钱|借钱']);
+AE(10,[
+'小李：这个角里有一个黑色的瓶子。小王：我想那个瓶子里是水，不是药。|瓶子里是什么？|水|药|茶']);
+AE(8,[
+'小李：这个答案不正确，请重新再算一次。小王：对不起，我再算一次。|小李让小王做什么？|重新算|不算|走开',
+'小王：我们商量的结果是什么？小李：我们直接问老师。|他们要怎么做？|直接问老师|不问|问朋友']);
+AE(7,[
+'小王：这件事主要是我们大家的，主要的原因是没准备好。小李：对，我们应该一起想办法。|主要的原因是什么？|没准备好|没有钱|天气不好',
+'小李：房子的主人住在院子后面，他是一个老年人。小王：他一个人住吗？|房子的主人是谁？|老年人|年轻人|孩子',
+'小王：我一生都很喜欢旅行。小李：我也是，希望永远可以去不同的地方。|他们喜欢什么？|旅行|工作|睡觉',
+'小李：你们家养了几只猫？小王：养了三只，它们很可爱。|他们家养了什么？|猫|狗|鱼',
+'小李：他长大以后想做什么？小王：他想当老师。|他长大以后想做什么？|当老师|当医生|当司机',
+'小王：我找出了你的照片。小李：太好了，你从哪儿找出来的？|小王找出了什么？|照片|地图|名单',
+'小李：怎样才能学好汉语？小王：多听、多说、多练。|怎样学好汉语？|多听多说多练|不学习|只看书',
+'小李：看到广告后我的心里很想去。小王：我的心中也是。|他们心里怎么想？|很想去|不想去|不知道',
+'小王：大多数人喜欢夏天，少数人喜欢冬天。小李：我是少数，我喜欢冬天。|小李喜欢什么？|冬天|夏天|春天',
+'小李：他推了一下门，进去了。小王：那是一个大门。|他做了什么？|推门|关门|买票',
+'小李：请求你帮我一个忙。小王：好，请说。|小李想做什么？|请求帮忙|买东西|吃饭',
+'小王：这两张图片相同吗？小李：对，完全相同。|两张图片怎么样？|相同|不同|很大',
+'小李：他拉着我的手说，别怕。小王：真好。|他做了什么？|拉手|喊人|离开',
+'小李：请不要弄坏这个东西。小王：我没有弄，是它自己坏了。|小王说什么？|不是我弄的|是我弄的|不知道',
+'小王：我们打算把这个地方称为小花园。小李：好，这个名称很好。|这个地方叫什么？|小花园|大花园|公园',
+'小李：这个手机是高级的，使用起来很方便。小王：我受到了广告的影响，也想买一个。|小王为什么想买？|受广告影响|没有手机|很便宜']);
+P(`久|jiǔ|mucho tiempo;体重|tǐ zhòng|peso corporal;价格|jià gé|precio;成员|chéng yuán|miembro;待|dài|quedarse, esperar;受|shòu|recibir, sufrir;答案|dá àn|respuesta;摇头|yáo tóu|negar con la cabeza;声|shēng|sonido, voz;各个|gè gè|cada uno;各|gè|cada;拍|pāi|tomar (una foto), golpear;成功|chéng gōng|éxito;而|ér|y, pero;年龄|nián líng|edad;位置|wèi zhì|posición`,2);
+AE(5,['小王：今天是学校的周年，学校办了一个晚会。小李：真好，祝学校周年快乐！|今天是什么日子？|学校的周年|春节|生日']);
+AE(11,['小王：如果明天下雨的话，你去哪儿？小李：如果下雨的话，我就在家看书。|如果下雨，小李做什么？|在家看书|去公园|去学校']);
+AD(1,[
+'小王：你姐姐和她男朋友在哪儿？小李：我姐姐去上班了，她男朋友在楼下。|谁在楼下？|姐姐的男朋友|奶奶|爷爷',
+'小李：我的奶奶和爷爷今天从北边回来了。小王：他们回来了，家里一定很热闹。|谁回来了？|奶奶和爷爷|姐姐|朋友',
+'小王：你的女朋友是学生吗？小李：对，她是大学生。她的男生同学也是我的朋友。|他的女朋友是什么？|大学生|老师|医生',
+'小王：学校有多少女生？小李：有很多女生，也有很多男生。老师说不要看别人，要认真学习。|老师说什么？|要认真学习|要看别人|要回家',
+'小李：那些男人和女人是谁？小王：他们是工人，有的在楼上工作，有的在楼下。|工人在哪儿工作？|楼上和楼下|学校|医院']);
+AD(3,[
+'小王：前天你去哪儿了？小李：我去了书店，后天我还要去，我想买几本书。|小李后天要做什么？|去书店|去医院|上班',
+'小李：下次上课是星期天吗？小王：不是，星期天不上课，是星期一。|下次课是星期几？|星期一|星期天|星期二',
+'小王：上午你做什么？小李：上午我上网，下午我去看病人。|小李上午做什么？|上网|看病人|上课']);
+AD(5,[
+'小李：你记得我的书包吗？小王：记得，在车上。|书包在哪儿？|车上|家里|学校',
+'小王：你今天上课了吗？小李：上了，下课以后放学回家，我先写作业，再看电视机。|小李放学后先做什么？|写作业|看电视机|吃饭',
+'小李：你学汉字学了多久？小王：半年，现在我读书，知识越来越多。|小王学了多久？|半年|一年|三个月',
+'小李：请介绍一下你的朋友。小王：他是我的网友，我们在网上认识，他是外国人，外语很好。|他的朋友是什么人？|外国人|中国人|老师']);
+AD(4,[
+'小王：我饿了，我们去饭店吃午饭吧。小李：好，我也很渴。晚饭我们回家吃。|他们在哪儿吃午饭？|饭店|学校|家']);
+AD(11,[
+'小李：你开车去还是打车去？小王：我打车去，因为我不能开车。|小王怎么去？|打车|开车|走路',
+'小李：我的机票和门票在这儿。小王：你的地图呢？小李：在钱包里。|地图在哪儿？|钱包里|书包里|车上']);
+AD(13,['小王：请问，洗手间在哪里？小李：在楼上，上边就是。|洗手间在哪儿？|楼上|楼下|门口']);
+AD(12,[
+'小李：你喜欢你的爱好吗？小王：我喜欢唱歌，朋友说我唱得好听，歌也很好玩儿。|朋友觉得小王怎么样？|唱得好听|唱得不好|不唱歌',
+'小李：公园里有很多树，树下的小孩儿在笑，旁边的小朋友也在笑。小王：真可爱。|孩子们在做什么？|笑|哭|睡觉']);
+AD(14,[
+'小王：对不起，你的杯子我弄了，请别生气。小李：没什么，没事儿。|小李生气了吗？|没有|生气了|很生气',
+'小李：你知道最后的答案吗？小王：最好问老师。再见！|小王觉得最好怎么做？|问老师|不问|看书']);
+AE(3,[
+'小王：公司的计算机坏了，必须找人来修。小李：我可以帮忙，我懂得一些计算机。|小李会什么？|计算机|做饭|游泳',
+'小李：这个月我必须出国，你可以接我的工作吗？小王：好，我答应你。|小王答应了什么？|接工作|出国|休假',
+'小王：我们公司明年要成为大公司。小李：真的？我们要更努力，加油！|公司明年要怎么样？|成为大公司|搬家|不开|',
+'小李：这个工作的单位很好，同事们大部分都很年轻，也很热情。|同事们怎么样？|年轻，热情|很老|很忙',
+'小王：经理，请问下个月可以休假吗？经理：可以。|小王想做什么？|休假|开会|上班',
+'小李：你的行动太慢了，请快点儿！小王：好的，我马上完成。|小李让小王做什么？|快点儿|慢点儿|休息',
+'小李：这个商人从国外带来了很多东西。小王：他的态度很好，也很热情。|商人怎么样？|态度很好|不好|很忙'.replace("|',","'")]);
+AE(2,[
+'医生：你的病好了，明天可以出院。小王：太好了，我可以出门了吗？医生：可以，不过要小心。|小王明天做什么？|出院|住院|上班',
+'小李：你吃饱了吗？小王：我吃饱了，感谢你的饭。小李：不用感谢。|小王为什么感谢小李？|请他吃饭|送礼物|借钱',
+'小王：我感到不舒服，全身没有力气。医生：不太严重，吃一点药片就好。|医生让他吃什么？|药片|水果|面条',
+'小王：你的脚怎么了？小李：我的脚很疼，不能骑车。|小李为什么不能骑车？|脚疼|没有车|下雨',
+'小王：你的脸色很难看。小李：我很难受，头发也很疼。|小李怎么样？|很难受|很高兴|很饿']);
+AE(1,[
+'小李：我们明天回国，你想买一些礼物吗？小王：我想买一些筷子。|小王想买什么？|筷子|手机|书',
+'小李：去国际机场的出租车在哪儿？小王：在路边，你可以坐出租车，也可以坐公交车。|出租车在哪儿？|路边|机场|酒店',
+'小王：我想坐船去海边，你呢？小李：我想骑车，可以看到大海，也可以看大自然。|小李想怎么去？|骑车|坐船|开车',
+'小李：我们的座位在哪儿？小王：在后面，十二号座位。|座位是几号？|十二号|二十号|五号',
+'小王：这条公路很长，我们要开五个小时的车，路上可以吹吹风。|他们要开多久？|五个小时|三个小时|十个小时',
+'小李：这个城市有一个有名的动物园。小王：我们去参观吧，那儿人很多，要排队。|他们要去哪儿？|动物园|学校|医院',
+'小王：你的行李多少公斤？小李：十公斤。小王：太重了，要多付钱。|行李多重？|十公斤|五公斤|二十公斤',
+'小李：这个假期你想做什么？小王：我想回老家过年，也想去街上走走。|小王想做什么？|回老家过年|工作|上课',
+'小李：对面的酒店你订了吗？小王：订了，经过路口就到，里头有饭馆。|酒店在哪儿？|对面|后面|学校里']);
+AE(0,[
+'小王：这个方便面太贵了。小李：不贵，很便宜，一份五块。|方便面怎么样？|很便宜|很贵|不好吃',
+'小李：请给我菜单。小王：好的，你想吃快餐还是中餐？小李：我要一份晚餐，一碗米饭。|小李要什么？|晚餐和米饭|快餐|中餐',
+'小王：这家店的早餐很好吃，午餐也不错。小李：我吃过，味道很好。|这家店怎么样？|早餐午餐都不错|很贵|很远',
+'小王：这个外卖太晚了。小李：对不起，我们马上送到。|小王为什么不高兴？|外卖太晚|太贵|不好吃']);
+AE(9,[
+'小王：我们从小一起长大，小时候常常在一起玩。小李：对，我们是老朋友。|他们是什么关系？|老朋友|同事|邻居',
+'小李：你的男朋友是一个好人，个子也高。小王：谢谢。|小李说小王的男朋友怎么样？|好人，个子高|很矮|很忙',
+'小李：你的行为不好，我很难过。小王：对不起，我不是故意的。|小王是故意的吗？|不是|是|不知道',
+'小李：他的笑话很好笑。小王：对，他的笑话儿很多，大家都爱听。|大家为什么喜欢他？|笑话很多|很有钱|很高',
+'小王：他是青年还是中年？小李：他是青年，三十岁，还很年轻。|他是什么人？|青年|中年|老年']);
+AE(4,[
+'小王：我收到了你的短信，还收到了一个信息。小李：对，我手机信号不好，发了几次。|小李为什么发了几次？|信号不好|没有钱|关机了',
+'小李：你的手机关机了。小王：对不起，我的手机没电了。|手机怎么了？|关机了|很贵|坏了']);
+AE(5,['小李：今天是月亮最圆的日子，我们一起吃月饼，看月亮。小王：好啊。|今天他们做什么？|吃月饼看月亮|看电影|旅行']);
+AE(11,[
+'小王：今天的气温很低，零下五度，还是阴天。小李：明天呢？小王：明天是晴天。|明天天气怎么样？|晴天|阴天|下雪',
+'小李：春天来了，天气变得很凉快。秋天更好，不冷也不热。|他觉得秋天怎么样？|不冷不热|很冷|很热']);
+AE(7,[
+'小李：这个城市的人口很多，市长说要建更多的体育馆和体育场。|市长说要建什么？|体育馆和体育场|公园|医院',
+'小王：我很喜欢运动，常去球场打篮球和排球。小李：你们的球队怎么样？小王：很好，我穿球鞋去。|小王常去哪儿？|球场|学校|医院']);
+AE(8,[
+'小李：这个手表好看吗？小王：好看，是蓝色的。我还有蓝色的鞋。|手表是什么颜色的？|蓝色|红色|黑色',
+'小王：你的大衣在哪儿买的？小李：在对面的商店。|大衣在哪儿买的？|对面的商店|网上|书店',
+'小李：这件衣服的大小合适吗？小王：有点儿大，我想要小一点的。|衣服怎么样？|有点儿大|太小|很贵']);
+AE(13,[
+'小王：我想办一张银行卡，需要什么？小李：你的护照，还有五百块。|办银行卡需要什么？|护照和钱|手机|地图',
+'小李：你的钱够吗？小王：不够，我借一点，下个月就还你。|小王怎么办？|借钱|不买|回家']);
+AE(14,[
+'小李：请问，这个道路通到哪儿？小王：通到市中心，路边有一个入口。|道路通到哪儿？|市中心|机场|学校',
+'小王：请问，银行在哪儿？小李：在对面，你过去就可以了。|银行在哪儿？|对面|后面|楼上',
+'小李：你住在哪一层？小王：我住十层，电梯在大门旁边。|电梯在哪儿？|大门旁边|楼上|楼下']);
+{const L=LV[2],old=L.T[12],G=[[0,1,7,8,9,21,22,24,26,41],[2,10,11,15,18,25,29,34,36,43],[5,6,14,16,19,23,33,44,49,53],[4,12,13,17,28,45,46,47,48,54],[3,30,31,37,42,50,51,52,56,59],[20,27,32,35,38,39,40,55,57,58,60]],NM=[['学汉语','Aprender chino','学习 · Estudio'],['词汇发音','Vocabulario y pronunciación','学习 · Estudio'],['课堂','En clase','学习 · Estudio'],['考试作业','Exámenes y deberes','学习 · Estudio'],['方法目标','Métodos y objetivos','学习 · Estudio'],['文化未来','Cultura y futuro','学习 · Estudio']],T={};
+for(let i=0;i<12;i++)T[i]=L.T[i];G.forEach((g,k)=>T[12+k]=g.map(i=>old[i]));T[18]=L.T[13];T[19]=L.T[14];L.T=T;L.tp.splice(12,1,...NM)}
+P(`订|dìng|reservar;力|lì|fuerza;修|xiū|reparar;搬|bān|mudar, trasladar;圆|yuán|redondo;系|xì|departamento, sistema;初|chū|inicial, primero`,2);
+const AF=(i,a)=>LV[2].T[i].push(...X(a));
+AF(18,['小李：你的钱包就在你面前，你看到了吗？小王：看到了，谢谢！我的卡也在里面。|钱包在哪儿？|面前|桌子下|车上']);
+AF(19,['小王：请问，银行在哪儿？小李：就在你面前，那个大门就是。|银行在哪儿？|面前|后面|楼上']);
+AF(13,[
+'小王：这个笔记本是我的，上面有很多笔记。小李：你的字典呢？小王：在桌子上。|笔记本上有什么？|笔记|地图|照片',
+'老师：请背这个词语，读音要准确。学生：老师，我背了一个，是“音节”。|学生背了什么？|音节|地图|电话',
+'小李：这个例子我不懂，比如说“又”是什么意思？小王：又是“再一次”，例如“他又来了”。|“又”是什么意思？|再一次|一次|没有']);
+AF(15,[
+'老师：这次考试有一个难题，很多考生都没有得出答案。小王：对，我只得出了一部分。|小王得出了什么？|一部分答案|全部答案|没有答案',
+'小李：你取得了好成绩吗？小王：取得了，全班第一，我实在太高兴了。|小王成绩怎么样？|全班第一|不好|没有考']);
+AF(14,[
+'老师：你们要重视作业，不要只靠自己，也要问老师。学生：好的，我们今后会提高。|老师让学生做什么？|问老师|不做作业|回家',
+'老师：请大家举手。谁想回答？班长：我来。老师：好，班长，你来说。|谁来回答？|班长|老师|校长']);
+AF(17,[
+'小李：你想进入什么学院？小王：我想进入科学学院，我的理想是成为科学家。|小王的理想是什么？|成为科学家|成为医生|成为老师',
+'小王：学校的校长和院长今天来了。小李：我知道，校长在校园里，院长在教学楼。|校长在哪儿？|校园里|教学楼|家里',
+'小王：我选了高中的中级班，现在我的水平很高。|小王选了什么班？|中级班|高级班|初级班']);
+[1,2].forEach(l=>VOC[l].forEach(v=>{if(!D[v[0]])D[v[0]]={p:v[1],e:v[2],l}}));
+[1,2].forEach(l=>Object.values(LV[l].T).forEach(t=>t.forEach(x=>{const c=x[2][x[3]];x[2].sort(()=>Math.random()-.5);x[3]=x[2].indexOf(c)})));
+R();
+</script></body></html>
