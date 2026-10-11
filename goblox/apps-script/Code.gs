@@ -49,7 +49,7 @@ function isTeacherEmail_(email) {
   if (ADMINS_().includes(email)) return true;
   return teacherRows_().some(t => t.email === email && t.active);
 }
-const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto ($)', 'Dinero restante ($)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida', 'Dificultad'];
+const RUN_HEAD = ['Fecha', 'Correo', 'Nombre', 'Juego', 'Puntuación', 'Estrellas', 'Presupuesto (GOYUX)', 'Dinero restante (GOYUX)', 'Inglés %', 'Modales', 'Duración (min)', 'Errores', 'GOYUX ganados', 'Detalles', 'Código partida', 'Dificultad'];
 const GOYUX_HEAD = ['Fecha', 'Correo', 'Nombre', 'Cantidad', 'Motivo', 'Profesor'];
 // Invitados: personas sin cuenta del instituto que entran con un código que crea el profesor
 const GUEST_HEAD = ['Código', 'Nombre', 'Activo', 'Creado', 'Notas', 'Clase'];

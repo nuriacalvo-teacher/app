@@ -709,7 +709,8 @@ const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls)
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick1 = a => a[Math.random() * a.length | 0];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const money = n => '$' + (Math.round(n * 100) / 100).toFixed(2);
+/* every price in the game is in GOYUX (1 GOYUX = 1 euro) */
+const money = n => { const v = Math.round(n * 100) / 100; return (Number.isInteger(v) ? String(v) : v.toFixed(2)) + ' GOYUX'; };
 const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const lerpAngle = (a, b, t) => { let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI; if (d < -Math.PI) d += Math.PI * 2; return a + d * t; };
 
@@ -793,11 +794,11 @@ const GAMES = [
   { id: 'diner', title: 'Healthy Bites Diner', emoji: '🥗', bg: 'linear-gradient(150deg,#ff6b5b,#c62828 55%,#5e1010)', level: 'A2–B1',
     desc: 'You are starving after sport. Get a table, read the menu, order a healthy dinner on a tight budget (tax and tip included!) and keep yourself safe from your allergy. Then expect the unexpected: noisy neighbours, clumsy waiters, wrong dishes, cold food or a mistake on the check. Every game brings a different allergy, budget and set of surprises.',
     goals: ['Asking for a table and ordering politely (I\'d like…, Could I…?)', 'Reading a menu and talking about allergies', 'Complaining politely (I\'m afraid…, Would you mind…?)', 'Asking for the check and calculating a tip'],
-    chips: ['🍽 Restaurant', '💵 Budget: $18–25', '🎲 New surprises every game', '⏱ 10–15 min'] },
+    chips: ['🍽 Restaurant', '💵 Budget: 15–25 GOYUX', '🎲 New surprises every game', '⏱ 10–15 min'] },
   { id: 'mall', title: 'Back to School Rush', emoji: '🎒', bg: 'linear-gradient(150deg,#4f7dff,#1d3fbf 55%,#0d1a5c)', level: 'A2–B1',
     desc: 'School starts tomorrow and you need a uniform. Three shops, one budget. One shop is cheap but never gives refunds, one is fair, one is fancy. Read the labels, ask the right questions, try things on, watch the till and pass the dress-code check at school. The dress code, your sizes, the prices and the surprises change every game.',
     goals: ['Clothes, colours and sizes', 'Shop phrases: Can I try it on? I\'ll take it.', 'Return policies, refunds, exchanges and discounts', 'Comparing price and quality to stay on budget'],
-    chips: ['🛍 Shopping street', '💵 Budget: $95–110', '🎲 New surprises every game', '⏱ 15–20 min'] },
+    chips: ['🛍 Shopping street', '💵 Budget: 60–120 GOYUX', '🎲 New surprises every game', '⏱ 15–20 min'] },
   { id: 'airport', soon: true, title: 'Airport Check-in', emoji: '✈️', bg: 'linear-gradient(150deg,#26c6da,#00838f)' },
   { id: 'doctor', soon: true, title: 'At the Doctor\'s', emoji: '🩺', bg: 'linear-gradient(150deg,#66bb6a,#2e7d32)' },
   { id: 'hotel', soon: true, title: 'Hotel Trouble', emoji: '🏨', bg: 'linear-gradient(150deg,#ab47bc,#6a1b9a)' },
@@ -1277,16 +1278,38 @@ let popT = 0;
 function pop(text, kind) { const p = $('#pop'); p.textContent = text; p.className = 'show ' + kind; clearTimeout(popT); popT = setTimeout(() => p.className = '', 1300); }
 
 /* speech */
+/* Voices: every character speaks with the most natural English voice the device has,
+   female for women (Nuria…) and male for men (Olaf…). "Natural"/"Neural"/"Online" voices
+   (Edge, Chromebooks, Android, iOS) sound almost human; others fall back to pitch changes. */
 let voices = [];
-function loadVoices() { try { voices = speechSynthesis.getVoices().filter(v => /^en(-|_)/i.test(v.lang)); } catch (e) {} }
+const VOICE_F = /(female|woman|girl|samantha|victoria|karen|moira|tessa|fiona|serena|susan|zira|aria|jenny|libby|sonia|emma|ava|allison|joanna|kendra|salli|natasha|clara|hazel|heera|michelle|nancy|amber|ashley|elizabeth|sara\b|catherine|kate|veena|maisie|ruth|google us english|google uk english female)/i;
+const VOICE_M = /(\bmale|\bman\b|daniel|\balex\b|fred|guy|ryan|david|mark|george|james|thomas|christopher|eric|brian|matthew|justin|joey|liam|william|arthur|oliver|aaron|rishi|roger|steffan|google uk english male)/i;
+const voiceGender = v => VOICE_F.test(v.name) ? 'f' : VOICE_M.test(v.name) ? 'm' : '';
+const bestVoice = {};
+function loadVoices() {
+  try { voices = speechSynthesis.getVoices().filter(v => /^en(-|_)/i.test(v.lang)); } catch (e) { voices = []; }
+  ['f', 'm'].forEach(g => {
+    const score = v => (voiceGender(v) === g ? 100 : voiceGender(v) ? -100 : 0) + (/natural|neural|online|enhanced|premium/i.test(v.name) ? 40 : 0)
+      + (/en[-_](GB|US)/i.test(v.lang) ? 10 : 0) + (v.localService === false ? 5 : 0);
+    bestVoice[g] = voices.slice().sort((a, b) => score(b) - score(a))[0] || null;
+  });
+}
 if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
-function speak(text, voice) {
+const npcGender = n => n.gender || (/^(Nuria|Timmy)/.test(n.name) ? (n.name.startsWith('Nuria') ? 'f' : 'm') : /^(Olaf|Marco)/.test(n.name) ? 'm' : 'f');
+function speak(text, who) {
   if (!settings.voice || !('speechSynthesis' in window)) return;
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}\p{N}\s.,!?'’$%:-]/gu, ''));
-    u.lang = 'en-US'; u.rate = (voice && voice.rate) || 0.95; u.pitch = (voice && voice.pitch) || 1;
-    const us = voices.find(v => /en-US/i.test(v.lang)); if (us) u.voice = us;
+    const clean = text.replace(/(\d+)\.(\d{2}) GOYUX/g, (m, a, c) => `${a} GOYUX ${c}`).replace(/[^\p{L}\p{N}\s.,!?'’%:-]/gu, '');
+    const u = new SpeechSynthesisUtterance(clean);
+    const g = who ? npcGender(who) : 'f', v = bestVoice[g];
+    u.lang = 'en-US';
+    if (v) { u.voice = v; u.lang = v.lang; }
+    const matched = v && voiceGender(v) === g;
+    const child = who && who.av && who.av.scale.x < 0.9;
+    // with a real male/female voice keep the pitch natural; without one, imitate it
+    u.pitch = child ? 1.45 : matched ? clamp((who && who.voice && who.voice.pitch) || 1, 0.9, 1.12) : (g === 'f' ? 1.25 : 0.75);
+    u.rate = (G && G.diff === 'easy' ? 0.85 : G && G.diff === 'hard' ? 1 : 0.94) * (child ? 1.08 : 1);
     speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -1304,7 +1327,7 @@ function showDialog(n, text, es, options) {
   const esOk = !dk || !DIFF[dk] || DIFF[dk].es;
   $('#dlgEs').hidden = !esOk;
   $('#dlgEsText').hidden = !esOk || $('#dlgEs').getAttribute('aria-pressed') !== 'true';
-  if (n) { say(n, text); speak(text, n.voice); }
+  if (n) { say(n, text); speak(text, n); }
   const box = $('#dlgOpts'); box.innerHTML = '';
   options.forEach((o, i) => {
     const b = el('button', 'opt' + (o.meta ? ' meta' : ''), `<span class="n">${i + 1}</span><span>${escH(o.t)}</span>`);
@@ -1314,7 +1337,7 @@ function showDialog(n, text, es, options) {
 }
 function closeDialog() { $('#dlg').hidden = true; }
 $('#dlgEs').onclick = () => { const on = $('#dlgEs').getAttribute('aria-pressed') !== 'true'; $('#dlgEs').setAttribute('aria-pressed', on); $('#dlgEsText').hidden = !on; if (on && G) G.hints++; };
-$('#dlgSpeak').onclick = () => { if (dlgSpeaker) speak(dlgLine, dlgSpeaker.voice); };
+$('#dlgSpeak').onclick = () => { if (dlgSpeaker) speak(dlgLine, dlgSpeaker); };
 function line(n, text, es, next, btn = 'Continue') { showDialog(n, text, es, [{ t: btn + ' ▸', meta: true, fn: next }]); }
 function choice(n, text, es, opts) { showDialog(n, text, es, opts.map(o => ({ t: o.t, say: o.say !== false && !o.meta, meta: o.meta, fn: o.fn }))); }
 const CONFUSED = [['Sorry? I don\'t quite understand. Could you say that again?', '¿Perdona? No te entiendo bien. ¿Puedes repetirlo?'], ['Hmm… pardon? What do you mean?', 'Mmm… ¿perdón? ¿Qué quieres decir?'], ['Sorry, I didn\'t get that.', 'Perdona, no lo he entendido.']];
@@ -1619,7 +1642,7 @@ function buildDiner() {
     g.fillStyle = '#fff8e1'; g.font = '900 40px Montserrat, Arial'; g.textAlign = 'center'; g.fillText('TODAY\'S MENU', 512, 52);
     g.font = '700 20px Montserrat, Arial';
     const half = Math.ceil(MENU.length / 2);
-    const col = (list, x) => list.forEach((m, i) => { const y = 88 + i * 29; g.textAlign = 'left'; g.fillStyle = '#fff8e1'; g.fillText(m.name, x, y); g.fillStyle = '#ffd54f'; g.textAlign = 'right'; g.fillText(m.price ? '$' + m.price.toFixed(2) : 'FREE', x + 430, y); });
+    const col = (list, x) => list.forEach((m, i) => { const y = 88 + i * 29; g.textAlign = 'left'; g.fillStyle = '#fff8e1'; g.fillText(m.name, x, y); g.fillStyle = '#ffd54f'; g.textAlign = 'right'; g.fillText(m.price ? money(m.price) : 'FREE', x + 430, y); });
     col(MENU.slice(0, half), 40); col(MENU.slice(half), 545);
   });
   plane(4, 4.3, -11.66, 9, 3.7, 0, board);
@@ -1843,7 +1866,7 @@ function buildDiner() {
       { t: 'Don\'t worry. Can you bring me a towel of paper?', kind: 'grammar', tip: 'In English the noun goes first: "a paper towel". Or simply "napkins".' }
     ]), () => {
       const free = drink && drink.price > 0;
-      line(waiter, free ? `Here you go. And your ${drink.name.toLowerCase()} is on the house tonight!` : 'Here you go. And I\'ll take $2 off your bill. Sorry again!', free ? '¡Aquí tienes! Y tu bebida corre a cuenta de la casa.' : 'Aquí tienes. Y te descontaré 2 $ de la cuenta. ¡Perdón otra vez!', () => {
+      line(waiter, free ? `Here you go. And your ${drink.name.toLowerCase()} is on the house tonight!` : 'Here you go. And I\'ll take 2 GOYUX off your bill. Sorry again!', free ? '¡Aquí tienes! Y tu bebida corre a cuenta de la casa.' : 'Aquí tienes. Y te descontaré 2 GOYUX de la cuenta. ¡Perdón otra vez!', () => {
         if (free) s.drinkFree = true; else s.discount += 2;
         if (puddle) { W.scene.remove(puddle); puddle = null; }
         setFace(waiter.av, 'smile'); complete('evA');
@@ -1876,7 +1899,7 @@ function buildDiner() {
   }
   function fixDish() {
     complete('dish');
-    line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take $3 off your bill.`, 'Lo siento mucho. Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 $ de la cuenta.', () => {
+    line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take 3 GOYUX off your bill.`, 'Lo siento mucho. Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 GOYUX de la cuenta.', () => {
       s.discount += 3; takeBack();
       wGo(toKitchen, () => {
         waiter.av.remove(plateMesh); carry(s.main);
@@ -2054,7 +2077,7 @@ function buildDiner() {
     if (s.reaction) bad.push(`You ate food with ${AL.word} and had an allergic reaction.`);
     if (s.veg) { if (s.dietBroken) bad.push('You are vegetarian, but your meal had meat or fish in it.'); else good.push('You kept to your vegetarian diet.'); }
     if (s.ev.A) { if (s.ev.A === 'spill') good.push('You stayed calm when the waiter spilled the drink.'); else good.push('You dealt with your noisy neighbour politely.'); }
-    if (s.ev.B) { if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got $3 off!'); else bad.push('You accepted a dish you didn\'t order and paid for it.'); }
+    if (s.ev.B) { if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got 3 GOYUX off!'); else bad.push('You accepted a dish you didn\'t order and paid for it.'); }
     if (s.ev.E) { if (s.noDrink) bad.push('Your drink never arrived and you didn\'t ask for it, but it was still on the check.'); else good.push('You politely asked for the drink they forgot.'); }
     if (s.ev.C) { if (s.ateCold) bad.push('You ate your cold food without saying anything. It\'s OK to ask: "Could you heat it up, please?"'); else good.push('You sent back your cold food politely.'); }
     if (s.ev.D) { if (s.extraRemoved) good.push(`You found the ${s.extra.name.toLowerCase()} on the check that you didn't order.`); else bad.push(`The check had a ${s.extra.name.toLowerCase()} you didn't order, and you paid for it.`); }
