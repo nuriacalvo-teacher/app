@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Foblox English</title>
+<title>GOBLOX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap">
@@ -28,7 +28,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 /* ---------- logo ---------- */
 .logo{font-family:var(--f-display);font-weight:900;font-size:22px;letter-spacing:.02em;display:flex;align-items:center;gap:1px;user-select:none}
 .logo .o{display:inline-block;width:.72em;height:.72em;background:currentColor;transform:rotate(-14deg);margin:0 .07em;position:relative;top:.02em}
-.logo .o::after{content:"";position:absolute;inset:32%;background:var(--bg)}
+.logo .o::after{content:"G";position:absolute;inset:0;display:grid;place-items:center;color:var(--bg);font-size:.7em;font-weight:900;line-height:1}
 
 /* ---------- home shell ---------- */
 #home{height:100%;display:flex;flex-direction:column}
@@ -37,8 +37,8 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 .topbar nav button{padding:8px 12px;border-radius:8px;font-weight:700;color:var(--muted)}
 .topbar nav button[aria-current="page"],.topbar nav button:hover{color:var(--fg);background:var(--card)}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
-.fobux{display:flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums}
-.fb-icon{width:16px;height:16px;border:3px solid var(--gold);transform:rotate(45deg);border-radius:3px;display:inline-block}
+.goyux{display:flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.gx{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#3a2700;font:900 12px/1 var(--f-display);font-style:normal;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18);flex:none}
 .who{font-weight:700;color:var(--muted)}
 .shell{flex:1;overflow:auto;padding-block:24px 48px;padding-inline:max(16px,4vw)}
 .page{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
@@ -93,6 +93,45 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 .av2d .lr{left:61px;top:104px;width:29px;height:64px;background:var(--pants)}
 .headshot .av2d{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateY(78px) scale(1.1)}
 
+/* account, level, teacher */
+.who{display:flex;flex-direction:column;line-height:1.15;text-align:right}
+.who b{font-weight:800;color:var(--fg)}
+.who small{font-size:11px;color:var(--muted)}
+.note-bar{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.45;color:var(--muted)}
+.note-bar.err{border-left-color:var(--red)}
+.lvl{height:6px;border-radius:3px;background:var(--card);margin-top:8px;overflow:hidden}
+.lvl i{display:block;height:100%;background:var(--green)}
+.grants{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.grants h2{font-size:16px;font-weight:800}
+.grant{display:flex;gap:10px;align-items:center;font-size:14px}
+.grant b{font-family:var(--f-display);min-width:52px;font-variant-numeric:tabular-nums}
+.grant b.pos{color:var(--green-hi)}.grant b.neg{color:var(--red)}
+.grant small{color:var(--muted);margin-left:auto;white-space:nowrap}
+.t-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.t-actions{display:flex;gap:8px;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block;color:var(--fg)}
+.t-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.t-tools label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);min-width:0}
+.t-tools input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--fg);font:inherit;font-weight:700;text-transform:none;letter-spacing:0;min-width:0}
+#tSearch{width:200px}#tReason{width:260px}#tAmount{width:90px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;max-width:100%}
+.tbl{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+.tbl th{background:var(--surface);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td small{display:block;color:var(--muted);font-size:12px}
+.tbl .num{text-align:right}
+.tbl .acts{display:flex;gap:4px}
+.mini{padding:5px 9px;border-radius:7px;background:var(--card);font-weight:800;font-size:12px}
+.mini:hover{background:var(--line)}
+.mini.pos{background:rgba(0,168,107,.25)}.mini.neg{background:rgba(239,77,85,.25)}
+.t-hint{margin:0;color:var(--muted);font-size:13px;line-height:1.5;max-width:70ch}
+.runs-body{padding:22px;display:flex;flex-direction:column;gap:12px}
+.runs-body h2{font-size:22px;padding-right:40px}
+.runs-body h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#hToast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--green);color:#fff;font-weight:800;padding:10px 16px;border-radius:10px;z-index:70;max-width:calc(100% - 32px)}
+#hToast.err{background:var(--red)}
+
 /* notebook */
 .vocab{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
@@ -138,7 +177,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 .hbtn:hover{background:var(--hud-strong)}
 .hbtn .logo{font-size:0}
 .hbtn .logo .o{width:22px;height:22px;margin:0}
-.hbtn .logo .o::after{background:#3a3c40;inset:30%}
+.hbtn .logo .o::after{color:#2b2d30;font-size:15px}
 .hbtn svg{width:22px;height:22px;fill:#fff}
 #chat{position:absolute;top:calc(62px + env(safe-area-inset-top,0px));left:12px;width:min(380px,calc(100% - 24px));display:flex;flex-direction:column;gap:6px}
 #chatLog{background:var(--hud);border-radius:8px;height:150px;overflow-y:auto;padding:8px 10px;font-size:14px;line-height:1.35;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.6)}
@@ -312,15 +351,16 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 <!-- ================= HOME (website) ================= -->
 <div id="home">
   <header class="topbar">
-    <div class="logo" aria-label="Foblox">F<span class="o"></span>BLOX</div>
+    <div class="logo" aria-label="GOBLOX">G<span class="o"></span>BLOX</div>
     <nav aria-label="Main">
       <button data-page="Home" aria-current="page">Home</button>
       <button data-page="Avatar">Avatar</button>
       <button data-page="Notebook">Notebook</button>
+      <button data-page="Teacher" id="navTeacher" hidden>Profesor</button>
     </nav>
     <div class="top-right">
-      <span class="fobux" title="Fobux earned by playing"><i class="fb-icon"></i><span id="fobuxN">0</span></span>
-      <span class="who" id="whoName">Alex</span>
+      <span class="goyux" title="Your GOYUX coins"><i class="gx">G</i><span id="goyuxN">0</span></span>
+      <span class="who"><b id="whoName">Player</b><small id="whoMail"></small></span>
     </div>
   </header>
   <div class="shell">
@@ -329,7 +369,9 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
         <div class="headshot" id="headshot"></div>
         <div><h1 id="hello">Hello, Alex!</h1><p>Pick an experience and use your English to survive real life.</p></div>
       </div>
+      <div class="note-bar" id="cloudNote" hidden></div>
       <div class="stats" id="stats"></div>
+      <div class="grants" id="grantsBox" hidden></div>
       <div><div class="row-title"><h2>Play now</h2><span>Scenario-based roleplay · Functional English</span></div></div>
       <div class="grid" id="rowPlay"></div>
       <div class="row-title"><h2>Coming soon</h2><span>New scenarios in development</span></div>
@@ -352,6 +394,20 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
         </div>
       </div>
     </section>
+    <section class="page" id="pageTeacher" hidden>
+      <div class="t-head">
+        <h1>Panel del profesor</h1>
+        <div class="t-actions"><button class="btn" id="tRefresh">Actualizar</button><a class="btn" id="tSheet" target="_blank" rel="noopener" hidden>Abrir hoja de cálculo</a></div>
+      </div>
+      <div class="t-tools">
+        <label for="tSearch">Buscar<input id="tSearch" placeholder="Nombre o correo" autocomplete="off"></label>
+        <label for="tReason">Motivo<input id="tReason" value="Buen comportamiento en clase" maxlength="120"></label>
+        <label for="tAmount">GOYUX<input id="tAmount" type="number" value="5" min="-100" max="100" step="1"></label>
+        <button class="btn primary" id="tGiveSel">Dar a los seleccionados</button>
+      </div>
+      <div class="tbl-wrap"><table class="tbl" id="tTable"></table></div>
+      <p class="t-hint">Los alumnos aparecen aquí la primera vez que entran con su cuenta de iesgoya.es. Usa una cantidad negativa para quitar GOYUX (por ejemplo, cuando un alumno los canjea por un premio). Todo queda registrado en la hoja de cálculo.</p>
+    </section>
     <section class="page" id="pageNotebook" hidden>
       <h1>Notebook</h1>
       <p style="margin:0;color:var(--muted)">The useful phrases you have practised in each experience.</p>
@@ -367,7 +423,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
     <div class="detail">
       <div class="thumb" id="dThumb"></div>
       <div class="detail-body">
-        <div><h2 id="dTitle"></h2><div class="by">By Foblox Learning · <span id="dLevel"></span></div></div>
+        <div><h2 id="dTitle"></h2><div class="by">By GOBLOX Learning · <span id="dLevel"></span></div></div>
         <button class="play" id="dPlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15l13-7.5z"/></svg>Play</button>
         <p id="dDesc"></p>
         <div><h3>You will practise</h3><ul id="dGoals"></ul></div>
@@ -376,6 +432,20 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
     </div>
   </div>
 </div>
+
+<div class="overlay" id="runsModal" hidden>
+  <div class="modal">
+    <button class="x" id="runsX" aria-label="Cerrar">✕</button>
+    <div class="runs-body">
+      <h2 id="runsTitle"></h2>
+      <h3>Partidas</h3>
+      <div class="tbl-wrap"><table class="tbl" id="runsTable"></table></div>
+      <h3>GOYUX del profesor</h3>
+      <div class="tbl-wrap"><table class="tbl" id="runsGrants"></table></div>
+    </div>
+  </div>
+</div>
+<div id="hToast" hidden></div>
 
 <div id="loading" hidden>
   <div class="load-box">
@@ -436,7 +506,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
     </div>
     <div id="esc" hidden>
       <div class="esc-box">
-        <div class="logo">F<span class="o"></span>BLOX</div>
+        <div class="logo">G<span class="o"></span>BLOX</div>
         <button class="btn primary" id="escResume">Resume game <span>Esc</span></button>
         <button class="btn" id="escCard">Character card <span>📄</span></button>
         <button class="btn" id="escHelp">How to play <span>❔</span></button>
@@ -450,7 +520,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
         <div class="res-top">
           <h2 id="resTitle">Mission complete!</h2>
           <div id="resStars"></div>
-          <div class="res-fob"><i class="fb-icon"></i><span id="resFob"></span></div>
+          <div class="res-fob"><i class="gx">G</i><span id="resFob"></span></div>
         </div>
         <div id="resMetrics" style="display:grid;gap:8px"></div>
         <div class="res-cols">
@@ -469,7 +539,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
 <script>
 'use strict';
 /* =====================================================================
-   FOBLOX ENGLISH — scenario-based roleplay in a blocky 3D world
+   GOBLOX — scenario-based roleplay in a blocky 3D world
    ===================================================================== */
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -481,11 +551,52 @@ const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;'
 const lerpAngle = (a, b, t) => { let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI; if (d < -Math.PI) d += Math.PI * 2; return a + d * t; };
 
 const store = {
-  get(k, d) { try { const v = localStorage.getItem('foblox:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem('foblox:' + k, JSON.stringify(v)); } catch (e) {} }
+  get(k, d) { try { const v = localStorage.getItem('goblox:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('goblox:' + k, JSON.stringify(v)); } catch (e) {} }
 };
-let profile = Object.assign({ name: 'Alex', skin: '#f5cd30', shirt: '#0d69ac', pants: '#a4bd47', fobux: 0, best: {}, vocab: [], plays: 0 }, store.get('profile', {}));
-const saveProfile = () => store.set('profile', profile);
+let profile = Object.assign({ name: 'Player', skin: '#f5cd30', shirt: '#0d69ac', pants: '#a4bd47', xp: 0, granted: 0, best: {}, vocab: [], plays: 0, grants: [] }, store.get('profile', {}));
+
+/* ---------------- cloud: Google Apps Script backend ----------------
+   When the game is served by Apps Script (see apps-script/LEEME.md), google.script.run exists:
+   students are identified by their iesgoya.es Google account and progress is saved in a Google Sheet.
+   Anywhere else (a local file, a preview) it runs offline and saves in this browser only. */
+const CLOUD = !!(window.google && google.script && google.script.run);
+const api = (fn, ...args) => new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(e => rej(new Error((e && e.message) || String(e))))[fn](...args));
+let account = null, XP_PER_LEVEL = 200, profT = 0;
+const levelOf = xp => 1 + Math.floor((xp || 0) / XP_PER_LEVEL);
+const goyuxTotal = () => (profile.xp || 0) + (profile.granted || 0);
+function saveProfile() {
+  store.set('profile', profile);
+  if (CLOUD && account) { clearTimeout(profT); profT = setTimeout(() => api('saveProfile', { name: profile.name, skin: profile.skin, shirt: profile.shirt, pants: profile.pants }).catch(() => {}), 900); }
+}
+function hToast(msg, err) { const t = $('#hToast'); t.textContent = msg; t.className = err ? 'err' : ''; t.hidden = false; clearTimeout(hToast.t); hToast.t = setTimeout(() => t.hidden = true, 3500); }
+async function boot() {
+  renderHome();
+  if (!CLOUD) {
+    const n = $('#cloudNote'); n.hidden = false;
+    n.textContent = 'Offline mode: your progress is saved only in this browser. Your teacher\'s GOBLOX link saves it to your iesgoya.es account.';
+    return;
+  }
+  $('#whoName').textContent = 'Connecting…';
+  try {
+    const me = await api('getMe');
+    account = { email: me.email, isTeacher: me.isTeacher }; XP_PER_LEVEL = me.xpPerLevel || 200;
+    const seen = store.get('seenGrants:' + me.email, 0);
+    Object.assign(profile, me.profile, { grants: me.grants || [] });
+    store.set('profile', profile);
+    $('#navTeacher').hidden = !me.isTeacher;
+    renderHome();
+    const fresh = (me.grants || []).filter(g => Date.parse(g.date) > seen);
+    if (fresh.length) {
+      const sum = fresh.reduce((a, g) => a + g.amount, 0);
+      hToast(`${sum >= 0 ? '🎉 Your teacher gave you +' + sum : '🪙 ' + sum} GOYUX: ${fresh[0].reason}`);
+      store.set('seenGrants:' + me.email, Math.max(...fresh.map(g => Date.parse(g.date))));
+    }
+  } catch (e) {
+    const n = $('#cloudNote'); n.hidden = false; n.classList.add('err'); n.textContent = 'Could not connect to your account: ' + e.message;
+    $('#whoName').textContent = profile.name;
+  }
+}
 let settings = Object.assign({ voice: true }, store.get('settings', {}));
 
 /* ---------------- games catalogue ---------------- */
@@ -511,13 +622,20 @@ function av2d(o) {
 function renderHome() {
   $('#hello').textContent = `Hello, ${profile.name}!`;
   $('#whoName').textContent = profile.name;
-  $('#fobuxN').textContent = profile.fobux;
+  $('#whoMail').textContent = account ? account.email : '';
+  $('#goyuxN').textContent = goyuxTotal();
   $('#headshot').innerHTML = av2d(profile);
   const starsTotal = Object.values(profile.best).reduce((a, b) => a + b, 0);
+  const lv = levelOf(profile.xp), into = (profile.xp || 0) % XP_PER_LEVEL;
   $('#stats').innerHTML = `
+    <div class="stat"><b>Level ${lv}</b><span>${XP_PER_LEVEL - into} XP to level ${lv + 1}</span><div class="lvl"><i style="width:${into / XP_PER_LEVEL * 100}%"></i></div></div>
+    <div class="stat"><b>${goyuxTotal()} GOYUX</b><span>${profile.xp || 0} from games · ${profile.granted || 0} from your teacher</span></div>
     <div class="stat"><b>${profile.plays}</b><span>missions played</span></div>
-    <div class="stat"><b>${starsTotal} / 6</b><span>stars collected</span></div>
+    <div class="stat"><b>${starsTotal} / ${GAMES.filter(g => !g.soon).length * 3}</b><span>stars collected</span></div>
     <div class="stat"><b>${profile.vocab.length}</b><span>phrases in your notebook</span></div>`;
+  const gb = $('#grantsBox'), gr = profile.grants || [];
+  gb.hidden = !gr.length;
+  gb.innerHTML = '<h2>GOYUX from your teacher</h2>' + gr.map(g => `<div class="grant"><b class="${g.amount >= 0 ? 'pos' : 'neg'}">${g.amount >= 0 ? '+' : ''}${g.amount}</b><span>${escH(g.reason)}</span><small>${new Date(g.date).toLocaleDateString()}</small></div>`).join('');
   const rp = $('#rowPlay'), rs = $('#rowSoon'); rp.innerHTML = ''; rs.innerHTML = '';
   GAMES.forEach(g => {
     const b = profile.best[g.id] || 0;
@@ -557,7 +675,8 @@ function renderNotebook() {
 document.querySelectorAll('.topbar nav button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.topbar nav button').forEach(x => x.removeAttribute('aria-current'));
   b.setAttribute('aria-current', 'page');
-  ['Home', 'Avatar', 'Notebook'].forEach(p => $('#page' + p).hidden = p !== b.dataset.page);
+  ['Home', 'Avatar', 'Notebook', 'Teacher'].forEach(p => $('#page' + p).hidden = p !== b.dataset.page);
+  if (b.dataset.page === 'Teacher') loadTeacher();
   if (b.dataset.page === 'Avatar') renderAvatarPage();
   if (b.dataset.page === 'Notebook') renderNotebook();
 });
@@ -668,7 +787,9 @@ function sign(text, x, y, z, w, h, rotY, o = {}) {
 }
 function tagSprite(text, color = '#ffffff') {
   const tex = canvasTex(512, 96, (g) => {
-    g.font = '800 46px Montserrat, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    let fs = 46; g.font = `800 ${fs}px Montserrat, Arial, sans-serif`;
+    while (g.measureText(text).width > 480 && fs > 20) { fs -= 2; g.font = `800 ${fs}px Montserrat, Arial, sans-serif`; }
+    g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineWidth = 9; g.strokeStyle = 'rgba(0,0,0,.55)'; g.strokeText(text, 256, 50); g.fillStyle = color; g.fillText(text, 256, 50);
   });
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true })); s.scale.set(2.9, 0.55, 1); return s;
@@ -1092,17 +1213,30 @@ function showResults(o) {
   const overall = Math.round(o.overall); const stars = overall >= 85 ? 3 : overall >= 65 ? 2 : 1;
   $('#resTitle').textContent = o.title;
   $('#resStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">★</span>`).join('');
-  $('#resFob').textContent = `+${overall} Fobux · score ${overall}/100`;
+  $('#resFob').textContent = `+${overall} GOYUX · score ${overall}/100`;
   const col = v => v >= 80 ? 'var(--green)' : v >= 55 ? 'var(--gold)' : 'var(--red)';
   $('#resMetrics').innerHTML = o.metrics.map(([k, v]) => `<div class="metric"><span>${k}</span><div class="bar"><i style="width:${v}%;background:${col(v)}"></i></div><span>${Math.round(v)}%</span></div>`).join('');
   $('#resGood').innerHTML = (o.good.length ? o.good : ['You finished the mission. Keep practising!']).map(x => `<li>${escH(x)}</li>`).join('');
   const bad = o.bad.concat(G.mistakes.filter((m, i, a) => a.findIndex(x => x.said === m.said) === i).slice(0, 6).map(m => `“${m.said}” → ${m.tip}`));
   $('#resBad').innerHTML = (bad.length ? bad : ['Nothing! That was excellent.']).map(x => `<li>${escH(x)}</li>`).join('');
   $('#resVocab').innerHTML = G.sc.vocab.map(([en, es]) => `<span class="chip" title="${escH(es)}">${escH(en)}</span>`).join('');
-  profile.fobux += overall; profile.plays++;
+  profile.xp = (profile.xp || 0) + overall; profile.plays++;
   profile.best[G.id] = Math.max(profile.best[G.id] || 0, stars);
   G.sc.vocab.forEach(([en, es]) => { if (!profile.vocab.some(v => v.en === en)) profile.vocab.push({ en, es, g: G.sc.title }); });
-  saveProfile();
+  store.set('profile', profile);
+  if (CLOUD && account) {
+    const run = {
+      game: G.id, score: overall, budget: G.s.budget, moneyLeft: Math.round(G.money * 100) / 100, english: engPct(), manners: G.manners,
+      seconds: Math.round((performance.now() - G.t0) / 1000), metrics: Object.fromEntries(o.metrics.map(([k, v]) => [k, Math.round(v)])),
+      events: Object.keys(G.s.ev || {}).map(k => k + (G.s.ev[k] === true ? '' : ':' + G.s.ev[k])), mistakes: G.mistakes.slice(0, 10),
+      vocab: G.sc.vocab.map(([en, es]) => ({ en, es, g: G.sc.title }))
+    };
+    $('#resFob').textContent += ' · saving…';
+    api('saveRun', run).then(r => {
+      Object.assign(profile, r); store.set('profile', profile);
+      $('#resFob').textContent = `+${r.earned} GOYUX · score ${overall}/100 · saved ✓` + (r.earned < overall ? ' (missions finished too quickly earn no GOYUX)' : '');
+    }).catch(e => { $('#resFob').textContent = `Score ${overall}/100 · not saved: ${e.message}`; });
+  }
   $('#results').hidden = false;
 }
 $('#resAgain').onclick = () => { const id = G.id; $('#results').hidden = true; startScenario(id); };
@@ -1125,7 +1259,7 @@ async function launch(id) {
 function startScenario(id) {
   newWorld();
   const sc = SCEN[id];
-  G = { id, sc, money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
+  G = { id, sc, t0: performance.now(), money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
   sc.build();
   $('#msTitle').textContent = sc.title;
   renderObjectives(); updateBoard(); renderHotbar();
@@ -1176,22 +1310,26 @@ const MENU_BASE = [
 let MENU = MENU_BASE;
 const byId = id => MENU.find(m => m.id === id);
 const TAX = 0.08;
+function makeFood(item) {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.42, 0.07, 20), M('#fafafa')));
+  const [a, b] = item.food || ['#bdbdbd', '#9e9e9e'];
+  const f1 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.34), M(a)); f1.position.set(-0.08, 0.12, 0); g.add(f1);
+  const f2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.22), M(b)); f2.position.set(0.18, 0.1, 0.08); g.add(f2);
+  g.userData.food = [f1, f2]; return g;
+}
 const ALLERGY = {
   nuts: { word: 'nuts', say: 'I\'m allergic to nuts', card: 'nuts (peanuts, walnuts, almonds…)', es: 'frutos secos' },
   dairy: { word: 'dairy', say: 'I\'m allergic to dairy', card: 'dairy products (milk, cheese, butter, cream, yogurt…)', es: 'lácteos' },
   gluten: { word: 'gluten', say: 'I can\'t eat gluten', card: 'gluten (wheat, bread, flour, pasta…)', es: 'gluten' }
 };
-const HOSTS = [
-  { name: 'Emma', look: { skin: '#e0ac69', shirt: '#7b1fa2', pants: '#263238', hair: '#3e2723', long: true, sleeves: true }, voice: { pitch: 1.25 }, badge: '#7b1fa2' },
-  { name: 'Olivia', look: { skin: '#ffdbac', shirt: '#00897b', pants: '#37474f', hair: '#d4a017', long: true, sleeves: true }, voice: { pitch: 1.3 }, badge: '#00796b' },
-  { name: 'Daniel', look: { skin: '#8d5524', shirt: '#3949ab', pants: '#212121', hair: '#1b1b1b', sleeves: true, tie: '#c62828' }, voice: { pitch: 0.9 }, badge: '#3949ab' }
-];
-const WAITERS = [
-  { name: 'Carlos', look: { skin: '#c68642', hair: '#1b1b1b' }, voice: { pitch: 0.95 } },
-  { name: 'Jake', look: { skin: '#ffdbac', hair: '#a1662f' }, voice: { pitch: 1.05 } },
-  { name: 'Sofia', look: { skin: '#e0ac69', hair: '#3e2723', long: true }, voice: { pitch: 1.3 } },
-  { name: 'Aisha', look: { skin: '#5c3a1e', hair: '#1b1b1b', long: true }, voice: { pitch: 1.2 } }
-];
+/* Every character who talks to the player is called Nuria (woman) or Olaf (man) */
+const NPC_NAME = { f: 'Nuria', m: 'Olaf' };
+const NPC_VOICE = { f: { pitch: 1.3, rate: 0.98 }, m: { pitch: 0.88, rate: 0.95 } };
+const STAFF_LOOKS = {
+  f: [{ skin: '#e0ac69', hair: '#3e2723', long: true }, { skin: '#ffdbac', hair: '#d4a017', long: true }, { skin: '#5c3a1e', hair: '#1b1b1b', long: true }, { skin: '#f1c27d', hair: '#b71c1c', long: true }],
+  m: [{ skin: '#c68642', hair: '#1b1b1b' }, { skin: '#ffdbac', hair: '#a1662f' }, { skin: '#8d5524', hair: '#1b1b1b' }, { skin: '#f1c27d', hair: '#5d4037' }]
+};
 
 const SCEN = {};
 SCEN.diner = {
@@ -1222,8 +1360,10 @@ function buildDiner() {
   MENU = MENU_BASE.map(m => Object.assign({}, m, { price: m.price ? Math.max(1.5, m.price + pick1([-0.5, 0, 0, 0.5, 1])) : 0 }));
   const AL = ALLERGY[s.allergy];
   const hasAl = i => i.al && i.al.includes(s.allergy);
-  const hostP = pick1(HOSTS), waitP = pick1(WAITERS);
-  const HN = hostP.name, WN = waitP.name;
+  const hg = pick1(['f', 'm']), wg = hg === 'f' ? 'm' : 'f';
+  const HN = NPC_NAME[hg], WN = NPC_NAME[wg];
+  const hostP = { look: Object.assign({ shirt: pick1(['#7b1fa2', '#00897b', '#3949ab']), pants: '#263238', sleeves: true }, pick1(STAFF_LOOKS[hg]), hg === 'm' ? { tie: '#c62828' } : {}), voice: NPC_VOICE[hg], badge: '#7b1fa2' };
+  const waitP = { look: pick1(STAFF_LOOKS[wg]), voice: NPC_VOICE[wg] };
 
   W.bounds = { minX: -40, maxX: 40, minZ: -30, maxZ: 40 };
   ground('#5a9e4b');
@@ -1273,16 +1413,20 @@ function buildDiner() {
   // ---- NPCs
   const host = npc(`${HN} (Host)`, hostP.look, 0, 7.2, 0, { color: '#ce93d8', voice: hostP.voice });
   const waiter = npc(`${WN} (Waiter)`, Object.assign({ shirt: '#fafafa', pants: '#212121', apron: '#212121', sleeves: true, shoes: true }, waitP.look), 0, -6.6, 0, { color: '#80deea', voice: waitP.voice, speed: 6.5 });
-  const dad = npc('Mr. Johnson', { skin: '#f1c27d', shirt: '#2e7d32', pants: '#5d4037', hair: '#8d6e63', sleeves: true }, 0, 0, 0, { color: '#a5d6a7', voice: { pitch: 0.8, rate: 0.95 } });
+  const dad = npc('Olaf (Dad)', { skin: '#f1c27d', shirt: '#2e7d32', pants: '#5d4037', hair: '#8d6e63', sleeves: true }, 0, 0, 0, { color: '#a5d6a7', voice: { pitch: 0.8, rate: 0.95 } });
   const kid = npc('Timmy', { skin: '#f1c27d', shirt: '#ff9800', pants: '#1565c0', hair: '#d4a017' }, 0, 0, 0, { scale: 0.72, color: '#ffcc80', voice: { pitch: 1.6, rate: 1.1 }, speed: 7 });
   npc('Marco (Chef)', { skin: '#ffdbac', shirt: '#ffffff', pants: '#424242', chef: true, sleeves: true }, 4, -10, 0, { color: '#ffab91' });
-  const lady = npc('Mrs. Lee', { skin: '#ffdbac', shirt: '#ec407a', pants: '#37474f', hair: '#cfd8dc', sleeves: true }, 0, 0, 0, { color: '#f48fb1', voice: { pitch: 1.3, rate: 0.9 } });
+  const lady = npc('Nuria (Customer)', { skin: '#ffdbac', shirt: '#ec407a', pants: '#37474f', hair: '#cfd8dc', sleeves: true }, 0, 0, 0, { color: '#f48fb1', voice: { pitch: 1.3, rate: 0.9 } });
   host.badge = hostP.badge; waiter.badge = '#00838f'; dad.badge = '#2e7d32'; kid.badge = '#ef6c00'; lady.badge = '#ad1457';
   sitAv(dad.av, -11.2, 4.35, Math.PI); sitAv(kid.av, -11.2, 1.65, 0); sitAv(lady.av, 7, -4.85, Math.PI);
   const ladyLines = ['This soup is lovely!', 'Excuse me, could I have some more water, please?', 'Mmm, the fruit salad here is so fresh.', `${WN}, could you bring me a napkin, please?`, 'I always ask about allergies. Better safe than sorry!'];
   let ladyT = 6, plateMesh = null, kidAngle = 0, kidT = 0, phoneT = 0, puddle = null;
   const WAIT_IDLE = [0, -6.6], AT_TABLE = [-5.15, 4.6];
   const toTable = [[-3.6, -0.4], AT_TABLE], toKitchen = [[-3.6, -0.4], WAIT_IDLE];
+  /* every waiter walk gets a token, so a delayed "go back to the kitchen" never cancels a newer errand */
+  let wTok = 0;
+  const wGo = (path, cb) => { wTok++; walkTo(waiter, path, cb); };
+  const backLater = sec => { const t = wTok; later(sec, () => { if (wTok === t) wGo(toKitchen, () => faceTo(waiter, 0, 0)); }); };
   const KID_LINES = ['VROOOOM! 🚗', 'I\'m a dinosaur! RAAAWR!', 'Catch me, Daddy!', 'Weeeeee!', 'BEEP BEEP!', 'I don\'t want broccoli!'];
   const PHONE_LINES = ['WHAT?! NO, I SAID TUESDAY!', 'HELLO? CAN YOU HEAR ME NOW?', 'HAHAHA! NO WAY!', 'YES, STEVE, THE MEETING IS AT TEN!', 'SORRY, YOU\'RE BREAKING UP!'];
 
@@ -1310,10 +1454,10 @@ function buildDiner() {
   inter({ obj: `${HN} (Host)`, label: 'Talk', at: () => host.pos, r: 4, when: () => s.phase === 'enter', act: hostGreet });
   inter({ obj: `${HN} (Host)`, label: 'Say goodbye', at: () => host.pos, r: 4, when: () => s.phase === 'leave', act: hostBye });
   inter({ obj: 'Table 4', label: 'Sit down', at: () => ({ x: -7, y: 0, z: 4.4 }), r: 2.6, h: 2.6, when: () => s.phase === 'seat', act: sitDown });
-  inter({ obj: 'Mr. Johnson', label: 'Talk', at: () => dad.pos, r: 6, when: () => s.phase === 'noise', act: dadTalk });
+  inter({ obj: 'Olaf (Dad)', label: 'Talk', at: () => dad.pos, r: 6, when: () => s.phase === 'noise', act: dadTalk });
   inter({ obj: 'Your meal', label: 'Eat', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'eat', act: eat });
   inter({ obj: `${WN} (Waiter)`, label: 'Call the waiter 🛎', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'bill', act: callWaiter });
-  inter({ obj: 'Mrs. Lee', label: 'Say hello', at: () => lady.pos, r: 3.5, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
+  inter({ obj: 'Nuria (Customer)', label: 'Say hello', at: () => lady.pos, r: 3.5, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
 
   function hostGreet() {
     const g = pick1([['Hi there, welcome to Healthy Bites! How many people are in your party?', '¡Hola, bienvenido/a a Healthy Bites! ¿Cuántas personas sois?'], ['Good evening! Welcome to Healthy Bites. A table for how many?', '¡Buenas noches! Bienvenido/a a Healthy Bites. ¿Mesa para cuántos?'], ['Hello and welcome! How many are you tonight?', '¡Hola y bienvenido/a! ¿Cuántos sois esta noche?']]);
@@ -1338,7 +1482,7 @@ function buildDiner() {
   function sitDown() {
     hideMarker(); s.phase = 'wait'; complete('sit');
     P.frozen = true; sitAv(P.av, -7, 4.35, Math.PI); P.yaw = Math.PI; cam.yaw = 0.5; cam.pitch = 0.55; cam.dist = 9;
-    later(1.2, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); waiterHello(); }));
+    later(1.2, () => wGo(toTable, () => { faceTo(waiter, -7, 4.35); waiterHello(); }));
   }
   function waiterHello() {
     const recs = sample(MENU.filter(m => m.cat === 'Mains'), 2);
@@ -1418,7 +1562,7 @@ function buildDiner() {
   function w2(w) { return w === 'dairy' ? 'dairy in it' : w === 'gluten' ? 'gluten in it' : 'nuts in it'; }
   function waiterLeaves(msg) {
     say(waiter, msg); complete('order'); s.phase = 'kitchen';
-    walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+    wGo(toKitchen, () => faceTo(waiter, 0, 0));
     later(5, () => s.ev.A ? startA() : bringFood());
   }
   /* ---- event A: kid / phone / spill */
@@ -1426,7 +1570,7 @@ function buildDiner() {
     reveal('evA');
     if (s.ev.A === 'kid') {
       s.phase = 'noise'; s.kidRun = true; kid.av.userData.seated = false; kid.pos.y = 0; setFace(P.av, 'wow');
-      notify('🔊 Uh-oh!', 'The little boy at the next table is running around your chair and shouting. Talk to his dad, Mr. Johnson.', 'warn');
+      notify('🔊 Uh-oh!', 'The little boy at the next table is running around your chair and shouting. Talk to his dad, Olaf.', 'warn');
       chat('Timmy', 'VROOOOOM!!! 🚗💨', '#ffcc80');
     } else if (s.ev.A === 'phone') {
       s.phase = 'noise'; s.phoneLoud = true; dad.av.userData.phone = true; setFace(P.av, 'wow');
@@ -1435,7 +1579,7 @@ function buildDiner() {
       s.phase = 'spill';
       const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.4, 12), M('#90caf9'));
       glass.position.set(0, 1.6, 0.7); waiter.av.add(glass); waiter.av.userData.carry = true;
-      walkTo(waiter, toTable, () => {
+      wGo(toTable, () => {
         waiter.av.remove(glass); waiter.av.userData.carry = false; faceTo(waiter, -7, 4.35); setFace(waiter.av, 'wow');
         puddle = part(-7, 1.16, 3.4, 1.6, 0.02, 1, '#64b5f6', { solid: false, shadow: false });
         notify('💦 Splash!', `${WN} tripped and spilled a drink all over your table!`, 'warn');
@@ -1482,7 +1626,7 @@ function buildDiner() {
         if (free) s.drinkFree = true; else s.discount += 2;
         if (puddle) { W.scene.remove(puddle); puddle = null; }
         setFace(waiter.av, 'smile'); complete('evA');
-        walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'kitchen2'; later(4, bringFood);
+        wGo(toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'kitchen2'; later(4, bringFood);
       }, 'Thanks!');
     });
   }
@@ -1494,10 +1638,10 @@ function buildDiner() {
     if (s.ev.B) {
       s.wrong = Object.assign({}, pick1(MENU.filter(m => m.cat === 'Mains' && m.id !== s.main.id)));
       carry(s.wrong);
-      walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); reveal('dish'); wrongDialog(); });
+      wGo(toTable, () => { faceTo(waiter, -7, 4.35); putDown(); reveal('dish'); wrongDialog(); });
     } else {
       carry(s.main);
-      walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Enjoy your meal!`); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); });
+      wGo(toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Enjoy your meal!`); s.phase = 'eat'; backLater(1.5); });
     }
   }
   function wrongDialog() {
@@ -1513,16 +1657,16 @@ function buildDiner() {
     complete('dish');
     line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take $3 off your bill.`, 'Lo siento mucho. Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 $ de la cuenta.', () => {
       s.discount += 3; takeBack();
-      walkTo(waiter, toKitchen, () => {
+      wGo(toKitchen, () => {
         waiter.av.remove(plateMesh); carry(s.main);
-        later(1.5, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Sorry again, and enjoy!`); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); }));
+        later(1.5, () => wGo(toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Sorry again, and enjoy!`); s.phase = 'eat'; backLater(1.5); }));
       });
     }, 'Thank you!');
   }
   function acceptWrong() {
     s.acceptedWrong = true; complete('dish', true);
     G.mistakes.push({ said: 'Oh… OK, thanks!', tip: 'That wasn\'t your order! You could say: "Excuse me, I\'m afraid this isn\'t what I ordered."' });
-    say(waiter, 'Enjoy!'); s.phase = 'eat'; walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+    say(waiter, 'Enjoy!'); s.phase = 'eat'; wGo(toKitchen, () => faceTo(waiter, 0, 0));
   }
   function eaten() { return s.order.map(i => (i.cat === 'Mains' && s.acceptedWrong) ? s.wrong : i); }
   /* ---- eating: event C (cold food) */
@@ -1536,7 +1680,7 @@ function buildDiner() {
       later(0.9, () => {
         P.av.userData.eating = false; s.coldDone = true; reveal('cold'); setFace(P.av, 'sad');
         notify('🥶 Yuck!', 'Your food is cold in the middle! Tell the waiter.', 'warn');
-        walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); coldTalk(); });
+        wGo(toTable, () => { faceTo(waiter, -7, 4.35); coldTalk(); });
       });
       return;
     }
@@ -1548,12 +1692,12 @@ function buildDiner() {
       { t: 'This is freezing! Do you call this food?', kind: 'rude', tip: 'Complain politely: "I\'m afraid my food is cold. Could you heat it up, please?"' },
       { t: 'My food is cold. Can you hot it?', kind: 'grammar', tip: '"Hot" is an adjective. The verb is "heat up" or "warm up".' },
       { t: 'The food is very much cold.', kind: 'grammar', tip: 'Say "very cold" or "quite cold". "Very much" goes with verbs.' }
-    ]).concat([{ t: 'Yes, yes, everything\'s fine.', kind: 'fact', fn: () => { s.ateCold = true; complete('cold', true); setFace(P.av, 'smile'); say(waiter, 'Great! Enjoy!'); walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'eat'; } }]), () => {
+    ]).concat([{ t: 'Yes, yes, everything\'s fine.', kind: 'fact', fn: () => { s.ateCold = true; complete('cold', true); setFace(P.av, 'smile'); say(waiter, 'Great! Enjoy!'); wGo(toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'eat'; } }]), () => {
       line(waiter, 'Oh, I\'m sorry about that! I\'ll ask the chef to heat it up right away.', '¡Oh, lo siento! Le pediré al chef que lo caliente ahora mismo.', () => {
         complete('cold'); setFace(P.av, 'smile'); takeBack();
-        walkTo(waiter, toKitchen, () => {
+        wGo(toKitchen, () => {
           waiter.av.remove(plateMesh); carry(s.acceptedWrong ? s.wrong : s.main);
-          later(2, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, 'There you go, nice and hot!'); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); }));
+          later(2, () => wGo(toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, 'There you go, nice and hot!'); s.phase = 'eat'; backLater(1.5); }));
         });
       }, 'Thank you!');
     });
@@ -1574,7 +1718,7 @@ function buildDiner() {
   function callWaiter() {
     s.phase = 'billwait';
     if (s.ev.D && !s.extra) s.extra = Object.assign({}, pick1(MENU.filter(m => m.price > 0 && !s.order.some(o => o.id === m.id) && (m.cat === 'Drinks' || m.cat === 'Desserts' || m.cat === 'Starters'))));
-    walkTo(waiter, toTable, () => {
+    wGo(toTable, () => {
       faceTo(waiter, -7, 4.35); if (plateMesh) W.scene.remove(plateMesh);
       const g = pick1([['How was everything?', '¿Qué tal todo?'], ['Did you enjoy your meal?', '¿Te ha gustado la comida?'], ['Can I get you anything else?', '¿Te traigo algo más?']]);
       ask(waiter, g[0], g[1], phr(['It was delicious, thank you! Could I have the check, please?', 'Everything was great, thanks. Could I get the check, please?', 'No, thank you. Just the check, please.'], [
@@ -1641,7 +1785,7 @@ function buildDiner() {
     line(waiter, thanks[0], thanks[1], () => {
       if (tip === 0 && !s.paidShort) notify('💡 Culture note', 'In the USA, leaving no tip is considered very rude unless the service was terrible.', 'warn');
       P.av.userData.seated = false; P.pos.set(-5, 0, 5.6); P.frozen = false; s.phase = 'leave';
-      walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
+      wGo(toKitchen, () => faceTo(waiter, 0, 0));
       setMarker(0, 4.2, 7.2); notify('🚪 Almost done', `Say goodbye to ${HN} at the entrance.`);
     });
   }
@@ -1689,16 +1833,16 @@ const SIZES = { shirt: ['XS', 'S', 'M', 'L', 'XL'], trousers: ['28', '30', '32',
 let MY = {}, CATS = {}, SHOPS = {};
 const COLS = { 'Navy blue': '#1a237e', 'Dark green': '#1b5e20', 'Burgundy': '#7b1f2e', 'Light blue': '#81d4fa', 'Black': '#212121', 'Red': '#d32f2f', 'Grey': '#8a8f96', 'Beige': '#d7c49e', 'White': '#fafafa', 'Neon yellow': '#d4e157', 'Brown': '#6d4c41', 'Blue': '#1e88e5', 'Green': '#43a047', 'Pink': '#f48fb1', 'Purple': '#8e24aa', 'Orange': '#fb8c00' };
 const SHOP_STYLE = {
-  bargain: { name: 'Bargain Barn', clerk: 'Gus', wall: '#e0b04a', roof: '#8d6e63', signBg: '#ffeb3b', signFg: '#b71c1c', mult: 0.42, policy: 'All sales are final: no refunds and no exchanges.', desc: ['Thin material. May shrink in the wash.', 'Cheap, but not very strong.', 'Glued, not stitched.', 'Made of plastic. Not waterproof.'] },
-  campus: { name: 'Campus Corner', clerk: 'Priya', wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', mult: 1, policy: 'Returns and exchanges within 30 days. Keep your receipt!', desc: ['Strong and comfortable.', 'Good for everyday use. Machine washable.', 'Official school supplier quality.'] },
-  luxe: { name: 'Luxe Label', clerk: 'Mr. Sterling', wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', mult: 2.1, policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.', desc: ['Designer label. Very stylish.', 'Handmade with premium materials.', 'Limited edition. Dry clean only.'] }
+  bargain: { name: 'Bargain Barn', clerk: 'Olaf', wall: '#e0b04a', roof: '#8d6e63', signBg: '#ffeb3b', signFg: '#b71c1c', mult: 0.42, policy: 'All sales are final: no refunds and no exchanges.', desc: ['Thin material. May shrink in the wash.', 'Cheap, but not very strong.', 'Glued, not stitched.', 'Made of plastic. Not waterproof.'] },
+  campus: { name: 'Campus Corner', clerk: 'Nuria', wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', mult: 1, policy: 'Returns and exchanges within 30 days. Keep your receipt!', desc: ['Strong and comfortable.', 'Good for everyday use. Machine washable.', 'Official school supplier quality.'] },
+  luxe: { name: 'Luxe Label', clerk: 'Olaf', wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', mult: 2.1, policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.', desc: ['Designer label. Very stylish.', 'Handmade with premium materials.', 'Limited edition. Dry clean only.'] }
 };
 const BASE = { polo: 14, trousers: 20, shoes: 30, trainers: 25, backpack: 18 };
 const EXTRAS = [['Sunglasses', '🕶', 12], ['Hoodie', '🧥', 22], ['Baseball cap', '🧢', 14], ['Headphones', '🎧', 25], ['Phone case', '📱', 10], ['Football', '⚽', 15], ['Smartwatch strap', '⌚', 16]];
 const TEACHERS = [
-  { name: 'Ms. Parker', look: { skin: '#8d5524', shirt: '#6a1b9a', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.15, rate: 0.95 }, badge: '#6a1b9a' },
-  { name: 'Mr. Davis', look: { skin: '#ffdbac', shirt: '#455a64', pants: '#212121', hair: '#8d6e63', tie: '#c62828', sleeves: true, shoes: true }, voice: { pitch: 0.85, rate: 0.95 }, badge: '#455a64' },
-  { name: 'Mrs. Kim', look: { skin: '#f1c27d', shirt: '#00897b', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.25, rate: 0.95 }, badge: '#00796b' }
+  { name: 'Nuria', look: { skin: '#8d5524', shirt: '#6a1b9a', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.15, rate: 0.95 }, badge: '#6a1b9a' },
+  { name: 'Olaf', look: { skin: '#ffdbac', shirt: '#455a64', pants: '#212121', hair: '#8d6e63', tie: '#c62828', sleeves: true, shoes: true }, voice: { pitch: 0.85, rate: 0.95 }, badge: '#455a64' },
+  { name: 'Nuria', look: { skin: '#f1c27d', shirt: '#00897b', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.25, rate: 0.95 }, badge: '#00796b' }
 ];
 
 SCEN.mall = {
@@ -1712,7 +1856,7 @@ SCEN.mall = {
       <div class="cs">📋 <b>Dress code:</b> <b>${s.code.polo.toLowerCase()}</b> polo shirt · <b>${s.code.bottom.toLowerCase()}</b> trousers or a ${s.code.bottom.toLowerCase()} skirt · <b>black</b> school shoes · <b>white</b> trainers for P.E. You also need a backpack.</div>
       <div class="cs">📏 <b>Your sizes:</b> shirt <b>${sz[MY.shirt]}</b> · trousers <b>${MY.trousers}</b> · shoes <b>${MY.shoes}</b>.</div>
       <div class="cs">💖 Your favourite colour is <b>${s.fav.toLowerCase()}</b>, and you want things that <b>last all year</b>.</div>
-      <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to <b>${escH(s.teacher)}</b> at the school gate.</div>
+      <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to your teacher, <b>${escH(s.teacher)}</b>, at the school gate.</div>
       <div class="cs">🎲 Every game is different: new dress code, sizes, prices and surprises.</div>`;
   },
   build: buildMall
@@ -1806,10 +1950,10 @@ function buildMall() {
   part(SX + 10, 0.25, -3.6, 0.25, 9, 0.25, '#cfd8dc'); part(SX + 10.9, 7.4, -3.6, 1.6, 1, 0.05, '#1565c0', { solid: false });
   sign(`DRESS CODE CHECK\nshow your things to ${tP.name}`, SX - 5, 2.4, -3.85, 4.6, 1.4, 0, { bg: '#fffde7', fg: '#3e2723' }); part(SX - 5, 0.25, -3.95, 0.2, 1.7, 0.15, '#5d4037');
 
-  const teacher = npc(tP.name, tP.look, SX, -3, 0, { color: '#ce93d8', voice: tP.voice });
+  const teacher = npc(`${tP.name} (Teacher)`, tP.look, SX, -3, 0, { color: '#ce93d8', voice: tP.voice });
   teacher.badge = tP.badge; teacher.pos.y = 0.25;
-  const mia = npc('Mia', { skin: '#ffdbac', shirt: COLS[s.code.polo], pants: COLS[s.code.bottom], hair: '#e65100', long: true }, -10, -0.5, 0, { color: '#ffab91', speed: 3, voice: { pitch: 1.4, rate: 1.05 } });
-  const leo = npc('Leo', { skin: '#c68642', shirt: '#43a047', pants: '#37474f', hair: '#1b1b1b', cap: '#e53935' }, 12, 11.8, 0, { color: '#a5d6a7', speed: 3, voice: { pitch: 1.1, rate: 1.05 } });
+  const mia = npc('Nuria (Student)', { skin: '#ffdbac', shirt: COLS[s.code.polo], pants: COLS[s.code.bottom], hair: '#e65100', long: true }, -10, -0.5, 0, { color: '#ffab91', speed: 3, voice: { pitch: 1.4, rate: 1.05 } });
+  const leo = npc('Olaf (Student)', { skin: '#c68642', shirt: '#43a047', pants: '#37474f', hair: '#1b1b1b', cap: '#e53935' }, 12, 11.8, 0, { color: '#a5d6a7', speed: 3, voice: { pitch: 1.1, rate: 1.05 } });
   mia.badge = '#bf360c'; leo.badge = '#2e7d32';
   const SALE = { trainers: 'sneakers', backpack: 'backpacks', polo: 'polo shirts', shoes: 'shoes' }[s.saleCat];
   const MIA = shuffle([`Campus Corner gives a ${s.discPct}% student discount, but only if you ask!`, `Hi! Are you starting at ${s.school} too?`, `Remember: the polo has to be ${s.code.polo.toLowerCase()}. Read the colour on the label!`, 'Bargain Barn is cheap, but they never give refunds.']);
@@ -1828,9 +1972,9 @@ function buildMall() {
     { t: 'Hello. What is up? The sky!', kind: 'grammar', tip: '"What\'s up?" means "¿Qué tal?". Answer "Not much!" or "Fine, thanks!"' },
     { t: 'Hi! Can you give me an advice?', kind: 'grammar', tip: '"Advice" is uncountable: "some advice" or "a piece of advice".' }
   ]), () => line(n, pick1(lines), 'Un consejo de un/a compañero/a.', () => {}, 'Thanks!'));
-  inter({ obj: 'Mia', label: 'Chat', at: () => mia.pos, r: 3.5, act: () => { mia.path = []; mia.hold = true; later(9, () => mia.hold = false); faceTo(mia, P.pos.x, P.pos.z); smallTalk(mia, MIA); } });
-  inter({ obj: 'Leo', label: 'Chat', at: () => leo.pos, r: 3.5, act: () => { leo.path = []; leo.hold = true; later(9, () => leo.hold = false); faceTo(leo, P.pos.x, P.pos.z); smallTalk(leo, LEO); } });
-  inter({ obj: tP.name, label: 'Show your things', at: () => teacher.pos, r: 4, when: () => !G.over, act: () => teacherTalk(teacher) });
+  inter({ obj: 'Nuria (Student)', label: 'Chat', at: () => mia.pos, r: 3.5, act: () => { mia.path = []; mia.hold = true; later(9, () => mia.hold = false); faceTo(mia, P.pos.x, P.pos.z); smallTalk(mia, MIA); } });
+  inter({ obj: 'Olaf (Student)', label: 'Chat', at: () => leo.pos, r: 3.5, act: () => { leo.path = []; leo.hold = true; later(9, () => leo.hold = false); faceTo(leo, P.pos.x, P.pos.z); smallTalk(leo, LEO); } });
+  inter({ obj: `${tP.name} (Teacher)`, label: 'Show your things', at: () => teacher.pos, r: 4, when: () => !G.over, act: () => teacherTalk(teacher) });
 
   spawnPlayer(-44, -1, Math.PI / 2, -Math.PI / 2);
   G.obj = Object.entries(CATS).map(([k, c]) => ({ id: k, text: 'Buy: ' + c.label }));
@@ -1866,7 +2010,7 @@ function buildShop(k, sh) {
     campus: { skin: '#a1665e', shirt: '#1565c0', pants: '#263238', hair: '#1b1b1b', long: true, sleeves: true },
     luxe: { skin: '#f1c27d', shirt: '#212121', pants: '#212121', hair: '#bdbdbd', tie: '#e6c068', sleeves: true, shoes: true }
   }[k];
-  const n = npc(sh.clerk, looks, cx, -15.6, 0, { color: sh.signFg === '#ffffff' ? '#90caf9' : sh.signFg, voice: { bargain: { pitch: 0.7, rate: 0.9 }, campus: { pitch: 1.2, rate: 1 }, luxe: { pitch: 0.85, rate: 0.88 } }[k] });
+  const n = npc(`${sh.clerk} (${sh.name})`, looks, cx, -15.6, 0, { color: sh.signFg === '#ffffff' ? '#90caf9' : sh.signFg, voice: { bargain: { pitch: 0.7, rate: 0.9 }, campus: { pitch: 1.2, rate: 1 }, luxe: { pitch: 0.85, rate: 0.88 } }[k] });
   n.pos.y = 0.27; n.badge = sh.signBg === '#ffeb3b' ? '#b71c1c' : sh.signBg;
   sh.npc = n;
   inter({ obj: sh.clerk + ' · ' + sh.name, label: 'Talk', at: () => n.pos, r: 3.6, act: () => shopTalk(k) });
@@ -2125,7 +2269,7 @@ function mallObjectives() {
 function teacherTalk(t) {
   const missing = Object.keys(CATS).filter(c => !activeInv().some(r => r.cat === c && !r.broken));
   if (missing.length) {
-    choice(t, `Hi! I'm ${t.name}. Are you ready for tomorrow?`, `¡Hola! Soy ${t.name}. ¿Estás listo/a para mañana?`, [
+    choice(t, `Hi! I'm ${G.s.teacher}, your teacher. Are you ready for tomorrow?`, `¡Hola! Soy ${G.s.teacher}, tu profe. ¿Estás listo/a para mañana?`, [
       { t: 'Not yet, I still need a few things. See you later!', fn: () => say(t, 'OK! The shops close at six, so hurry up!') },
       { t: 'I think so. Could you check my things, please?', fn: () => finalCheck(t, missing) }
     ]);
@@ -2145,11 +2289,11 @@ function review(t) {
   Object.entries(CATS).forEach(([c, info]) => {
     const all = inv.filter(r => r.cat === c);
     const best = all.filter(itemValid).sort((a, b) => b.q - a.q)[0] || all.filter(r => !r.broken)[0] || all[0];
-    if (!best) { bad.push(`${t.name}: “You haven't got ${info.label.toLowerCase().replace(/^a /, 'a ')}!”`); return; }
+    if (!best) { bad.push(`${G.s.teacher}: “You haven't got ${info.label.toLowerCase().replace(/^a /, 'a ')}!”`); return; }
     const plural = /trousers|shoes|trainers|chinos|loafers|sneakers/i.test(best.name);
-    if (best.broken) bad.push(`${t.name}: “Oh dear, your ${best.name.toLowerCase()} ${plural ? 'are' : 'is'} broken.”`);
-    else if (!best.ok) bad.push(`${t.name}: “${best.why || 'That isn\'t on the list.'}”`);
-    else if (info.size && !best.sizeOk) bad.push(`${t.name}: “Your ${best.name.toLowerCase()} ${plural ? 'don\'t' : 'doesn\'t'} fit you. Did you try ${plural ? 'them' : 'it'} on?”`);
+    if (best.broken) bad.push(`${G.s.teacher}: “Oh dear, your ${best.name.toLowerCase()} ${plural ? 'are' : 'is'} broken.”`);
+    else if (!best.ok) bad.push(`${G.s.teacher}: “${best.why || 'That isn\'t on the list.'}”`);
+    else if (info.size && !best.sizeOk) bad.push(`${G.s.teacher}: “Your ${best.name.toLowerCase()} ${plural ? 'don\'t' : 'doesn\'t'} fit you. Did you try ${plural ? 'them' : 'it'} on?”`);
     else { listPts += 20; qSum += best.q; qN++; good.push(`${best.color} ${best.name.toLowerCase()}: perfect${best.q === 3 ? ' and great quality' : best.q === 1 ? ', but cheap quality' : ''}.`); }
   });
   const extras = inv.filter(r => r.cat === 'extra');
@@ -2175,8 +2319,68 @@ function review(t) {
   }), 'See my results');
 }
 
+/* ---------------- teacher panel (Spanish: it is for the teacher) ---------------- */
+const T = { list: [], sel: new Set(), loading: false };
+const fmtDate = d => d ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+const starStr = n => '★'.repeat(n || 0) + '☆'.repeat(3 - (n || 0));
+async function loadTeacher() {
+  if (!CLOUD || !account || !account.isTeacher) { $('#tTable').innerHTML = '<tr><td>El panel funciona cuando GOBLOX está publicado con Google Apps Script y entras con una cuenta de profesor. Consulta apps-script/LEEME.md.</td></tr>'; return; }
+  $('#tTable').innerHTML = '<tr><td>Cargando alumnos…</td></tr>';
+  try { applyTeacher(await api('teacherList')); } catch (e) { $('#tTable').innerHTML = `<tr><td>${escH(e.message)}</td></tr>`; }
+}
+function applyTeacher(r) {
+  T.list = r.students || [];
+  if (r.sheetUrl) { $('#tSheet').href = r.sheetUrl; $('#tSheet').hidden = false; }
+  renderTeacher();
+}
+function renderTeacher() {
+  const q = $('#tSearch').value.trim().toLowerCase();
+  const rows = T.list.filter(st => !q || st.name.toLowerCase().includes(q) || st.email.includes(q));
+  const allSel = rows.length && rows.every(st => T.sel.has(st.email));
+  const head = `<tr><th><input type="checkbox" id="tAll" aria-label="Seleccionar todos" ${allSel ? 'checked' : ''}></th><th>Alumno</th><th class="num">Nivel</th><th class="num">Partidas</th>${GAMES.filter(g => !g.soon).map(g => `<th>${escH(g.title)}</th>`).join('')}<th class="num">GOYUX juego</th><th class="num">GOYUX profe</th><th class="num">Total</th><th>Última partida</th><th>Dar GOYUX</th><th></th></tr>`;
+  const body = rows.map(st => `<tr data-e="${escH(st.email)}">
+      <td><input type="checkbox" class="tSel" aria-label="Seleccionar ${escH(st.name)}" ${T.sel.has(st.email) ? 'checked' : ''}></td>
+      <td><b>${escH(st.name)}</b><small>${escH(st.email)}</small></td>
+      <td class="num">${st.level}</td><td class="num">${st.plays}</td>
+      ${GAMES.filter(g => !g.soon).map(g => `<td class="stars">${starStr(st.best[g.id])}</td>`).join('')}
+      <td class="num">${st.xp}</td><td class="num">${st.granted}</td><td class="num"><b>${st.total}</b></td>
+      <td>${fmtDate(st.lastRun)}</td>
+      <td><div class="acts"><button class="mini pos" data-a="1">+1</button><button class="mini pos" data-a="5">+5</button><button class="mini pos" data-a="10">+10</button><button class="mini neg" data-a="-5">−5</button></div></td>
+      <td><button class="mini" data-runs="1">Partidas</button></td></tr>`).join('');
+  $('#tTable').innerHTML = head + (body || `<tr><td colspan="12">${T.list.length ? 'Ningún alumno coincide con la búsqueda.' : 'Todavía no ha entrado ningún alumno. Comparte el enlace de GOBLOX con la clase.'}</td></tr>`);
+  $('#tAll').onchange = e => { rows.forEach(st => e.target.checked ? T.sel.add(st.email) : T.sel.delete(st.email)); renderTeacher(); };
+  $('#tTable').querySelectorAll('.tSel').forEach(c => c.onchange = () => { const em = c.closest('tr').dataset.e; c.checked ? T.sel.add(em) : T.sel.delete(em); });
+  $('#tTable').querySelectorAll('[data-a]').forEach(b => b.onclick = () => give([b.closest('tr').dataset.e], +b.dataset.a));
+  $('#tTable').querySelectorAll('[data-runs]').forEach(b => b.onclick = () => showRuns(b.closest('tr').dataset.e));
+}
+async function give(emails, amount) {
+  if (!emails.length) { hToast('Selecciona al menos un alumno.', true); return; }
+  if (!amount) { hToast('Escribe una cantidad distinta de cero.', true); return; }
+  const reason = $('#tReason').value.trim() || 'Buen comportamiento en clase';
+  try {
+    applyTeacher(await api('teacherGrant', emails, amount, reason));
+    hToast(`${amount > 0 ? '+' : ''}${amount} GOYUX para ${emails.length === 1 ? (T.list.find(x => x.email === emails[0]) || {}).name || emails[0] : emails.length + ' alumnos'}`);
+  } catch (e) { hToast(e.message, true); }
+}
+async function showRuns(email) {
+  const st = T.list.find(x => x.email === email) || { name: email };
+  $('#runsTitle').textContent = st.name; $('#runsTable').innerHTML = '<tr><td>Cargando…</td></tr>'; $('#runsGrants').innerHTML = ''; $('#runsModal').hidden = false;
+  try {
+    const r = await api('teacherRuns', email);
+    $('#runsTable').innerHTML = '<tr><th>Fecha</th><th>Juego</th><th class="num">Puntos</th><th>Estrellas</th><th class="num">Presupuesto</th><th class="num">Dinero restante</th><th class="num">Inglés</th><th class="num">Modales</th><th class="num">Minutos</th></tr>' +
+      (r.runs.map(x => `<tr><td>${fmtDate(x.date)}</td><td>${escH(x.game)}</td><td class="num">${x.score}</td><td class="stars">${starStr(x.stars)}</td><td class="num">${money(x.budget || 0)}</td><td class="num">${money(x.moneyLeft || 0)}</td><td class="num">${x.english}%</td><td class="num">${x.manners}</td><td class="num">${x.minutes}</td></tr>`).join('') || '<tr><td colspan="9">Todavía no ha terminado ninguna partida.</td></tr>');
+    $('#runsGrants').innerHTML = '<tr><th>Fecha</th><th class="num">GOYUX</th><th>Motivo</th><th>Profesor</th></tr>' +
+      (r.grants.map(g => `<tr><td>${fmtDate(g.date)}</td><td class="num">${g.amount > 0 ? '+' : ''}${g.amount}</td><td>${escH(g.reason)}</td><td>${escH(g.by)}</td></tr>`).join('') || '<tr><td colspan="4">Sin GOYUX del profesor todavía.</td></tr>');
+  } catch (e) { $('#runsTable').innerHTML = `<tr><td>${escH(e.message)}</td></tr>`; }
+}
+$('#runsX').onclick = () => $('#runsModal').hidden = true;
+$('#runsModal').addEventListener('click', e => { if (e.target.id === 'runsModal') $('#runsModal').hidden = true; });
+$('#tSearch').addEventListener('input', renderTeacher);
+$('#tRefresh').onclick = loadTeacher;
+$('#tGiveSel').onclick = () => give([...T.sel], Math.round(+$('#tAmount').value));
+
 /* boot */
-renderHome();
+boot();
 </script>
 </body>
 </html>
