@@ -491,13 +491,13 @@ let settings = Object.assign({ voice: true }, store.get('settings', {}));
 /* ---------------- games catalogue ---------------- */
 const GAMES = [
   { id: 'diner', title: 'Healthy Bites Diner', emoji: '🥗', bg: 'linear-gradient(150deg,#ff6b5b,#c62828 55%,#5e1010)', level: 'A2–B1',
-    desc: 'You have just finished football practice and you are starving. Get a table, order a healthy dinner with only $20 (tax and tip included!), survive a noisy family and sort out a kitchen mistake. Oh, and you are allergic to nuts.',
+    desc: 'You are starving after sport. Get a table, read the menu, order a healthy dinner on a tight budget (tax and tip included!) and keep yourself safe from your allergy. Then expect the unexpected: noisy neighbours, clumsy waiters, wrong dishes, cold food or a mistake on the check. Every game brings a different allergy, budget and set of surprises.',
     goals: ['Asking for a table and ordering politely (I\'d like…, Could I…?)', 'Reading a menu and talking about allergies', 'Complaining politely (I\'m afraid…, Would you mind…?)', 'Asking for the check and calculating a tip'],
-    chips: ['🍽 Restaurant', '💵 Budget: $20', '⏱ 10–15 min'] },
+    chips: ['🍽 Restaurant', '💵 Budget: $18–25', '🎲 New surprises every game', '⏱ 10–15 min'] },
   { id: 'mall', title: 'Back to School Rush', emoji: '🎒', bg: 'linear-gradient(150deg,#4f7dff,#1d3fbf 55%,#0d1a5c)', level: 'A2–B1',
-    desc: 'School starts tomorrow and you need a uniform. Three shops, one budget of $100. One shop is cheap but never gives refunds, one is fair, one is fancy. Read the labels, ask the right questions, try things on, and pass the dress-code check at Lincoln High.',
+    desc: 'School starts tomorrow and you need a uniform. Three shops, one budget. One shop is cheap but never gives refunds, one is fair, one is fancy. Read the labels, ask the right questions, try things on, watch the till and pass the dress-code check at school. The dress code, your sizes, the prices and the surprises change every game.',
     goals: ['Clothes, colours and sizes', 'Shop phrases: Can I try it on? I\'ll take it.', 'Return policies, refunds, exchanges and discounts', 'Comparing price and quality to stay on budget'],
-    chips: ['🛍 Shopping street', '💵 Budget: $100', '⏱ 15–20 min'] },
+    chips: ['🛍 Shopping street', '💵 Budget: $95–110', '🎲 New surprises every game', '⏱ 15–20 min'] },
   { id: 'airport', soon: true, title: 'Airport Check-in', emoji: '✈️', bg: 'linear-gradient(150deg,#26c6da,#00838f)' },
   { id: 'doctor', soon: true, title: 'At the Doctor\'s', emoji: '🩺', bg: 'linear-gradient(150deg,#66bb6a,#2e7d32)' },
   { id: 'hotel', soon: true, title: 'Hotel Trouble', emoji: '🏨', bg: 'linear-gradient(150deg,#ab47bc,#6a1b9a)' },
@@ -722,7 +722,7 @@ function animAv(av, moving, t, dt) {
   if (u.seated) {
     u.lLeg.rotation.x = u.rLeg.rotation.x = -Math.PI / 2;
     const a = u.eating ? -1.1 + Math.sin(t * 11) * 0.35 : -0.35;
-    u.lArm.rotation.x = u.eating ? -0.35 : a; u.rArm.rotation.x = a; return;
+    u.lArm.rotation.x = u.eating ? -0.35 : a; u.rArm.rotation.x = u.phone ? -2.75 : a; return;
   }
   u.swing = moving ? Math.sin(t * 10) * 0.85 : u.swing * Math.max(0, 1 - dt * 10);
   u.lLeg.rotation.x = u.swing; u.rLeg.rotation.x = -u.swing;
@@ -1125,7 +1125,7 @@ async function launch(id) {
 function startScenario(id) {
   newWorld();
   const sc = SCEN[id];
-  G = { id, sc, money: sc.budget, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
+  G = { id, sc, money: 0, good: 0, bad: 0, hints: 0, manners: 100, mistakes: [], obj: [], inv: [], over: false, s: {} };
   sc.build();
   $('#msTitle').textContent = sc.title;
   renderObjectives(); updateBoard(); renderHotbar();
@@ -1135,67 +1135,104 @@ function startScenario(id) {
 }
 
 /* =====================================================================
+   VARIETY — every play-through gets a new character card, prices,
+   people, surprise events and phrase options
+   ===================================================================== */
+const rnd = (a, b) => a + Math.random() * (b - a);
+const sample = (arr, n) => shuffle(arr.slice()).slice(0, n);
+/* one natural phrase (picked from several) + nBad wrong ones (picked from a bigger pool) */
+function phr(ok, bad, nBad = 2) {
+  const o = pick1(ok);
+  return [typeof o === 'string' ? { t: o, kind: 'ok' } : Object.assign({ kind: 'ok' }, o)].concat(sample(bad, Math.min(nBad, bad.length)));
+}
+const cap = t => t[0].toUpperCase() + t.slice(1);
+
+/* =====================================================================
    SCENARIO 1 — HEALTHY BITES DINER
    ===================================================================== */
-const MENU = [
-  { id: 'soup', cat: 'Starters', name: 'Garden Vegetable Soup', price: 3.5, h: 15, emo: '🥣', desc: 'A warm bowl of carrots, peas and tomatoes.' },
-  { id: 'mozz', cat: 'Starters', name: 'Mozzarella Sticks', price: 4.5, h: -10, emo: '🧀', desc: 'Deep-fried cheese sticks with ketchup.' },
-  { id: 'chick', cat: 'Mains', name: 'Grilled Chicken Salad', price: 9, h: 35, emo: '🥗', food: ['#7cb342', '#f5deb3'], desc: 'Grilled chicken, lettuce, cucumber and a lemon dressing.' },
-  { id: 'thai', cat: 'Mains', name: 'Thai Noodle Bowl', price: 8.5, h: 25, nuts: true, emo: '🍜', food: ['#f4c542', '#e65100'], desc: 'Rice noodles and vegetables in a crunchy peanut sauce.' },
-  { id: 'burger', cat: 'Mains', name: 'Double Cheeseburger', price: 11, h: -20, emo: '🍔', food: ['#8d5524', '#ffca28'], desc: 'Two beef burgers, cheese, bacon and mayo.' },
-  { id: 'salmon', cat: 'Mains', name: 'Salmon with Roasted Vegetables', price: 13, h: 40, emo: '🐟', food: ['#ff8a65', '#43a047'], desc: 'Oven-baked salmon with peppers and courgettes.' },
-  { id: 'wrap', cat: 'Mains', name: 'Veggie Wrap', price: 7.5, h: 30, emo: '🌯', food: ['#d7b377', '#66bb6a'], desc: 'Hummus, spinach, peppers and avocado in a wholemeal wrap.' },
-  { id: 'fries', cat: 'Sides', name: 'French Fries', price: 3, h: -10, emo: '🍟', desc: 'Crispy fried potatoes with lots of salt.' },
-  { id: 'broc', cat: 'Sides', name: 'Steamed Broccoli', price: 2.5, h: 20, emo: '🥦', desc: 'Fresh broccoli with a little olive oil.' },
-  { id: 'house', cat: 'Sides', name: 'House Salad', price: 3, h: 15, nuts: true, emo: '🥬', desc: 'Mixed leaves and tomatoes with a walnut dressing.' },
-  { id: 'water', cat: 'Drinks', name: 'Tap Water', price: 0, h: 15, emo: '💧', drink: true, desc: 'Ice-cold water. Free!' },
-  { id: 'oj', cat: 'Drinks', name: 'Fresh Orange Juice', price: 3, h: 5, emo: '🍊', drink: true, desc: 'Freshly squeezed oranges, no added sugar.' },
-  { id: 'cola', cat: 'Drinks', name: 'Cola', price: 2.5, h: -15, emo: '🥤', drink: true, desc: 'A large glass with free refills.' },
-  { id: 'shake', cat: 'Drinks', name: 'Chocolate Milkshake', price: 5, h: -20, emo: '🥛', drink: true, desc: 'Ice cream, chocolate syrup and whipped cream.' },
-  { id: 'fruit', cat: 'Desserts', name: 'Fresh Fruit Salad', price: 3.5, h: 15, emo: '🍓', desc: 'Melon, strawberries, kiwi and grapes.' },
-  { id: 'cake', cat: 'Desserts', name: 'Chocolate Fudge Cake', price: 5.5, h: -15, emo: '🍰', desc: 'A big slice with hot chocolate sauce.' },
-  { id: 'cookie', cat: 'Desserts', name: 'Almond Cookie', price: 2.5, h: -5, nuts: true, emo: '🍪', desc: 'A crunchy cookie with roasted almonds.' }
+const MENU_BASE = [
+  { id: 'soup', cat: 'Starters', name: 'Garden Vegetable Soup', price: 3.5, h: 15, emo: '🥣', al: ['gluten'], desc: 'Carrots, peas and tomatoes, served with a piece of bread.' },
+  { id: 'mozz', cat: 'Starters', name: 'Mozzarella Sticks', price: 4.5, h: -10, emo: '🧀', al: ['dairy', 'gluten'], desc: 'Breaded cheese sticks, deep-fried, with ketchup.' },
+  { id: 'garlic', cat: 'Starters', name: 'Garlic Bread', price: 3, h: -5, emo: '🥖', al: ['dairy', 'gluten'], desc: 'Toasted wheat bread with butter and garlic.' },
+  { id: 'chick', cat: 'Mains', name: 'Grilled Chicken Salad', price: 9, h: 35, emo: '🥗', meat: true, al: [], food: ['#7cb342', '#f5deb3'], desc: 'Grilled chicken, lettuce, cucumber and a lemon dressing.' },
+  { id: 'thai', cat: 'Mains', name: 'Thai Noodle Bowl', price: 8.5, h: 25, emo: '🍜', al: ['nuts'], food: ['#f4c542', '#e65100'], desc: 'Rice noodles and vegetables in a crunchy peanut sauce.' },
+  { id: 'burger', cat: 'Mains', name: 'Double Cheeseburger', price: 11, h: -20, emo: '🍔', meat: true, al: ['dairy', 'gluten'], food: ['#8d5524', '#ffca28'], desc: 'Two beef burgers, cheese and bacon in a wheat bun.' },
+  { id: 'salmon', cat: 'Mains', name: 'Salmon with Roasted Vegetables', price: 13, h: 40, emo: '🐟', meat: true, al: ['dairy'], food: ['#ff8a65', '#43a047'], desc: 'Oven-baked salmon with peppers and courgettes, cooked in butter.' },
+  { id: 'wrap', cat: 'Mains', name: 'Veggie Wrap', price: 7.5, h: 30, emo: '🌯', al: ['gluten'], food: ['#d7b377', '#66bb6a'], desc: 'Hummus, spinach, peppers and avocado in a wholemeal wheat wrap.' },
+  { id: 'curry', cat: 'Mains', name: 'Lentil & Vegetable Curry', price: 8, h: 30, emo: '🍛', al: [], food: ['#f9a825', '#fff8e1'], desc: 'Lentils and vegetables in coconut milk, served with rice.' },
+  { id: 'pasta', cat: 'Mains', name: 'Spaghetti Carbonara', price: 9.5, h: -5, emo: '🍝', meat: true, al: ['dairy', 'gluten'], food: ['#ffe082', '#8d6e63'], desc: 'Wheat pasta with cream, cheese and bacon.' },
+  { id: 'fries', cat: 'Sides', name: 'French Fries', price: 3, h: -10, emo: '🍟', al: [], desc: 'Crispy fried potatoes with lots of salt.' },
+  { id: 'broc', cat: 'Sides', name: 'Steamed Broccoli', price: 2.5, h: 20, emo: '🥦', al: [], desc: 'Fresh broccoli with olive oil and lemon.' },
+  { id: 'house', cat: 'Sides', name: 'House Salad', price: 3, h: 15, emo: '🥬', al: ['nuts'], desc: 'Mixed leaves and tomatoes with a walnut dressing.' },
+  { id: 'water', cat: 'Drinks', name: 'Tap Water', price: 0, h: 15, emo: '💧', drink: true, al: [], desc: 'Ice-cold water. Free!' },
+  { id: 'oj', cat: 'Drinks', name: 'Fresh Orange Juice', price: 3, h: 5, emo: '🍊', drink: true, al: [], desc: 'Freshly squeezed oranges, no added sugar.' },
+  { id: 'cola', cat: 'Drinks', name: 'Cola', price: 2.5, h: -15, emo: '🥤', drink: true, al: [], desc: 'A large glass with free refills.' },
+  { id: 'shake', cat: 'Drinks', name: 'Chocolate Milkshake', price: 5, h: -20, emo: '🥛', drink: true, al: ['dairy'], desc: 'Milk, ice cream, chocolate and whipped cream.' },
+  { id: 'fruit', cat: 'Desserts', name: 'Fresh Fruit Salad', price: 3.5, h: 15, emo: '🍓', al: [], desc: 'Melon, strawberries, kiwi and grapes.' },
+  { id: 'yog', cat: 'Desserts', name: 'Frozen Yogurt', price: 4, h: 5, emo: '🍦', al: ['dairy'], desc: 'Natural yogurt with fresh berries.' },
+  { id: 'cake', cat: 'Desserts', name: 'Chocolate Fudge Cake', price: 5.5, h: -15, emo: '🍰', al: ['dairy', 'gluten'], desc: 'A big slice made with flour, butter and chocolate.' },
+  { id: 'cookie', cat: 'Desserts', name: 'Almond Cookie', price: 2.5, h: -5, emo: '🍪', al: ['nuts', 'gluten'], desc: 'A crunchy cookie made with almonds and wheat flour.' }
 ];
+let MENU = MENU_BASE;
 const byId = id => MENU.find(m => m.id === id);
 const TAX = 0.08;
-function makeFood(item) {
-  const g = new THREE.Group();
-  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.42, 0.07, 20), M('#fafafa')); g.add(plate);
-  const [a, b] = item.food || ['#bdbdbd', '#9e9e9e'];
-  const f1 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.34), M(a)); f1.position.set(-0.08, 0.12, 0); g.add(f1);
-  const f2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.22), M(b)); f2.position.set(0.18, 0.1, 0.08); g.add(f2);
-  g.userData.food = [f1, f2]; return g;
-}
+const ALLERGY = {
+  nuts: { word: 'nuts', say: 'I\'m allergic to nuts', card: 'nuts (peanuts, walnuts, almonds…)', es: 'frutos secos' },
+  dairy: { word: 'dairy', say: 'I\'m allergic to dairy', card: 'dairy products (milk, cheese, butter, cream, yogurt…)', es: 'lácteos' },
+  gluten: { word: 'gluten', say: 'I can\'t eat gluten', card: 'gluten (wheat, bread, flour, pasta…)', es: 'gluten' }
+};
+const HOSTS = [
+  { name: 'Emma', look: { skin: '#e0ac69', shirt: '#7b1fa2', pants: '#263238', hair: '#3e2723', long: true, sleeves: true }, voice: { pitch: 1.25 }, badge: '#7b1fa2' },
+  { name: 'Olivia', look: { skin: '#ffdbac', shirt: '#00897b', pants: '#37474f', hair: '#d4a017', long: true, sleeves: true }, voice: { pitch: 1.3 }, badge: '#00796b' },
+  { name: 'Daniel', look: { skin: '#8d5524', shirt: '#3949ab', pants: '#212121', hair: '#1b1b1b', sleeves: true, tie: '#c62828' }, voice: { pitch: 0.9 }, badge: '#3949ab' }
+];
+const WAITERS = [
+  { name: 'Carlos', look: { skin: '#c68642', hair: '#1b1b1b' }, voice: { pitch: 0.95 } },
+  { name: 'Jake', look: { skin: '#ffdbac', hair: '#a1662f' }, voice: { pitch: 1.05 } },
+  { name: 'Sofia', look: { skin: '#e0ac69', hair: '#3e2723', long: true }, voice: { pitch: 1.3 } },
+  { name: 'Aisha', look: { skin: '#5c3a1e', hair: '#1b1b1b', long: true }, voice: { pitch: 1.2 } }
+];
 
 const SCEN = {};
 SCEN.diner = {
-  title: 'Healthy Bites Diner', budget: 20, cardTitle: 'Your character card',
-  vocab: [['A table for one, please.', 'Una mesa para uno, por favor.'], ['What do you recommend?', '¿Qué me recomienda?'], ['I\'d like the…, please.', 'Quisiera el/la…, por favor.'], ['I\'m allergic to nuts.', 'Soy alérgico/a a los frutos secos.'], ['Would you mind…?', '¿Le importaría…?'], ['keep it down', 'hacer menos ruido'], ['I\'m afraid this isn\'t what I ordered.', 'Me temo que esto no es lo que pedí.'], ['take $3 off the bill', 'descontar 3 $ de la cuenta'], ['Could I have the check, please?', '¿Me trae la cuenta, por favor?'], ['tip / tax', 'propina / impuesto'], ['You too!', '¡Igualmente!']],
+  title: 'Healthy Bites Diner', cardTitle: 'Your character card',
+  vocab: [['A table for one, please.', 'Una mesa para uno, por favor.'], ['What do you recommend?', '¿Qué me recomienda?'], ['I\'d like… / Could I have…?', 'Quisiera… / ¿Me podría traer…?'], ['I\'m allergic to… / I can\'t eat…', 'Soy alérgico/a a… / No puedo comer…'], ['Would you mind…?', '¿Le importaría…?'], ['keep it down / speak more quietly', 'hacer menos ruido / hablar más bajo'], ['I\'m afraid this isn\'t what I ordered.', 'Me temo que esto no es lo que pedí.'], ['Could you heat it up, please?', '¿Podría calentarlo, por favor?'], ['napkins / on the house', 'servilletas / invita la casa'], ['There\'s a mistake on the check.', 'Hay un error en la cuenta.'], ['Could I have the check, please?', '¿Me trae la cuenta, por favor?'], ['tip / tax', 'propina / impuesto'], ['You too!', '¡Igualmente!']],
   board() { return [['Cash', money(G.money)], ['English', engPct() + '%'], ['Manners', G.manners]]; },
   card() {
-    return `<div class="cs">You are <b>${escH(profile.name)}</b>, 14 years old. You have just finished football practice and you are <b>really hungry</b>.</div>
-      <div class="cs">🎯 <b>Goal:</b> a healthy, balanced dinner: a main dish, a drink and maybe a side or dessert. Choose food that is good for you.</div>
-      <div class="cs">💵 <b>Budget:</b> $20.00 in total. Remember: in the USA, an 8% sales tax is added to the bill, and people usually leave a 15–20% tip.</div>
-      <div class="cs">⚠️ <b>Allergy:</b> you are allergic to <b>nuts</b> (peanuts, walnuts, almonds…). Read the menu carefully!</div>
-      <div class="cs">🗣 Be polite. People react to what you say and how you say it.</div>`;
+    const s = G.s, a = ALLERGY[s.allergy];
+    return `<div class="cs">You are <b>${escH(profile.name)}</b>, 14 years old. You have just ${s.reason} and you are <b>really hungry</b>.</div>
+      <div class="cs">🎯 <b>Goal:</b> a healthy, balanced dinner: a main dish, a drink and maybe a side or dessert.${s.veg ? ' You are <b>vegetarian</b>: no meat and no fish!' : ''}</div>
+      <div class="cs">💵 <b>Budget:</b> ${money(s.budget)} in total. In the USA an 8% sales tax is added to the bill, and people usually leave a 15–20% tip.</div>
+      <div class="cs">⚠️ <b>Allergy:</b> you can't eat <b>${a.card}</b>. Read the menu descriptions carefully!</div>
+      <div class="cs">🎲 Every game is different: new menu prices, new people and new surprises.</div>`;
   },
   build: buildDiner
 };
 
 function buildDiner() {
-  const s = G.s = { phase: 'enter', order: [], main: null, declared: false, lied: false, wrong: null, acceptedWrong: false, discount: 0, reaction: false, tipPct: null, paidShort: false };
+  const s = G.s = {
+    phase: 'enter', order: [], main: null, declared: false, wrong: null, acceptedWrong: false, discount: 0, reaction: false, tipPct: null, paidShort: false,
+    budget: pick1([18, 20, 22, 25]), allergy: pick1(Object.keys(ALLERGY)), veg: Math.random() < 0.4,
+    reason: pick1(['finished football practice', 'had a long day at school', 'come back from swimming lessons', 'spent all afternoon at the skate park', 'finished a basketball match']),
+    ev: {}, drinkFree: false, coldDone: false, ateCold: false, extra: null, extraRemoved: false, overpaid: 0, falseClaim: false, dietBroken: false
+  };
+  sample(['A', 'B', 'C', 'D'], 3).forEach(k => s.ev[k] = true);
+  if (s.ev.A) s.ev.A = pick1(['kid', 'phone', 'spill']);
+  G.money = s.budget;
+  MENU = MENU_BASE.map(m => Object.assign({}, m, { price: m.price ? Math.max(1.5, m.price + pick1([-0.5, 0, 0, 0.5, 1])) : 0 }));
+  const AL = ALLERGY[s.allergy];
+  const hasAl = i => i.al && i.al.includes(s.allergy);
+  const hostP = pick1(HOSTS), waitP = pick1(WAITERS);
+  const HN = hostP.name, WN = waitP.name;
+
   W.bounds = { minX: -40, maxX: 40, minZ: -30, maxZ: 40 };
   ground('#5a9e4b');
-  // street & parking
   part(0, 0, 18, 80, 0.2, 10, '#c9ccd1', {});
   part(0, 0, 30, 80, 0.04, 12, '#3c3f44', { solid: false });
   for (let x = -36; x < 40; x += 8) part(x, 0.05, 30, 4, 0.02, 0.4, '#f5f5f5', { solid: false, shadow: false });
-  // car
-  part(14, 0.2, 27.5, 5, 1.3, 2.6, '#1e88e5'); part(14.3, 1.5, 27.5, 3, 0.9, 2.4, '#90caf9', { solid: false });
+  part(14, 0.2, 27.5, 5, 1.3, 2.6, pick1(['#1e88e5', '#e53935', '#43a047']), {}); part(14.3, 1.5, 27.5, 3, 0.9, 2.4, '#bbdefb', { solid: false });
   part(-18, 0.2, 32, 5, 1.3, 2.6, '#fdd835'); part(-18.3, 1.5, 32, 3, 0.9, 2.4, '#fff59d', { solid: false });
-  // trees
   [[-26, 14], [26, 14], [-30, -10], [30, -6], [24, -20], [-24, -22]].forEach(([x, z]) => { part(x, 0, z, 0.8, 3, 0.8, '#6d4c41'); part(x, 3, z, 3.2, 3, 3.2, '#2e7d32', { solid: false }); });
-  // building shell
   const WALL = '#f2e8d8', H = 6;
   const wall = (x, z, w, d) => part(x, 0, z, w, H, d, WALL, { occlude: true });
   wall(0, -12, 30, 0.6); wall(-15, 0, 0.6, 24.6); wall(15, 0, 0.6, 24.6);
@@ -1207,99 +1244,96 @@ function buildDiner() {
   const roof = part(0, H, 0, 31.4, 0.6, 25.4, '#b71c1c', { solid: false });
   W.hides.push({ mesh: roof, minX: -15, maxX: 15, minZ: -12, maxZ: 12 });
   sign('HEALTHY BITES\nDINER', 0, 8.2, 12.25, 11, 3.2, 0, { bg: '#c62828', fg: '#fff8e1', border: '#fff8e1' });
-  // awning
   part(0, 4, 13.4, 6, 0.25, 2.4, '#ef5350', { solid: false });
-  // floor
   const fl = new THREE.Mesh(new THREE.PlaneGeometry(29.4, 23.4), new THREE.MeshLambertMaterial({ map: checkerTex('#f5f5f5', '#263238', 4, 7, 6) }));
   fl.rotation.x = -Math.PI / 2; fl.position.y = 0.02; fl.receiveShadow = true; W.scene.add(fl);
-  // host stand
   part(0, 0, 8.5, 2.2, 1.3, 0.8, '#6d4c41');
   sign('PLEASE WAIT\nTO BE SEATED', 0, 0.75, 8.92, 1.9, 0.75, 0, { bg: '#fff8e1', fg: '#3e2723' });
-  // tables
   const table = (x, z, top = '#fafafa') => {
     part(x, 0.95, z, 2.4, 0.2, 1.6, top); part(x, 0, z, 0.35, 0.95, 0.35, '#555', { solid: false });
     [1, -1].forEach(sd => { part(x, 0, z + sd * 1.35, 1.1, 0.55, 0.9, '#d32f2f'); part(x, 0.55, z + sd * 1.78, 1.1, 1.15, 0.16, '#b71c1c'); });
   };
   table(-7, 3); table(-11.2, 3); table(7, 3); table(7, -3.5); table(-7, -3.5);
   sign('TABLE 4', -7, 1.3, 3.84, 0.8, 0.28, 0, { bg: '#2e7d32', fg: '#fff' });
-  // counter + kitchen
   part(4, 0, -8.2, 16, 1.2, 1.2, '#90a4ae'); part(4, 1.2, -8.2, 16.2, 0.12, 1.4, '#eceff1', { solid: false });
   part(8, 0, -11, 3.2, 1, 1.3, '#424242'); part(1, 0, -11.1, 3, 1.4, 1.1, '#b0bec5');
   sign('KITCHEN', -1.5, 2.6, -11.68, 3, 0.8, 0, { bg: '#37474f', fg: '#fff' });
-  // menu board
-  const board = canvasTex(1024, 380, (g) => {
-    g.fillStyle = '#1f2a24'; g.fillRect(0, 0, 1024, 380); g.strokeStyle = '#8d6e63'; g.lineWidth = 16; g.strokeRect(0, 0, 1024, 380);
-    g.fillStyle = '#fff8e1'; g.font = '900 42px Montserrat, Arial'; g.textAlign = 'center'; g.fillText('TODAY\'S MENU', 512, 54);
-    g.font = '700 22px Montserrat, Arial'; g.textAlign = 'left';
-    const mains = MENU.filter(m => m.cat === 'Mains' || m.cat === 'Starters'), rest = MENU.filter(m => !(m.cat === 'Mains' || m.cat === 'Starters'));
-    const col = (list, x) => list.forEach((m, i) => { const y = 92 + i * 25; g.fillStyle = '#fff8e1'; g.fillText(m.name, x, y); g.fillStyle = '#ffd54f'; g.textAlign = 'right'; g.fillText(m.price ? '$' + m.price.toFixed(2) : 'FREE', x + 420, y); g.textAlign = 'left'; });
-    col(mains, 50); col(rest.slice(0, 11), 540);
+  const board = canvasTex(1024, 420, (g) => {
+    g.fillStyle = '#1f2a24'; g.fillRect(0, 0, 1024, 420); g.strokeStyle = '#8d6e63'; g.lineWidth = 16; g.strokeRect(0, 0, 1024, 420);
+    g.fillStyle = '#fff8e1'; g.font = '900 40px Montserrat, Arial'; g.textAlign = 'center'; g.fillText('TODAY\'S MENU', 512, 52);
+    g.font = '700 20px Montserrat, Arial';
+    const half = Math.ceil(MENU.length / 2);
+    const col = (list, x) => list.forEach((m, i) => { const y = 88 + i * 29; g.textAlign = 'left'; g.fillStyle = '#fff8e1'; g.fillText(m.name, x, y); g.fillStyle = '#ffd54f'; g.textAlign = 'right'; g.fillText(m.price ? '$' + m.price.toFixed(2) : 'FREE', x + 430, y); });
+    col(MENU.slice(0, half), 40); col(MENU.slice(half), 545);
   });
-  plane(4, 4.3, -11.66, 9, 3.34, 0, board);
-  sign('EAT THE RAINBOW', -14.66, 4.2, -4, 5, 1, Math.PI / 2, { bg: '#fff3e0', fg: '#e65100' });
+  plane(4, 4.3, -11.66, 9, 3.7, 0, board);
+  sign(pick1(['EAT THE RAINBOW', 'FRESH EVERY DAY', 'VEGGIES = POWER']), -14.66, 4.2, -4, 5, 1, Math.PI / 2, { bg: '#fff3e0', fg: '#e65100' });
   [[-13.8, 10.8], [13.8, 10.8], [13.8, -10.8]].forEach(([x, z]) => { part(x, 0, z, 0.9, 0.8, 0.9, '#795548'); part(x, 0.8, z, 1.1, 1.3, 1.1, '#43a047', { solid: false }); });
 
   // ---- NPCs
-  const host = npc('Emma (Host)', { skin: '#e0ac69', shirt: '#7b1fa2', pants: '#263238', hair: '#3e2723', long: true, sleeves: true }, 0, 7.2, 0, { color: '#ce93d8', voice: { pitch: 1.25, rate: 1 } });
-  const waiter = npc('Carlos (Waiter)', { skin: '#c68642', shirt: '#fafafa', pants: '#212121', hair: '#1b1b1b', apron: '#212121', sleeves: true, shoes: true }, 0, -6.6, 0, { color: '#80deea', voice: { pitch: 0.95, rate: 1 }, speed: 6.5 });
+  const host = npc(`${HN} (Host)`, hostP.look, 0, 7.2, 0, { color: '#ce93d8', voice: hostP.voice });
+  const waiter = npc(`${WN} (Waiter)`, Object.assign({ shirt: '#fafafa', pants: '#212121', apron: '#212121', sleeves: true, shoes: true }, waitP.look), 0, -6.6, 0, { color: '#80deea', voice: waitP.voice, speed: 6.5 });
   const dad = npc('Mr. Johnson', { skin: '#f1c27d', shirt: '#2e7d32', pants: '#5d4037', hair: '#8d6e63', sleeves: true }, 0, 0, 0, { color: '#a5d6a7', voice: { pitch: 0.8, rate: 0.95 } });
   const kid = npc('Timmy', { skin: '#f1c27d', shirt: '#ff9800', pants: '#1565c0', hair: '#d4a017' }, 0, 0, 0, { scale: 0.72, color: '#ffcc80', voice: { pitch: 1.6, rate: 1.1 }, speed: 7 });
-  const chef = npc('Marco (Chef)', { skin: '#ffdbac', shirt: '#ffffff', pants: '#424242', chef: true, sleeves: true }, 4, -10, 0, { color: '#ffab91' });
+  npc('Marco (Chef)', { skin: '#ffdbac', shirt: '#ffffff', pants: '#424242', chef: true, sleeves: true }, 4, -10, 0, { color: '#ffab91' });
   const lady = npc('Mrs. Lee', { skin: '#ffdbac', shirt: '#ec407a', pants: '#37474f', hair: '#cfd8dc', sleeves: true }, 0, 0, 0, { color: '#f48fb1', voice: { pitch: 1.3, rate: 0.9 } });
-  host.badge = '#7b1fa2'; waiter.badge = '#00838f'; dad.badge = '#2e7d32'; kid.badge = '#ef6c00'; lady.badge = '#ad1457';
+  host.badge = hostP.badge; waiter.badge = '#00838f'; dad.badge = '#2e7d32'; kid.badge = '#ef6c00'; lady.badge = '#ad1457';
   sitAv(dad.av, -11.2, 4.35, Math.PI); sitAv(kid.av, -11.2, 1.65, 0); sitAv(lady.av, 7, -4.85, Math.PI);
-  const ladyLines = ['This soup is lovely!', 'Excuse me, could I have some more water, please?', 'Mmm, the fruit salad here is so fresh.', 'Carlos, could you bring me a napkin, please?'];
-  let ladyT = 6;
+  const ladyLines = ['This soup is lovely!', 'Excuse me, could I have some more water, please?', 'Mmm, the fruit salad here is so fresh.', `${WN}, could you bring me a napkin, please?`, 'I always ask about allergies. Better safe than sorry!'];
+  let ladyT = 6, plateMesh = null, kidAngle = 0, kidT = 0, phoneT = 0, puddle = null;
   const WAIT_IDLE = [0, -6.6], AT_TABLE = [-5.15, 4.6];
   const toTable = [[-3.6, -0.4], AT_TABLE], toKitchen = [[-3.6, -0.4], WAIT_IDLE];
-  let plateMesh = null, kidAngle = 0, kidT = 0;
   const KID_LINES = ['VROOOOM! 🚗', 'I\'m a dinosaur! RAAAWR!', 'Catch me, Daddy!', 'Weeeeee!', 'BEEP BEEP!', 'I don\'t want broccoli!'];
+  const PHONE_LINES = ['WHAT?! NO, I SAID TUESDAY!', 'HELLO? CAN YOU HEAR ME NOW?', 'HAHAHA! NO WAY!', 'YES, STEVE, THE MEETING IS AT TEN!', 'SORRY, YOU\'RE BREAKING UP!'];
 
   spawnPlayer(0, 19, Math.PI, 0);
-  G.obj = [
-    { id: 'host', text: 'Ask the host for a table' },
-    { id: 'sit', text: 'Sit down at your table' },
-    { id: 'order', text: 'Order a healthy meal (main dish + drink)' },
-    { id: 'noise', text: 'Ask the noisy family to keep it down, politely', secret: true },
-    { id: 'dish', text: 'Check your food: is it what you ordered?', secret: true },
-    { id: 'eat', text: 'Eat your meal' },
-    { id: 'bill', text: 'Ask for the check and leave a fair tip' },
-    { id: 'bye', text: 'Say goodbye to the host' }
-  ];
+  G.obj = [{ id: 'host', text: 'Ask the host for a table' }, { id: 'sit', text: 'Sit down at your table' }, { id: 'order', text: s.veg ? 'Order a healthy vegetarian meal (main dish + drink)' : 'Order a healthy meal (main dish + drink)' }];
+  if (s.ev.A) G.obj.push({ id: 'evA', secret: true, text: { kid: 'Ask the noisy family to keep it down, politely', phone: 'Ask the man on the phone to speak more quietly', spill: 'Stay calm when the waiter spills your drink' }[s.ev.A] });
+  if (s.ev.B) G.obj.push({ id: 'dish', secret: true, text: 'Check your food: is it what you ordered?' });
+  G.obj.push({ id: 'eat', text: 'Eat your meal' });
+  if (s.ev.C) G.obj.push({ id: 'cold', secret: true, text: 'Send back your cold food, politely' });
+  G.obj.push({ id: 'bill', text: 'Ask for the check and leave a fair tip' });
+  if (s.ev.D) G.obj.push({ id: 'check', secret: true, text: 'Find the mistake on the check' });
+  G.obj.push({ id: 'bye', text: 'Say goodbye to the host' });
 
   W.update = (dt) => {
     ladyT -= dt; if (ladyT < 0) { ladyT = 14 + Math.random() * 8; if (Math.hypot(P.pos.x - 7, P.pos.z + 4) < 16) say(lady, pick1(ladyLines)); }
     if (s.kidRun) {
       kidAngle += dt * 2.6; kidT -= dt;
       kid.pos.set(-9.1 + Math.cos(kidAngle) * 3.4, 0, 3 + Math.sin(kidAngle) * 2.9);
-      kid.av.rotation.y = Math.atan2(-Math.sin(kidAngle), Math.cos(kidAngle)); kid.moving = true; animAv(kid.av, true, W.t * 1.4, dt);
+      kid.av.rotation.y = Math.atan2(-Math.sin(kidAngle), Math.cos(kidAngle)); animAv(kid.av, true, W.t * 1.4, dt);
       if (kidT < 0) { kidT = 2.6; say(kid, pick1(KID_LINES)); }
     }
+    if (s.phoneLoud) { phoneT -= dt; if (phoneT < 0) { phoneT = 2.8; say(dad, pick1(PHONE_LINES)); } }
   };
 
-  // ---- interactions
-  inter({ obj: 'Emma (Host)', label: 'Talk', at: () => host.pos, r: 4, when: () => s.phase === 'enter', act: hostGreet });
-  inter({ obj: 'Emma (Host)', label: 'Say goodbye', at: () => host.pos, r: 4, when: () => s.phase === 'leave', act: hostBye });
+  inter({ obj: `${HN} (Host)`, label: 'Talk', at: () => host.pos, r: 4, when: () => s.phase === 'enter', act: hostGreet });
+  inter({ obj: `${HN} (Host)`, label: 'Say goodbye', at: () => host.pos, r: 4, when: () => s.phase === 'leave', act: hostBye });
   inter({ obj: 'Table 4', label: 'Sit down', at: () => ({ x: -7, y: 0, z: 4.4 }), r: 2.6, h: 2.6, when: () => s.phase === 'seat', act: sitDown });
   inter({ obj: 'Mr. Johnson', label: 'Talk', at: () => dad.pos, r: 6, when: () => s.phase === 'noise', act: dadTalk });
   inter({ obj: 'Your meal', label: 'Eat', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'eat', act: eat });
-  inter({ obj: 'Carlos (Waiter)', label: 'Call the waiter 🛎', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'bill', act: callWaiter });
-  inter({ obj: 'Mrs. Lee', label: 'Say hello', at: () => lady.pos, r: 3.5, when: () => true, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
+  inter({ obj: `${WN} (Waiter)`, label: 'Call the waiter 🛎', at: () => ({ x: -7, y: 0, z: 3.4 }), r: 3, h: 2, when: () => s.phase === 'bill', act: callWaiter });
+  inter({ obj: 'Mrs. Lee', label: 'Say hello', at: () => lady.pos, r: 3.5, act: () => choice(lady, 'Oh, hello dear! Are you enjoying your evening?', '¡Oh, hola, cariño! ¿Estás disfrutando de la noche?', [{ t: 'Yes, thank you! Enjoy your meal!', fn: () => say(lady, 'Thank you, sweetheart. You too!') }, { t: 'Yes! What are you eating? It looks good.', fn: () => say(lady, 'The vegetable soup. It\'s healthy AND cheap!') }]) });
 
   function hostGreet() {
-    ask(host, 'Hi there, welcome to Healthy Bites! How many people are in your party?', '¡Hola, bienvenido/a a Healthy Bites! ¿Cuántas personas sois?', [
-      { t: 'Just me. A table for one, please.', kind: 'ok' },
+    const g = pick1([['Hi there, welcome to Healthy Bites! How many people are in your party?', '¡Hola, bienvenido/a a Healthy Bites! ¿Cuántas personas sois?'], ['Good evening! Welcome to Healthy Bites. A table for how many?', '¡Buenas noches! Bienvenido/a a Healthy Bites. ¿Mesa para cuántos?'], ['Hello and welcome! How many are you tonight?', '¡Hola y bienvenido/a! ¿Cuántos sois esta noche?']]);
+    ask(host, g[0], g[1], phr(['Just me. A table for one, please.', 'Hi! A table for one, please.', 'Good evening. Just one, please.'], [
       { t: 'I want a table. Now.', kind: 'rude', tip: 'Too direct! Use "please" and a softer phrase: "A table for one, please."' },
-      { t: 'We are one person.', kind: 'grammar', tip: '"We" means more than one. Say "Just me" or "A table for one, please."' }
-    ], () => ask(host, 'Great! Would you like to sit by the window or near the kitchen?', '¡Genial! ¿Prefieres sentarte junto a la ventana o cerca de la cocina?', [
-      { t: 'By the window, please.', kind: 'ok' },
-      { t: 'Near of the window, please.', kind: 'grammar', tip: '"Near" doesn\'t need "of": near the window. Or better: by the window.' },
-      { t: 'In the window, please.', kind: 'grammar', tip: '"Junto a la ventana" = by the window. "In the window" means inside the glass!' }
-    ], () => {
-      line(host, 'Perfect. You\'re at table 4, next to the window. Just follow the green arrow. Your waiter will be with you shortly!', 'Perfecto. Estás en la mesa 4, junto a la ventana. Sigue la flecha verde. Tu camarero vendrá enseguida.', () => {
+      { t: 'We are one person.', kind: 'grammar', tip: '"We" means more than one. Say "Just me" or "A table for one, please."' },
+      { t: 'I am one.', kind: 'grammar', tip: 'Say "Just me" or "Just one, please."' },
+      { t: 'A table for one person, by favour.', kind: 'grammar', tip: '"Por favor" = please. "By favour" is not English!' },
+      { t: 'Give me a table for one.', kind: 'rude', tip: '"Give me" sounds bossy. Try "Could I have a table for one, please?"' }
+    ]), () => {
+      const q = pick1([['Great! Would you like to sit by the window or near the kitchen?', '¡Genial! ¿Prefieres sentarte junto a la ventana o cerca de la cocina?'], ['Perfect. Would you prefer a table by the window or one near the bar?', 'Perfecto. ¿Prefieres una mesa junto a la ventana o cerca de la barra?']]);
+      ask(host, q[0], q[1], phr(['By the window, please.', 'A table by the window would be great, thanks.', 'The window, please. Thank you!'], [
+        { t: 'Near of the window, please.', kind: 'grammar', tip: '"Near" doesn\'t need "of": near the window. Or better: by the window.' },
+        { t: 'In the window, please.', kind: 'grammar', tip: '"Junto a la ventana" = by the window. "In the window" means inside the glass!' },
+        { t: 'Next of the window, please.', kind: 'grammar', tip: 'We say "next TO the window".' },
+        { t: 'Window. Whatever.', kind: 'rude', tip: 'Be friendly: "By the window, please. Thank you!"' }
+      ]), () => line(host, `Perfect. You're at table 4, next to the window. Just follow the green arrow. ${WN} will be your waiter tonight!`, `Perfecto. Estás en la mesa 4, junto a la ventana. Sigue la flecha verde. ${WN} será tu camarero/a esta noche.`, () => {
         complete('host'); s.phase = 'seat'; setMarker(-7, 3.4, 4.4);
-      });
-    }));
+      }));
+    });
   }
   function sitDown() {
     hideMarker(); s.phase = 'wait'; complete('sit');
@@ -1307,12 +1341,16 @@ function buildDiner() {
     later(1.2, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); waiterHello(); }));
   }
   function waiterHello() {
-    ask(waiter, 'Hi, I\'m Carlos and I\'ll be your server tonight. Here\'s the menu. Take your time!', 'Hola, soy Carlos y seré tu camarero esta noche. Aquí tienes la carta. ¡Tómate tu tiempo!', [
-      { t: 'Thanks, Carlos! What do you recommend?', kind: 'ok', fn: () => line(waiter, 'The salmon is excellent today. And the Thai noodles are really popular!', 'El salmón está excelente hoy. ¡Y los fideos tailandeses son muy populares!', openMenu, 'Read the menu') },
-      { t: 'Thank you. Could I have a minute to look at it?', kind: 'ok', fn: () => line(waiter, 'Of course! Take all the time you need.', '¡Claro! Tómate el tiempo que necesites.', openMenu, 'Read the menu') },
+    const recs = sample(MENU.filter(m => m.cat === 'Mains'), 2);
+    const rec = () => line(waiter, `The ${recs[0].name.toLowerCase()} is excellent today. And the ${recs[1].name.toLowerCase()} is really popular!`, `El plato "${recs[0].name}" está excelente hoy. ¡Y "${recs[1].name}" es muy popular!`, openMenu, 'Read the menu');
+    const minute = () => line(waiter, 'Of course! Take all the time you need.', '¡Claro! Tómate el tiempo que necesites.', openMenu, 'Read the menu');
+    const g = pick1([[`Hi, I'm ${WN} and I'll be your server tonight. Here's the menu. Take your time!`, `Hola, soy ${WN} y seré tu camarero/a esta noche. Aquí tienes la carta. ¡Tómate tu tiempo!`], [`Good evening! My name's ${WN}. Here's our menu for tonight.`, `¡Buenas noches! Me llamo ${WN}. Aquí tienes la carta de esta noche.`]]);
+    ask(waiter, g[0], g[1], phr([{ t: `Thanks, ${WN}! What do you recommend?`, fn: rec }, { t: 'Thank you! Could I have a minute to look at it?', fn: minute }, { t: 'Great, thanks. What\'s good here?', fn: rec }, { t: 'Thanks! Could you give me a couple of minutes?', fn: minute }], [
       { t: 'Thanks. What do you recommend me?', kind: 'grammar', tip: '"Recommend me" is not natural. Say "What do you recommend?"' },
-      { t: 'Gracias, tío.', kind: 'grammar', tip: 'Speak English! Try "Thank you!" or "Thanks!"' }
-    ]);
+      { t: 'Gracias, tío.', kind: 'grammar', tip: 'Speak English! Try "Thank you!" or "Thanks!"' },
+      { t: 'What is good for eat here?', kind: 'grammar', tip: 'Use "to + verb": "What\'s good to eat here?"' },
+      { t: 'Thanks. Which plate do you recommend?', kind: 'grammar', tip: 'False friend! "Plato" (food) = dish. A plate is what the food is served on.' }
+    ]));
   }
   function openMenu() {
     const sel = new Set(s.order.map(i => i.id));
@@ -1349,75 +1387,132 @@ function buildDiner() {
     s.main = s.order.find(i => i.cat === 'Mains');
     const list = orderList();
     G.inv = s.order.map(i => ({ emoji: i.emo, label: i.name, info: () => `${i.desc} ${money(i.price)}` })); renderHotbar();
-    ask(waiter, 'Are you ready to order?', '¿Estás listo/a para pedir?', [
-      { t: `Yes, I'd like ${list}, please.`, kind: 'ok' },
+    const g = pick1([['Are you ready to order?', '¿Estás listo/a para pedir?'], ['So, what can I get you?', 'Bueno, ¿qué te pongo?'], ['Have you decided?', '¿Ya lo has decidido?']]);
+    ask(waiter, g[0], g[1], phr([`Yes, I'd like ${list}, please.`, `Yes. Could I have ${list}, please?`, `Yes, can I get ${list}, please?`], [
       { t: `Yes, I would like to ${list}.`, kind: 'grammar', tip: 'After "I would like" use a noun directly: "I\'d like the salad". "I\'d like to" needs a verb: "I\'d like to order…"' },
-      { t: `Give me ${list}.`, kind: 'rude', tip: '"Give me" sounds like an order. Use "I\'d like…, please" or "Could I have…?"' }
-    ], allergyQ);
+      { t: `Give me ${list}.`, kind: 'rude', tip: '"Give me" sounds like an order. Use "I\'d like…, please" or "Could I have…?"' },
+      { t: `I want that you bring me ${list}.`, kind: 'grammar', tip: '"Quiero que…" is not "I want that…" in English. Say "Could you bring me…?"' },
+      { t: `Yes, for me ${list}, and fast.`, kind: 'rude', tip: '"And fast" is rude. End with "please".' }
+    ]), allergyQ);
   }
   function allergyQ() {
-    ask(waiter, 'Great choice! Do you have any food allergies I should know about?', '¡Buena elección! ¿Tienes alguna alergia alimentaria que deba saber?', [
-      { t: 'Yes, I\'m allergic to nuts. Is there anything with nuts in my order?', kind: 'ok', fn: () => { s.declared = true; allergyCheck(); } },
-      { t: 'No, I don\'t have any allergies.', kind: 'fact', fn: () => { s.lied = true; waiterLeaves('Perfect! I\'ll put your order in right away.'); } },
-      { t: 'Yes, I\'m allergic of nuts.', kind: 'grammar', tip: 'We say "allergic TO something": I\'m allergic to nuts.' },
-      { t: 'Yes, I have allergy with the nuts.', kind: 'grammar', tip: 'Say "I\'m allergic to nuts" or "I have a nut allergy".' }
-    ]);
+    const g = pick1([['Great choice! Do you have any food allergies I should know about?', '¡Buena elección! ¿Tienes alguna alergia alimentaria que deba saber?'], ['Perfect. Any allergies or special requests?', 'Perfecto. ¿Alguna alergia o petición especial?']]);
+    const w = AL.word;
+    ask(waiter, g[0], g[1], phr([
+      { t: `Yes, ${AL.say}. Is there anything with ${w} in my order?`, fn: () => { s.declared = true; allergyCheck(); } },
+      { t: `Yes, actually. ${cap(AL.say)}. Could you check my order, please?`, fn: () => { s.declared = true; allergyCheck(); } }
+    ], [
+      { t: `Yes, I'm allergic of ${w}.`, kind: 'grammar', tip: 'We say "allergic TO something".' },
+      { t: `Yes, I have allergy with the ${w}.`, kind: 'grammar', tip: `Say "I'm allergic to ${w}" or "I have a ${w} allergy".` },
+      { t: `Yes, I am intolerant at ${w}.`, kind: 'grammar', tip: `We say "intolerant TO": "I'm intolerant to ${w}".` }
+    ]).concat([{ t: pick1(['No, I don\'t have any allergies.', 'No, no allergies, thanks.']), kind: 'fact', fn: () => { s.lied = true; waiterLeaves('Perfect! I\'ll put your order in right away.'); } }]));
   }
   function allergyCheck() {
-    const nut = s.order.filter(i => i.nuts);
-    if (nut.length) {
-      nut.forEach(i => i.safe = true);
-      const names = nut.map(i => 'the ' + i.name.toLowerCase()).join(' and ');
-      line(waiter, `Good thing you told me! ${names[0].toUpperCase() + names.slice(1)} ${nut.length > 1 ? 'have' : 'has'} nuts. I'll ask the chef to make ${nut.length > 1 ? 'them' : 'it'} without nuts.`, `¡Menos mal que me lo has dicho! ${nut.length > 1 ? 'Llevan' : 'Lleva'} frutos secos. Le pediré al chef que lo prepare sin frutos secos.`, () => waiterLeaves('I\'ll put your order in right away.'));
-    } else line(waiter, 'No problem. Nothing you ordered has nuts, but I\'ll tell the chef anyway.', 'Sin problema. Nada de lo que has pedido lleva frutos secos, pero se lo diré al chef igualmente.', () => waiterLeaves('Your food will be ready soon!'));
+    const bad = s.order.filter(hasAl);
+    if (bad.length) {
+      bad.forEach(i => i.safe = true);
+      const names = bad.map(i => 'the ' + i.name.toLowerCase()).join(' and ');
+      line(waiter, `Good thing you told me! ${cap(names)} ${bad.length > 1 ? 'have' : 'has'} ${w2(AL.word)}. I'll ask the chef to make a special version without ${AL.word}.`, `¡Menos mal que me lo has dicho! ${bad.length > 1 ? 'Llevan' : 'Lleva'} ${AL.es}. Le pediré al chef una versión especial sin ${AL.es}.`, () => waiterLeaves('I\'ll put your order in right away.'));
+    } else line(waiter, `No problem. Nothing you ordered has ${AL.word}, but I'll tell the chef anyway.`, `Sin problema. Nada de lo que has pedido lleva ${AL.es}, pero se lo diré al chef igualmente.`, () => waiterLeaves('Your food will be ready soon!'));
   }
+  function w2(w) { return w === 'dairy' ? 'dairy in it' : w === 'gluten' ? 'gluten in it' : 'nuts in it'; }
   function waiterLeaves(msg) {
     say(waiter, msg); complete('order'); s.phase = 'kitchen';
     walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
-    later(5, startNoise);
+    later(5, () => s.ev.A ? startA() : bringFood());
   }
-  function startNoise() {
-    reveal('noise'); s.phase = 'noise'; s.kidRun = true; kid.av.userData.seated = false; kid.pos.y = 0; setFace(P.av, 'wow');
-    notify('🔊 Uh-oh!', 'The little boy at the next table is running around your chair and shouting. Talk to his dad, Mr. Johnson.', 'warn');
-    chat('Timmy', 'VROOOOOM!!! 🚗💨', '#ffcc80');
+  /* ---- event A: kid / phone / spill */
+  function startA() {
+    reveal('evA');
+    if (s.ev.A === 'kid') {
+      s.phase = 'noise'; s.kidRun = true; kid.av.userData.seated = false; kid.pos.y = 0; setFace(P.av, 'wow');
+      notify('🔊 Uh-oh!', 'The little boy at the next table is running around your chair and shouting. Talk to his dad, Mr. Johnson.', 'warn');
+      chat('Timmy', 'VROOOOOM!!! 🚗💨', '#ffcc80');
+    } else if (s.ev.A === 'phone') {
+      s.phase = 'noise'; s.phoneLoud = true; dad.av.userData.phone = true; setFace(P.av, 'wow');
+      notify('📱 So loud!', 'The man at the next table is shouting into his phone. You can\'t even hear your own thoughts. Talk to him.', 'warn');
+    } else {
+      s.phase = 'spill';
+      const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.4, 12), M('#90caf9'));
+      glass.position.set(0, 1.6, 0.7); waiter.av.add(glass); waiter.av.userData.carry = true;
+      walkTo(waiter, toTable, () => {
+        waiter.av.remove(glass); waiter.av.userData.carry = false; faceTo(waiter, -7, 4.35); setFace(waiter.av, 'wow');
+        puddle = part(-7, 1.16, 3.4, 1.6, 0.02, 1, '#64b5f6', { solid: false, shadow: false });
+        notify('💦 Splash!', `${WN} tripped and spilled a drink all over your table!`, 'warn');
+        spillTalk();
+      });
+    }
   }
   function dadTalk() {
-    ask(dad, 'Hmm? Oh, hi there.', '¿Mmm? Ah, hola.', [
-      { t: 'Excuse me, sorry to bother you. Would you mind asking your son to keep it down a little?', kind: 'ok' },
+    const kidMode = s.ev.A === 'kid';
+    const okList = kidMode
+      ? ['Excuse me, sorry to bother you. Would you mind asking your son to keep it down a little?', 'Sorry to bother you, but could you ask your son to sit down, please? He\'s quite loud.']
+      : ['Excuse me, sorry to bother you, but would you mind speaking a bit more quietly?', 'Sorry to interrupt, but could you keep your voice down a little, please?'];
+    const bad = kidMode ? [
       { t: 'Hey! Your kid is SO annoying. Control him!', kind: 'rude', tip: 'Complain politely: "Excuse me, would you mind…?" or "Could you possibly…?"' },
-      { t: 'Excuse me, can you say to your son that he doesn\'t shout?', kind: 'grammar', tip: 'Use "ask/tell someone TO do something": "Could you ask your son not to shout?"' }
-    ], () => line(dad, 'Oh, I\'m so sorry! Timmy, come and sit down, please. And finish your broccoli!', '¡Oh, lo siento mucho! Timmy, ven a sentarte, por favor. ¡Y acábate el brócoli!', () => {
-      s.kidRun = false; setFace(P.av, 'smile');
-      walkTo(kid, [[-11.2, 1.65]], () => sitAv(kid.av, -11.2, 1.65, 0));
-      say(kid, 'Okaaaay, Daddy…');
-      complete('noise'); s.phase = 'kitchen2'; later(4, bringWrong);
-    }, 'No problem'));
+      { t: 'Excuse me, can you say to your son that he doesn\'t shout?', kind: 'grammar', tip: 'Use "ask/tell someone TO do something": "Could you ask your son not to shout?"' },
+      { t: 'Excuse me, your son is very noisy. Can you make him to be quiet?', kind: 'grammar', tip: '"Make someone do something" has no "to": make him be quiet. Better: "Could you ask him to be quiet?"' },
+      { t: 'Excuse me, could you say your son to be quiet?', kind: 'grammar', tip: 'We "tell" or "ask" someone to do something, not "say".' }
+    ] : [
+      { t: 'Hey! Nobody cares about your phone call!', kind: 'rude', tip: 'Start politely: "Sorry to interrupt, but…"' },
+      { t: 'Excuse me, can you speak more low?', kind: 'grammar', tip: 'Say "speak more quietly" or "keep your voice down".' },
+      { t: 'Excuse me, you can talk less loud?', kind: 'grammar', tip: 'Questions need inversion: "Could you talk more quietly?"' },
+      { t: 'Excuse me, can you speak with less volume?', kind: 'grammar', tip: 'Not natural. Say "Could you keep your voice down, please?"' }
+    ];
+    const g = kidMode ? ['Hmm? Oh, hi there.', '¿Mmm? Ah, hola.'] : ['…hold on, Steve. Yes? Can I help you?', '…espera, Steve. ¿Sí? ¿Te puedo ayudar?'];
+    ask(dad, g[0], g[1], phr(okList, bad), () => {
+      const r = kidMode ? ['Oh, I\'m so sorry! Timmy, come and sit down, please. And finish your broccoli!', '¡Oh, lo siento mucho! Timmy, ven a sentarte, por favor. ¡Y acábate el brócoli!'] : ['Oh! I\'m so sorry, I didn\'t realise I was so loud. Steve, I\'ll call you back later!', '¡Oh! Lo siento mucho, no me había dado cuenta de que hablaba tan alto. Steve, ¡luego te llamo!'];
+      line(dad, r[0], r[1], () => {
+        setFace(P.av, 'smile');
+        if (kidMode) { s.kidRun = false; walkTo(kid, [[-11.2, 1.65]], () => sitAv(kid.av, -11.2, 1.65, 0)); say(kid, 'Okaaaay, Daddy…'); }
+        else { s.phoneLoud = false; dad.av.userData.phone = false; }
+        complete('evA'); s.phase = 'kitchen2'; later(4, bringFood);
+      }, 'No problem');
+    });
   }
-  function carry(item) {
-    plateMesh = makeFood(item); plateMesh.position.set(0, 1.55, 0.7); waiter.av.add(plateMesh); waiter.av.userData.carry = true;
+  function spillTalk() {
+    const drink = s.order.find(i => i.drink);
+    ask(waiter, 'Oh no! I\'m so sorry! I\'m so clumsy today!', '¡Oh, no! ¡Lo siento muchísimo! ¡Qué torpe estoy hoy!', phr(['Don\'t worry, accidents happen! Could I have some napkins, please?', 'It\'s OK, no harm done. Could you bring me some napkins, please?'], [
+      { t: 'You\'re so clumsy! Look what you did!', kind: 'rude', tip: 'Stay calm: "Don\'t worry, accidents happen."' },
+      { t: 'No worry! Can you give me some servilletas?', kind: 'grammar', tip: 'Servilletas = napkins. And we say "Don\'t worry" or "No worries".' },
+      { t: 'Don\'t worry. Can you bring me a towel of paper?', kind: 'grammar', tip: 'In English the noun goes first: "a paper towel". Or simply "napkins".' }
+    ]), () => {
+      const free = drink && drink.price > 0;
+      line(waiter, free ? `Here you go. And your ${drink.name.toLowerCase()} is on the house tonight!` : 'Here you go. And I\'ll take $2 off your bill. Sorry again!', free ? '¡Aquí tienes! Y tu bebida corre a cuenta de la casa.' : 'Aquí tienes. Y te descontaré 2 $ de la cuenta. ¡Perdón otra vez!', () => {
+        if (free) s.drinkFree = true; else s.discount += 2;
+        if (puddle) { W.scene.remove(puddle); puddle = null; }
+        setFace(waiter.av, 'smile'); complete('evA');
+        walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'kitchen2'; later(4, bringFood);
+      }, 'Thanks!');
+    });
   }
-  function putDown() {
-    waiter.av.remove(plateMesh); waiter.av.userData.carry = false;
-    plateMesh.position.set(-7, 1.2, 3.6); W.scene.add(plateMesh);
-  }
+  /* ---- food: event B (wrong dish) */
+  function carry(item) { plateMesh = makeFood(item); plateMesh.position.set(0, 1.55, 0.7); waiter.av.add(plateMesh); waiter.av.userData.carry = true; }
+  function putDown() { waiter.av.remove(plateMesh); waiter.av.userData.carry = false; plateMesh.position.set(-7, 1.2, 3.6); W.scene.add(plateMesh); }
   function takeBack() { W.scene.remove(plateMesh); plateMesh.position.set(0, 1.55, 0.7); waiter.av.add(plateMesh); waiter.av.userData.carry = true; }
-  function bringWrong() {
-    s.wrong = Object.assign({}, byId(s.main.id === 'burger' ? 'thai' : 'burger'));
-    carry(s.wrong);
-    walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); reveal('dish'); wrongDialog(); });
+  function bringFood() {
+    if (s.ev.B) {
+      s.wrong = Object.assign({}, pick1(MENU.filter(m => m.cat === 'Mains' && m.id !== s.main.id)));
+      carry(s.wrong);
+      walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); reveal('dish'); wrongDialog(); });
+    } else {
+      carry(s.main);
+      walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Enjoy your meal!`); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); });
+    }
   }
   function wrongDialog() {
-    ask(waiter, `Here you go: one ${s.wrong.name.toLowerCase()}! Enjoy your meal!`, `¡Aquí tienes: un/a ${s.wrong.name}! ¡Que aproveche!`, [
-      { t: `Excuse me, I'm afraid this isn't what I ordered. I ordered the ${s.main.name.toLowerCase()}.`, kind: 'ok', fn: fixDish },
+    const mn = s.main.name.toLowerCase();
+    ask(waiter, `Here you go: one ${s.wrong.name.toLowerCase()}! Enjoy your meal!`, `¡Aquí tienes: ${s.wrong.name}! ¡Que aproveche!`, phr([`Excuse me, I'm afraid this isn't what I ordered. I ordered the ${mn}.`, `Sorry, I think there's been a mistake. I asked for the ${mn}.`], [
       { t: 'This is wrong! Are you blind? Take it away!', kind: 'rude', tip: 'Mistakes happen. Start with "Excuse me, I\'m afraid…" to complain politely.' },
-      { t: 'Oh… OK, thanks!', kind: 'fact', fn: acceptWrong },
-      { t: 'Sorry, but this is not which I ordered.', kind: 'grammar', tip: 'Use "what", not "which": "This isn\'t what I ordered."' }
-    ]);
+      { t: 'Sorry, but this is not which I ordered.', kind: 'grammar', tip: 'Use "what", not "which": "This isn\'t what I ordered."' },
+      { t: `Sorry, this is not my dish, I asked the ${mn}.`, kind: 'grammar', tip: 'We "ask FOR" something: "I asked for the…"' },
+      { t: `Excuse me, I didn't ask this. I asked the ${mn}.`, kind: 'grammar', tip: '"Pedir" food = order / ask FOR: "I didn\'t order this."' }
+    ]).concat([{ t: 'Oh… OK, thanks!', kind: 'fact', fn: acceptWrong }]), fixDish);
   }
   function fixDish() {
     complete('dish');
-    line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take $3 off your bill.`, `¡Oh, no, lo siento mucho! Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 $ de la cuenta.`, () => {
-      s.discount = 3; takeBack();
+    line(waiter, `Oh no, I'm so sorry! That's my mistake. I'll bring your ${s.main.name.toLowerCase()} right away, and we'll take $3 off your bill.`, 'Lo siento mucho. Ha sido culpa mía. Te traigo tu plato ahora mismo y te descontaremos 3 $ de la cuenta.', () => {
+      s.discount += 3; takeBack();
       walkTo(waiter, toKitchen, () => {
         waiter.av.remove(plateMesh); carry(s.main);
         later(1.5, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, `Here's your ${s.main.name.toLowerCase()}. Sorry again, and enjoy!`); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); }));
@@ -1426,40 +1521,76 @@ function buildDiner() {
   }
   function acceptWrong() {
     s.acceptedWrong = true; complete('dish', true);
-    G.mistakes.push({ said: 'Oh… OK, thanks!', tip: `That wasn't your order! You could say: "Excuse me, I'm afraid this isn't what I ordered."` });
+    G.mistakes.push({ said: 'Oh… OK, thanks!', tip: 'That wasn\'t your order! You could say: "Excuse me, I\'m afraid this isn\'t what I ordered."' });
     say(waiter, 'Enjoy!'); s.phase = 'eat'; walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
   }
   function eaten() { return s.order.map(i => (i.cat === 'Mains' && s.acceptedWrong) ? s.wrong : i); }
+  /* ---- eating: event C (cold food) */
   function eat() {
     s.phase = 'eating'; P.av.userData.eating = true;
-    const food = plateMesh.userData.food; let k = 0;
-    const shrink = () => { k++; food.forEach(f => f.scale.setScalar(Math.max(0.05, 1 - k / 10))); if (k < 10) later(0.3, shrink); };
+    const food = plateMesh.userData.food, coldNow = s.ev.C && !s.coldDone;
+    let k = 0; const steps = coldNow ? 2 : 10;
+    const shrink = () => { k++; food.forEach(f => f.scale.setScalar(Math.max(0.05, 1 - k / 10))); if (k < steps) later(0.3, shrink); };
     shrink();
-    later(3.2, () => {
-      P.av.userData.eating = false;
-      const risky = eaten().some(i => i.nuts && !i.safe);
-      if (risky) {
-        s.reaction = true; setFace(P.av, 'sad');
-        notify('🚑 Allergic reaction!', 'Your mouth feels itchy and your lips are swelling… There were nuts in your food! Carlos brings your medicine just in time. Always tell the waiter about allergies.', 'bad');
-        chat('System', `${profile.name} had an allergic reaction.`, '#ff8a80');
-      } else { notify('😋 Delicious!', 'That was a great meal.', 'good'); }
-      complete('eat'); s.phase = 'bill';
-      later(1.5, () => notify('💡 Tip', 'When you are ready, call the waiter to ask for the check.'));
+    if (coldNow) {
+      later(0.9, () => {
+        P.av.userData.eating = false; s.coldDone = true; reveal('cold'); setFace(P.av, 'sad');
+        notify('🥶 Yuck!', 'Your food is cold in the middle! Tell the waiter.', 'warn');
+        walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); coldTalk(); });
+      });
+      return;
+    }
+    later(3.2, finishEating);
+  }
+  function coldTalk() {
+    const mn = (s.acceptedWrong ? s.wrong : s.main).name.toLowerCase();
+    ask(waiter, 'Is everything OK with your meal?', '¿Va todo bien con la comida?', phr([`Actually, I'm afraid my ${mn} is cold. Could you heat it up, please?`, `Sorry, but my food is a bit cold. Could you warm it up, please?`], [
+      { t: 'This is freezing! Do you call this food?', kind: 'rude', tip: 'Complain politely: "I\'m afraid my food is cold. Could you heat it up, please?"' },
+      { t: 'My food is cold. Can you hot it?', kind: 'grammar', tip: '"Hot" is an adjective. The verb is "heat up" or "warm up".' },
+      { t: 'The food is very much cold.', kind: 'grammar', tip: 'Say "very cold" or "quite cold". "Very much" goes with verbs.' }
+    ]).concat([{ t: 'Yes, yes, everything\'s fine.', kind: 'fact', fn: () => { s.ateCold = true; complete('cold', true); setFace(P.av, 'smile'); say(waiter, 'Great! Enjoy!'); walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0)); s.phase = 'eat'; } }]), () => {
+      line(waiter, 'Oh, I\'m sorry about that! I\'ll ask the chef to heat it up right away.', '¡Oh, lo siento! Le pediré al chef que lo caliente ahora mismo.', () => {
+        complete('cold'); setFace(P.av, 'smile'); takeBack();
+        walkTo(waiter, toKitchen, () => {
+          waiter.av.remove(plateMesh); carry(s.acceptedWrong ? s.wrong : s.main);
+          later(2, () => walkTo(waiter, toTable, () => { faceTo(waiter, -7, 4.35); putDown(); say(waiter, 'There you go, nice and hot!'); s.phase = 'eat'; later(1.5, () => walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0))); }));
+        });
+      }, 'Thank you!');
     });
   }
+  function finishEating() {
+    P.av.userData.eating = false;
+    const items = eaten();
+    if (items.some(i => hasAl(i) && !i.safe)) {
+      s.reaction = true; setFace(P.av, 'sad');
+      notify('🚑 Allergic reaction!', `Your mouth feels itchy and your stomach hurts… There was ${AL.word} in your food! ${WN} brings your medicine just in time. Always tell the waiter about allergies.`, 'bad');
+      chat('System', `${profile.name} had an allergic reaction.`, '#ff8a80');
+    } else notify('😋 Delicious!', 'That was a great meal.', 'good');
+    if (s.veg && items.some(i => i.meat)) { s.dietBroken = true; notify('🥩 Oops!', 'You are vegetarian, but you ate meat or fish.', 'warn'); }
+    complete('eat'); s.phase = 'bill';
+    later(1.5, () => notify('💡 Tip', 'When you are ready, call the waiter to ask for the check.'));
+  }
+  /* ---- the check: event D (extra item on the bill) */
   function callWaiter() {
     s.phase = 'billwait';
+    if (s.ev.D && !s.extra) s.extra = Object.assign({}, pick1(MENU.filter(m => m.price > 0 && !s.order.some(o => o.id === m.id) && (m.cat === 'Drinks' || m.cat === 'Desserts' || m.cat === 'Starters'))));
     walkTo(waiter, toTable, () => {
       faceTo(waiter, -7, 4.35); if (plateMesh) W.scene.remove(plateMesh);
-      ask(waiter, 'How was everything?', '¿Qué tal todo?', [
-        { t: 'It was delicious, thank you! Could I have the check, please?', kind: 'ok' },
-        { t: 'It was very delicious. Can you bring me the count?', kind: 'grammar', tip: '"La cuenta" = the check (US) or the bill (UK). Also, "delicious" is already very strong, so don\'t say "very delicious".' },
+      const g = pick1([['How was everything?', '¿Qué tal todo?'], ['Did you enjoy your meal?', '¿Te ha gustado la comida?'], ['Can I get you anything else?', '¿Te traigo algo más?']]);
+      ask(waiter, g[0], g[1], phr(['It was delicious, thank you! Could I have the check, please?', 'Everything was great, thanks. Could I get the check, please?', 'No, thank you. Just the check, please.'], [
+        { t: 'It was very delicious. Can you bring me the count?', kind: 'grammar', tip: '"La cuenta" = the check (US) or the bill (UK). And "delicious" is already strong: don\'t say "very delicious".' },
+        { t: 'Can you bring me the account?', kind: 'grammar', tip: '"La cuenta" in a restaurant = the check / the bill. An "account" is at the bank.' },
         { t: 'Whatever. Bring the money paper.', kind: 'rude', tip: 'Say "Could I have the check, please?"' }
-      ], () => line(waiter, 'Sure! Here you are. The tax is on the bill, but the tip isn\'t included.', '¡Claro! Aquí tienes. El impuesto está en la cuenta, pero la propina no está incluida.', openBill, 'Look at the check'));
+      ]), () => line(waiter, 'Sure! Here you are. The tax is on the check, but the tip isn\'t included.', '¡Claro! Aquí tienes. El impuesto está en la cuenta, pero la propina no está incluida.', openBill, 'Look at the check'));
     });
   }
+  function billItems() {
+    const list = eaten().map(i => Object.assign({}, i, { price: (i.drink && s.drinkFree) ? 0 : i.price, house: i.drink && s.drinkFree }));
+    if (s.extra && !s.extraRemoved) list.push(s.extra);
+    return list;
+  }
   function openBill() {
-    const items = eaten();
+    const items = billItems();
     const sub = Math.max(0, items.reduce((a, i) => a + i.price, 0) - s.discount);
     const tax = Math.round(sub * TAX * 100) / 100;
     let tip = null;
@@ -1467,58 +1598,87 @@ function buildDiner() {
       const tipAmt = tip == null ? 0 : Math.round(sub * tip) / 100;
       const total = sub + tax + tipAmt;
       const tips = [0, 10, 15, 18, 20].map(p => { const t = Math.round(sub * p) / 100; return `<button data-p="${p}" aria-pressed="${tip === p}" ${sub + tax + t > G.money + 1e-9 ? 'disabled' : ''}>${p}%<br><small>${money(t)}</small></button>`; }).join('');
-      const html = `<div class="bill"><h4>HEALTHY BITES DINER</h4><div class="c">Table 4 · Server: Carlos</div>
-        ${items.map(i => `<div class="bl"><span>${escH(i.name)}</span><span>${i.price ? money(i.price) : 'FREE'}</span></div>`).join('')}
+      const html = `<div class="bill"><h4>HEALTHY BITES DINER</h4><div class="c">Table 4 · Server: ${escH(WN)}</div>
+        ${items.map(i => `<div class="bl"><span>${escH(i.name)}</span><span>${i.house ? 'ON THE HOUSE' : i.price ? money(i.price) : 'FREE'}</span></div>`).join('')}
         ${s.discount ? `<div class="bl"><span>Discount (sorry!)</span><span>-${money(s.discount)}</span></div>` : ''}
         <div class="bl sep"><span>Subtotal</span><span>${money(sub)}</span></div>
         <div class="bl"><span>Sales tax 8%</span><span>${money(tax)}</span></div>
         <div class="tips">${tips}</div>
         <div class="bl"><span>Tip</span><span>${tip == null ? '—' : money(tipAmt)}</span></div>
         <div class="bl sep tot"><span>TOTAL</span><span>${money(total)}</span></div>
-        <div class="tipnote">In the USA, waiters earn a big part of their money from tips. A tip of 15–20% of the subtotal is normal; 10% means you were not happy. Your wallet: ${money(G.money)}.</div></div>`;
+        <div class="tipnote">Check every line before you pay. In the USA a tip of 15–20% of the subtotal is normal; 10% means you were not happy. Your wallet: ${money(G.money)}.</div></div>`;
       const canAny = sub + tax <= G.money + 1e-9;
-      panel('The check', 'Choose a tip. Then pay.', html, canAny ? [{ t: tip == null ? 'Choose a tip first' : `Pay ${money(total)}`, cls: 'primary', disabled: tip == null, fn: () => pay(total, tip) }] : [{ t: `Pay what you have (${money(G.money)})`, cls: 'primary', fn: () => { s.paidShort = true; pay(G.money, 0); } }]);
+      const report = { t: 'Report a mistake', fn: () => { closePanel(); reportMistake(); } };
+      panel('The check', 'Read the check, choose a tip and pay.', html, canAny ? [report, { t: tip == null ? 'Choose a tip first' : `Pay ${money(total)}`, cls: 'primary', disabled: tip == null, fn: () => pay(total, tip) }] : [report, { t: `Pay what you have (${money(G.money)})`, cls: 'primary', fn: () => { s.paidShort = true; pay(G.money, 0); } }]);
       $('#panelBody').querySelectorAll('.tips button').forEach(b => b.onclick = () => { tip = +b.dataset.p; render(); });
     };
     render();
   }
+  function reportMistake() {
+    const items = billItems().filter(i => i.price > 0);
+    choice(null, 'Which line on the check is wrong?', '¿Qué línea de la cuenta está mal?', items.map(i => ({ t: i.name, meta: true, fn: () => claim(i) })).concat([{ t: '↩ Never mind, the check is fine', meta: true, fn: openBill }]));
+    function claim(i) {
+      const n = i.name.toLowerCase();
+      ask(waiter, 'Is there a problem with the check?', '¿Hay algún problema con la cuenta?', phr([`Excuse me, I think there's a mistake on the check. I didn't order the ${n}.`, `Sorry, I think there's an error here. I didn't have the ${n}.`], [
+        { t: `I think the check is bad. I not ordered the ${n}.`, kind: 'grammar', tip: 'Past negative: "I didn\'t order". And say "There\'s a mistake on the check."' },
+        { t: 'You\'re trying to cheat me!', kind: 'rude', tip: 'It could be an honest mistake. Say "I think there\'s a mistake on the check."' },
+        { t: `There is an equivocation in the check.`, kind: 'grammar', tip: 'False friend! "Equivocación" = mistake. Say "There\'s a mistake on the check."' }
+      ]), () => {
+        if (s.extra && i.id === s.extra.id && !s.extraRemoved) {
+          s.extraRemoved = true; complete('check');
+          line(waiter, `You're right, I'm so sorry! That ${n} was for another table. I'll take it off.`, 'Tienes razón, lo siento mucho. Eso era de otra mesa. Lo quito.', openBill, 'Thank you');
+        } else {
+          s.falseClaim = true;
+          line(waiter, `Hmm, I'm sure you had the ${n}. Look, it's here on my notepad.`, 'Mmm, estoy seguro/a de que lo pediste. Mira, está en mi libreta.', openBill, 'Oh, sorry!');
+        }
+      });
+    }
+  }
   function pay(total, tip) {
     closePanel(); G.money = Math.max(0, G.money - total); s.tipPct = tip; updateBoard(); complete('bill');
+    if (s.extra && !s.extraRemoved) { s.overpaid = s.extra.price; complete('check', true); notify('🧾 Oops!', `You paid for a ${s.extra.name.toLowerCase()} you never ordered. Always check the bill!`, 'bad'); }
     const thanks = s.paidShort ? ['Oh… that\'s not enough. Never mind, the manager says it\'s OK this time.', 'Oh… no es suficiente. Bueno, el encargado dice que por esta vez no pasa nada.'] : tip === 0 ? ['Oh… OK. Thanks, I guess.', 'Oh… vale. Gracias, supongo.'] : tip === 10 ? ['Thank you. Have a good evening.', 'Gracias. Que pases buena noche.'] : ['Thank you so much! Have a great night!', '¡Muchísimas gracias! ¡Que pases una noche estupenda!'];
     line(waiter, thanks[0], thanks[1], () => {
       if (tip === 0 && !s.paidShort) notify('💡 Culture note', 'In the USA, leaving no tip is considered very rude unless the service was terrible.', 'warn');
       P.av.userData.seated = false; P.pos.set(-5, 0, 5.6); P.frozen = false; s.phase = 'leave';
       walkTo(waiter, toKitchen, () => faceTo(waiter, 0, 0));
-      setMarker(0, 4.2, 7.2); notify('🚪 Almost done', 'Say goodbye to Emma at the entrance.');
+      setMarker(0, 4.2, 7.2); notify('🚪 Almost done', `Say goodbye to ${HN} at the entrance.`);
     });
   }
   function hostBye() {
     hideMarker();
-    ask(host, 'Thanks for coming! Have a nice evening!', '¡Gracias por venir! ¡Que pases una buena noche!', [
-      { t: 'Thank you, you too! Goodbye!', kind: 'ok' },
+    const g = pick1([['Thanks for coming! Have a nice evening!', '¡Gracias por venir! ¡Que pases una buena noche!'], ['Thank you, come back soon! Have a good night!', '¡Gracias, vuelve pronto! ¡Buenas noches!']]);
+    ask(host, g[0], g[1], phr(['Thank you, you too! Goodbye!', 'Thanks, you too! See you next time!', 'Thanks a lot. Same to you!'], [
       { t: 'Thanks, equally!', kind: 'grammar', tip: '"Igualmente" is not "equally" here. Say "You too!" or "Same to you!"' },
-      { t: 'Good night! I go now.', kind: 'grammar', tip: 'For something happening now, use the present continuous: "I\'m leaving now."' }
-    ], () => { host.av.userData.wave = true; complete('bye'); later(1.2, finishDiner); });
+      { t: 'Good night! I go now.', kind: 'grammar', tip: 'For something happening now, use the present continuous: "I\'m leaving now."' },
+      { t: 'Good night! Until the next!', kind: 'grammar', tip: '"Hasta la próxima" = "See you next time!"' }
+    ]), () => { host.av.userData.wave = true; complete('bye'); later(1.2, finishDiner); });
   }
   function finishDiner() {
     const items = eaten();
     let health = clamp(40 + items.reduce((a, i) => a + i.h, 0), 0, 100);
     if (s.reaction) health = Math.min(health, 15);
-    const tipScore = s.paidShort ? 0 : ({ 0: 15, 10: 60, 15: 100, 18: 100, 20: 95 })[s.tipPct] ?? 50;
+    if (s.dietBroken) health = Math.max(0, health - 30);
+    let moneyScore = s.paidShort ? 0 : ({ 0: 15, 10: 60, 15: 100, 18: 100, 20: 95 })[s.tipPct] ?? 50;
+    if (s.overpaid) moneyScore = Math.max(0, moneyScore - 40);
     const eng = engPct();
-    const overall = 0.3 * health + 0.3 * eng + 0.2 * G.manners + 0.2 * tipScore;
+    const overall = 0.3 * health + 0.3 * eng + 0.2 * G.manners + 0.2 * moneyScore;
     const good = [], bad = [];
     if (health >= 75) good.push('You chose a really healthy meal.'); else bad.push('Your meal was not very healthy. Try grilled food, vegetables and water instead of fried food and sugary drinks.');
-    if (s.declared) good.push('You told the waiter about your nut allergy. That can save your life!');
-    else bad.push('You didn\'t mention your allergy. Say "I\'m allergic to nuts" every time you order.');
-    if (s.reaction) bad.push('You ate food with nuts and had an allergic reaction.');
-    if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got $3 off!');
-    else bad.push('You accepted a dish you didn\'t order and paid for it.');
+    if (s.declared) good.push(`You told the waiter about your ${AL.word} allergy. That can save your life!`);
+    else bad.push(`You didn't mention your allergy. Say "${AL.say}" every time you order.`);
+    if (s.reaction) bad.push(`You ate food with ${AL.word} and had an allergic reaction.`);
+    if (s.veg) { if (s.dietBroken) bad.push('You are vegetarian, but your meal had meat or fish in it.'); else good.push('You kept to your vegetarian diet.'); }
+    if (s.ev.A) { if (s.ev.A === 'spill') good.push('You stayed calm when the waiter spilled the drink.'); else good.push('You dealt with your noisy neighbour politely.'); }
+    if (s.ev.B) { if (!s.acceptedWrong) good.push('You noticed the wrong dish and complained politely. You even got $3 off!'); else bad.push('You accepted a dish you didn\'t order and paid for it.'); }
+    if (s.ev.C) { if (s.ateCold) bad.push('You ate your cold food without saying anything. It\'s OK to ask: "Could you heat it up, please?"'); else good.push('You sent back your cold food politely.'); }
+    if (s.ev.D) { if (s.extraRemoved) good.push(`You found the ${s.extra.name.toLowerCase()} on the check that you didn't order.`); else bad.push(`The check had a ${s.extra.name.toLowerCase()} you didn't order, and you paid for it.`); }
+    if (s.falseClaim) bad.push('You complained about something on the check that you really ordered. Read carefully!');
     if (s.tipPct >= 15) good.push(`You left a fair ${s.tipPct}% tip, just like people do in the USA.`);
     else if (!s.paidShort) bad.push(`A ${s.tipPct}% tip is low in the USA. 15–20% is normal.`);
     if (s.paidShort) bad.push('You ran out of money. Leave space in your budget for tax and tip.');
     if (G.manners === 100) good.push('Perfect manners all evening.');
-    showResults({ title: s.reaction ? 'You survived… just!' : 'Mission complete!', overall, metrics: [['Health', health], ['English', eng], ['Manners', G.manners], ['Money & tip', tipScore]], good, bad });
+    showResults({ title: s.reaction ? 'You survived… just!' : 'Mission complete!', overall, metrics: [['Health', health], ['English', eng], ['Manners', G.manners], ['Money & tip', moneyScore]], good, bad });
   }
 }
 
@@ -1526,59 +1686,34 @@ function buildDiner() {
    SCENARIO 2 — BACK TO SCHOOL RUSH
    ===================================================================== */
 const SIZES = { shirt: ['XS', 'S', 'M', 'L', 'XL'], trousers: ['28', '30', '32', '34'], shoes: ['6', '7', '8', '9', '10'] };
-const MY = { shirt: 'M', trousers: '30', shoes: '8' };
-const CATS = {
-  polo: { label: 'Navy blue polo shirt', emoji: '👕', size: 'shirt' },
-  trousers: { label: 'Grey trousers or skirt', emoji: '👖', size: 'trousers' },
-  shoes: { label: 'Black school shoes', emoji: '👞', size: 'shoes' },
-  trainers: { label: 'White trainers for P.E.', emoji: '👟', size: 'shoes' },
-  backpack: { label: 'A backpack', emoji: '🎒', size: null }
+let MY = {}, CATS = {}, SHOPS = {};
+const COLS = { 'Navy blue': '#1a237e', 'Dark green': '#1b5e20', 'Burgundy': '#7b1f2e', 'Light blue': '#81d4fa', 'Black': '#212121', 'Red': '#d32f2f', 'Grey': '#8a8f96', 'Beige': '#d7c49e', 'White': '#fafafa', 'Neon yellow': '#d4e157', 'Brown': '#6d4c41', 'Blue': '#1e88e5', 'Green': '#43a047', 'Pink': '#f48fb1', 'Purple': '#8e24aa', 'Orange': '#fb8c00' };
+const SHOP_STYLE = {
+  bargain: { name: 'Bargain Barn', clerk: 'Gus', wall: '#e0b04a', roof: '#8d6e63', signBg: '#ffeb3b', signFg: '#b71c1c', mult: 0.42, policy: 'All sales are final: no refunds and no exchanges.', desc: ['Thin material. May shrink in the wash.', 'Cheap, but not very strong.', 'Glued, not stitched.', 'Made of plastic. Not waterproof.'] },
+  campus: { name: 'Campus Corner', clerk: 'Priya', wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', mult: 1, policy: 'Returns and exchanges within 30 days. Keep your receipt!', desc: ['Strong and comfortable.', 'Good for everyday use. Machine washable.', 'Official school supplier quality.'] },
+  luxe: { name: 'Luxe Label', clerk: 'Mr. Sterling', wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', mult: 2.1, policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.', desc: ['Designer label. Very stylish.', 'Handmade with premium materials.', 'Limited edition. Dry clean only.'] }
 };
-const SHOPS = {
-  bargain: { name: 'Bargain Barn', clerk: 'Gus', x: -24, wall: '#e0b04a', roof: '#8d6e63', signBg: '#ffeb3b', signFg: '#b71c1c', policy: 'All sales are final: no refunds and no exchanges.',
-    items: [
-      { id: 'b1', cat: 'polo', name: 'Polo shirt', color: 'Light blue', hex: '#81d4fa', price: 5, q: 1, ok: false, why: 'That polo is light blue. The dress code says navy blue.', desc: 'Thin cotton. Wash in cold water.' },
-      { id: 'b2', cat: 'polo', name: 'Polo shirt', color: 'Navy blue', hex: '#1a237e', price: 7, q: 1, ok: true, desc: 'Thin cotton. May shrink in the wash.' },
-      { id: 'b3', cat: 'trousers', name: 'School trousers', color: 'Grey', hex: '#9e9e9e', price: 9, q: 1, ok: true, desc: '100% polyester. A bit shiny.' },
-      { id: 'b4', cat: 'shoes', name: 'School shoes', color: 'Black', hex: '#1b1b1b', price: 12, q: 1, ok: true, desc: 'Plastic “leather”. Not waterproof.' },
-      { id: 'b5', cat: 'trainers', name: 'Canvas trainers', color: 'White', hex: '#fafafa', price: 10, q: 1, ok: true, fragile: true, desc: 'Light canvas trainers with glued soles.' },
-      { id: 'b6', cat: 'backpack', name: 'Backpack', color: 'Pink', hex: '#f48fb1', price: 6, q: 1, ok: true, fragile: true, desc: 'Small backpack with one pocket.' },
-      { id: 'b7', emo: '🕶', cat: 'extra', name: 'Sunglasses', color: 'Black', hex: '#212121', price: 4, q: 1, ok: false, desc: 'Cool sunglasses. Not on your list!' }
-    ] },
-  campus: { name: 'Campus Corner', clerk: 'Priya', x: 0, wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', policy: 'Returns and exchanges within 30 days. Keep your receipt!',
-    items: [
-      { id: 'c1', cat: 'polo', name: 'Official school polo', color: 'Navy blue', hex: '#1a237e', price: 14, q: 3, ok: true, desc: 'Strong cotton with the Lincoln High logo.' },
-      { id: 'c2', cat: 'trousers', name: 'School trousers', color: 'Grey', hex: '#8a8f96', price: 20, q: 3, ok: true, desc: 'Hard-wearing trousers with an adjustable waist.' },
-      { id: 'c3', cat: 'trousers', name: 'Pleated skirt', color: 'Grey', hex: '#8a8f96', price: 20, q: 3, ok: true, desc: 'Knee-length school skirt.' },
-      { id: 'c4', cat: 'shoes', name: 'School shoes', color: 'Black', hex: '#1b1b1b', price: 30, q: 3, ok: true, desc: 'Real leather. Comfortable and waterproof.' },
-      { id: 'c5', cat: 'trainers', name: 'Sports trainers', color: 'White', hex: '#fafafa', price: 25, q: 2, ok: true, desc: 'Good grip for the gym.' },
-      { id: 'c6', cat: 'backpack', name: 'School backpack', color: 'Blue', hex: '#1e88e5', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
-      { id: 'c7', cat: 'backpack', name: 'School backpack', color: 'Black', hex: '#263238', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
-      { id: 'c8', emo: '🧥', cat: 'extra', name: 'Hoodie', color: 'Grey', hex: '#9e9e9e', price: 22, q: 3, ok: false, desc: 'Super soft. Not on your list!' }
-    ] },
-  luxe: { name: 'Luxe Label', clerk: 'Mr. Sterling', x: 24, wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.',
-    items: [
-      { id: 'l1', cat: 'polo', name: 'Designer polo', color: 'Navy blue', hex: '#1a237e', price: 32, q: 3, ok: true, desc: 'Italian cotton. Small gold logo.' },
-      { id: 'l2', cat: 'trousers', name: 'Slim-fit chinos', color: 'Grey', hex: '#8a8f96', price: 40, q: 3, ok: true, desc: 'Very stylish. Dry clean only.' },
-      { id: 'l3', cat: 'shoes', name: 'Leather loafers', color: 'Brown', hex: '#6d4c41', price: 55, q: 3, ok: false, why: 'Brown loafers are not allowed. School shoes must be black.', desc: 'Handmade loafers. Very elegant.' },
-      { id: 'l4', cat: 'shoes', name: 'Leather school shoes', color: 'Black', hex: '#1b1b1b', price: 65, q: 3, ok: true, desc: 'Handmade. They will last for years.' },
-      { id: 'l5', cat: 'trainers', name: 'Designer sneakers', color: 'White', hex: '#fafafa', price: 60, q: 3, ok: true, sale: true, desc: 'The coolest sneakers in town.' },
-      { id: 'l6', cat: 'backpack', name: 'Leather backpack', color: 'Blue', hex: '#1565c0', price: 45, q: 3, ok: true, desc: 'Soft leather. Very fashionable.' },
-      { id: 'l7', emo: '🧢', cat: 'extra', name: 'Baseball cap', color: 'Red', hex: '#e53935', price: 25, q: 3, ok: false, desc: 'Limited edition. Not on your list!' }
-    ] }
-};
+const BASE = { polo: 14, trousers: 20, shoes: 30, trainers: 25, backpack: 18 };
+const EXTRAS = [['Sunglasses', '🕶', 12], ['Hoodie', '🧥', 22], ['Baseball cap', '🧢', 14], ['Headphones', '🎧', 25], ['Phone case', '📱', 10], ['Football', '⚽', 15], ['Smartwatch strap', '⌚', 16]];
+const TEACHERS = [
+  { name: 'Ms. Parker', look: { skin: '#8d5524', shirt: '#6a1b9a', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.15, rate: 0.95 }, badge: '#6a1b9a' },
+  { name: 'Mr. Davis', look: { skin: '#ffdbac', shirt: '#455a64', pants: '#212121', hair: '#8d6e63', tie: '#c62828', sleeves: true, shoes: true }, voice: { pitch: 0.85, rate: 0.95 }, badge: '#455a64' },
+  { name: 'Mrs. Kim', look: { skin: '#f1c27d', shirt: '#00897b', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, voice: { pitch: 1.25, rate: 0.95 }, badge: '#00796b' }
+];
 
 SCEN.mall = {
-  title: 'Back to School Rush', budget: 100, cardTitle: 'Your character card',
-  vocab: [['Can I help you? / I\'m just looking, thanks.', '¿Le puedo ayudar? / Solo estoy mirando, gracias.'], ['Can I try it on?', '¿Me lo puedo probar?'], ['fitting room', 'probador'], ['It fits. / It\'s too tight. / It\'s too loose.', 'Me queda bien. / Me aprieta. / Me queda ancho.'], ['What size are you? / I\'m a medium.', '¿Qué talla usas? / Uso la M.'], ['I\'ll take it.', 'Me lo llevo.'], ['by card / in cash', 'con tarjeta / en efectivo'], ['What\'s your return policy?', '¿Cuál es su política de devoluciones?'], ['refund / exchange / store credit', 'reembolso / cambio / vale de compra'], ['receipt', 'tique / recibo'], ['on sale', 'rebajado'], ['student discount', 'descuento para estudiantes'], ['All sales are final.', 'No se admiten devoluciones.']],
+  title: 'Back to School Rush', cardTitle: 'Your character card',
+  vocab: [['Can I help you? / I\'m just looking, thanks.', '¿Le puedo ayudar? / Solo estoy mirando, gracias.'], ['Can I try it on?', '¿Me lo puedo probar?'], ['fitting room', 'probador'], ['It fits. / It\'s too tight. / It\'s too loose.', 'Me queda bien. / Me aprieta. / Me queda ancho.'], ['What size are you? / I\'m a medium.', '¿Qué talla usas? / Uso la M.'], ['I\'ll take it.', 'Me lo llevo.'], ['by card / in cash', 'con tarjeta / en efectivo'], ['What\'s your return policy?', '¿Cuál es su política de devoluciones?'], ['refund / exchange / store credit', 'reembolso / cambio / vale de compra'], ['receipt / label', 'tique / etiqueta'], ['on sale / sold out', 'rebajado / agotado'], ['student discount', 'descuento para estudiantes'], ['navy blue / burgundy / beige', 'azul marino / granate / beis'], ['All sales are final.', 'No se admiten devoluciones.']],
   board() { return [['Cash', money(G.money)], ['Items', mallCount() + '/5'], ['Manners', G.manners]]; },
   card() {
-    return `<div class="cs">You are <b>${escH(profile.name)}</b>. Tomorrow is your <b>first day at Lincoln High School</b> and you need your uniform and school things.</div>
-      <div class="cs">💵 <b>Budget:</b> $100.00. You can't spend more. Compare prices and quality!</div>
-      <div class="cs">📋 <b>Dress code:</b> navy blue polo shirt · grey trousers or a grey skirt · black school shoes · white trainers for P.E. You also need a backpack.</div>
-      <div class="cs">📏 <b>Your sizes:</b> shirt <b>M</b> (medium) · trousers <b>30</b> · shoes <b>8</b>.</div>
-      <div class="cs">💙 You love the colour <b>blue</b>, and you want things that <b>last all year</b>.</div>
-      <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to <b>Ms. Parker</b> at the school gate.</div>`;
+    const s = G.s, sz = { S: 'S (small)', M: 'M (medium)', L: 'L (large)' };
+    return `<div class="cs">You are <b>${escH(profile.name)}</b>. Tomorrow is your <b>first day at ${escH(s.school)}</b> and you need your uniform and school things.</div>
+      <div class="cs">💵 <b>Budget:</b> ${money(s.budget)}. You can't spend more. Compare prices and quality!</div>
+      <div class="cs">📋 <b>Dress code:</b> <b>${s.code.polo.toLowerCase()}</b> polo shirt · <b>${s.code.bottom.toLowerCase()}</b> trousers or a ${s.code.bottom.toLowerCase()} skirt · <b>black</b> school shoes · <b>white</b> trainers for P.E. You also need a backpack.</div>
+      <div class="cs">📏 <b>Your sizes:</b> shirt <b>${sz[MY.shirt]}</b> · trousers <b>${MY.trousers}</b> · shoes <b>${MY.shoes}</b>.</div>
+      <div class="cs">💖 Your favourite colour is <b>${s.fav.toLowerCase()}</b>, and you want things that <b>last all year</b>.</div>
+      <div class="cs">🛍 Three shops: <b>Bargain Barn</b>, <b>Campus Corner</b> and <b>Luxe Label</b>. When you finish, show your things to <b>${escH(s.teacher)}</b> at the school gate.</div>
+      <div class="cs">🎲 Every game is different: new dress code, sizes, prices and surprises.</div>`;
   },
   build: buildMall
 };
@@ -1586,66 +1721,123 @@ const activeInv = () => G.inv.filter(r => !r.returned);
 function mallCount() { return Object.keys(CATS).filter(c => activeInv().some(r => r.cat === c && !r.broken)).length; }
 function itemValid(r) { return !r.broken && r.ok && (!CATS[r.cat].size || r.sizeOk); }
 
+function genShops(s) {
+  const req = s.code;
+  const otherPolo = sample(Object.keys(COLS).filter(c => ['Navy blue', 'Dark green', 'Burgundy', 'Light blue', 'Black', 'Red'].includes(c) && c !== req.polo), 3);
+  const otherBottom = shuffle(['Grey', 'Black', 'Navy blue', 'Beige'].filter(c => c !== req.bottom));
+  const items = { bargain: [], campus: [], luxe: [] };
+  const add = (k, cat, name, color, extra = {}) => items[k].push(Object.assign({
+    id: k[0] + items[k].length, cat, name, color, hex: COLS[color] || '#999',
+    price: Math.max(3, Math.round(BASE[cat] * SHOP_STYLE[k].mult * rnd(0.85, 1.15))),
+    q: k === 'bargain' ? 1 : (k === 'campus' && cat === 'trainers' ? 2 : 3), desc: pick1(SHOP_STYLE[k].desc)
+  }, extra));
+  add('campus', 'polo', 'School polo', req.polo); add('campus', 'polo', 'School polo', otherPolo[0]);
+  add('bargain', 'polo', 'Polo shirt', Math.random() < 0.6 ? req.polo : otherPolo[1]); add('bargain', 'polo', 'Polo shirt', otherPolo[2]);
+  add('luxe', 'polo', 'Designer polo', Math.random() < 0.75 ? req.polo : otherPolo[0]);
+  add('campus', 'trousers', 'School trousers', req.bottom); add('campus', 'trousers', 'Pleated skirt', req.bottom);
+  add('bargain', 'trousers', 'School trousers', Math.random() < 0.7 ? req.bottom : otherBottom[0]);
+  add('luxe', 'trousers', 'Slim-fit chinos', req.bottom); add('luxe', 'trousers', 'Slim-fit chinos', otherBottom[1]);
+  add('campus', 'shoes', 'School shoes', 'Black'); add('bargain', 'shoes', 'School shoes', Math.random() < 0.75 ? 'Black' : 'Brown');
+  add('luxe', 'shoes', 'Leather school shoes', 'Black'); add('luxe', 'shoes', 'Leather loafers', 'Brown');
+  add('campus', 'trainers', 'Sports trainers', 'White'); add('bargain', 'trainers', 'Canvas trainers', 'White');
+  add(pick1(['bargain', 'luxe']), 'trainers', 'Running trainers', 'Neon yellow');
+  add('luxe', 'trainers', 'Designer sneakers', 'White');
+  const bagCols = shuffle(['Blue', 'Green', 'Red', 'Black', 'Pink', 'Purple', 'Orange'].filter(c => c !== s.fav));
+  const favShop = pick1(['bargain', 'campus', 'luxe']);
+  const bagName = { bargain: 'Backpack', campus: 'School backpack', luxe: 'Leather backpack' };
+  ['bargain', 'campus', 'luxe'].forEach((k, i) => { add(k, 'backpack', bagName[k], k === favShop ? s.fav : bagCols[i * 2]); add(k, 'backpack', bagName[k], bagCols[i * 2 + 1]); });
+  sample(EXTRAS, 3).forEach(([n, e, p], i) => { const k = ['bargain', 'campus', 'luxe'][i]; items[k].push({ id: k[0] + 'x' + i, cat: 'extra', name: n, emo: e, color: pick1(['Black', 'Red', 'Blue', 'White']), hex: '#777', price: Math.max(4, Math.round(p * SHOP_STYLE[k].mult * 1.3)), q: k === 'bargain' ? 1 : 3, desc: 'Everyone wants one this year!' }); });
+  Object.entries(items).forEach(([k, list]) => list.forEach(it => {
+    if (it.cat === 'extra') { it.ok = false; it.hex = COLS[it.color] || '#777'; return; }
+    it.ok = it.cat === 'polo' ? it.color === req.polo : it.cat === 'trousers' ? it.color === req.bottom : it.cat === 'shoes' ? it.color === 'Black' : it.cat === 'trainers' ? it.color === 'White' : true;
+    if (!it.ok) it.why = it.cat === 'polo' ? `That polo is ${it.color.toLowerCase()}. The dress code says ${req.polo.toLowerCase()}.`
+      : it.cat === 'trousers' ? `Those ${it.name.toLowerCase()} are ${it.color.toLowerCase()}. The dress code says ${req.bottom.toLowerCase()}.`
+      : it.cat === 'shoes' ? `${it.color} shoes aren't allowed. School shoes must be black.`
+      : `P.E. trainers must be white, not ${it.color.toLowerCase()}.`;
+    if (k === 'bargain' && it.cat === s.fragileCat) it.fragile = true;
+    if (k === 'luxe' && it.cat === s.saleCat) it.sale = true;
+  }));
+  items.campus.forEach(it => { if (it.cat === 'trainers' && !it.ok) it.q = 2; });
+  return items;
+}
+
 function buildMall() {
-  const s = G.s = { info: {}, discount: false, sale: false, tried: {}, said: {}, fitted: {}, broke: false, brokeItem: null, uid: 0, credit: { bargain: 0, campus: 0, luxe: 0 } };
+  const s = G.s = {
+    info: {}, discount: false, sale: false, tried: {}, said: {}, fitted: {}, broke: false, brokeItem: null, uid: 0, credit: { bargain: 0, campus: 0, luxe: 0 },
+    budget: pick1([95, 100, 110]), code: { polo: pick1(['Navy blue', 'Dark green', 'Burgundy']), bottom: pick1(['Grey', 'Black', 'Navy blue']) },
+    fav: pick1(['Blue', 'Green', 'Red', 'Purple', 'Black', 'Orange']), school: pick1(['Lincoln High', 'Riverside High', 'Oakwood Academy', 'Westbrook School']),
+    discPct: pick1([10, 15, 20]), saleCat: pick1(['trainers', 'backpack', 'polo', 'shoes']), fragileCat: pick1(['trainers', 'backpack', 'shoes']),
+    ev: {}, purchases: 0, overAt: pick1([1, 2, 3]), overpaid: 0, overDone: false, soldDone: false, soldItem: null, soldOK: null
+  };
+  sample(['broken', 'overcharge', 'soldout'], 2).forEach(e => s.ev[e] = true);
+  G.money = s.budget;
+  MY = { shirt: pick1(['S', 'M', 'L']), trousers: pick1(['28', '30', '32']), shoes: pick1(['6', '7', '8', '9']) };
+  CATS = {
+    polo: { label: `${s.code.polo} polo shirt`, emoji: '👕', size: 'shirt' },
+    trousers: { label: `${s.code.bottom} trousers or skirt`, emoji: '👖', size: 'trousers' },
+    shoes: { label: 'Black school shoes', emoji: '👞', size: 'shoes' },
+    trainers: { label: 'White trainers for P.E.', emoji: '👟', size: 'shoes' },
+    backpack: { label: 'A backpack', emoji: '🎒', size: null }
+  };
+  const items = genShops(s);
+  const xs = shuffle([-24, 0, 24]);
+  SHOPS = {};
+  ['bargain', 'campus', 'luxe'].forEach((k, i) => SHOPS[k] = Object.assign({}, SHOP_STYLE[k], { x: xs[i], items: items[k] }));
+  const tP = pick1(TEACHERS); s.teacher = tP.name;
+
   W.bounds = { minX: -50, maxX: 74, minZ: -26, maxZ: 18 };
   ground('#5a9e4b');
-  // road and sidewalks
   part(12, 0, 6, 130, 0.04, 8, '#3c3f44', { solid: false });
   for (let x = -50; x < 76; x += 7) part(x, 0.05, 6, 3.5, 0.02, 0.35, '#f5f5f5', { solid: false, shadow: false });
   part(12, 0, -1, 130, 0.25, 6, '#c9ccd1'); part(12, 0, 11.5, 130, 0.25, 3, '#c9ccd1');
-  // crossing
   for (let i = 0; i < 6; i++) part(36 + i * 0.9 - 2.2, 0.05, 6, 0.5, 0.02, 7, '#fafafa', { solid: false, shadow: false });
-  // trees, lamps, bench, bus
   for (let x = -44; x < 74; x += 12) { part(x, 0.25, 12, 0.7, 2.6, 0.7, '#6d4c41'); part(x, 2.85, 12, 2.8, 2.6, 2.8, '#388e3c', { solid: false }); }
   for (let x = -38; x < 70; x += 16) { part(x + 6, 0.25, 1.5, 0.25, 4.2, 0.25, '#455a64'); part(x + 6, 4.45, 1.2, 0.5, 0.25, 0.9, '#fff59d', { solid: false }); }
   part(-8, 0.25, 1.4, 3, 0.5, 0.9, '#8d6e63');
   part(58, 0.15, 6.2, 11, 3, 3, '#fbc02d'); part(58, 2, 6.2, 9.5, 0.9, 3.05, '#bbdefb', { solid: false }); sign('SCHOOL BUS', 58, 1, 7.73, 4, 0.6, 0, { bg: '#fbc02d', fg: '#212121' });
   sign('MAIN STREET', -46, 3.4, -3.7, 3, 0.7, 0, { bg: '#2e7d32', fg: '#fff' }); part(-46, 0.25, -3.9, 0.2, 3.4, 0.2, '#455a64');
-  // shops
   Object.entries(SHOPS).forEach(([k, sh]) => buildShop(k, sh));
-  // school
   const SX = 58;
   [[SX, -22, 26, 0.6], [SX - 13, -14, 0.6, 16.6], [SX + 13, -14, 0.6, 16.6], [SX, -6, 26, 0.6]].forEach(([x, z, w, d]) => part(x, 0, z, w, 9.25, d, '#b5523b'));
   part(SX, 9.25, -14, 27, 0.6, 17, '#5d4037', { solid: false });
-  sign('LINCOLN HIGH SCHOOL', SX, 7.4, -5.66, 14, 1.7, 0, { bg: '#f5f5f5', fg: '#7b1f1f', border: '#7b1f1f' });
+  sign(s.school.toUpperCase(), SX, 7.4, -5.66, 14, 1.7, 0, { bg: '#f5f5f5', fg: '#7b1f1f', border: '#7b1f1f' });
   part(SX, 0.25, -5.6, 4, 4, 0.2, '#4e342e', { solid: false }); sign('First day: Monday 8:30', SX, 4.8, -5.6, 4.6, 0.6, 0, { bg: '#fff8e1', fg: '#3e2723' });
   [[-6, 2.2], [-3, 2.2], [3, 2.2], [6, 2.2]].forEach(([dx, y]) => part(SX + dx, 0.25 + y, -5.62, 1.8, 1.8, 0.12, '#bbdefb', { solid: false, shadow: false }));
   part(SX + 10, 0.25, -3.6, 0.25, 9, 0.25, '#cfd8dc'); part(SX + 10.9, 7.4, -3.6, 1.6, 1, 0.05, '#1565c0', { solid: false });
-  // gate check sign
-  sign('DRESS CODE CHECK\nshow your things to Ms. Parker', SX - 5, 2.4, -3.85, 4.6, 1.4, 0, { bg: '#fffde7', fg: '#3e2723' }); part(SX - 5, 0.25, -3.95, 0.2, 1.7, 0.15, '#5d4037');
+  sign(`DRESS CODE CHECK\nshow your things to ${tP.name}`, SX - 5, 2.4, -3.85, 4.6, 1.4, 0, { bg: '#fffde7', fg: '#3e2723' }); part(SX - 5, 0.25, -3.95, 0.2, 1.7, 0.15, '#5d4037');
 
-  // NPCs
-  const teacher = npc('Ms. Parker', { skin: '#8d5524', shirt: '#6a1b9a', pants: '#37474f', hair: '#1b1b1b', long: true, sleeves: true, shoes: true }, SX, -3, 0, { color: '#ce93d8', voice: { pitch: 1.15, rate: 0.95 } });
-  teacher.badge = '#6a1b9a'; teacher.pos.y = 0.25;
-  const mia = npc('Mia', { skin: '#ffdbac', shirt: '#1a237e', pants: '#8a8f96', hair: '#e65100', long: true }, -10, -0.5, 0, { color: '#ffab91', speed: 3, voice: { pitch: 1.4, rate: 1.05 } });
+  const teacher = npc(tP.name, tP.look, SX, -3, 0, { color: '#ce93d8', voice: tP.voice });
+  teacher.badge = tP.badge; teacher.pos.y = 0.25;
+  const mia = npc('Mia', { skin: '#ffdbac', shirt: COLS[s.code.polo], pants: COLS[s.code.bottom], hair: '#e65100', long: true }, -10, -0.5, 0, { color: '#ffab91', speed: 3, voice: { pitch: 1.4, rate: 1.05 } });
   const leo = npc('Leo', { skin: '#c68642', shirt: '#43a047', pants: '#37474f', hair: '#1b1b1b', cap: '#e53935' }, 12, 11.8, 0, { color: '#a5d6a7', speed: 3, voice: { pitch: 1.1, rate: 1.05 } });
   mia.badge = '#bf360c'; leo.badge = '#2e7d32';
+  const SALE = { trainers: 'sneakers', backpack: 'backpacks', polo: 'polo shirts', shoes: 'shoes' }[s.saleCat];
+  const MIA = shuffle([`Campus Corner gives a ${s.discPct}% student discount, but only if you ask!`, `Hi! Are you starting at ${s.school} too?`, `Remember: the polo has to be ${s.code.polo.toLowerCase()}. Read the colour on the label!`, 'Bargain Barn is cheap, but they never give refunds.']);
+  const LEO = shuffle([s.ev.broken ? `My Bargain Barn ${s.fragileCat === 'backpack' ? 'backpack broke' : s.fragileCat + ' broke'} after one day!` : 'Cheap things don\'t always last, you know.', `I heard the ${SALE} at Luxe Label are on sale this week.`, 'Always try clothes on before you buy them!', 'Check the price at the till. Shop assistants make mistakes too!']);
   const wander = (n, a, b, lines) => {
-    let to = b, cd = 3;
+    let to = b, cd = 3, li = 0;
     n.update = (dt) => {
       if (!n.path.length && !n.hold) { walkTo(n, [to], () => { to = to === a ? b : a; n.hold = true; later(2 + Math.random() * 3, () => n.hold = false); }); }
-      cd -= dt; if (cd < 0 && Math.hypot(P.pos.x - n.pos.x, P.pos.z - n.pos.z) < 7) { cd = 12; say(n, pick1(lines)); }
+      cd -= dt; if (cd < 0 && Math.hypot(P.pos.x - n.pos.x, P.pos.z - n.pos.z) < 7) { cd = 12; say(n, lines[li++ % lines.length]); }
     };
     n.pos.y = n.baseY = 0.25;
   };
-  const MIA = ['Hi! Are you starting at Lincoln High too?', 'Campus Corner has a student discount, but only if you ask!', 'Remember: the polo has to be NAVY blue, not light blue.'];
-  const LEO = ['My Bargain Barn trainers broke after one day! And they don\'t give refunds.', 'I heard something is on sale at Luxe Label this week.', 'Always try clothes on before you buy them!'];
   wander(mia, [-30, -1.5], [8, -1.5], MIA); wander(leo, [-20, 11.8], [40, 11.8], LEO);
-  const smallTalk = (n, lines) => () => ask(n, 'Hey! What\'s up?', '¡Hola! ¿Qué tal?', [
-    { t: 'Hi! Not much. I\'m shopping for my school uniform. Any tips?', kind: 'ok' },
+  const smallTalk = (n, lines) => ask(n, pick1(['Hey! What\'s up?', 'Hi! How\'s it going?', 'Oh, hi! Shopping for school too?']), '¡Hola! ¿Qué tal?', phr(['Hi! Not much. I\'m shopping for my school uniform. Any tips?', 'Hey! Yeah, I\'m buying my uniform. Do you have any advice?'], [
     { t: 'Hi! I am buying my uniform. You have any advice?', kind: 'grammar', tip: 'Questions need an auxiliary: "Do you have any advice?" or "Any tips?"' },
-    { t: 'Hello. What is up? The sky!', kind: 'grammar', tip: '"What\'s up?" means "¿Qué tal?". Answer "Not much!" or "Fine, thanks!"' }
-  ], () => line(n, pick1(lines), 'Un consejo de un/a compañero/a.', () => {}, 'Thanks!'));
-  inter({ obj: 'Mia', label: 'Chat', at: () => mia.pos, r: 3.5, act: () => { mia.path = []; mia.hold = true; later(9, () => mia.hold = false); faceTo(mia, P.pos.x, P.pos.z); smallTalk(mia, MIA)(); } });
-  inter({ obj: 'Leo', label: 'Chat', at: () => leo.pos, r: 3.5, act: () => { leo.path = []; leo.hold = true; later(9, () => leo.hold = false); faceTo(leo, P.pos.x, P.pos.z); smallTalk(leo, LEO)(); } });
-  inter({ obj: 'Ms. Parker', label: 'Show your things', at: () => teacher.pos, r: 4, when: () => !G.over, act: () => teacherTalk(teacher) });
+    { t: 'Hello. What is up? The sky!', kind: 'grammar', tip: '"What\'s up?" means "¿Qué tal?". Answer "Not much!" or "Fine, thanks!"' },
+    { t: 'Hi! Can you give me an advice?', kind: 'grammar', tip: '"Advice" is uncountable: "some advice" or "a piece of advice".' }
+  ]), () => line(n, pick1(lines), 'Un consejo de un/a compañero/a.', () => {}, 'Thanks!'));
+  inter({ obj: 'Mia', label: 'Chat', at: () => mia.pos, r: 3.5, act: () => { mia.path = []; mia.hold = true; later(9, () => mia.hold = false); faceTo(mia, P.pos.x, P.pos.z); smallTalk(mia, MIA); } });
+  inter({ obj: 'Leo', label: 'Chat', at: () => leo.pos, r: 3.5, act: () => { leo.path = []; leo.hold = true; later(9, () => leo.hold = false); faceTo(leo, P.pos.x, P.pos.z); smallTalk(leo, LEO); } });
+  inter({ obj: tP.name, label: 'Show your things', at: () => teacher.pos, r: 4, when: () => !G.over, act: () => teacherTalk(teacher) });
 
   spawnPlayer(-44, -1, Math.PI / 2, -Math.PI / 2);
-  G.obj = Object.entries(CATS).map(([k, c]) => ({ id: k, text: 'Buy: ' + c.label })).concat([
-    { id: 'broken', text: 'Replace your broken item', secret: true },
-    { id: 'school', text: 'Show your things to Ms. Parker at Lincoln High' }
-  ]);
+  G.obj = Object.entries(CATS).map(([k, c]) => ({ id: k, text: 'Buy: ' + c.label }));
+  if (s.ev.broken) G.obj.push({ id: 'broken', text: 'Replace your broken item', secret: true });
+  if (s.ev.overcharge) G.obj.push({ id: 'over', text: 'Check the price at the till', secret: true });
+  if (s.ev.soldout) G.obj.push({ id: 'soldout', text: 'Find a solution when your size is sold out', secret: true });
+  G.obj.push({ id: 'school', text: `Show your things to ${tP.name} at ${s.school}` });
   W.update = () => {};
 }
 
@@ -1661,10 +1853,9 @@ function buildShop(k, sh) {
   sign(sh.name.toUpperCase(), cx, 5.6, z0 + 0.34, 9, 1.6, 0, { bg: sh.signBg, fg: sh.signFg, border: sh.signFg });
   part(cx, 0, (z0 + z1) / 2, 15.4, 0.27, 13.4, '#eee', { shadow: false, mat: new THREE.MeshLambertMaterial({ map: checkerTex(k === 'luxe' ? '#e0d6c3' : '#eeeeee', k === 'luxe' ? '#cbbd9f' : '#d6d6d6', 2, 8, 7) }) });
   part(cx, 0.25, -14.3, 6, 1.2, 1.2, k === 'luxe' ? '#1b1b1b' : '#8d6e63');
-  // racks with clothes
   [-6, 6].forEach((dx, i) => {
     part(cx + dx, 0.25, -11, 0.4, 2.4, 6, '#9e9e9e');
-    sh.items.filter((_, j) => j % 2 === i).forEach((it, j) => part(cx + dx + (i ? -0.45 : 0.45), 1.0, -13.2 + j * 1.3, 0.25, 1.3, 0.9, it.hex, { solid: false }));
+    sh.items.filter((_, j) => j % 2 === i).slice(0, 5).forEach((it, j) => part(cx + dx + (i ? -0.45 : 0.45), 1.0, -13.2 + j * 1.1, 0.25, 1.3, 0.8, it.hex, { solid: false }));
   });
   [-2.6, 2.6].forEach(dx => { part(cx + dx, 0.25, -8.5, 1.6, 0.9, 1.6, '#f5f5f5'); });
   sh.items.slice(0, 2).forEach((it, i) => part(cx + (i ? 2.6 : -2.6), 1.15, -8.5, 1, 0.25, 0.8, it.hex, { solid: false }));
@@ -1682,9 +1873,9 @@ function buildShop(k, sh) {
 }
 
 const GREET = {
-  bargain: ['Yeah? What do you want, kid?', '¿Sí? ¿Qué quieres, chaval?'],
-  campus: ['Hi there! Welcome to Campus Corner. Can I help you?', '¡Hola! Bienvenido/a a Campus Corner. ¿Te puedo ayudar?'],
-  luxe: ['Good afternoon. Welcome to Luxe Label. How may I help you?', 'Buenas tardes. Bienvenido/a a Luxe Label. ¿En qué puedo ayudarle?']
+  bargain: [['Yeah? What do you want, kid?', '¿Sí? ¿Qué quieres, chaval?'], ['Hmph. Looking for something cheap?', 'Mmm. ¿Buscas algo barato?']],
+  campus: [['Hi there! Welcome to Campus Corner. Can I help you?', '¡Hola! Bienvenido/a a Campus Corner. ¿Te puedo ayudar?'], ['Hello! Getting ready for school? How can I help?', '¡Hola! ¿Preparándote para el cole? ¿En qué te ayudo?']],
+  luxe: [['Good afternoon. Welcome to Luxe Label. How may I help you?', 'Buenas tardes. Bienvenido/a a Luxe Label. ¿En qué puedo ayudarle?'], ['Ah, a new customer. May I help you with anything?', 'Ah, un nuevo cliente. ¿Le puedo ayudar en algo?']]
 };
 function shopTalk(k) {
   const sh = SHOPS[k], n = sh.npc, s = G.s;
@@ -1695,34 +1886,36 @@ function shopTalk(k) {
   ];
   if (activeInv().some(r => r.shop === k)) opts.push({ t: '🧾 Return or exchange something', meta: true, fn: () => returnsFlow(k) });
   opts.push({ t: '👋 Leave the shop', meta: true, fn: () => shopBye(k) });
-  const g = s.said[k] ? ['Anything else?', '¿Algo más?'] : GREET[k];
+  const g = s.said[k] ? pick1([['Anything else?', '¿Algo más?'], ['Can I help you with anything else?', '¿Te ayudo con algo más?']]) : pick1(GREET[k]);
   s.said[k] = true;
   showDialog(n, g[0], g[1], opts);
 }
 function askReturns(k) {
-  const sh = SHOPS[k], n = sh.npc;
+  const n = SHOPS[k].npc;
   const replies = {
     bargain: ['Returns? Ha! Read the sign, kid. All sales are final. No refunds, no exchanges.', '¿Devoluciones? ¡Ja! Lee el cartel, chaval. No se admiten devoluciones ni cambios.'],
     campus: ['You can return or exchange anything within 30 days. Just keep your receipt!', 'Puedes devolver o cambiar cualquier cosa en 30 días. ¡Solo guarda el tique!'],
     luxe: ['We accept exchanges within 14 days with the receipt. We don\'t give cash refunds, only store credit.', 'Aceptamos cambios en 14 días con el tique. No devolvemos dinero, solo vale de compra.']
   }[k];
-  ask(n, 'Yes?', '¿Sí?', [
-    { t: 'What\'s your return policy?', kind: 'ok' },
+  ask(n, pick1(['Yes?', 'Mm-hm?', 'What would you like to know?']), '¿Sí?', phr(['What\'s your return policy?', 'Can I return things if they don\'t fit?', 'Can I get a refund if I change my mind?'], [
     { t: 'Which is your return politic?', kind: 'grammar', tip: 'False friend! "Política" (rules) = policy. "Politics" is about government. Say "What\'s your return policy?"' },
-    { t: 'Can I return back the money if I don\'t like it?', kind: 'grammar', tip: 'The shop gives YOU the money back: "Can I get a refund?"' }
-  ], () => { G.s.info[k] = true; line(n, replies[0], replies[1], () => shopTalk(k), 'Good to know'); });
+    { t: 'Can I return back the money if I don\'t like it?', kind: 'grammar', tip: 'The shop gives YOU the money back: "Can I get a refund?"' },
+    { t: 'Can I devolve the clothes?', kind: 'grammar', tip: 'False friend! "Devolver" = return / give back.' },
+    { t: 'What happens if I want to give back the things?', kind: 'grammar', tip: 'Better: "Can I return things?" or "What\'s your return policy?"' }
+  ]), () => { G.s.info[k] = true; line(n, replies[0], replies[1], () => shopTalk(k), 'Good to know'); });
 }
 function askDiscount(k) {
-  const sh = SHOPS[k], n = sh.npc;
-  ask(n, 'Mm-hm?', '¿Mmm?', [
-    { t: 'Do you have a student discount?', kind: 'ok' },
-    { t: 'Is anything on sale at the moment?', kind: 'ok' },
+  const n = SHOPS[k].npc, s = G.s;
+  ask(n, pick1(['Mm-hm?', 'Yes?']), '¿Mmm?', phr(['Do you have a student discount?', 'Is anything on sale at the moment?', 'Are there any special offers this week?'], [
     { t: 'Is anything in sale actually?', kind: 'grammar', tip: 'We say "ON sale". And "actually" means "en realidad". "Actualmente" = currently / at the moment.' },
-    { t: 'Do you make discount to students?', kind: 'grammar', tip: 'Shops "offer" or "give" a discount: "Do you have / offer a student discount?"' }
-  ], () => {
+    { t: 'Do you make discount to students?', kind: 'grammar', tip: 'Shops "offer" or "give" a discount: "Do you have / offer a student discount?"' },
+    { t: 'Is there some offer?', kind: 'grammar', tip: 'In questions use "any": "Are there any special offers?"' },
+    { t: 'You have rebates?', kind: 'grammar', tip: 'False friend! "Rebajas" = sales. And questions need "Do": "Do you have any sales?"' }
+  ]), () => {
     let r;
-    if (k === 'campus') { G.s.discount = true; r = ['Yes! Students get 10% off everything. I\'ll take it off the prices for you.', '¡Sí! Los estudiantes tienen un 10% de descuento en todo. Te lo aplico en los precios.']; }
-    else if (k === 'luxe') { G.s.sale = true; r = ['We never give discounts… however, our designer sneakers are half price this week.', 'Nunca hacemos descuentos… sin embargo, nuestras zapatillas de diseño están a mitad de precio esta semana.']; }
+    const SALE = { trainers: 'designer sneakers', backpack: 'leather backpacks', polo: 'designer polos', shoes: 'shoes' }[s.saleCat];
+    if (k === 'campus') { s.discount = true; r = [`Yes! Students get ${s.discPct}% off everything. I'll take it off the prices for you.`, `¡Sí! Los estudiantes tienen un ${s.discPct}% de descuento en todo. Te lo aplico en los precios.`]; }
+    else if (k === 'luxe') { s.sale = true; r = [`We never give discounts… however, our ${SALE} are half price this week.`, 'Nunca hacemos descuentos… sin embargo, esta semana tenemos un artículo a mitad de precio.']; }
     else r = ['Discount? Kid, everything here is already cheap!', '¿Descuento? Chaval, ¡aquí ya está todo baratísimo!'];
     line(n, r[0], r[1], () => shopTalk(k), 'Great');
   });
@@ -1730,16 +1923,16 @@ function askDiscount(k) {
 function shopBye(k) {
   const n = SHOPS[k].npc;
   if (G.s['bye' + k]) { say(n, 'See you!'); return; }
-  ask(n, 'Is that everything?', '¿Eso es todo?', [
-    { t: 'Yes, that\'s all. Thanks for your help!', kind: 'ok' },
+  ask(n, pick1(['Is that everything?', 'Will that be all?']), '¿Eso es todo?', phr(['Yes, that\'s all. Thanks for your help!', 'That\'s everything for now, thank you!'], [
     { t: 'Yes, it\'s all. Thank you very much.', kind: 'grammar', tip: '"Eso es todo" = "That\'s all", not "It\'s all".' },
-    { t: 'Yes. Bye. Whatever.', kind: 'rude', tip: 'Thank the shop assistant: "That\'s all, thanks for your help!"' }
-  ], () => { G.s['bye' + k] = true; say(n, k === 'bargain' ? 'Yeah, yeah. Bye.' : 'You\'re welcome! Have a great day!'); });
+    { t: 'Yes. Bye. Whatever.', kind: 'rude', tip: 'Thank the shop assistant: "That\'s all, thanks for your help!"' },
+    { t: 'Is all, thanks.', kind: 'grammar', tip: 'English sentences need a subject: "That\'s all, thanks."' }
+  ]), () => { G.s['bye' + k] = true; say(n, k === 'bargain' ? 'Yeah, yeah. Bye.' : 'You\'re welcome! Have a great day!'); });
 }
 function priceOf(k, it) {
   let p = it.price;
   if (k === 'luxe' && it.sale && G.s.sale) p = p / 2;
-  if (k === 'campus' && G.s.discount) p = Math.round(p * 90) / 100;
+  if (k === 'campus' && G.s.discount) p = Math.round(p * (100 - G.s.discPct)) / 100;
   return p;
 }
 function sizeWord(cat, sz) { const t = CATS[cat].size; return t === 'shirt' ? ({ XS: 'Extra small (XS)', S: 'Small (S)', M: 'Medium (M)', L: 'Large (L)', XL: 'Extra large (XL)' })[sz] : 'Size ' + sz; }
@@ -1763,15 +1956,16 @@ function openCatalog(k) {
     c.append(bt); box.append(c);
   });
   grid.append(box);
-  const info = `Wallet <b>${money(G.money)}</b>${s.credit[k] ? ` · store credit <b>${money(s.credit[k])}</b>` : ''}${k === 'campus' && s.discount ? ' · <b>10% student discount</b>' : ''}`;
+  const info = `Wallet <b>${money(G.money)}</b>${s.credit[k] ? ` · store credit <b>${money(s.credit[k])}</b>` : ''}${k === 'campus' && s.discount ? ` · <b>${s.discPct}% student discount</b>` : ''}`;
   panel(sh.name, `${sh.clerk} is watching you. Read every label: colour, quality and price.`, grid, [{ t: 'Back', fn: () => { closePanel(); shopTalk(k); } }], { info, onClose: () => {} });
 }
 function tryOn(k, it) {
   const n = SHOPS[k].npc, s = G.s;
   const go = () => {
     const t = CATS[it.cat].size;
-    choice(n, 'Sure! The fitting room is over there. What size would you like to try?', '¡Claro! El probador está allí. ¿Qué talla te quieres probar?', SIZES[t].map(sz => ({
+    choice(n, pick1(['Sure! The fitting room is over there. What size would you like to try?', 'Of course. Which size shall I get you?']), '¡Claro! El probador está allí. ¿Qué talla te quieres probar?', SIZES[t].map(sz => ({
       t: `${sizeWord(it.cat, sz)}, please.`, fn: () => {
+        if (s.soldItem === it.id && sz === MY[t]) { line(n, `Sorry, we're sold out of that size in this one.`, 'Lo siento, esa talla está agotada en este modelo.', () => openCatalog(k), 'Back to the shop'); return; }
         const d = SIZES[t].indexOf(sz) - SIZES[t].indexOf(MY[t]);
         const shoes = t === 'shoes';
         let m;
@@ -1784,50 +1978,83 @@ function tryOn(k, it) {
     })));
   };
   if (s.tried[k]) return go();
-  ask(n, 'Do you need anything?', '¿Necesitas algo?', [
-    { t: 'Yes, can I try it on, please?', kind: 'ok' },
+  ask(n, pick1(['Do you need anything?', 'Can I help you with that?']), '¿Necesitas algo?', phr(['Yes, can I try it on, please?', 'Could I try this on, please?', "Excuse me, where's the fitting room? I'd like to try this on."], [
     { t: 'Yes, can I try on it, please?', kind: 'grammar', tip: 'With a pronoun, the particle goes after it: try IT on (not "try on it").' },
-    { t: 'Yes, can I prove it, please?', kind: 'grammar', tip: 'False friend! "Probarse ropa" = try on. "Prove" means "demostrar".' }
-  ], () => { s.tried[k] = true; go(); });
+    { t: 'Yes, can I prove it, please?', kind: 'grammar', tip: 'False friend! "Probarse ropa" = try on. "Prove" means "demostrar".' },
+    { t: 'Where is the prover?', kind: 'grammar', tip: '"Probador" = fitting room (US: dressing room).' },
+    { t: 'I go to try this.', kind: 'grammar', tip: 'Ask for permission: "Can I try this on?"' }
+  ]), () => { s.tried[k] = true; go(); });
 }
 function buy(k, it) {
   const n = SHOPS[k].npc, s = G.s, price = priceOf(k, it);
-  ask(n, k === 'luxe' ? 'An excellent choice. Shall I wrap it for you?' : k === 'bargain' ? 'You gonna buy that or what?' : 'Great choice! Do you want it?', 'Buena elección. ¿Te lo llevas?', [
-    { t: 'Yes, I\'ll take it, please.', kind: 'ok' },
+  const t = CATS[it.cat] && CATS[it.cat].size;
+  const q = k === 'luxe' ? pick1(['An excellent choice. Shall I wrap it for you?', 'Exquisite taste. Will you be taking it?']) : k === 'bargain' ? pick1(['You gonna buy that or what?', 'So? You buying it?']) : pick1(['Great choice! Do you want it?', 'Nice! Would you like to buy it?']);
+  ask(n, q, 'Buena elección. ¿Te lo llevas?', phr(['Yes, I\'ll take it, please.', 'Yes please, I\'ll take this one.', 'I\'ll take it, thanks!'], [
     { t: 'Yes, I take it this.', kind: 'grammar', tip: 'For a decision made now, use "will": "I\'ll take it." No extra "this".' },
-    { t: 'Yes, give me.', kind: 'rude', tip: '"Give me" sounds bossy. Use "I\'ll take it, please."' }
-  ], () => {
-    const t = CATS[it.cat] && CATS[it.cat].size;
-    const pay = (size) => ask(n, `That's ${money(price)}. Cash or card?`, `Son ${money(price)}. ¿Efectivo o tarjeta?`, [
-      { t: 'By card, please.', kind: 'ok' }, { t: 'In cash, please.', kind: 'ok' },
-      { t: 'With card.', kind: 'grammar', tip: 'We pay BY card and IN cash.' }
-    ], () => complete_purchase(size));
-    const complete_purchase = (size) => {
-      let p = price; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
-      G.money = Math.round((G.money - p) * 100) / 100;
-      const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid: price, size: size || null, sizeOk: !t || size === MY[t], broken: false, returned: false });
+    { t: 'Yes, give me.', kind: 'rude', tip: '"Give me" sounds bossy. Use "I\'ll take it, please."' },
+    { t: 'Yes, I will to take it.', kind: 'grammar', tip: 'After "will" use the verb without "to": "I\'ll take it."' },
+    { t: 'Yes, I carry it.', kind: 'grammar', tip: '"Llevarse algo" when buying = take: "I\'ll take it."' }
+  ]), () => {
+    const done = (size, paid) => {
+      let p = paid; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
+      G.money = Math.round((G.money - p) * 100) / 100; s.purchases++;
+      const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid, size: size || null, sizeOk: !t || size === MY[t], broken: false, returned: false });
       rec.emoji = it.emo || CATS[rec.cat].emoji;
       rec.label = `${rec.color} ${rec.name}`;
       rec.info = () => `${rec.shopName} · ${money(rec.paid)} · quality ${'★'.repeat(rec.q)}${rec.size ? ' · size ' + rec.size : ''}${rec.broken ? ' · BROKEN' : ''}`;
       rec.bad = () => rec.broken;
       G.inv.push(rec); renderHotbar(); equipAll(); mallObjectives(); updateBoard();
-      notify('🧾 Receipt', `${rec.label} · ${money(price)}${useCredit ? ' (store credit used)' : ''} · ${SHOPS[k].name}`, 'good');
+      notify('🧾 Receipt', `${rec.label} · ${money(paid)}${useCredit ? ' (store credit used)' : ''} · ${SHOPS[k].name}`, 'good');
       say(n, k === 'bargain' ? 'There. Next!' : 'Here\'s your receipt. Enjoy!');
-      if (k === 'bargain' && it.fragile && !s.broke) { s.broke = true; later(20, () => breakItem(rec)); }
+      if (s.ev.broken && k === 'bargain' && it.fragile && !s.broke) { s.broke = true; later(rnd(18, 30), () => breakItem(rec)); }
       later(0.6, () => { if (!G.over && $('#dlg').hidden && $('#panelWrap').hidden) openCatalog(k); });
     };
-    if (t) {
-      if (s.fitted[it.id]) pay(s.fitted[it.id]);
-      else choice(n, 'What size do you need?', '¿Qué talla necesitas?', SIZES[t].map(sz => ({ t: `${sizeWord(it.cat, sz)}, please.`, fn: () => pay(sz) })));
-    } else pay(null);
+    const payAsk = (size, amount) => ask(n, `That's ${money(amount)}. Cash or card?`, `Son ${money(amount)}. ¿Efectivo o tarjeta?`, phr(['By card, please.', 'In cash, please.', 'Can I pay by card?'], [
+      { t: 'With card.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
+      { t: 'In card, please.', kind: 'grammar', tip: 'We pay BY card and IN cash.' },
+      { t: 'With effective.', kind: 'grammar', tip: 'False friend! "Efectivo" = cash.' }
+    ], 1), () => done(size, amount));
+    const pay = (size) => {
+      if (s.ev.overcharge && !s.overDone && s.purchases + 1 >= s.overAt) {
+        s.overDone = true;
+        const wrong = price + pick1([5, 8, 10]);
+        ask(n, `OK… that's ${money(wrong)}, please.`, `Vale… son ${money(wrong)}, por favor.`, phr([`Sorry, I think there's a mistake. The label says ${money(price)}.`, `Excuse me, isn't it ${money(price)}? That's what the label says.`], [
+          { t: `Is not correct. The label put ${money(price)}.`, kind: 'grammar', tip: 'Labels "say" things: "The label says…". And English needs a subject: "It isn\'t correct."' },
+          { t: 'Are you trying to rob me?!', kind: 'rude', tip: 'It could be an honest mistake: "Sorry, I think there\'s a mistake."' },
+          { t: `The price is more cheap, ${money(price)}.`, kind: 'grammar', tip: 'Short adjectives: cheap → cheaper (not "more cheap").' }
+        ]).concat([{ t: 'OK, here you are.', kind: 'fact', fn: () => { s.overpaid += wrong - price; reveal('over'); complete('over', true); payAsk(size, wrong); } }]), () => {
+          reveal('over'); complete('over');
+          line(n, `Oh, you're right! Sorry, my mistake. It's ${money(price)}.`, `¡Oh, tienes razón! Perdona, error mío. Son ${money(price)}.`, () => payAsk(size, price), 'No problem');
+        });
+      } else payAsk(size, price);
+    };
+    const chooseSize = () => {
+      const avail = SIZES[t].filter(sz => !(s.soldItem === it.id && sz === MY[t]));
+      if (s.fitted[it.id] && avail.includes(s.fitted[it.id])) pay(s.fitted[it.id]);
+      else choice(n, 'What size do you need?', '¿Qué talla necesitas?', avail.map(sz => ({ t: `${sizeWord(it.cat, sz)}, please.`, fn: () => pay(sz) })));
+    };
+    if (t && s.ev.soldout && !s.soldDone) {
+      s.soldDone = true; s.soldItem = it.id; reveal('soldout');
+      const others = SIZES[t].filter(x => x !== MY[t]);
+      const near = others.filter(x => Math.abs(SIZES[t].indexOf(x) - SIZES[t].indexOf(MY[t])) === 1);
+      ask(n, `Oh, sorry! We've just sold out of size ${MY[t]} in this one. We only have ${near.join(' or ')}.`, `¡Vaya, lo siento! Se nos ha agotado la talla ${MY[t]} en este modelo. Solo tenemos ${near.join(' o ')}.`, phr(['That\'s a shame. I\'ll look somewhere else, then. Thanks anyway!', 'Oh, never mind. I\'ll try another shop. Thanks anyway!'], [
+        { t: 'Don\'t worry, I search in other shop.', kind: 'grammar', tip: 'Decision now = "will": "I\'ll look in another shop."' },
+        { t: 'What a pity! I go to look other place.', kind: 'grammar', tip: 'Say "I\'ll look somewhere else."' },
+        { t: 'Seriously? This shop is useless.', kind: 'rude', tip: 'Stay polite: "Never mind. Thanks anyway!"' }
+      ]).concat([{ t: `OK, I'll take a size ${near[0]} then.`, kind: 'fact', fn: () => { s.soldOK = false; complete('soldout', true); pay(near[0]); } }]), () => {
+        s.soldOK = true; complete('soldout'); say(n, 'Sorry about that! Good luck!');
+      });
+      return;
+    }
+    if (t) chooseSize(); else pay(null);
   });
 }
 function breakItem(rec) {
   if (rec.returned || G.over) return;
   rec.broken = true; G.s.brokeItem = rec;
-  const what = rec.cat === 'trainers' ? 'The sole of your Bargain Barn trainers just fell off! 😱' : 'The strap of your Bargain Barn backpack just broke! 😱';
+  const what = { trainers: 'The sole of your Bargain Barn trainers just fell off! 😱', backpack: 'The strap of your Bargain Barn backpack just broke! 😱', shoes: 'The heel of your Bargain Barn school shoes just came off! 😱' }[rec.cat];
   notify('💥 Oh no!', what, 'bad'); chat('System', what, '#ff8a80'); setFace(P.av, 'sad'); later(3, () => setFace(P.av, 'smile'));
-  reveal('broken', `Replace your broken ${rec.cat === 'trainers' ? 'trainers' : 'backpack'}`);
+  reveal('broken', `Replace your broken ${rec.cat === 'backpack' ? 'backpack' : rec.cat === 'shoes' ? 'school shoes' : 'trainers'}`);
   renderHotbar(); equipAll(); mallObjectives(); updateBoard();
 }
 function returnsFlow(k) {
@@ -1838,12 +2065,12 @@ function returnsFlow(k) {
   showDialog(n, 'Which item is it?', '¿Qué artículo es?', opts);
 }
 function returnItem(k, r) {
-  const n = SHOPS[k].npc, t = CATS[r.cat] && CATS[r.cat].size;
+  const t = CATS[r.cat] && CATS[r.cat].size;
   const opts = [];
   if (t || r.broken) opts.push({ t: t ? '🔁 Exchange it for a different size' : '🔁 Exchange it for a new one', meta: true, fn: () => doExchange(k, r) });
   opts.push({ t: '💵 Return it and get my money back', meta: true, fn: () => doRefund(k, r) });
   opts.push({ t: '↩ Never mind', meta: true, fn: () => shopTalk(k) });
-  choice(null, `What do you want to do with the ${r.label.toLowerCase()}?`, `¿Qué quieres hacer con el artículo?`, opts);
+  choice(null, `What do you want to do with the ${r.label.toLowerCase()}?`, '¿Qué quieres hacer con el artículo?', opts);
 }
 function refuseBargain() {
   line(SHOPS.bargain.npc, 'Sorry, kid. All sales are final. It says so on the sign. No refunds, no exchanges.', 'Lo siento, chaval. No se admiten devoluciones. Lo pone en el cartel. Ni reembolsos ni cambios.', () => {
@@ -1853,24 +2080,25 @@ function refuseBargain() {
 }
 function doExchange(k, r) {
   const n = SHOPS[k].npc, t = CATS[r.cat] && CATS[r.cat].size;
-  ask(n, 'Is there a problem?', '¿Hay algún problema?', [
-    { t: r.broken ? 'Yes, it broke after one day. Could I exchange it for a new one? Here\'s my receipt.' : 'Yes, it doesn\'t fit. Could I exchange it for a different size? Here\'s my receipt.', kind: 'ok' },
+  ask(n, 'Is there a problem?', '¿Hay algún problema?', phr([r.broken ? 'Yes, it broke after one day. Could I exchange it for a new one? Here\'s my receipt.' : 'Yes, it doesn\'t fit. Could I exchange it for a different size? Here\'s my receipt.'], [
     { t: 'I want to change this for other.', kind: 'grammar', tip: 'Use "exchange it for another one / a different size".' },
-    { t: 'This is rubbish. Change it now.', kind: 'rude', tip: 'Explain the problem politely: "It doesn\'t fit. Could I exchange it, please?"' }
-  ], () => {
+    { t: 'This is rubbish. Change it now.', kind: 'rude', tip: 'Explain the problem politely: "It doesn\'t fit. Could I exchange it, please?"' },
+    { t: 'It doesn\'t fit me well. Can I change of size?', kind: 'grammar', tip: '"Cambiar de talla" = exchange it for another size. No "of".' }
+  ]), () => {
     if (k === 'bargain') return refuseBargain();
     if (r.broken) { r.broken = false; line(n, 'Of course. Here\'s a new one.', 'Por supuesto. Aquí tienes uno nuevo.', after, 'Thank you!'); return; }
-    choice(n, 'No problem. Which size would you like?', 'Sin problema. ¿Qué talla quieres?', SIZES[t].map(sz => ({ t: `${sizeWord(r.cat, sz)}, please.`, fn: () => { r.size = sz; r.sizeOk = sz === MY[t]; line(n, 'Here you go. All done!', '¡Aquí tienes! Listo.', after, 'Thanks!'); } })));
+    const avail = SIZES[t].filter(sz => !(G.s.soldItem === r.id && sz === MY[t]));
+    choice(n, 'No problem. Which size would you like?', 'Sin problema. ¿Qué talla quieres?', avail.map(sz => ({ t: `${sizeWord(r.cat, sz)}, please.`, fn: () => { r.size = sz; r.sizeOk = sz === MY[t]; line(n, 'Here you go. All done!', '¡Aquí tienes! Listo.', after, 'Thanks!'); } })));
   });
   function after() { renderHotbar(); equipAll(); mallObjectives(); updateBoard(); }
 }
 function doRefund(k, r) {
   const n = SHOPS[k].npc;
-  ask(n, 'What\'s wrong with it?', '¿Qué le pasa?', [
-    { t: 'I\'d like to return this, please. Can I get a refund? Here\'s the receipt.', kind: 'ok' },
+  ask(n, 'What\'s wrong with it?', '¿Qué le pasa?', phr(['I\'d like to return this, please. Can I get a refund? Here\'s the receipt.', 'I\'ve changed my mind. Could I return this, please? I have the receipt.'], [
     { t: 'I want to give back this and you return me the money.', kind: 'grammar', tip: 'Say "I\'d like to return this" and "Can I get a refund?"' },
-    { t: 'Take this back and give me my money.', kind: 'rude', tip: 'Be polite: "I\'d like to return this, please."' }
-  ], () => {
+    { t: 'Take this back and give me my money.', kind: 'rude', tip: 'Be polite: "I\'d like to return this, please."' },
+    { t: 'I want to devolve this.', kind: 'grammar', tip: 'False friend! "Devolver" = return.' }
+  ]), () => {
     if (k === 'bargain') return refuseBargain();
     r.returned = true;
     if (k === 'campus') { G.money = Math.round((G.money + r.paid) * 100) / 100; line(n, `No problem. Here's your refund: ${money(r.paid)}.`, `Sin problema. Aquí tienes tu reembolso: ${money(r.paid)}.`, () => {}, 'Thanks!'); }
@@ -1891,48 +2119,51 @@ function mallObjectives() {
   const inv = activeInv();
   Object.keys(CATS).forEach(c => { const o = obj(c); o.done = inv.some(r => r.cat === c && !r.broken); o.failed = false; });
   const b = obj('broken'), bi = G.s.brokeItem;
-  if (bi) b.done = inv.some(r => r.cat === bi.cat && !r.broken);
+  if (b && bi) b.done = inv.some(r => r.cat === bi.cat && !r.broken);
   renderObjectives();
 }
 function teacherTalk(t) {
   const missing = Object.keys(CATS).filter(c => !activeInv().some(r => r.cat === c && !r.broken));
   if (missing.length) {
-    choice(t, 'Hi! I\'m Ms. Parker. Are you ready for tomorrow?', '¡Hola! Soy la señorita Parker. ¿Estás listo/a para mañana?', [
+    choice(t, `Hi! I'm ${t.name}. Are you ready for tomorrow?`, `¡Hola! Soy ${t.name}. ¿Estás listo/a para mañana?`, [
       { t: 'Not yet, I still need a few things. See you later!', fn: () => say(t, 'OK! The shops close at six, so hurry up!') },
       { t: 'I think so. Could you check my things, please?', fn: () => finalCheck(t, missing) }
     ]);
   } else finalCheck(t, missing);
 }
 function finalCheck(t, missing) {
-  ask(t, 'Wonderful! So, have you got everything on the list?', '¡Estupendo! Bueno, ¿tienes todo lo de la lista?', [
-    { t: missing.length ? 'I\'ve bought most of the things on my list.' : 'Yes, I\'ve bought everything on my list!', kind: 'ok' },
+  ask(t, pick1(['Wonderful! So, have you got everything on the list?', 'Great! Let\'s see. Have you got everything you need?']), '¡Estupendo! Bueno, ¿tienes todo lo de la lista?', phr([missing.length ? 'I\'ve bought most of the things on my list.' : 'Yes, I\'ve bought everything on my list!'], [
     { t: 'Yes, I have buyed everything.', kind: 'grammar', tip: '"Buy" is irregular: buy – bought – bought. "I\'ve bought everything."' },
-    { t: 'Yes, I have all since yesterday.', kind: 'grammar', tip: 'Say "Yes, I\'ve got everything" or "I bought everything yesterday."' }
-  ], () => review(t));
+    { t: 'Yes, I have all since yesterday.', kind: 'grammar', tip: 'Say "Yes, I\'ve got everything" or "I bought everything yesterday."' },
+    { t: 'Yes, I have bought all the list things.', kind: 'grammar', tip: 'Say "everything on the list".' }
+  ]), () => review(t));
 }
 function review(t) {
   complete('school');
-  const inv = activeInv(), good = [], bad = [];
+  const s = G.s, inv = activeInv(), good = [], bad = [];
   let listPts = 0, qSum = 0, qN = 0;
   Object.entries(CATS).forEach(([c, info]) => {
     const all = inv.filter(r => r.cat === c);
     const best = all.filter(itemValid).sort((a, b) => b.q - a.q)[0] || all.filter(r => !r.broken)[0] || all[0];
-    if (!best) { bad.push(`Ms. Parker: “You haven't got ${info.label.toLowerCase().replace(/^a /, 'a ')}!”`); return; }
+    if (!best) { bad.push(`${t.name}: “You haven't got ${info.label.toLowerCase().replace(/^a /, 'a ')}!”`); return; }
     const plural = /trousers|shoes|trainers|chinos|loafers|sneakers/i.test(best.name);
-    if (best.broken) bad.push(`Ms. Parker: “Oh dear, your ${best.name.toLowerCase()} ${plural ? 'are' : 'is'} broken.”`);
-    else if (!best.ok) bad.push(`Ms. Parker: “${best.why || 'That isn\'t on the list.'}”`);
-    else if (info.size && !best.sizeOk) bad.push(`Ms. Parker: “Your ${best.name.toLowerCase()} ${plural ? 'don\'t' : 'doesn\'t'} fit you. Did you try ${plural ? 'them' : 'it'} on?”`);
+    if (best.broken) bad.push(`${t.name}: “Oh dear, your ${best.name.toLowerCase()} ${plural ? 'are' : 'is'} broken.”`);
+    else if (!best.ok) bad.push(`${t.name}: “${best.why || 'That isn\'t on the list.'}”`);
+    else if (info.size && !best.sizeOk) bad.push(`${t.name}: “Your ${best.name.toLowerCase()} ${plural ? 'don\'t' : 'doesn\'t'} fit you. Did you try ${plural ? 'them' : 'it'} on?”`);
     else { listPts += 20; qSum += best.q; qN++; good.push(`${best.color} ${best.name.toLowerCase()}: perfect${best.q === 3 ? ' and great quality' : best.q === 1 ? ', but cheap quality' : ''}.`); }
   });
   const extras = inv.filter(r => r.cat === 'extra');
   if (extras.length) bad.push(`You spent ${money(extras.reduce((a, r) => a + r.paid, 0))} on things that weren't on your list.`);
   const quality = qN ? Math.round(qSum / qN / 3 * 100) : 0;
   const bp = inv.filter(r => r.cat === 'backpack' && !r.broken).slice(-1)[0];
-  const pref = bp && /blue/i.test(bp.color) ? 100 : 40;
-  if (pref === 100) good.push('You got a blue backpack, your favourite colour!');
-  if (G.s.discount) good.push('You asked for the student discount at Campus Corner.');
-  if (G.s.sale) good.push('You found the half-price sneakers at Luxe Label by asking.');
-  if (G.s.brokeItem) bad.push('A cheap Bargain Barn item broke. Cheap things can be expensive in the end!');
+  const pref = bp && bp.color === s.fav ? 100 : 40;
+  if (pref === 100) good.push(`You got a ${s.fav.toLowerCase()} backpack, your favourite colour!`);
+  else if (bp) bad.push(`Your favourite colour is ${s.fav.toLowerCase()}, but you chose a ${bp.color.toLowerCase()} backpack.`);
+  if (s.discount) good.push(`You asked for the ${s.discPct}% student discount at Campus Corner.`);
+  if (s.sale) good.push('You found the half-price offer at Luxe Label by asking.');
+  if (s.brokeItem) bad.push('A cheap Bargain Barn item broke. Cheap things can be expensive in the end!');
+  if (s.ev.overcharge && s.overDone) { if (s.overpaid) bad.push(`The shop assistant charged you ${money(s.overpaid)} too much and you didn't notice.`); else good.push('You noticed the wrong price at the till and said so politely.'); }
+  if (s.ev.soldout && s.soldDone) { if (s.soldOK) good.push('When your size was sold out, you decided to look somewhere else.'); else if (s.soldOK === false) bad.push('You bought the wrong size because your size was sold out.'); }
   const save = clamp(G.money * 4, 0, 100);
   const eng = engPct();
   const overall = 0.35 * listPts + 0.15 * quality + 0.25 * eng + 0.1 * G.manners + 0.05 * pref + 0.1 * Math.max(save, listPts === 100 ? 60 : 0);
