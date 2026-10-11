@@ -1543,7 +1543,7 @@ const SHOPS = {
       { id: 'b4', cat: 'shoes', name: 'School shoes', color: 'Black', hex: '#1b1b1b', price: 12, q: 1, ok: true, desc: 'Plastic “leather”. Not waterproof.' },
       { id: 'b5', cat: 'trainers', name: 'Canvas trainers', color: 'White', hex: '#fafafa', price: 10, q: 1, ok: true, fragile: true, desc: 'Light canvas trainers with glued soles.' },
       { id: 'b6', cat: 'backpack', name: 'Backpack', color: 'Pink', hex: '#f48fb1', price: 6, q: 1, ok: true, fragile: true, desc: 'Small backpack with one pocket.' },
-      { id: 'b7', cat: 'extra', name: 'Sunglasses', color: 'Black', hex: '#212121', price: 4, q: 1, ok: false, desc: 'Cool sunglasses. Not on your list!' }
+      { id: 'b7', emo: '🕶', cat: 'extra', name: 'Sunglasses', color: 'Black', hex: '#212121', price: 4, q: 1, ok: false, desc: 'Cool sunglasses. Not on your list!' }
     ] },
   campus: { name: 'Campus Corner', clerk: 'Priya', x: 0, wall: '#5c8fd6', roof: '#1e3a6e', signBg: '#0d47a1', signFg: '#ffffff', policy: 'Returns and exchanges within 30 days. Keep your receipt!',
     items: [
@@ -1554,7 +1554,7 @@ const SHOPS = {
       { id: 'c5', cat: 'trainers', name: 'Sports trainers', color: 'White', hex: '#fafafa', price: 25, q: 2, ok: true, desc: 'Good grip for the gym.' },
       { id: 'c6', cat: 'backpack', name: 'School backpack', color: 'Blue', hex: '#1e88e5', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
       { id: 'c7', cat: 'backpack', name: 'School backpack', color: 'Black', hex: '#263238', price: 18, q: 3, ok: true, desc: 'Laptop pocket and padded straps.' },
-      { id: 'c8', cat: 'extra', name: 'Hoodie', color: 'Grey', hex: '#9e9e9e', price: 22, q: 3, ok: false, desc: 'Super soft. Not on your list!' }
+      { id: 'c8', emo: '🧥', cat: 'extra', name: 'Hoodie', color: 'Grey', hex: '#9e9e9e', price: 22, q: 3, ok: false, desc: 'Super soft. Not on your list!' }
     ] },
   luxe: { name: 'Luxe Label', clerk: 'Mr. Sterling', x: 24, wall: '#2b2b2b', roof: '#111111', signBg: '#111111', signFg: '#e6c068', policy: 'Exchanges within 14 days with the receipt. No cash refunds: store credit only.',
     items: [
@@ -1564,7 +1564,7 @@ const SHOPS = {
       { id: 'l4', cat: 'shoes', name: 'Leather school shoes', color: 'Black', hex: '#1b1b1b', price: 65, q: 3, ok: true, desc: 'Handmade. They will last for years.' },
       { id: 'l5', cat: 'trainers', name: 'Designer sneakers', color: 'White', hex: '#fafafa', price: 60, q: 3, ok: true, sale: true, desc: 'The coolest sneakers in town.' },
       { id: 'l6', cat: 'backpack', name: 'Leather backpack', color: 'Blue', hex: '#1565c0', price: 45, q: 3, ok: true, desc: 'Soft leather. Very fashionable.' },
-      { id: 'l7', cat: 'extra', name: 'Baseball cap', color: 'Red', hex: '#e53935', price: 25, q: 3, ok: false, desc: 'Limited edition. Not on your list!' }
+      { id: 'l7', emo: '🧢', cat: 'extra', name: 'Baseball cap', color: 'Red', hex: '#e53935', price: 25, q: 3, ok: false, desc: 'Limited edition. Not on your list!' }
     ] }
 };
 
@@ -1751,7 +1751,7 @@ function openCatalog(k) {
   sh.items.forEach(it => {
     const p = priceOf(k, it), owned = activeInv().some(r => r.id === it.id);
     const c = el('div', 'item');
-    c.innerHTML = `<div class="ithumb" style="--c:${it.hex}">${CATS[it.cat] ? CATS[it.cat].emoji : '🕶'}<i></i>${p < it.price ? '<span class="tag">SALE</span>' : ''}${owned ? '<span class="own">OWNED</span>' : ''}</div>
+    c.innerHTML = `<div class="ithumb" style="--c:${it.hex}">${it.emo || CATS[it.cat].emoji}<i></i>${p < it.price ? '<span class="tag">SALE</span>' : ''}${owned ? '<span class="own">OWNED</span>' : ''}</div>
       <div class="iname">${escH(it.name)}</div>
       <div class="imeta">Colour: ${escH(it.color)} · Quality <span class="stars">${'★'.repeat(it.q)}${'☆'.repeat(3 - it.q)}</span></div>
       <p class="idesc">${escH(it.desc)}</p>
@@ -1806,7 +1806,7 @@ function buy(k, it) {
       let p = price; const useCredit = Math.min(s.credit[k], p); s.credit[k] -= useCredit; p -= useCredit;
       G.money = Math.round((G.money - p) * 100) / 100;
       const rec = Object.assign({}, it, { uid: ++s.uid, shop: k, shopName: SHOPS[k].name, paid: price, size: size || null, sizeOk: !t || size === MY[t], broken: false, returned: false });
-      rec.emoji = CATS[rec.cat] ? CATS[rec.cat].emoji : '🕶';
+      rec.emoji = it.emo || CATS[rec.cat].emoji;
       rec.label = `${rec.color} ${rec.name}`;
       rec.info = () => `${rec.shopName} · ${money(rec.paid)} · quality ${'★'.repeat(rec.q)}${rec.size ? ' · size ' + rec.size : ''}${rec.broken ? ' · BROKEN' : ''}`;
       rec.bad = () => rec.broken;
